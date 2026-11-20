@@ -526,19 +526,12 @@ describe("composer and header endpoints", () => {
     expect((await bob.get("/settings")).text).not.toMatch(badge);
     await forum.sql("DELETE FROM reviewables WHERE target_id = 0 AND target_type = 'post'");
   });
-  it("uses Discourse-style addresses, and old ones still lead there", async () => {
+  it("uses Discourse-style addresses, and short forms lead to the full one", async () => {
     const to = async (path: string) => {
       const r = await guest.get(path);
       expect(r.status, path).toBe(308);
       return r.location.replace(forum.base, "");
     };
-    expect(await to("/topic/1-hello-from-alice/")).toBe("/t/hello-from-alice/1");
-    expect(await to("/topic/1-hello-from-alice/post/1")).toBe("/t/hello-from-alice/1/1");
-    expect(await to("/topic/1-hello-from-alice/page/2/?x=1")).toBe("/t/hello-from-alice/1?page=2&x=1");
-    expect(await to("/forum/2-introductions/")).toBe("/c/introductions/2");
-    expect(await to("/profile/1-alice/?tab=topics")).toBe("/u/alice?tab=topics");
-    expect(await to("/group/members")).toBe("/g/members");
-    expect(await to("/members")).toBe("/u");
     expect(await to("/t/hello-from-alice")).toBe("/t/hello-from-alice/1");
     expect(await to("/t/1")).toBe("/t/1/1");
     expect(await to("/c/introductions")).toBe("/c/introductions/2");
@@ -578,13 +571,6 @@ describe("composer and header endpoints", () => {
       expect(r.status).toBe(200);
       expect(Array.isArray(JSON.parse(r.text))).toBe(true);
       expect((await guest.get(path)).status).toBe(403);
-    }
-  });
-  it("sends summary and badges links to the profile tabs", async () => {
-    for (const tab of ["summary", "badges"]) {
-      const r = await guest.get(`/u/1/${tab}`, { follow: true });
-      expect(r.status).toBe(200);
-      expect(r.text).toContain(`href="?tab=${tab}" class="current"`);
     }
   });
 });

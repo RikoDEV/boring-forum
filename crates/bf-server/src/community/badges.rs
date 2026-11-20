@@ -7,7 +7,7 @@ use crate::http::viewer::Viewer;
 use crate::state::AppState;
 use axum::extract::{Path, State};
 use axum::http::{HeaderMap, StatusCode};
-use axum::response::{IntoResponse, Redirect, Response};
+use axum::response::{IntoResponse, Response};
 use axum::routing::{get, put};
 use axum::{Json, Router};
 use bf_core::AppError;
@@ -16,14 +16,8 @@ use serde_json::json;
 
 pub fn router() -> Router<AppState> {
     Router::new()
-        .route("/u/{id}/badges", get(member_badges))
         .route("/api/v1/admin/badges", get(list_badges).post(create_badge))
         .route("/api/v1/admin/badges/{id}", put(update_badge).delete(delete_badge))
-}
-
-/// Now a tab of the profile; old links keep working.
-async fn member_badges(Path(id): Path<i64>) -> Response {
-    Redirect::permanent(&format!("/profile/{id}-x/?tab=badges")).into_response()
 }
 
 fn check_badge(b: &badges::Badge) -> Result<(), AppError> {

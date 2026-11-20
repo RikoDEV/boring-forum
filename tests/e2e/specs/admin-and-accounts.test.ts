@@ -74,13 +74,17 @@ describe("account security", () => {
   let g: Client, l: Client, secret: string;
   it("email verification is single use", async () => {
     const v = await mailLink(forum, "alice@example.com", "/verify/");
+    // The link counts only in a session of the account it was sent for: anyone else is asked to sign in
+    // and the token is not used up.
+    expect((await guest.get(v)).status).toBe(403);
+    expect((await bob.get(v)).status).toBe(403);
     // GET only shows a button (mail scanners follow links); the POST consumes the token.
-    const page = await guest.get(v);
+    const page = await alice.get(v);
     expect(page.status).toBe(200);
     expect(page.text).toContain("Confirm email address");
-    expect((await guest.form(v)).text).toContain("Email verified");
-    expect((await guest.get(v)).status).toBe(410);
-    expect((await guest.form(v)).status).toBe(410);
+    expect((await alice.form(v)).text).toContain("Email verified");
+    expect((await alice.get(v)).status).toBe(410);
+    expect((await alice.form(v)).status).toBe(410);
     expect((await alice.get("/settings")).text).toContain("a•••@e•••.com — verified");
     expect((await alice.get("/settings")).text).not.toContain("alice@example.com");
   });
@@ -311,12 +315,15 @@ describe("OIDC", () => {
     expect((await sso(d2)).status).toBe(200);
     expect((await d2.get("/")).text).toContain('<strong>dave</strong></div>');
   });
-  it("links to a signed-in member", async () => {
+  it("a sign-in begun while signed in links nothing: only Connected logins may", async () => {
     await nextUser({ sub: "ext-2", email: "someone-else@example.com", email_verified: true, preferred_username: "whoever" });
-    expect((await sso(alice)).status).toBe(200);
+    expect((await sso(alice)).status).toBe(422);
+    await nextUser({ sub: "ext-2", email: "someone-else@example.com", email_verified: true, preferred_username: "whoever" });
     const d = forum.client();
     await sso(d);
-    expect((await d.get("/")).text).toContain('<strong>alice</strong></div>');
+    const home = (await d.get("/")).text;
+    expect(home).toContain('<strong>whoever</strong></div>');
+    expect(home).not.toContain('<strong>alice</strong></div>');
   });
   it("an unverified email cannot take over an account", async () => {
     await nextUser({ sub: "ext-3", email: "carol@example.com", email_verified: false, preferred_username: "carol" });

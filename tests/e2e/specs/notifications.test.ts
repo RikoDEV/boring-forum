@@ -146,8 +146,9 @@ describe("post style and suggestions", () => {
     expect((await alice.get("/")).text).toContain('data-post-style="classic"');
     await setting(alice, "post_style", "discourse");
     expect((await alice.get("/")).text).toContain('data-post-style="discourse"');
-    await setting(alice, "post_style", "nonsense");
-    expect((await alice.get("/")).text).toContain('data-post-style="classic"');
+    // A value that is not one of the choices is refused, and the setting keeps what it had.
+    expect((await setting(alice, "post_style", "nonsense")).status).toBe(422);
+    expect((await alice.get("/")).text).toContain('data-post-style="discourse"');
     await setting(alice, "post_style", "classic");
   });
   it("names the forum on suggested and similar topics", async () => {

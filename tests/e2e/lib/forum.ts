@@ -23,6 +23,18 @@ export class Res {
 export type Fields = Record<string, string | number | boolean | (string | number)[]>;
 type Opts = { headers?: Record<string, string>; method?: string; follow?: boolean; noCsrf?: boolean };
 
+/** `fetch`, tried once more when the pooled connection it picked had just been closed by the server (a
+ *  refused oversized upload closes it): the request never left, so sending it again is safe. */
+async function sendOnce(url: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (e) {
+    const code = (e as { cause?: { code?: string } }).cause?.code;
+    if (code !== "EPIPE" && code !== "ECONNRESET") throw e;
+    return await fetch(url, init);
+  }
+}
+
 /** One browser: a cookie jar plus helpers. Forms and API calls send the CSRF token by default. */
 export class Client {
   readonly jar = new Map<string, string>();
@@ -37,7 +49,7 @@ export class Client {
     for (let hops = 0; ; hops++) {
       const headers = new Headers(init.headers);
       if (this.jar.size) headers.set("cookie", [...this.jar].map(([k, v]) => `${k}=${v}`).join("; "));
-      const r = await fetch(url, { ...init, method, body, headers, redirect: "manual" });
+      const r = await sendOnce(url, { ...init, method, body, headers, redirect: "manual" });
       for (const c of r.headers.getSetCookie()) {
         const [pair, ...attrs] = c.split(";");
         const eq = pair.indexOf("=");

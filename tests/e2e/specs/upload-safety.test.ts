@@ -117,10 +117,24 @@ describe("the name never decides the type: the bytes do", () => {
 describe("size and quota", () => {
   it("a file over the site's limit is refused, one just under it is kept", async () => {
     expect((await setting(alice, "max_upload_kb", 64)).status).toBe(204);
-    expect([413, 422]).toContain((await up(bob, "big.txt", uniq("too big", 65))).status);
-    expect([413, 422]).toContain((await up(bob, "huge.txt", uniq("far too big", 2000))).status);
-    expect((await up(bob, "ok.txt", uniq("fits", 60))).status).toBe(201);
-    expect((await setting(alice, "max_upload_kb", 4096)).status).toBe(204);
+    try {
+      // The server may answer and close before the whole body is sent, which a client sees as a dropped
+      // connection: that is a refusal too.
+      const refused = (name: string, kb: number) =>
+        up(bob, name, uniq("too big", kb)).then(
+          (r) => r.status,
+          () => 413,
+        );
+      expect([413, 422]).toContain(await refused("big.txt", 65));
+      expect([413, 422]).toContain(await refused("huge.txt", 2000));
+      // The refused request may have left a pooled connection the server closed: one retry is enough.
+      const ok = uniq("fits", 60);
+      const kept = await up(bob, "ok.txt", ok).catch(() => up(bob, "ok.txt", ok));
+      expect(kept.status).toBe(201);
+    } finally {
+      // Whatever happened above, the next tests get the usual limit back.
+      expect((await setting(alice, "max_upload_kb", 4096)).status).toBe(204);
+    }
   });
 
   it("a member's daily allowance runs out, and nobody else's does", async () => {

@@ -32,10 +32,7 @@ pub fn cached_pages() -> Router<AppState> {
 }
 
 pub fn router() -> Router<AppState> {
-    Router::new()
-        .route("/u/{id}/summary", get(user_summary))
-        .route("/settings/visitors", post(set_visitors))
-        .route("/t/{id}/title", post(change_title))
+    Router::new().route("/settings/visitors", post(set_visitors)).route("/t/{id}/title", post(change_title))
 }
 
 /// Whether this viewer may see a member's profile, and whether it is their own and whether they
@@ -541,11 +538,6 @@ async fn user_card(State(state): State<AppState>, v: Viewer, Path(name): Path<St
 pub(crate) async fn follow_key(state: &AppState, v: &Viewer, target: &str, id: i64) -> &'static str {
     let (Some(u), Some(pool)) = (&v.user, &state.pool) else { return "normal" };
     bf_db::community::follows::follow_level(pool, u.id.get(), target, id).await.map_or("normal", |l| l.key())
-}
-
-/// Now a tab of the profile; old links keep working.
-async fn user_summary(Path(id): Path<i64>) -> Response {
-    Redirect::permanent(&format!("/profile/{id}-x/?tab=summary")).into_response()
 }
 
 #[derive(Deserialize)]

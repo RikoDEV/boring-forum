@@ -95,14 +95,19 @@ describe("per-address lockout", () => {
 });
 
 describe("account-wide lock from many addresses", () => {
-  it("30 failures from different addresses lock the account for everyone, a correct password included", async () => {
+  it("30 failures from different addresses lock the account for strangers, not for the owner at a known address", async () => {
     await signUp(forum, "198.51.100.99", "lockwide");
     for (let i = 0; i < 30; i++) await attempt(forum, `192.0.2.${i + 1}`, "lockwide", "wrong password");
-    const owner = await attempt(forum, "198.51.100.99", "lockwide", PASSWORD);
-    expect(owner.signedIn).toBe(false);
-    expect(owner.locked).toBe(true);
     const row = await forum.sql("SELECT locked_until > now() AS locked FROM users WHERE username_lower = 'lockwide'");
     expect(row.rows[0].locked).toBe(true);
+    // An address the account never signed in from is refused, a correct password included.
+    const stranger = await attempt(forum, "198.51.100.150", "lockwide", PASSWORD);
+    expect(stranger.signedIn).toBe(false);
+    expect(stranger.locked).toBe(true);
+    // The lock is what many addresses together can do to someone, so it does not shut the owner out of
+    // the address they registered from.
+    const owner = await attempt(forum, "198.51.100.99", "lockwide", PASSWORD);
+    expect(owner.signedIn).toBe(true);
   });
 });
 
