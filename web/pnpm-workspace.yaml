@@ -8,3 +8,8 @@ allowBuilds:
 # freshly published malicious release (the Shai-Hulud pattern) is not pulled before it is caught
 # and yanked. Measured in minutes.
 minimumReleaseAge: 4320
+# GHSA-g3hv-75wg-m249 (minimatch below 11.0.1). Only ESLint's config loader (a dev tool) asks for
+# minimatch 10; the patched release is a new major, so the range is widened here. Remove the
+# override once @eslint/config-array depends on a patched minimatch itself.
+overrides:
+  "minimatch@10": ">=11.0.1"
