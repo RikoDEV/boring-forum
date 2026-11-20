@@ -5,5 +5,6 @@
   /** @type {{ name?: string | null, fallback?: string }} */ let { name, fallback = "—" } = $props();
 </script>
 
-{#if name && name !== "deleted"}<a class="bf-user-link" href="/u/{encodeURIComponent(name.toLowerCase())}">{name}</a
-  >{:else}{name || fallback}{/if}
+{#if name && name !== "deleted"}<a class="bf-user-link" href="/u/{encodeURIComponent(name.toLowerCase())}">
+    {name}
+  </a>{:else}{name || fallback}{/if}

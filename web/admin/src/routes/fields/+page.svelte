@@ -221,11 +221,13 @@
     {/if}
 
     <div class="acp-form">
-      <label class="bf-field acp-wide"
-        ><input name="label" bind:value={draft.label} placeholder=" " maxlength="80" required /><span
-          class="bf-field-label">{tr("Label")}{draft.id ? ` · ${KINDS[draft.kind][0]}` : ""}</span
-        ></label
-      >
+      <label class="bf-field acp-wide">
+        <input name="label" bind:value={draft.label} placeholder=" " maxlength="80" required /><span
+          class="bf-field-label"
+        >
+          {tr("Label")}{draft.id ? ` · ${KINDS[draft.kind][0]}` : ""}
+        </span>
+      </label>
       {#if draft.kind === "select"}
         <Field label={tr("Options, one per line")} bind:value={draft.optionsText} rows="4" required wide />
       {/if}
@@ -238,8 +240,10 @@
           <span class="muted">{tr("Start from")}</span>{#each PRESETS as p}<button
               type="button"
               class="secondary"
-              onclick={() => preset(p)}>{p[0]}</button
-            >{/each}
+              onclick={() => preset(p)}
+            >
+              {p[0]}
+            </button>{/each}
         </div>
         <div class="acp-form acp-form-flat">
           <Field
@@ -250,9 +254,9 @@
             wide
           />
         </div>
-        <small class="muted acp-picker-hint"
-          >{tr("Empty allows any link. With several, the first is the one short names are added to.")}</small
-        >
+        <small class="muted acp-picker-hint">
+          {tr("Empty allows any link. With several, the first is the one short names are added to.")}
+        </small>
         <div class="acp-switches">
           <Switch label={tr("Only https:// links")} bind:checked={draft.https_only} />
           <Switch
@@ -292,14 +296,14 @@
         <div>
           <small class="muted">{tr("In the form")}</small>
           <div class="acp-form acp-form-flat">
-            <label class="bf-field acp-wide"
-              >{#if draft.kind === "select"}<select disabled
-                  ><option>{lines(draft.optionsText)[0] ?? ""}</option></select
-                >{:else if draft.kind === "textarea"}<textarea rows="2" placeholder=" " disabled
-                ></textarea>{:else}<input placeholder=" " value="" disabled />{/if}<span class="bf-field-label"
-                >{draft.label || tr("Label")}{draft.required ? "" : " (optional)"}</span
-              ></label
-            >
+            <label class="bf-field acp-wide">
+              {#if draft.kind === "select"}<select disabled>
+                  <option>{lines(draft.optionsText)[0] ?? ""}</option>
+                </select>{:else if draft.kind === "textarea"}<textarea rows="2" placeholder=" " disabled
+                ></textarea>{:else}<input placeholder=" " value="" disabled />{/if}<span class="bf-field-label">
+                {draft.label || tr("Label")}{draft.required ? "" : " (optional)"}
+              </span>
+            </label>
           </div>
           {#if hintFor(draft)}<small class="muted">{hintFor(draft)}</small>{/if}
         </div>
@@ -311,8 +315,9 @@
                 tr("Label")}
             </dt>
             <dd>
-              {#if draft.kind === "url"}<span class="acp-link-like">{sample(draft).replace(/^https?:\/\//, "")}</span
-                >{:else}{sample(draft)}{/if}
+              {#if draft.kind === "url"}<span class="acp-link-like">
+                  {sample(draft).replace(/^https?:\/\//, "")}
+                </span>{:else}{sample(draft)}{/if}
             </dd>
           </dl>
         </div>
@@ -325,17 +330,17 @@
   <ul class="acp-rows">
     {#each fields as f, i (f.id)}
       <li class="acp-rowitem acp-field-row">
-        <span class="acp-field-icon" aria-hidden="true"
-          ><svg class="bf-icon"><use href={iconHref(iconOf(f))}></use></svg></span
-        >
+        <span class="acp-field-icon" aria-hidden="true">
+          <svg class="bf-icon"><use href={iconHref(iconOf(f))}></use></svg>
+        </span>
         <div class="acp-grow">
           <strong>{f.label}</strong>
-          <small class="muted acp-field-about"
-            >{KINDS[f.kind]?.[0] ?? f.kind}{f.kind === "select" ? ` · ${f.options.join(", ")}` : ""}{f.kind === "url" &&
+          <small class="muted acp-field-about">
+            {KINDS[f.kind]?.[0] ?? f.kind}{f.kind === "select" ? ` · ${f.options.join(", ")}` : ""}{f.kind === "url" &&
             f.hint
               ? ` · ${f.hint}`
-              : ""} · {tn("admin.count.answers", f.answers)}</small
-          >
+              : ""} · {tn("admin.count.answers", f.answers)}
+          </small>
         </div>
         <span class="acp-field-pills">
           {#if f.required}<span class="acp-pill is-warn">{tr("Required")}</span>{/if}
@@ -350,24 +355,26 @@
             aria-label={tr("Move {label} up", { label: f.label })}
             disabled={i === 0}
             onclick={() => move(i, -1)}
-            ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#arrow-up"></use></svg></button
           >
+            <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#arrow-up"></use></svg>
+          </button>
           <button
             type="button"
             class="secondary acp-icon-btn"
             aria-label={tr("Move {label} down", { label: f.label })}
             disabled={i === fields.length - 1}
             onclick={() => move(i, 1)}
-            ><svg class="bf-icon acp-flip" aria-hidden="true"><use href="{sprite}#arrow-up"></use></svg></button
           >
+            <svg class="bf-icon acp-flip" aria-hidden="true"><use href="{sprite}#arrow-up"></use></svg>
+          </button>
         </span>
         {#if !f.plugin}<button class="secondary" onclick={() => edit(f)}>{tr("Edit")}</button>{/if}
       </li>
     {:else}
       <li class="acp-empty-state">
-        <strong>{tr("No profile fields yet")}</strong><span class="muted"
-          >{tr("Use New field above to ask for a location, a website or a GitHub name.")}</span
-        >
+        <strong>{tr("No profile fields yet")}</strong><span class="muted">
+          {tr("Use New field above to ask for a location, a website or a GitHub name.")}
+        </span>
       </li>
     {/each}
   </ul>

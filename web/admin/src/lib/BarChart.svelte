@@ -50,9 +50,9 @@
     <summary>{tr("View as table")}</summary>
     <table>
       <thead><tr><th>{span ? tr("Slot") : tr("Day")}</th><th>{title}</th></tr></thead>
-      <tbody
-        >{#each data as d}<tr><td>{d.label}</td><td>{d.value}</td></tr>{/each}</tbody
-      >
+      <tbody>
+        {#each data as d}<tr><td>{d.label}</td><td>{d.value}</td></tr>{/each}
+      </tbody>
     </table>
   </details>
 </figure>

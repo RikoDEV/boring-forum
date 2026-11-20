@@ -34,16 +34,16 @@
 
 {#snippet options()}
   {#if none}<option value={noneValue}>{none}</option>{/if}
-  {#each ordered as r (r.id)}<option value={val(r)} disabled={kind !== undefined && r.kind !== kind}
-      >{indented(r)}</option
-    >{/each}
+  {#each ordered as r (r.id)}<option value={val(r)} disabled={kind !== undefined && r.kind !== kind}>
+      {indented(r)}
+    </option>{/each}
   {#if missing}<option {value}>{tr("Deleted #{value}", { value })}</option>{/if}
 {/snippet}
 
 {#if label}
-  <label class="bf-field" class:acp-wide={wide}
-    ><select {id} bind:value {required}>{@render options()}</select><span class="bf-field-label">{label}</span></label
-  >
+  <label class="bf-field" class:acp-wide={wide}>
+    <select {id} bind:value {required}>{@render options()}</select><span class="bf-field-label">{label}</span>
+  </label>
 {:else}
   <select {id} bind:value {required}>{@render options()}</select>
 {/if}

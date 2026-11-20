@@ -137,10 +137,11 @@
     class:is-styled={!!g.colour}
     style:--acp-group-colour={g.colour || null}
     use:ink={g.colour}
-    >{#if g.image}<img src={g.image} alt="" />{:else if g.icon}<svg class="bf-icon" aria-hidden="true"
-        ><use href={iconHref(g.icon)}></use></svg
-      >{/if}{g.name || tr("New group")}</span
   >
+    {#if g.image}<img src={g.image} alt="" />{:else if g.icon}<svg class="bf-icon" aria-hidden="true">
+        <use href={iconHref(g.icon)}></use>
+      </svg>{/if}{g.name || tr("New group")}
+  </span>
 {/snippet}
 
 <PageHead
@@ -192,17 +193,17 @@
     <fieldset class="acp-picker">
       <legend>{tr("Colour")}</legend>
       <div class="acp-group-style">
-        <label class="acp-colour-input" class:is-empty={!draft.colour} title={tr("Choose a colour")}
-          ><input
+        <label class="acp-colour-input" class:is-empty={!draft.colour} title={tr("Choose a colour")}>
+          <input
             type="color"
             value={draft.colour || "#3b82f6"}
             oninput={(e) => (draft.colour = e.currentTarget.value)}
             aria-label={tr("Group colour")}
-          /></label
-        >
-        {#if draft.colour}<button type="button" class="secondary" onclick={() => (draft.colour = "")}
-            >{tr("No colour")}</button
-          >{:else}<span class="muted">{tr("None: click the circle to choose one.")}</span>{/if}
+          />
+        </label>
+        {#if draft.colour}<button type="button" class="secondary" onclick={() => (draft.colour = "")}>
+            {tr("No colour")}
+          </button>{:else}<span class="muted">{tr("None: click the circle to choose one.")}</span>{/if}
         <span class="muted">{tr("Looks like")}</span>{@render label(draft)}
       </div>
     </fieldset>
@@ -210,21 +211,21 @@
       <legend>{tr("Badge picture")}</legend>
       <div class="acp-group-style">
         {#if draft.image}<span class="acp-image-preview is-wide"><img src={draft.image} alt="" /></span>{/if}
-        <label class="acp-upload"
-          >{tr("Upload a picture")}<input
+        <label class="acp-upload">
+          {tr("Upload a picture")}<input
             type="file"
             accept="image/png,image/jpeg,image/webp,image/gif"
             onchange={uploadImage}
-          /></label
-        >
-        {#if draft.image}<button type="button" class="secondary" onclick={() => (draft.image = "")}
-            >{tr("Remove")}</button
-          >{/if}
-        <span class="muted"
-          >{draft.image
+          />
+        </label>
+        {#if draft.image}<button type="button" class="secondary" onclick={() => (draft.image = "")}>
+            {tr("Remove")}
+          </button>{/if}
+        <span class="muted">
+          {draft.image
             ? tr("Shown in place of the icon.")
-            : tr("Optional: a rank banner or crest, shown in place of the icon.")}</span
-        >
+            : tr("Optional: a rank banner or crest, shown in place of the icon.")}
+        </span>
       </div>
     </fieldset>
     <fieldset class="acp-picker">
@@ -255,11 +256,11 @@
       {@const [k, tone] = kind(g)}
       <li class="acp-rowitem">
         <div class="acp-grow">
-          {@render label(g)}<br /><small class="muted"
-            >{BUILT_IN[g.id] ?? (g.club ? tr("Club: {club}", { club: g.club }) : `/g/${g.slug}`)}{g.require_2fa
+          {@render label(g)}<br /><small class="muted">
+            {BUILT_IN[g.id] ?? (g.club ? tr("Club: {club}", { club: g.club }) : `/g/${g.slug}`)}{g.require_2fa
               ? tr(" · two-factor required")
-              : ""}</small
-          >
+              : ""}
+          </small>
         </div>
         <span class="acp-pill {tone}">{k}</span>
         {#if g.plugin}<span class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: g.plugin })}</span>{/if}

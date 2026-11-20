@@ -226,9 +226,9 @@
   >
     {#each pageGroups as g (g)}
       <optgroup label={g}>
-        {#each pages.filter((p) => p.group === g) as p (p.name)}<option value={p.name}
-            >{p.label}{countOn(p.name) ? ` (${countOn(p.name)})` : ""}</option
-          >{/each}
+        {#each pages.filter((p) => p.group === g) as p (p.name)}<option value={p.name}>
+            {p.label}{countOn(p.name) ? ` (${countOn(p.name)})` : ""}
+          </option>{/each}
       </optgroup>
     {/each}
   </Field>
@@ -257,27 +257,29 @@
             adding = adding === area ? null : area;
             editing = null;
           }}
-          aria-expanded={adding === area}>{tr("Add")}</button
+          aria-expanded={adding === area}
         >
+          {tr("Add")}
+        </button>
       </header>
       {#if adding === area}
         <ul class="acp-kindlist" aria-label={tr("Choose a widget")}>
           {#each kinds.filter((k) => canAdd(k, area)) as k}
             <li>
-              <button class="acp-kind" onclick={() => add(k)}
-                ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{icon(k)}"></use></svg><span
-                  ><strong>{name(k)}</strong><small>{KINDS[k]?.[1] ?? ""}</small></span
-                ></button
-              >
+              <button class="acp-kind" onclick={() => add(k)}>
+                <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{icon(k)}"></use></svg><span>
+                  <strong>{name(k)}</strong><small>{KINDS[k]?.[1] ?? ""}</small>
+                </span>
+              </button>
             </li>
           {/each}
           {#each declared as d (d.plugin + d.key)}
             <li>
-              <button class="acp-kind" onclick={() => addDeclared(d)}
-                ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#wrench"></use></svg><span
-                  ><strong>{d.label}</strong><small>{d.description}</small></span
-                ></button
-              >
+              <button class="acp-kind" onclick={() => addDeclared(d)}>
+                <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#wrench"></use></svg><span>
+                  <strong>{d.label}</strong><small>{d.description}</small>
+                </span>
+              </button>
             </li>
           {/each}
         </ul>
@@ -301,32 +303,38 @@
           >
             <div class="acp-widget-row">
               <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{icon(w.kind)}"></use></svg>
-              <span class="acp-grow"
-                ><strong>{w.title || wname(w)}</strong><small class="muted"
-                  >{w.title ? `${wname(w)} · ` : ""}{cacheLabel(w.cache_seconds)}</small
-                ></span
-              >
+              <span class="acp-grow">
+                <strong>{w.title || wname(w)}</strong><small class="muted">
+                  {w.title ? `${wname(w)} · ` : ""}{cacheLabel(w.cache_seconds)}
+                </small>
+              </span>
               <span class="acp-widget-tools">
                 <button
                   class="acp-ghost acp-icon-btn"
                   disabled={i === 0}
                   onclick={() => nudge(w, -1)}
-                  aria-label={tr("Move {n} up", { n: w.title || wname(w) })}>↑</button
+                  aria-label={tr("Move {n} up", { n: w.title || wname(w) })}
                 >
+                  ↑
+                </button>
                 <button
                   class="acp-ghost acp-icon-btn"
                   disabled={i === inArea(area).length - 1}
                   onclick={() => nudge(w, 1)}
-                  aria-label={tr("Move {n} down", { n: w.title || wname(w) })}>↓</button
+                  aria-label={tr("Move {n} down", { n: w.title || wname(w) })}
                 >
+                  ↓
+                </button>
                 <button
                   class="acp-ghost"
                   onclick={() => {
                     editing?.id === w.id ? (editing = null) : edit(w);
                     adding = null;
                   }}
-                  aria-expanded={editing?.id === w.id}>{tr("Edit")}</button
+                  aria-expanded={editing?.id === w.id}
                 >
+                  {tr("Edit")}
+                </button>
               </span>
             </div>
           </li>
@@ -352,9 +360,9 @@
       {#if !HOME_ONLY.includes(editing.kind)}
         <Field label={tr("Refresh")} bind:value={editing.cache_seconds}>
           {#each CACHE as [s, text]}<option value={s}>{text}</option>{/each}
-          {#if !CACHE.some(([s]) => s === editing.cache_seconds)}<option value={editing.cache_seconds}
-              >{tr("5 minutes")}</option
-            >{/if}
+          {#if !CACHE.some(([s]) => s === editing.cache_seconds)}<option value={editing.cache_seconds}>
+              {tr("5 minutes")}
+            </option>{/if}
         </Field>
       {/if}
       {#if usesLimit(editing.kind)}<Field

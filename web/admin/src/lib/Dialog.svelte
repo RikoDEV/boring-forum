@@ -33,9 +33,9 @@
   <header class="bf-dialog-head">
     <h2>{title}</h2>
     {@render extra?.()}
-    <button type="button" class="acp-ghost acp-dialog-x" aria-label={tr("Close")} onclick={() => d.close()}
-      ><svg class="bf-icon" aria-hidden="true"><use href={iconHref("x")}></use></svg></button
-    >
+    <button type="button" class="acp-ghost acp-dialog-x" aria-label={tr("Close")} onclick={() => d.close()}>
+      <svg class="bf-icon" aria-hidden="true"><use href={iconHref("x")}></use></svg>
+    </button>
   </header>
   {@render children()}
 </dialog>

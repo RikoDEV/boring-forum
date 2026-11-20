@@ -143,45 +143,50 @@
       <div class="muted"><small>{u.email}{u.title ? ` · ${u.title}` : ""}</small></div>
       <div class="acp-chips">
         {#if !u.approved}<span class="acp-pill is-warn">{tr("Awaiting approval")}</span>{/if}
-        {#if active(u.suspended_until)}<span class="acp-pill is-danger"
-            >{tr("Suspended until {n}", { n: when(u.suspended_until) })}</span
-          >{/if}
-        {#if active(u.silenced_until)}<span class="acp-pill is-danger"
-            >{tr("Silenced until {n}", { n: when(u.silenced_until) })}</span
-          >{/if}
+        {#if active(u.suspended_until)}<span class="acp-pill is-danger">
+            {tr("Suspended until {n}", { n: when(u.suspended_until) })}
+          </span>{/if}
+        {#if active(u.silenced_until)}<span class="acp-pill is-danger">
+            {tr("Silenced until {n}", { n: when(u.silenced_until) })}
+          </span>{/if}
         {#if !u.email_verified}<span class="acp-pill is-muted">{tr("Email not verified")}</span>{/if}
         {#if u.totp_enabled}<span class="acp-pill is-ok">{tr("Two-factor on")}</span>{/if}
       </div>
     </div>
     <div class="acp-actions acp-profile-actions">
-      <button class="secondary" aria-label={tr("Edit name and email")} onclick={() => openDialog("identity")}
-        ><svg class="bf-icon" aria-hidden="true"><use href={iconHref("pencil")}></use></svg><span class="acp-lbl"
-          >{tr("Edit")}</span
-        ></button
+      <button class="secondary" aria-label={tr("Edit name and email")} onclick={() => openDialog("identity")}>
+        <svg class="bf-icon" aria-hidden="true"><use href={iconHref("pencil")}></use></svg><span class="acp-lbl">
+          {tr("Edit")}
+        </span>
+      </button>
+      <a class="acp-linkbtn" href="/u/{u.username}" aria-label={tr("View profile")}>
+        <svg class="bf-icon" aria-hidden="true"><use href={iconHref("user")}></use></svg><span class="acp-lbl">
+          {tr("View profile")}
+        </span>
+      </a>
+      <a
+        class="acp-linkbtn"
+        href="/messages?to={encodeURIComponent(u.username)}#new-message"
+        aria-label={tr("Message")}
       >
-      <a class="acp-linkbtn" href="/u/{u.username}" aria-label={tr("View profile")}
-        ><svg class="bf-icon" aria-hidden="true"><use href={iconHref("user")}></use></svg><span class="acp-lbl"
-          >{tr("View profile")}</span
-        ></a
-      >
-      <a class="acp-linkbtn" href="/messages?to={encodeURIComponent(u.username)}#new-message" aria-label={tr("Message")}
-        ><svg class="bf-icon" aria-hidden="true"><use href={iconHref("mail")}></use></svg><span class="acp-lbl"
-          >{tr("Message")}</span
-        ></a
-      >
-      <a class="acp-linkbtn" href="/u/{u.id}/warnings" aria-label={tr("Warnings")}
-        ><svg class="bf-icon" aria-hidden="true"><use href={iconHref("flag")}></use></svg><span class="acp-lbl"
-          >{tr("Warnings")}</span
-        ></a
-      >
+        <svg class="bf-icon" aria-hidden="true"><use href={iconHref("mail")}></use></svg><span class="acp-lbl">
+          {tr("Message")}
+        </span>
+      </a>
+      <a class="acp-linkbtn" href="/u/{u.id}/warnings" aria-label={tr("Warnings")}>
+        <svg class="bf-icon" aria-hidden="true"><use href={iconHref("flag")}></use></svg><span class="acp-lbl">
+          {tr("Warnings")}
+        </span>
+      </a>
       <button
         class="secondary"
         aria-label={tr("View as")}
         onclick={() => post(`/users/${id}/impersonate`).then(() => (location.href = "/"), status.fail)}
-        ><svg class="bf-icon" aria-hidden="true"><use href={iconHref("eye")}></use></svg><span class="acp-lbl"
-          >{tr("View as")}</span
-        ></button
       >
+        <svg class="bf-icon" aria-hidden="true"><use href={iconHref("eye")}></use></svg><span class="acp-lbl">
+          {tr("View as")}
+        </span>
+      </button>
     </div>
   </section>
 
@@ -215,9 +220,9 @@
       <section class="acp-box">
         <div class="acp-box-head">
           <h2>{tr("Trust level")}</h2>
-          <span class="muted"
-            >{trust.level} · {trust.name}{#if trust.next}&#32;→ {trust.next.level} · {trust.next.name}{/if}</span
-          >
+          <span class="muted">
+            {trust.level} · {trust.name}{#if trust.next}&#32;→ {trust.next.level} · {trust.next.name}{/if}
+          </span>
         </div>
         <div class="acp-box-body acp-trust">
           {#if trust.locked}
@@ -266,8 +271,10 @@
               </div>
               {#if active(u.silenced_until)}<button
                   class="secondary"
-                  onclick={() => change({ silenced_until: null }, tr("Silence lifted"))}>{tr("Lift silence")}</button
+                  onclick={() => change({ silenced_until: null }, tr("Silence lifted"))}
                 >
+                  {tr("Lift silence")}
+                </button>
               {:else}<button class="secondary" onclick={() => openDialog("silence")}>{tr("Silence")}</button>{/if}
             </li>
             <li class="acp-action-row">
@@ -278,8 +285,9 @@
               {#if active(u.suspended_until)}<button
                   class="secondary"
                   onclick={() => change({ suspended_until: null }, tr("Suspension lifted"))}
-                  >{tr("Lift suspension")}</button
                 >
+                  {tr("Lift suspension")}
+                </button>
               {:else}<button class="secondary" onclick={() => openDialog("suspend")}>{tr("Suspend")}</button>{/if}
             </li>
           </ul>
@@ -294,8 +302,9 @@
                 aria-label={tr("Primary group")}
                 value={u.primary_group_id}
                 onchange={(e) => change({ primary_group_id: Number(e.currentTarget.value) }, tr("Group changed"))}
-                >{#each groups.filter((g) => g.id !== 1) as g}<option value={g.id}>{g.name}</option>{/each}</select
               >
+                {#each groups.filter((g) => g.id !== 1) as g}<option value={g.id}>{g.name}</option>{/each}
+              </select>
             </li>
             <li class="acp-action-row">
               <div class="acp-grow"><strong>{tr("Trust level")}</strong></div>
@@ -303,9 +312,11 @@
                 aria-label={tr("Trust level")}
                 value={u.trust_level}
                 onchange={(e) => change({ trust_level: Number(e.currentTarget.value) }, tr("Trust level changed"))}
-                >{#each trustLevels as l}<option value={l.level}>{l.level}{l.label ? ` · ${l.label}` : ""}</option
-                  >{/each}</select
               >
+                {#each trustLevels as l}<option value={l.level}>
+                    {l.level}{l.label ? ` · ${l.label}` : ""}
+                  </option>{/each}
+              </select>
               <Switch
                 check
                 label={tr("Keep this level")}
@@ -340,8 +351,10 @@
               </div>
               <input bind:value={title} aria-label={tr("Title")} /><button
                 class="secondary"
-                onclick={() => change({ title: title.trim() || null }, tr("Title saved"))}>{tr("Save")}</button
+                onclick={() => change({ title: title.trim() || null }, tr("Title saved"))}
               >
+                {tr("Save")}
+              </button>
             </li>
           </ul>
         </section>
@@ -367,8 +380,9 @@
               <button
                 class="secondary"
                 onclick={() => change({ email_verified: !u.email_verified }, tr("Email status changed"))}
-                >{u.email_verified ? tr("Mark unverified") : tr("Mark verified")}</button
               >
+                {u.email_verified ? tr("Mark unverified") : tr("Mark verified")}
+              </button>
             </li>
             <li class="acp-action-row">
               <div class="acp-grow">
@@ -378,8 +392,9 @@
               <button
                 class="secondary"
                 onclick={() => act(() => post(`/users/${id}/send-password-reset`), tr("Reset link sent"))}
-                >{tr("Send reset link")}</button
               >
+                {tr("Send reset link")}
+              </button>
             </li>
             <li class="acp-action-row">
               <div class="acp-grow">
@@ -396,8 +411,9 @@
               <button
                 class="secondary"
                 onclick={() => act(() => post(`/users/${id}/logout`), tr("Signed out everywhere"))}
-                >{tr("Log out")}</button
               >
+                {tr("Log out")}
+              </button>
             </li>
             {#if u.totp_enabled}<li class="acp-action-row">
                 <div class="acp-grow">
@@ -407,8 +423,9 @@
                 <button
                   class="secondary"
                   onclick={() => act(() => post(`/users/${id}/reset-2fa`), tr("Two-factor reset"))}
-                  >{tr("Reset")}</button
                 >
+                  {tr("Reset")}
+                </button>
               </li>{/if}
           </ul>
         </section>
@@ -433,8 +450,9 @@
                 disabled={!mergeInto}
                 onclick={() =>
                   arm("merge", () => act(() => post(`/users/${id}/merge`, { into: Number(mergeInto) }), tr("Merged")))}
-                >{danger === "merge" ? tr("Click again") : tr("Merge")}</button
               >
+                {danger === "merge" ? tr("Click again") : tr("Merge")}
+              </button>
             </li>
             <li class="acp-action-row">
               <div class="acp-grow">
@@ -445,17 +463,18 @@
                 class="is-danger"
                 onclick={() =>
                   arm("spam", () => act(() => post(`/users/${id}/delete-spammer`), tr("Deleted as a spammer")))}
-                >{danger === "spam" ? tr("Click again") : tr("Delete spammer")}</button
               >
+                {danger === "spam" ? tr("Click again") : tr("Delete spammer")}
+              </button>
             </li>
             <li class="acp-action-row">
               <div class="acp-grow">
                 <strong>{tr("Delete account")}</strong>
                 <p>{tr("Posts stay, without their name.")}</p>
               </div>
-              <button class="is-danger" onclick={() => arm("del", () => act(() => del(`/users/${id}`), tr("Deleted")))}
-                >{danger === "del" ? tr("Click again") : tr("Delete")}</button
-              >
+              <button class="is-danger" onclick={() => arm("del", () => act(() => del(`/users/${id}`), tr("Deleted")))}>
+                {danger === "del" ? tr("Click again") : tr("Delete")}
+              </button>
             </li>
           </ul>
         </section>

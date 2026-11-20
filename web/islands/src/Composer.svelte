@@ -119,6 +119,8 @@
     style:top="{picked.top}px"
     style:left="{picked.left}px"
     onmousedown={(e) => e.preventDefault()}
-    onclick={insertPicked}>{tr("Quote")}</button
+    onclick={insertPicked}
   >
+    {tr("Quote")}
+  </button>
 {/if}

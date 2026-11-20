@@ -124,9 +124,9 @@
 <Box title={tr("Preview")}>
   <nav class="acp-nav-preview" aria-label={tr("Preview")}>
     {#each items as item}
-      <span class:is-off={off(item)} data-tip={off(item) ? tr("hidden while the module is off") : undefined}
-        >{name(item) || "…"}</span
-      >
+      <span class:is-off={off(item)} data-tip={off(item) ? tr("hidden while the module is off") : undefined}>
+        {name(item) || "…"}
+      </span>
     {:else}
       <span class="muted">{tr("No links: the header shows only the site name.")}</span>
     {/each}
@@ -152,28 +152,30 @@
             onclick={() => move(i, 1)}
           />
         </span>
-        <span class="acp-field-icon"
-          ><svg class="bf-icon" aria-hidden="true"
-            ><use href={iconHref(item.key ? (BUILTIN[item.key]?.[1] ?? "link") : "link")}></use></svg
-          ></span
-        >
+        <span class="acp-field-icon">
+          <svg class="bf-icon" aria-hidden="true">
+            <use href={iconHref(item.key ? (BUILTIN[item.key]?.[1] ?? "link") : "link")}></use>
+          </svg>
+        </span>
         <div class="acp-grow">
           <strong>{name(item)}</strong>
           <small class="muted acp-field-about">{item.key ? tr("Built-in page") : item.url} · {audience(item)}</small>
         </div>
         {#if off(item)}<span
             class="acp-pill is-warn"
-            data-tip={tr("Switch the module on under Settings to show this link")}>{tr("Module off")}</span
-          >{/if}
+            data-tip={tr("Switch the module on under Settings to show this link")}
+          >
+            {tr("Module off")}
+          </span>{/if}
         {#if item.groups?.length}<span class="acp-pill is-muted">{tr("Some groups")}</span>{/if}
         <IconButton icon="pencil" label={tr("Edit {n}", { n: name(item) })} onclick={() => open(i)} />
         <IconButton icon="trash-2" label={tr("Remove {n}", { n: name(item) })} onclick={() => remove(i)} />
       </li>
     {:else}
       <li class="acp-empty-state">
-        <strong>{tr("No header links")}</strong><span class="muted"
-          >{tr("Use Add link to put pages in the header.")}</span
-        >
+        <strong>{tr("No header links")}</strong><span class="muted">
+          {tr("Use Add link to put pages in the header.")}
+        </span>
       </li>
     {/each}
   </ul>
@@ -201,18 +203,18 @@
           <label class="acp-kind" class:is-on={editing.kind === "page"}>
             <input type="radio" name="kind" value="page" bind:group={editing.kind} disabled={!unused.length} />
             <svg class="bf-icon" aria-hidden="true"><use href={iconHref("folder")}></use></svg>
-            <span
-              ><strong>{tr("A page of this site")}</strong><small
-                >{unused.length ? tr("Forums, members, clubs…") : tr("All of them are in the menu already.")}</small
-              ></span
-            >
+            <span>
+              <strong>{tr("A page of this site")}</strong><small>
+                {unused.length ? tr("Forums, members, clubs…") : tr("All of them are in the menu already.")}
+              </small>
+            </span>
           </label>
           <label class="acp-kind" class:is-on={editing.kind === "custom"}>
             <input type="radio" name="kind" value="custom" bind:group={editing.kind} />
             <svg class="bf-icon" aria-hidden="true"><use href={iconHref("link")}></use></svg>
-            <span
-              ><strong>{tr("Your own link")}</strong><small>{tr("Any address, with a label you choose.")}</small></span
-            >
+            <span>
+              <strong>{tr("Your own link")}</strong><small>{tr("Any address, with a label you choose.")}</small>
+            </span>
           </label>
         </div>
       </Section>

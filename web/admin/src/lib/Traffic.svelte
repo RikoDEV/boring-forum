@@ -59,9 +59,9 @@
         {tr("{views} pageviews in the last {days} days", {
           views: compact(data.views),
           days: data.days,
-        })}{#if change !== null}&nbsp;— <span class:is-up={change >= 0} class:is-down={change < 0}
-            >{change >= 0 ? tr("up {pct}%", { pct: change }) : tr("down {pct}%", { pct: -change })}</span
-          >{/if}
+        })}{#if change !== null}&nbsp;— <span class:is-up={change >= 0} class:is-down={change < 0}>
+            {change >= 0 ? tr("up {pct}%", { pct: change }) : tr("down {pct}%", { pct: -change })}
+          </span>{/if}
       </p>
       <dl class="acp-traffic-rates">
         <div>
@@ -116,8 +116,9 @@
               {#if active === i}
                 <span class="acp-traffic-tip" class:is-end={i > data.daily.length / 2}>
                   <strong>{day(d.day)}</strong>
-                  {#each SERIES as s}{#if shown[s.key]}<span class="is-{s.key}">{s.label()}: {whole(d[s.key])}</span
-                      >{/if}{/each}
+                  {#each SERIES as s}{#if shown[s.key]}<span class="is-{s.key}">
+                        {s.label()}: {whole(d[s.key])}
+                      </span>{/if}{/each}
                 </span>
               {/if}
             </div>
@@ -134,9 +135,9 @@
 
     <div class="acp-traffic-legend" role="group" aria-label={tr("Show in the chart")}>
       {#each SERIES as s}
-        <button class="secondary is-{s.key}" aria-pressed={shown[s.key]} onclick={() => (shown[s.key] = !shown[s.key])}
-          ><i></i>{s.label()}</button
-        >
+        <button class="secondary is-{s.key}" aria-pressed={shown[s.key]} onclick={() => (shown[s.key] = !shown[s.key])}>
+          <i></i>{s.label()}
+        </button>
       {/each}
     </div>
 
@@ -161,9 +162,9 @@
         <h3>{tr("Top countries")}</h3>
         {#if data.countries.length}<ul>
             {#each data.countries as r}<li>
-                <span><abbr>{r.name}</abbr> {country(r.name)}</span><b
-                  >{Math.round((r.views / Math.max(1, data.views)) * 100)}% <small>({whole(r.views)})</small></b
-                >
+                <span><abbr>{r.name}</abbr> {country(r.name)}</span><b>
+                  {Math.round((r.views / Math.max(1, data.views)) * 100)}% <small>({whole(r.views)})</small>
+                </b>
               </li>{/each}
           </ul>{:else}<p class="acp-empty">{tr("None yet")}</p>{/if}
       </section>

@@ -169,10 +169,10 @@
         <div class="acp-grow">
           <strong>{l.level} · {label(l)}</strong>
           <br /><small class="muted">{needs(l)}</small>
-          <br /><small class="muted"
-            >{tr("Members")}: {members[l.level]?.members ?? 0}{#if l.auto && members[l.level]?.near}
-              · {tr("Nearly at the next level")}: {members[l.level].near}{/if}</small
-          >
+          <br /><small class="muted">
+            {tr("Members")}: {members[l.level]?.members ?? 0}{#if l.auto && members[l.level]?.near}
+              · {tr("Nearly at the next level")}: {members[l.level].near}{/if}
+          </small>
         </div>
         <button class="secondary" onclick={() => edit(i)}>{tr("Edit")}</button>
       </li>

@@ -151,24 +151,24 @@
       <li class="acp-rowitem">
         <div class="acp-grow">
           <strong>{overview.configured ? tr("AI is on") : tr("AI is off")}</strong>
-          <br /><small class="muted"
-            >{overview.configured
+          <br /><small class="muted">
+            {overview.configured
               ? overview.key_in_environment
                 ? tr("The key comes from BF_AI_API_KEY.")
                 : tr("The key is in the settings.")
-              : tr("Turn on “AI” and fill in the provider's address in the settings.")}</small
-          >
+              : tr("Turn on “AI” and fill in the provider's address in the settings.")}
+          </small>
         </div>
         <span class="acp-pill" class:is-muted={!overview.configured}>{overview.configured ? tr("On") : tr("Off")}</span>
       </li>
       <li class="acp-rowitem">
         <div class="acp-grow">
           <strong>{tr("Tokens this month")}</strong>
-          <br /><small class="muted"
-            >{overview.token_limit > 0
+          <br /><small class="muted">
+            {overview.token_limit > 0
               ? tr("{used} of {limit}", { used: num(overview.tokens_this_month), limit: num(overview.token_limit) })
-              : tr("{used}, with no limit set", { used: num(overview.tokens_this_month) })}</small
-          >
+              : tr("{used}, with no limit set", { used: num(overview.tokens_this_month) })}
+          </small>
         </div>
         {#if overview.token_limit > 0}<meter
             min="0"
@@ -181,8 +181,8 @@
         <li class="acp-rowitem" role="status">
           <div class="acp-grow">
             <strong>{tr("It works")}</strong>
-            <br /><small class="muted"
-              >{tr("{model} answered “{answer}” in {ms} ms.", {
+            <br /><small class="muted">
+              {tr("{model} answered “{answer}” in {ms} ms.", {
                 model: tested.model,
                 answer: tested.answer,
                 ms: tested.ms,
@@ -192,8 +192,8 @@
                   dims: tested.embedding_dims,
                   ms: tested.embedding_ms,
                 })}
-              {/if}</small
-            >
+              {/if}
+            </small>
           </div>
         </li>
       {/if}
@@ -204,16 +204,14 @@
     <div class="acp-box-body"><BarChart title={tr("Tokens")} data={days} /></div>
     {#if byFeature.length}
       <table>
-        <thead
-          ><tr><th>{tr("What for")}</th><th>{tr("Requests")}</th><th>{tr("Failed")}</th><th>{tr("Tokens")}</th></tr
-          ></thead
-        >
+        <thead>
+          <tr><th>{tr("What for")}</th><th>{tr("Requests")}</th><th>{tr("Failed")}</th><th>{tr("Tokens")}</th></tr>
+        </thead>
         <tbody>
           {#each byFeature as f (f.feature)}
-            <tr
-              ><td>{feature(f.feature)}</td><td>{num(f.requests)}</td><td>{num(f.failures)}</td><td>{num(f.tokens)}</td
-              ></tr
-            >
+            <tr>
+              <td>{feature(f.feature)}</td><td>{num(f.requests)}</td><td>{num(f.failures)}</td><td>{num(f.tokens)}</td>
+            </tr>
           {/each}
         </tbody>
       </table>
@@ -255,20 +253,20 @@
         {/if}
       </div>
       <table>
-        <thead
-          ><tr
-            ><th>{tr("Day")}</th><th>{tr("Positive")}</th><th>{tr("Neutral")}</th><th>{tr("Negative")}</th><th
-              >{tr("Abusive")}</th
-            ><th>{tr("Spam")}</th></tr
-          ></thead
-        >
+        <thead>
+          <tr>
+            <th>{tr("Day")}</th><th>{tr("Positive")}</th><th>{tr("Neutral")}</th><th>{tr("Negative")}</th><th>
+              {tr("Abusive")}
+            </th><th>{tr("Spam")}</th>
+          </tr>
+        </thead>
         <tbody>
           {#each overview.mood as m (m.day)}
-            <tr
-              ><td>{m.day}</td><td>{m.positive}</td><td>{m.neutral}</td><td>{m.negative}</td><td>{m.toxic}</td><td
-                >{m.spam}</td
-              ></tr
-            >
+            <tr>
+              <td>{m.day}</td><td>{m.positive}</td><td>{m.neutral}</td><td>{m.negative}</td><td>{m.toxic}</td><td>
+                {m.spam}
+              </td>
+            </tr>
           {/each}
         </tbody>
       </table>
@@ -284,12 +282,12 @@
           <li class="acp-rowitem">
             <div class="acp-grow">
               <a href="/p/{f.post}">{f.title}</a>
-              <br /><small class="muted"
-                ><UserLink name={f.author} /> · {tr("spam {spam}, abuse {toxicity}", {
+              <br /><small class="muted">
+                <UserLink name={f.author} /> · {tr("spam {spam}, abuse {toxicity}", {
                   spam: f.spam,
                   toxicity: f.toxicity,
-                })}</small
-              >
+                })}
+              </small>
             </div>
           </li>
         {/each}
@@ -302,14 +300,14 @@
       <li class="acp-rowitem">
         <div class="acp-grow">
           <strong>{tr("Topics indexed")}</strong>
-          <br /><small class="muted"
-            >{overview.embeddings_configured
+          <br /><small class="muted">
+            {overview.embeddings_configured
               ? tr("{done} of {all}. New topics are added every few minutes.", {
                   done: num(overview.embedded),
                   all: num(overview.topics),
                 })
-              : tr("Fill in an embedding model in the settings to use related topics and search by meaning.")}</small
-          >
+              : tr("Fill in an embedding model in the settings to use related topics and search by meaning.")}
+          </small>
         </div>
         {#if overview.topics > 0}<meter
             min="0"
@@ -333,8 +331,10 @@
     onclick={() => {
       status.clear();
       draft = blank();
-    }}>{tr("New persona")}</button
+    }}
   >
+    {tr("New persona")}
+  </button>
 </PageHead>
 
 {#if draft}
@@ -389,8 +389,10 @@
             onclick={() => {
               status.clear();
               draft = { ...p };
-            }}>{tr("Edit")}</button
+            }}
           >
+            {tr("Edit")}
+          </button>
           <button class="secondary" onclick={() => toggle(p)}>{p.enabled ? tr("Turn off") : tr("Turn on")}</button>
         </li>
       {/each}

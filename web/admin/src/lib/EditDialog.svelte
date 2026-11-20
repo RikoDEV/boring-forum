@@ -29,8 +29,9 @@
       {#if status?.error}<p class="err" role="alert">{status.error}</p>{/if}
     </div>
     <div class="bf-dialog-actions">
-      {#if ondelete}<button type="button" class="is-danger bf-dialog-aside" onclick={ondelete}>{deleteLabel}</button
-        >{/if}
+      {#if ondelete}<button type="button" class="is-danger bf-dialog-aside" onclick={ondelete}>
+          {deleteLabel}
+        </button>{/if}
       <button type="button" class="secondary" onclick={() => onclose?.()}>{tr("Cancel")}</button>
       <button disabled={busy}>{save}</button>
     </div>

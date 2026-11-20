@@ -70,8 +70,10 @@
     onclick={() => {
       status.clear();
       fresh = { node_id: "", handle: "" };
-    }}>{tr("Follow a remote group")}</button
+    }}
   >
+    {tr("Follow a remote group")}
+  </button>
 </PageHead>
 
 {#if fresh}
@@ -107,12 +109,12 @@
   <thead><tr><th>{tr("Group")}</th><th>{tr("Into")}</th><th>{tr("Status")}</th><th></th></tr></thead>
   <tbody>
     {#each mirrors as m (m.node_id + m.actor)}
-      <tr
-        ><td><a href={m.actor} rel="noopener">{m.handle}</a></td><td>{forumName(m.node_id)}</td><td
-          >{m.accepted ? tr("Following") : tr("Waiting for the other server")}</td
-        >
-        <td><button class="secondary" onclick={() => remove(m)}>{tr("Stop")}</button></td></tr
-      >
+      <tr>
+        <td><a href={m.actor} rel="noopener">{m.handle}</a></td><td>{forumName(m.node_id)}</td><td>
+          {m.accepted ? tr("Following") : tr("Waiting for the other server")}
+        </td>
+        <td><button class="secondary" onclick={() => remove(m)}>{tr("Stop")}</button></td>
+      </tr>
     {:else}
       <tr><td colspan="4" class="muted">{tr("No forum follows a remote group.")}</td></tr>
     {/each}

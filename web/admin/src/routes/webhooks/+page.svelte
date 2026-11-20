@@ -114,17 +114,17 @@
   {#each [["hooks", tr("Webhooks"), hooks.length], ["log", tr("Deliveries"), log.length], ["apps", tr("Applications"), clients.length]] as [k, label, n]}<button
       role="tab"
       aria-selected={tab === k}
-      onclick={() => (tab = String(k))}>{label}<span class="acp-count">{n}</span></button
-    >{/each}
+      onclick={() => (tab = String(k))}
+    >
+      {label}<span class="acp-count">{n}</span>
+    </button>{/each}
 </div>
 {#if tab === "hooks"}
   <p class="muted">
-    <small
-      >{tr("Each delivery is a signed POST: verify the")} <code>X-BF-Signature</code>
-      {tr(
-        "header, an HMAC-SHA256 of the body with the secret. Failures retry with growing delays, up to 8 times.",
-      )}</small
-    >
+    <small>
+      {tr("Each delivery is a signed POST: verify the")} <code>X-BF-Signature</code>
+      {tr("header, an HMAC-SHA256 of the body with the secret. Failures retry with growing delays, up to 8 times.")}
+    </small>
   </p>
   {#if secret}<p class="ok" role="status">{tr("Secret, shown once:")} <code>{secret}</code></p>{/if}
   <div class="acp-box">
@@ -134,43 +134,44 @@
             <code>{h.url}</code>
             <div class="acp-chips">
               {#each h.events as ev}<span class="acp-pill is-muted">{ev === "*" ? tr("All events") : ev}</span>{/each}
-              {#each h.node_ids as id}<span class="acp-pill"
-                  >{forums.find((f) => f.id === id)?.title ?? tr("Deleted #{v}", { v: id })}</span
-                >{/each}
+              {#each h.node_ids as id}<span class="acp-pill">
+                  {forums.find((f) => f.id === id)?.title ?? tr("Deleted #{v}", { v: id })}
+                </span>{/each}
             </div>
           </div>
-          <button class="is-danger" onclick={() => del(`/webhooks/${h.id}`).then(load, status.fail)}
-            >{tr("Delete")}</button
-          >
+          <button class="is-danger" onclick={() => del(`/webhooks/${h.id}`).then(load, status.fail)}>
+            {tr("Delete")}
+          </button>
         </li>{:else}<li class="muted">{tr("No webhooks yet.")}</li>{/each}
     </ul>
   </div>
 {:else if tab === "log"}
   <table>
-    <thead
-      ><tr
-        ><th>{tr("When")}</th><th>{tr("Event")}</th><th>{tr("Status")}</th><th>{tr("Attempts")}</th><th
-          >{tr("Last result")}</th
-        ></tr
-      ></thead
-    >
-    <tbody
-      >{#each log as d (d.id)}<tr
-          ><td><small><When iso={d.created_at} /></small></td><td><code>{d.event}</code></td><td
-            ><span
+    <thead>
+      <tr>
+        <th>{tr("When")}</th><th>{tr("Event")}</th><th>{tr("Status")}</th><th>{tr("Attempts")}</th><th>
+          {tr("Last result")}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {#each log as d (d.id)}<tr>
+          <td><small><When iso={d.created_at} /></small></td><td><code>{d.event}</code></td><td>
+            <span
               class="acp-pill {d.status === 'delivered' ? 'is-ok' : d.status === 'failed' ? 'is-danger' : 'is-muted'}"
-              >{d.status}</span
-            ></td
-          ><td>{d.attempts}</td><td><small>{d.last_error ?? d.last_status ?? ""}</small></td></tr
-        >{:else}<tr><td colspan="5" class="muted">{tr("None yet.")}</td></tr>{/each}</tbody
-    >
+            >
+              {d.status}
+            </span>
+          </td><td>{d.attempts}</td><td><small>{d.last_error ?? d.last_status ?? ""}</small></td>
+        </tr>{:else}<tr><td colspan="5" class="muted">{tr("None yet.")}</td></tr>{/each}
+    </tbody>
   </table>
 {:else}
   <p class="muted">
-    <small
-      >{tr("Other apps can sign members in through this forum:")} <code>/oauth/authorize</code>
-      {tr("(code flow with S256 PKCE),")} <code>/oauth/token</code>, <code>/oauth/userinfo</code>.</small
-    >
+    <small>
+      {tr("Other apps can sign members in through this forum:")} <code>/oauth/authorize</code>
+      {tr("(code flow with S256 PKCE),")} <code>/oauth/token</code>, <code>/oauth/userinfo</code>.
+    </small>
   </p>
   {#if creds}<p class="ok" role="status">
       {tr("Client ID")} <code>{creds.client_id}</code>{tr(", secret, shown once:")} <code>{creds.client_secret}</code>
@@ -181,9 +182,9 @@
           <div class="acp-grow">
             <strong>{c.name}</strong><br /><small class="muted"><code>{c.client_id}</code></small>
           </div>
-          <button class="is-danger" onclick={() => del(`/oauth-clients/${c.client_id}`).then(loadClients, status.fail)}
-            >{tr("Delete")}</button
-          >
+          <button class="is-danger" onclick={() => del(`/oauth-clients/${c.client_id}`).then(loadClients, status.fail)}>
+            {tr("Delete")}
+          </button>
         </li>{:else}<li class="muted">{tr("No applications yet.")}</li>{/each}
     </ul>
   </div>

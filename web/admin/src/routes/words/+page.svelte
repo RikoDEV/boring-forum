@@ -113,15 +113,12 @@
           hint={tr("A text file: one word per line, or words separated by commas. Lines starting with # are ignored.")}
         >
           <div class="acp-group-style">
-            <label class="acp-upload"
-              >{tr("Choose a file")}<input
-                type="file"
-                accept=".txt,.csv,.list,text/plain,text/csv"
-                onchange={pick}
-              /></label
-            >
-            {#if file.name}<span class="muted">{tr("{name}: {n} words found", { name: file.name, n: file.words })}</span
-              >{:else}<span class="muted">{tr("No file chosen.")}</span>{/if}
+            <label class="acp-upload">
+              {tr("Choose a file")}<input type="file" accept=".txt,.csv,.list,text/plain,text/csv" onchange={pick} />
+            </label>
+            {#if file.name}<span class="muted">
+                {tr("{name}: {n} words found", { name: file.name, n: file.words })}
+              </span>{:else}<span class="muted">{tr("No file chosen.")}</span>{/if}
           </div>
         </Section>
       </div>
@@ -146,10 +143,10 @@
   <thead><tr><th>{tr("Word")}</th><th>{tr("Action")}</th><th class="acp-cell-end"></th></tr></thead>
   <tbody>
     {#each words as w (w.id)}
-      <tr
-        ><td><code>{w.pattern}</code></td><td>{LABELS[w.action]}{w.replacement ? ` “${w.replacement}”` : ""}</td>
-        <td class="acp-cell-end"><button class="secondary" onclick={() => remove(w)}>{tr("Remove")}</button></td></tr
-      >
+      <tr>
+        <td><code>{w.pattern}</code></td><td>{LABELS[w.action]}{w.replacement ? ` “${w.replacement}”` : ""}</td>
+        <td class="acp-cell-end"><button class="secondary" onclick={() => remove(w)}>{tr("Remove")}</button></td>
+      </tr>
     {:else}
       <tr><td colspan="3" class="muted">{tr("No watched words.")}</td></tr>
     {/each}

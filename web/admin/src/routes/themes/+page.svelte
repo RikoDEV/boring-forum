@@ -268,24 +268,27 @@
       {#if t.id === defaultId}<span class="acp-pill is-ok">{tr("Default")}</span>{/if}
       {#if !t.enabled}<span class="acp-pill is-muted">{tr("Off")}</span>{/if}
       {#if t.kind === "theme" && t.enabled && !t.selectable}<span class="acp-pill is-muted">{tr("Hidden")}</span>{/if}
-      {#if t.group_ids.length}<span class="acp-pill is-muted" title={groupNames(t)}>{tr("Limited to groups")}</span
-        >{/if}
+      {#if t.group_ids.length}<span class="acp-pill is-muted" title={groupNames(t)}>
+          {tr("Limited to groups")}
+        </span>{/if}
     </div>
     <div class="acp-actions">
       <button class="secondary" onclick={() => open(t)}>{tr("Edit")}</button>
       {#if t.kind === "theme" && t.id !== defaultId && t.enabled}<button
           class="secondary"
-          onclick={() => makeDefault(t.id)}>{tr("Make default")}</button
-        >{/if}
-      <details class="acp-more">
-        <summary class="acp-icon-btn" aria-label={tr("More for {name}", { name: t.name })}
-          ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#chevron-down"></use></svg></summary
+          onclick={() => makeDefault(t.id)}
         >
+          {tr("Make default")}
+        </button>{/if}
+      <details class="acp-more">
+        <summary class="acp-icon-btn" aria-label={tr("More for {name}", { name: t.name })}>
+          <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#chevron-down"></use></svg>
+        </summary>
         <div>
           <button class="secondary" onclick={() => toggle(t)}>{t.enabled ? tr("Turn off") : tr("Turn on")}</button>
-          {#if t.id === defaultId && builtinOn}<button class="secondary" onclick={() => makeDefault(0)}
-              >{tr("Use the built-in look")}</button
-            >{/if}
+          {#if t.id === defaultId && builtinOn}<button class="secondary" onclick={() => makeDefault(0)}>
+              {tr("Use the built-in look")}
+            </button>{/if}
           <button class="is-danger" onclick={() => remove(t)}>{tr("Delete")}</button>
         </div>
       </details>
@@ -323,11 +326,11 @@
         {#if source === "new"}
           <Field label={tr("Name")} bind:value={fresh.name} required />
           <Field label={tr("Id: id-with-dashes")} bind:value={fresh.slug} required />
-          <Field label={tr("Type")} bind:value={fresh.kind} wide
-            ><option value="theme">{tr("Theme")}</option><option value="component"
-              >{tr("Component (adds to any theme)")}</option
-            ></Field
-          >
+          <Field label={tr("Type")} bind:value={fresh.kind} wide>
+            <option value="theme">{tr("Theme")}</option><option value="component">
+              {tr("Component (adds to any theme)")}
+            </option>
+          </Field>
         {:else if source === "zip"}
           <div class="acp-wide">
             <input type="file" name="file" accept=".zip" required aria-label={tr("Theme zip file")} />
@@ -358,9 +361,9 @@
         {#if !builtinOn}<span class="acp-pill is-muted">{tr("Off")}</span>{/if}
       </div>
       <div class="acp-actions">
-        {#if defaultId && builtinOn}<button class="secondary" onclick={() => makeDefault(0)}
-            >{tr("Make default")}</button
-          >{/if}
+        {#if defaultId && builtinOn}<button class="secondary" onclick={() => makeDefault(0)}>
+            {tr("Make default")}
+          </button>{/if}
         {#if builtinOn && defaultId}
           <button class="secondary" onclick={() => setBuiltin(false)}>{tr("Turn off")}</button>
         {:else if !builtinOn}
@@ -386,8 +389,10 @@
     <div class="acp-actions">
       {#if dirty}<span class="muted"><small>{tr("Unsaved changes")}</small></span>{:else if status.msg}<span
           class="muted"
-          role="status"><small>{status.msg}</small></span
-        >{/if}
+          role="status"
+        >
+          <small>{status.msg}</small>
+        </span>{/if}
       <button onclick={save} disabled={!dirty}>{tr("Save")}</button>
     </div>
   </div>
@@ -396,8 +401,10 @@
     {#each [...(selected.kind === "theme" ? [["settings", tr("Settings")]] : []), ["colours", tr("Colour tweaks")], ["css", "CSS"], ["slots", tr("Template slots")], ["preview", tr("Preview")]] as [k, label]}<button
         role="tab"
         aria-selected={part === k}
-        onclick={() => (part = k)}>{label}</button
-      >{/each}
+        onclick={() => (part = k)}
+      >
+        {label}
+      </button>{/each}
   </div>
 
   {#if part === "settings"}
@@ -408,8 +415,9 @@
           checked={selected.id === defaultId}
           disabled={selected.id === defaultId && !builtinOn}
           onchange={(e) => makeDefault(e.currentTarget.checked ? selected.id : 0)}
-          >{tr("Theme is the site's default, for everyone who has not chosen one")}</Switch
         >
+          {tr("Theme is the site's default, for everyone who has not chosen one")}
+        </Switch>
         <Switch check bind:checked={selected.enabled}>{tr("Theme is on")}</Switch>
         <Switch check bind:checked={selected.selectable}>{tr("Theme can be selected by members")}</Switch>
       </Section>
@@ -506,16 +514,18 @@
   {:else}
     <section class="acp-box">
       <div class="acp-box-head">
-        <small class="muted"
-          >{previewing
+        <small class="muted">
+          {previewing
             ? tr("Only you see this theme, across the whole site, until you stop.")
             : tr("See this theme on the site without changing it for anyone else.")}{dirty
             ? tr(" Save first to include your changes.")
-            : ""}</small
-        >
+            : ""}
+        </small>
         {#if previewing}<button class="secondary" onclick={stopPreview}>{tr("Stop preview")}</button>{:else}<button
-            onclick={startPreview}>{tr("Preview just for me")}</button
-          >{/if}
+            onclick={startPreview}
+          >
+            {tr("Preview just for me")}
+          </button>{/if}
       </div>
       <iframe class="acp-preview" bind:this={frame} src="/" title={tr("Preview of {name}", { name: selected.name })}
       ></iframe>

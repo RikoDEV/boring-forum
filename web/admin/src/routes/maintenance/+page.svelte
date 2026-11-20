@@ -97,8 +97,10 @@
   <div class="acp-actions">
     <button onclick={() => offline(true)}>{tr("Take the site offline")}</button><button
       class="secondary"
-      onclick={() => offline(false)}>{tr("Bring it back")}</button
+      onclick={() => offline(false)}
     >
+      {tr("Bring it back")}
+    </button>
   </div>
 </Box>
 
@@ -106,8 +108,10 @@
   <div class="acp-actions">
     <button class="secondary" onclick={doExport}>{tr("Export changed settings")}</button><button
       class="secondary"
-      onclick={() => openDialog("import")}>{tr("Import settings")}</button
+      onclick={() => openDialog("import")}
     >
+      {tr("Import settings")}
+    </button>
   </div>
 </Box>
 

@@ -66,8 +66,10 @@
                       () => post(`/users/${id}/ban`, { kind: "ip", value: row.ip }),
                       tr("Address banned"),
                       `ip-${row.ip}`,
-                    )}>{armed === `ip-${row.ip}` ? tr("Click again") : tr("Ban")}</button
+                    )}
                 >
+                  {armed === `ip-${row.ip}` ? tr("Click again") : tr("Ban")}
+                </button>
               {/if}
             </li>
           {/each}
@@ -110,17 +112,18 @@
               class="secondary"
               onclick={() =>
                 run(() => del(`/users/${id}/identities/${encodeURIComponent(c.provider)}`), tr("Connection removed"))}
-              >{tr("Unlink")}</button
             >
+              {tr("Unlink")}
+            </button>
           </li>
         {/each}
         {#each ov.connections.passkeys as k}
           <li class="acp-rowitem">
             <div class="acp-grow">
               <strong>{tr("Passkey")}: {k.name}</strong>
-              <br /><small class="muted"
-                >{k.last_used_at ? `${tr("Last used")}: ${when(k.last_used_at)}` : tr("Never used")}</small
-              >
+              <br /><small class="muted">
+                {k.last_used_at ? `${tr("Last used")}: ${when(k.last_used_at)}` : tr("Never used")}
+              </small>
             </div>
           </li>
         {/each}
@@ -128,13 +131,16 @@
           <li class="acp-rowitem">
             <div class="acp-grow">
               <strong>{k.oauth_client ? `${tr("App")}: ${k.oauth_client}` : `${tr("API key")}: ${k.name}`}</strong>
-              <br /><small class="muted"
-                >{k.scope} · {k.last_used_at ? `${tr("Last used")}: ${when(k.last_used_at)}` : tr("Never used")}</small
-              >
+              <br /><small class="muted">
+                {k.scope} · {k.last_used_at ? `${tr("Last used")}: ${when(k.last_used_at)}` : tr("Never used")}
+              </small>
             </div>
-            <button class="secondary" onclick={() => run(() => del(`/users/${id}/api-keys/${k.id}`), tr("Key revoked"))}
-              >{tr("Revoke")}</button
+            <button
+              class="secondary"
+              onclick={() => run(() => del(`/users/${id}/api-keys/${k.id}`), tr("Key revoked"))}
             >
+              {tr("Revoke")}
+            </button>
           </li>
         {/each}
         {#if !ov.connections.identities.length && !ov.connections.passkeys.length && !ov.connections.api_keys.length}
@@ -151,9 +157,9 @@
             <li class="acp-rowitem">
               <div class="acp-grow">
                 <small class="acp-wrap">{agent(s.user_agent)}</small>
-                <br /><small class="muted"
-                  >{s.ip ?? "—"}{s.country ? ` · ${s.country}` : ""} · {when(s.last_used_at)}</small
-                >
+                <br /><small class="muted">
+                  {s.ip ?? "—"}{s.country ? ` · ${s.country}` : ""} · {when(s.last_used_at)}
+                </small>
               </div>
             </li>
           {/each}
@@ -206,8 +212,9 @@
           <button
             class="is-danger"
             onclick={() => run(() => post(`/users/${id}/ban`, { kind: "email" }), tr("Email banned"), "email")}
-            >{armed === "email" ? tr("Click again") : tr("Ban")}</button
           >
+            {armed === "email" ? tr("Click again") : tr("Ban")}
+          </button>
         </li>
       </ul>
     </section>

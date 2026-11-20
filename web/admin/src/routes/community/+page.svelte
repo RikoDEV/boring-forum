@@ -265,39 +265,39 @@
 {/if}
 <div class="acp-tabs" role="tablist">
   {#each [["reactions", tr("Reactions"), reactions.length], ["tags", tr("Tag groups"), groups.length], ["rules", tr("Group rules"), rules.length], ["news", tr("Announcements"), notices.length], ["reasons", tr("Report reasons"), reasons.length]] as [key, label, n]}
-    <button role="tab" aria-selected={tab === key} onclick={() => (tab = String(key))}
-      >{label}<span class="acp-count">{n}</span></button
-    >
+    <button role="tab" aria-selected={tab === key} onclick={() => (tab = String(key))}>
+      {label}<span class="acp-count">{n}</span>
+    </button>
   {/each}
 </div>
 
 {#if tab === "reasons"}
   <p class="muted">
-    <small
-      >{tr(
+    <small>
+      {tr(
         'A report adds the reporter\'s track record times the reason\'s weight to the post\'s score; at the "hide after reports" setting the post is hidden until a moderator looks. "Illegal" reasons are recorded as illegal content in DSA statements.',
-      )}</small
-    >
+      )}
+    </small>
   </p>
   <table>
-    <thead
-      ><tr
-        ><th>{tr("Key")}</th><th>{tr("Label")}</th><th>{tr("Weight")}</th><th>{tr("Needs note")}</th><th
-          >{tr("Illegal")}</th
-        ><th>{tr("Message only")}</th><th>{tr("Order")}</th><th>{tr("On")}</th><th></th></tr
-      ></thead
-    >
+    <thead>
+      <tr>
+        <th>{tr("Key")}</th><th>{tr("Label")}</th><th>{tr("Weight")}</th><th>{tr("Needs note")}</th><th>
+          {tr("Illegal")}
+        </th><th>{tr("Message only")}</th><th>{tr("Order")}</th><th>{tr("On")}</th><th></th>
+      </tr>
+    </thead>
     <tbody>
       {#each reasons as r (r.key)}
         <tr>
           <td><code>{r.key}</code></td>
-          <td
-            ><input bind:value={r.label} aria-label={tr("Label")} disabled={!!r.plugin} />{#if r.plugin}<div>
+          <td>
+            <input bind:value={r.label} aria-label={tr("Label")} disabled={!!r.plugin} />{#if r.plugin}<div>
                 <span class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: r.plugin })}</span>
-              </div>{/if}</td
-          >
-          <td
-            ><input
+              </div>{/if}
+          </td>
+          <td>
+            <input
               type="number"
               step="0.25"
               min="0"
@@ -305,42 +305,44 @@
               bind:value={r.weight}
               aria-label={tr("Weight")}
               style:width="5rem"
-            /></td
-          >
+            />
+          </td>
           <td><Switch bind:checked={r.needs_note} aria-label={tr("Needs a note")} /></td>
           <td><Switch bind:checked={r.illegal} aria-label={tr("Illegal content")} /></td>
-          <td
-            ><Switch
+          <td>
+            <Switch
               bind:checked={r.message_user}
               aria-label={tr("Send the note to the author instead of filing a report")}
-            /></td
-          >
+            />
+          </td>
           <td><input type="number" bind:value={r.position} aria-label={tr("Order")} style:width="5rem" /></td>
           <td><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} disabled={r.key === "other"} /></td>
-          <td
-            >{#if !r.plugin}<button
+          <td>
+            {#if !r.plugin}<button
                 onclick={() =>
                   save(
                     put(`/report-reasons/${r.key}`, { ...r, weight: Number(r.weight), position: Number(r.position) }),
-                  )}>{tr("Save")}</button
+                  )}
               >
-              {#if r.key !== "other"}<button class="secondary" onclick={() => save(del(`/report-reasons/${r.key}`))}
-                  >{tr("Delete")}</button
-                >{/if}{/if}</td
-          >
+                {tr("Save")}
+              </button>
+              {#if r.key !== "other"}<button class="secondary" onclick={() => save(del(`/report-reasons/${r.key}`))}>
+                  {tr("Delete")}
+                </button>{/if}{/if}
+          </td>
         </tr>
       {/each}
     </tbody>
   </table>
 {:else if tab === "reactions"}
   <table>
-    <thead
-      ><tr
-        ><th class="acp-grip-col"><span class="visually-hidden">{tr("Order")}</span></th><th>{tr("Emoji")}</th><th
-          >{tr("Name")}</th
-        ><th>{tr("Reputation")}</th><th>{tr("On")}</th><th class="acp-cell-end"></th></tr
-      ></thead
-    >
+    <thead>
+      <tr>
+        <th class="acp-grip-col"><span class="visually-hidden">{tr("Order")}</span></th><th>{tr("Emoji")}</th><th>
+          {tr("Name")}
+        </th><th>{tr("Reputation")}</th><th>{tr("On")}</th><th class="acp-cell-end"></th>
+      </tr>
+    </thead>
     <tbody>
       {#each reactions as r (r.id)}
         <tr
@@ -369,25 +371,27 @@
                 hover = null;
               }}
               onkeydown={(e) => nudgeRow(e, r)}
-              ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#grip-vertical"></use></svg></span
             >
+              <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#grip-vertical"></use></svg>
+            </span>
           </td>
           <td><input bind:value={r.icon} size="3" aria-label={tr("Emoji")} disabled={!!r.plugin} /></td>
-          <td
-            ><input bind:value={r.name} aria-label={tr("Name")} disabled={!!r.plugin} />{#if r.plugin}<div>
+          <td>
+            <input bind:value={r.name} aria-label={tr("Name")} disabled={!!r.plugin} />{#if r.plugin}<div>
                 <span class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: r.plugin })}</span>
-              </div>{/if}</td
-          >
-          <td
-            ><select bind:value={r.score} aria-label={tr("Reputation")}
-              ><option value={1}>+1</option><option value={0}>0</option><option value={-1}>-1</option></select
-            ></td
-          >
+              </div>{/if}
+          </td>
+          <td>
+            <select bind:value={r.score} aria-label={tr("Reputation")}>
+              <option value={1}>+1</option><option value={0}>0</option><option value={-1}>-1</option>
+            </select>
+          </td>
           <td><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} /></td>
           <td class="acp-cell-end">
             {#if !r.plugin}<button onclick={() => save(put(`/reactions/${r.id}`, r))}>{tr("Save")}</button>
-              {#if !r.is_like}<button class="is-danger" onclick={() => removeReaction(r)}>{tr("Delete")}</button
-                >{/if}{/if}
+              {#if !r.is_like}<button class="is-danger" onclick={() => removeReaction(r)}>
+                  {tr("Delete")}
+                </button>{/if}{/if}
           </td>
         </tr>
       {/each}
@@ -409,8 +413,10 @@
           <div class="acp-actions">
             <button onclick={() => save(put(`/tag-groups/${g.id}`, groupBody(g)))}>{tr("Save")}</button><button
               class="is-danger acp-end"
-              onclick={() => save(del(`/tag-groups/${g.id}`))}>{tr("Delete")}</button
+              onclick={() => save(del(`/tag-groups/${g.id}`))}
             >
+              {tr("Delete")}
+            </button>
           </div>
         </div>
       </section>
@@ -418,11 +424,11 @@
   </div>
 {:else if tab === "rules"}
   <p class="muted">
-    <small
-      >{tr(
+    <small>
+      {tr(
         "Checked every ten minutes. A group rule adds members to a group when they meet its conditions, and cannot grant staff groups. Trust levels have their own requirements under Settings, Trust and warnings.",
-      )}</small
-    >
+      )}
+    </small>
   </p>
   <div class="acp-card-list">
     {#each rules as r (r.id)}
@@ -437,8 +443,10 @@
           <div class="acp-actions">
             <button onclick={() => save(put(`/promotion-rules/${r.id}`, ruleBody(r)))}>{tr("Save")}</button><button
               class="is-danger acp-end"
-              onclick={() => save(del(`/promotion-rules/${r.id}`))}>{tr("Delete")}</button
+              onclick={() => save(del(`/promotion-rules/${r.id}`))}
             >
+              {tr("Delete")}
+            </button>
           </div>
         </div>
       </section>
@@ -458,8 +466,10 @@
           <div class="acp-actions">
             <button onclick={() => save(put(`/announcements/${a.id}`, a))}>{tr("Save")}</button><button
               class="is-danger acp-end"
-              onclick={() => save(del(`/announcements/${a.id}`))}>{tr("Delete")}</button
+              onclick={() => save(del(`/announcements/${a.id}`))}
             >
+              {tr("Delete")}
+            </button>
           </div>
         </div>
       </section>

@@ -194,17 +194,18 @@
           onclick={() => open(s)}
           aria-label={tr("Edit {name}", { name: s.name })}
         >
-          <span
-            >{#each strip(s.light) as c}<i style:background={c}></i>{/each}</span
-          >
-          <span
-            >{#each strip(s.dark) as c}<i style:background={c}></i>{/each}</span
-          >
+          <span>
+            {#each strip(s.light) as c}<i style:background={c}></i>{/each}
+          </span>
+          <span>
+            {#each strip(s.dark) as c}<i style:background={c}></i>{/each}
+          </span>
         </button>
         <div class="acp-theme-body">
           <div class="acp-grow"><strong>{s.name}</strong></div>
-          {#if s.slug === defaultLight && s.slug === defaultDark}<span class="acp-pill is-ok">{tr("Default")}</span
-            >{:else}
+          {#if s.slug === defaultLight && s.slug === defaultDark}<span class="acp-pill is-ok">
+              {tr("Default")}
+            </span>{:else}
             {#if s.slug === defaultLight}<span class="acp-pill is-ok">{tr("Default, light")}</span>{/if}
             {#if s.slug === defaultDark}<span class="acp-pill is-ok">{tr("Default, dark")}</span>{/if}
           {/if}
@@ -214,13 +215,15 @@
           <button class="secondary" onclick={() => open(s)}>{tr("Edit")}</button>
           {#if s.slug !== defaultLight || s.slug !== defaultDark}<button
               class="secondary"
-              onclick={() => setDefault(s, true, true)}>{tr("Make default")}</button
-            >{/if}
+              onclick={() => setDefault(s, true, true)}
+            >
+              {tr("Make default")}
+            </button>{/if}
           {#if !isDefault(s)}
             <details class="acp-more">
-              <summary class="acp-icon-btn" aria-label={tr("More for {name}", { name: s.name })}
-                ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#chevron-down"></use></svg></summary
-              >
+              <summary class="acp-icon-btn" aria-label={tr("More for {name}", { name: s.name })}>
+                <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#chevron-down"></use></svg>
+              </summary>
               <div><button class="is-danger" onclick={() => remove(s)}>{tr("Delete")}</button></div>
             </details>
           {/if}
@@ -237,8 +240,10 @@
     <div class="acp-actions">
       {#if dirty}<span class="muted"><small>{tr("Unsaved changes")}</small></span>{:else if status.msg}<span
           class="muted"
-          role="status"><small>{status.msg}</small></span
-        >{/if}
+          role="status"
+        >
+          <small>{status.msg}</small>
+        </span>{/if}
       <button onclick={save} disabled={!dirty}>{tr("Save")}</button>
     </div>
   </div>
@@ -248,9 +253,9 @@
   <section class="acp-box">
     <div class="acp-form">
       <Field label={tr("Name")} bind:value={selected.name} maxlength="40" required />
-      <Switch wide bind:checked={selected.selectable} disabled={isDefault(selected)}
-        >{tr("Members can choose this scheme")}</Switch
-      >
+      <Switch wide bind:checked={selected.selectable} disabled={isDefault(selected)}>
+        {tr("Members can choose this scheme")}
+      </Switch>
     </div>
   </section>
 
@@ -262,15 +267,17 @@
         checked={selected.slug === defaultLight}
         disabled={selected.slug === defaultLight}
         onchange={() => setDefault(selected, true, false)}
-        >{tr("Its light palette is the site's default in light mode")}</Switch
       >
+        {tr("Its light palette is the site's default in light mode")}
+      </Switch>
       <Switch
         wide
         checked={selected.slug === defaultDark}
         disabled={selected.slug === defaultDark}
         onchange={() => setDefault(selected, false, true)}
-        >{tr("Its dark palette is the site's default in dark mode")}</Switch
       >
+        {tr("Its dark palette is the site's default in dark mode")}
+      </Switch>
     </div>
   </section>
 

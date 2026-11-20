@@ -72,11 +72,11 @@
 </script>
 
 {#snippet medal(b)}
-  <span class="bf-medal bf-medal-{b.tier}" title={b.tier}
-    ><span class="bf-medal-shape bf-medal-c{b.color}"
-      ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{b.icon}"></use></svg></span
-    >{#if Number(b.level) > 0}<span class="bf-medal-level">{levelText(Number(b.level))}</span>{/if}</span
-  >
+  <span class="bf-medal bf-medal-{b.tier}" title={b.tier}>
+    <span class="bf-medal-shape bf-medal-c{b.color}">
+      <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{b.icon}"></use></svg>
+    </span>{#if Number(b.level) > 0}<span class="bf-medal-level">{levelText(Number(b.level))}</span>{/if}
+  </span>
 {/snippet}
 
 <PageHead
@@ -105,30 +105,30 @@
       <Field label={tr("Name")} bind:value={crud.draft.name} maxlength="60" required />
       <Field label={tr("Description")} bind:value={crud.draft.description} wide />
       <Field label={tr("Group")} bind:value={crud.draft.category} maxlength="40" />
-      <Field label={tr("Medal shape")} bind:value={crud.draft.tier}
-        >{#each TIERS as [v, label]}<option value={v}>{label}</option>{/each}</Field
-      >
+      <Field label={tr("Medal shape")} bind:value={crud.draft.tier}>
+        {#each TIERS as [v, label]}<option value={v}>{label}</option>{/each}
+      </Field>
       <Field label={tr("Points")} type="number" min="0" bind:value={crud.draft.points} />
       <Field label={tr("Number on the medal (0: none)")} type="number" min="0" bind:value={crud.draft.level} />
       <p class="acp-wide muted">
-        <small
-          >{tr("The name, description and group show as written here, in every language, until translated.")}
-          <a href={resolve("/text")}>{tr("Translate them in Site text")}</a></small
-        >
+        <small>
+          {tr("The name, description and group show as written here, in every language, until translated.")}
+          <a href={resolve("/text")}>{tr("Translate them in Site text")}</a>
+        </small>
       </p>
     </div>
     <fieldset class="acp-picker">
       <legend>{tr("Colour")}</legend>
       <div class="acp-colors">
-        {#each COLORS as c}<label class="acp-color bf-medal-c{c}" class:is-on={crud.draft.color === c}
-            ><input
+        {#each COLORS as c}<label class="acp-color bf-medal-c{c}" class:is-on={crud.draft.color === c}>
+            <input
               type="radio"
               name="color"
               value={c}
               bind:group={crud.draft.color}
               aria-label={tr("Colour {n}", { n: c + 1 })}
-            /></label
-          >{/each}
+            />
+          </label>{/each}
       </div>
     </fieldset>
     <fieldset class="acp-picker">
@@ -164,11 +164,11 @@
           <div class="acp-grow">
             <strong>{b.name}</strong>
             {#if !b.enabled}<span class="acp-pill is-muted">{tr("Off")}</span>{/if}
-            {#if b.slug?.startsWith("plugin:")}<span class="acp-pill is-muted"
-                >{tr("From plugin {plugin}", { plugin: b.slug.split(":")[1] })}</span
-              >{/if}<br /><small class="muted"
-              >{b.description}{b.description ? " · " : ""}{tn("count.points", b.points)}</small
-            >
+            {#if b.slug?.startsWith("plugin:")}<span class="acp-pill is-muted">
+                {tr("From plugin {plugin}", { plugin: b.slug.split(":")[1] })}
+              </span>{/if}<br /><small class="muted">
+              {b.description}{b.description ? " · " : ""}{tn("count.points", b.points)}
+            </small>
           </div>
           {#if !b.slug?.startsWith("plugin:")}
             <button class="secondary" onclick={() => crud.open({ ...b })}>{tr("Edit")}</button>

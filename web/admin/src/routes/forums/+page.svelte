@@ -308,8 +308,10 @@
     onclick={() => {
       status.clear();
       creating = true;
-    }}>{tr("New category or forum")}</button
+    }}
   >
+    {tr("New category or forum")}
+  </button>
 </PageHead>
 {#if creating}
   <EditDialog
@@ -320,9 +322,9 @@
     save={tr("Add")}
   >
     <div class="acp-form">
-      <Field label={tr("Kind")} bind:value={fresh.kind}
-        ><option value="category">{tr("Category")}</option><option value="forum">{tr("Forum")}</option></Field
-      >
+      <Field label={tr("Kind")} bind:value={fresh.kind}>
+        <option value="category">{tr("Category")}</option><option value="forum">{tr("Forum")}</option>
+      </Field>
       <Field label={tr("Title")} bind:value={fresh.title} required />
       <TreeSelect rows={nodes} bind:value={fresh.parent_id} label={tr("Inside")} none={tr("Top level")} wide />
     </div>
@@ -365,8 +367,10 @@
               {#if n.depth > 0}<span class="acp-tree-branch" class:is-last={n.last} aria-hidden="true"></span>{/if}
               <span class="acp-grow">{n.title}</span>
               {#if n.kind === "forum"}<small class="muted">{n.topic_count}</small>{:else if n.kind !== "category"}<small
-                  class="muted">{n.kind}</small
-                >{/if}
+                  class="muted"
+                >
+                  {n.kind}
+                </small>{/if}
             </button>
           </li>
         {/each}
@@ -384,10 +388,10 @@
       <section class="acp-box">
         <div class="acp-box-head">
           <h2>{selected.title}</h2>
-          <small class="muted"
-            >{selected.kind}{#if selected.plugin}
-              · {tr("From plugin {plugin}", { plugin: selected.plugin })}{/if}</small
-          >
+          <small class="muted">
+            {selected.kind}{#if selected.plugin}
+              · {tr("From plugin {plugin}", { plugin: selected.plugin })}{/if}
+          </small>
           <button class="is-danger" onclick={removeNode}>{tr("Delete")}</button>
         </div>
         {#if tab === "general"}
@@ -401,14 +405,18 @@
               noneValue={null}
               exclude={selected.id}
             />
-            <Field label={tr("List style")} bind:value={selected.list_style}
-              ><option value="table">{tr("Table")}</option><option value="list">{tr("List")}</option></Field
-            >
-            <Field label={tr("Default sort")} bind:value={selected.default_sort}
-              ><option value={null}>{tr("Latest activity")}</option><option value="newest">{tr("Newest")}</option
-              ><option value="replies">{tr("Most replies")}</option><option value="views">{tr("Most views")}</option
-              ><option value="likes">{tr("Most liked")}</option><option value="title">{tr("Title")}</option></Field
-            >
+            <Field label={tr("List style")} bind:value={selected.list_style}>
+              <option value="table">{tr("Table")}</option><option value="list">{tr("List")}</option>
+            </Field>
+            <Field label={tr("Default sort")} bind:value={selected.default_sort}>
+              <option value={null}>{tr("Latest activity")}</option><option value="newest">{tr("Newest")}</option><option
+                value="replies"
+              >
+                {tr("Most replies")}
+              </option><option value="views">{tr("Most views")}</option><option value="likes">
+                {tr("Most liked")}
+              </option><option value="title">{tr("Title")}</option>
+            </Field>
             <div class="acp-actions"><button onclick={saveNode}>{tr("Save")}</button></div>
           </div>
         {:else if tab === "icon"}
@@ -423,33 +431,36 @@
               oninput={(e) => (selected.icon = e.currentTarget.value)}
               placeholder="🎮"
             />
-            <label
-              >{tr("Or a picture")}<small>{tr("Takes priority; square works best")}</small><input
+            <label>
+              {tr("Or a picture")}<small>{tr("Takes priority; square works best")}</small><input
                 type="file"
                 accept="image/png,image/jpeg,image/webp,image/gif"
                 onchange={uploadIcon}
-              /></label
-            >
+              />
+            </label>
             {#if selected.icon_image}<div class="acp-rowitem acp-wide">
                 <img src={selected.icon_image} alt="" width="48" height="48" style:border-radius="50%" /><button
                   type="button"
                   class="secondary"
-                  onclick={() => (selected.icon_image = "")}>{tr("Remove picture")}</button
+                  onclick={() => (selected.icon_image = "")}
                 >
+                  {tr("Remove picture")}
+                </button>
               </div>{/if}
             <div class="acp-actions"><button onclick={saveIcon}>{tr("Save icon")}</button></div>
           </div>
         {:else if tab === "behaviour"}
           <div class="acp-form">
-            <Field label={tr("Approval")} bind:value={selected.approve_mode}
-              ><option value="none">{tr("Normal rules")}</option><option value="all">{tr("Hold all posts")}</option
-              ><option value="links">{tr("Hold posts with links")}</option></Field
-            >
-            <Field label={tr("Mode")} bind:value={selected.mode}
-              ><option value="discussion">{tr("Discussion")}</option><option value="qa"
-                >{tr("Questions and answers (answers voted best first)")}</option
-              ><option value="ideas">{tr("Ideas (members vote for topics)")}</option></Field
-            >
+            <Field label={tr("Approval")} bind:value={selected.approve_mode}>
+              <option value="none">{tr("Normal rules")}</option><option value="all">
+                {tr("Hold all posts")}
+              </option><option value="links">{tr("Hold posts with links")}</option>
+            </Field>
+            <Field label={tr("Mode")} bind:value={selected.mode}>
+              <option value="discussion">{tr("Discussion")}</option><option value="qa">
+                {tr("Questions and answers (answers voted best first)")}
+              </option><option value="ideas">{tr("Ideas (members vote for topics)")}</option>
+            </Field>
             <Field
               label={tr("Auto-close after (days)")}
               type="number"
@@ -491,49 +502,49 @@
           {/if}
           <div class="acp-matrix-wrap">
             <table class="acp-matrix" style:margin="0" style:border="0">
-              <thead
-                ><tr
-                  ><th>{tr("Group")}</th>{#each PERMS as p}<th>{p}</th>{/each}</tr
-                ></thead
-              >
-              <tbody
-                >{#each groups as g (g.id)}<tr
-                    ><td>{g.name}</td>{#each PERMS as p}<td
-                        ><input
+              <thead>
+                <tr>
+                  <th>{tr("Group")}</th>{#each PERMS as p}<th>{p}</th>{/each}
+                </tr>
+              </thead>
+              <tbody>
+                {#each groups as g (g.id)}<tr>
+                    <td>{g.name}</td>{#each PERMS as p}<td>
+                        <input
                           type="checkbox"
                           bind:checked={grants[g.id][p]}
                           disabled={selected.inherit_perms}
                           aria-label="{g.name} {p}"
-                        /></td
-                      >{/each}</tr
-                  >{/each}</tbody
-              >
+                        />
+                      </td>{/each}
+                  </tr>{/each}
+              </tbody>
             </table>
           </div>
           <div class="acp-form">
             <div class="acp-actions">
-              <button onclick={savePerms}>{tr("Save permissions")}</button><small class="muted"
-                >{selected.inherit_perms
+              <button onclick={savePerms}>{tr("Save permissions")}</button><small class="muted">
+                {selected.inherit_perms
                   ? tr("Changes to the parent's permissions apply here too. Untick the switch to set your own.")
-                  : tr("Guests can never post or moderate, whatever is ticked here.")}</small
-              >
+                  : tr("Guests can never post or moderate, whatever is ticked here.")}
+              </small>
             </div>
           </div>
         {:else if tab === "people"}
           <div class="acp-form">
-            {#if selected.kind === "forum"}<label class="bf-field acp-wide"
-                ><input bind:value={prefixes} placeholder={tr("Question, Solved, Bug")} /><span class="bf-field-label"
-                  >{tr("Topic prefixes")}</span
-                ><small>{tr("Separated by commas")}</small></label
-              >
+            {#if selected.kind === "forum"}<label class="bf-field acp-wide">
+                <input bind:value={prefixes} placeholder={tr("Question, Solved, Bug")} /><span class="bf-field-label">
+                  {tr("Topic prefixes")}
+                </span><small>{tr("Separated by commas")}</small>
+              </label>
               <div class="acp-actions">
                 <button class="secondary" onclick={savePrefixes}>{tr("Save prefixes")}</button>
               </div>{/if}
-            <label class="bf-field acp-wide"
-              ><input placeholder=" " bind:value={mods} /><span class="bf-field-label">{tr("Moderators")}</span><small
-                >{tr("Usernames, separated by commas")}</small
-              ></label
-            >
+            <label class="bf-field acp-wide">
+              <input placeholder=" " bind:value={mods} /><span class="bf-field-label">{tr("Moderators")}</span><small>
+                {tr("Usernames, separated by commas")}
+              </small>
+            </label>
             <div class="acp-actions"><button class="secondary" onclick={saveMods}>{tr("Save moderators")}</button></div>
           </div>
         {:else}

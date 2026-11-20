@@ -107,14 +107,14 @@
   >
     <div class="acp-form">
       <Field label={tr("Name")} bind:value={eName} required wide />
-      <label class="acp-wide"
-        >{tr("Picture")}<input
+      <label class="acp-wide">
+        {tr("Picture")}<input
           type="file"
           accept="image/*"
           required
           onchange={(e) => (eFile = e.currentTarget.files[0])}
-        /></label
-      >
+        />
+      </label>
     </div>
   </EditDialog>
 {:else if dialog === "invite"}
@@ -130,9 +130,9 @@
 {/if}
 <div class="acp-tabs" role="tablist">
   {#each [["tags", tr("Tags"), tags.length], ["emoji", tr("Custom emoji"), emoji.length], ["invites", tr("Invites"), invites.length], ["searches", tr("Top searches"), report.length]] as [key, label, n]}
-    <button role="tab" aria-selected={tab === key} onclick={() => (tab = String(key))}
-      >{label}<span class="acp-count">{n}</span></button
-    >
+    <button role="tab" aria-selected={tab === key} onclick={() => (tab = String(key))}>
+      {label}<span class="acp-count">{n}</span>
+    </button>
   {/each}
 </div>
 {#if tab === "tags"}
@@ -145,11 +145,14 @@
             bind:value={t.name}
             aria-label={tr("Tag name")}
             disabled={!!t.plugin}
-          />{#if t.plugin}<span class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: t.plugin })}</span
-            >{/if}<small class="muted">{tn("count.topics", t.topics)}</small>{#if !t.plugin}<button
+          />{#if t.plugin}<span class="acp-pill is-muted">
+              {tr("From plugin {plugin}", { plugin: t.plugin })}
+            </span>{/if}<small class="muted">{tn("count.topics", t.topics)}</small>{#if !t.plugin}<button
               class="secondary"
-              onclick={() => rename(t)}>{tr("Rename")}</button
-            ><button class="is-danger" onclick={() => remove(t)}>{tr("Delete")}</button>{/if}
+              onclick={() => rename(t)}
+            >
+              {tr("Rename")}
+            </button><button class="is-danger" onclick={() => remove(t)}>{tr("Delete")}</button>{/if}
         </li>
       {:else}<li class="muted">{tr("No tags yet. Add one, or they appear here once a topic uses them.")}</li>{/each}
     </ul>
@@ -161,8 +164,10 @@
         <li class="acp-rowitem">
           <img src={e.url} alt="" width="24" height="24" /><code class="acp-grow">:{e.name}:</code><button
             class="is-danger"
-            onclick={() => del(`/emoji/${e.name}`).then(loadExtras)}>{tr("Delete")}</button
+            onclick={() => del(`/emoji/${e.name}`).then(loadExtras)}
           >
+            {tr("Delete")}
+          </button>
         </li>
       {:else}<li class="muted">{tr("No custom emoji yet.")}</li>{/each}
     </ul>
@@ -172,12 +177,14 @@
     <ul class="acp-rows">
       {#each invites as i (i.id)}
         <li class="acp-rowitem">
-          <span class="acp-grow">{tr("Invite #{id}", { id: i.id })}</span>{#if i.used_by}<span class="acp-pill is-ok"
-              >{tr("Used by")} <UserLink name={i.used_by} /></span
-            >{:else}<small class="muted" title={when(i.expires_at)}
-              >{tr("Expires {n}", { n: i.expires_at.slice(0, 10) })}</small
-            ><button class="is-danger" onclick={() => del(`/invites/${i.id}`).then(loadExtras)}>{tr("Revoke")}</button
-            >{/if}
+          <span class="acp-grow">{tr("Invite #{id}", { id: i.id })}</span>{#if i.used_by}<span class="acp-pill is-ok">
+              {tr("Used by")}
+              <UserLink name={i.used_by} />
+            </span>{:else}<small class="muted" title={when(i.expires_at)}>
+              {tr("Expires {n}", { n: i.expires_at.slice(0, 10) })}
+            </small><button class="is-danger" onclick={() => del(`/invites/${i.id}`).then(loadExtras)}>
+              {tr("Revoke")}
+            </button>{/if}
         </li>
       {:else}<li class="muted">{tr("No invites yet.")}</li>{/each}
     </ul>
@@ -186,9 +193,10 @@
   <p class="muted"><small>{tr("Last 30 days.")}</small></p>
   <table>
     <thead><tr><th>{tr("Term")}</th><th>{tr("Searches")}</th><th>{tr("Average results")}</th></tr></thead>
-    <tbody
-      >{#each report as r (r.term)}<tr><td>{r.term}</td><td>{r.searches}</td><td>{r.avg_results.toFixed(1)}</td></tr
-        >{:else}<tr><td colspan="3" class="muted">{tr("No searches yet.")}</td></tr>{/each}</tbody
-    >
+    <tbody>
+      {#each report as r (r.term)}<tr>
+          <td>{r.term}</td><td>{r.searches}</td><td>{r.avg_results.toFixed(1)}</td>
+        </tr>{:else}<tr><td colspan="3" class="muted">{tr("No searches yet.")}</td></tr>{/each}
+    </tbody>
   </table>
 {/if}

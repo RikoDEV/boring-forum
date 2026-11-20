@@ -49,23 +49,21 @@
 </form>
 <Notices {status} />
 <table>
-  <thead
-    ><tr
-      ><th>{tr("When")}</th><th>{tr("Who")}</th><th>{tr("Action")}</th><th>{tr("Target")}</th><th>{tr("Details")}</th
-      ></tr
-    ></thead
-  >
+  <thead>
+    <tr>
+      <th>{tr("When")}</th><th>{tr("Who")}</th><th>{tr("Action")}</th><th>{tr("Target")}</th><th>{tr("Details")}</th>
+    </tr>
+  </thead>
   <tbody>
     {#each rows as r (r.id)}
-      <tr
-        ><td><small><When iso={r.created_at} /></small></td><td><UserLink name={r.actor} fallback="system" /></td><td
-          ><code>{r.action}</code></td
-        >
-        <td>{@render target(r)}</td><td
-          ><small class="muted acp-wrap">{JSON.stringify(r.details) === "{}" ? "" : JSON.stringify(r.details)}</small
-          ></td
-        ></tr
-      >
+      <tr>
+        <td><small><When iso={r.created_at} /></small></td><td><UserLink name={r.actor} fallback="system" /></td><td>
+          <code>{r.action}</code>
+        </td>
+        <td>{@render target(r)}</td><td>
+          <small class="muted acp-wrap">{JSON.stringify(r.details) === "{}" ? "" : JSON.stringify(r.details)}</small>
+        </td>
+      </tr>
     {:else}
       <tr><td colspan="5" class="muted">{tr("No entries.")}</td></tr>
     {/each}

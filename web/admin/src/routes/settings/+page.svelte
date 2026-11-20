@@ -329,9 +329,9 @@
         aria-current={active === g.id ? "true" : undefined}
         onclick={() => choose(g.id)}
       >
-        <span class="acp-settings-tab"
-          ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{ICONS[g.id]}"></use></svg>{g.title}</span
-        >{#if changed}<span class="acp-pill" title={tr("Unsaved changes")}>{changed}</span>{/if}
+        <span class="acp-settings-tab">
+          <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{ICONS[g.id]}"></use></svg>{g.title}
+        </span>{#if changed}<span class="acp-pill" title={tr("Unsaved changes")}>{changed}</span>{/if}
       </button>
     {/each}
   </nav>
@@ -361,21 +361,20 @@
               <div class="acp-set-control">
                 {#if s.key in IMAGES}
                   <div class="acp-image-set">
-                    <span class="acp-image-preview is-{IMAGES[s.key]}"
-                      >{#if s.draft}<img src={s.draft} alt="" />{:else}<span class="muted">{tr("None")}</span
-                        >{/if}</span
-                    >
-                    <label class="acp-upload secondary"
-                      >{tr("Upload")}<input
+                    <span class="acp-image-preview is-{IMAGES[s.key]}">
+                      {#if s.draft}<img src={s.draft} alt="" />{:else}<span class="muted">{tr("None")}</span>{/if}
+                    </span>
+                    <label class="acp-upload secondary">
+                      {tr("Upload")}<input
                         id={s.key}
                         type="file"
                         accept="image/png,image/jpeg,image/webp,image/gif"
                         onchange={(e) => uploadImage(s, e)}
-                      /></label
-                    >
-                    {#if s.draft}<button type="button" class="secondary" onclick={() => (s.draft = "")}
-                        >{tr("Remove")}</button
-                      >{/if}
+                      />
+                    </label>
+                    {#if s.draft}<button type="button" class="secondary" onclick={() => (s.draft = "")}>
+                        {tr("Remove")}
+                      </button>{/if}
                   </div>
                 {:else if s.key === "rank_names"}
                   <RankEditor id={s.key} bind:value={s.draft} />
@@ -413,14 +412,14 @@
                   />
                 {:else if COLOURS.has(s.key)}
                   <div class="acp-group-style">
-                    <label class="acp-colour-input" class:is-empty={!HEX.test(s.draft)} title={tr("Choose a colour")}
-                      ><input
+                    <label class="acp-colour-input" class:is-empty={!HEX.test(s.draft)} title={tr("Choose a colour")}>
+                      <input
                         type="color"
                         value={HEX.test(s.draft) ? s.draft : "#3b82f6"}
                         oninput={(e) => (s.draft = e.currentTarget.value)}
                         aria-label={humanize(s.key)}
-                      /></label
-                    >
+                      />
+                    </label>
                     <input
                       id={s.key}
                       type="text"
@@ -432,8 +431,10 @@
                     {#if s.key === "og_background_colour_end" && s.draft}<button
                         type="button"
                         class="secondary"
-                        onclick={() => (s.draft = "")}>{tr("No gradient")}</button
-                      >{/if}
+                        onclick={() => (s.draft = "")}
+                      >
+                        {tr("No gradient")}
+                      </button>{/if}
                   </div>
                 {:else if s.key in GROUP_LISTS}
                   <MultiSelect
@@ -484,8 +485,10 @@
                         onclick={() => {
                           s.draft = "";
                           s.clear = true;
-                        }}>{tr("Remove")}</button
-                      >{/if}
+                        }}
+                      >
+                        {tr("Remove")}
+                      </button>{/if}
                   </div>
                 {:else if LONG.has(s.key) || String(s.default).includes("\n")}
                   <textarea id={s.key} rows={String(s.default).includes("\n") ? 8 : 3} bind:value={s.draft}></textarea>
@@ -499,12 +502,12 @@
         {#if g.id === "share"}
           <div class="acp-og-preview">
             <div class="acp-og-bar">
-              <label class="acp-og-kind"
-                >{tr("Preview as")}
+              <label class="acp-og-kind">
+                {tr("Preview as")}
                 <select bind:value={previewKind}>
                   {#each PAGE_KINDS as [v, label]}<option value={v}>{label}</option>{/each}
-                </select></label
-              >
+                </select>
+              </label>
               <span class="muted">{tr("Shows the saved settings; save your changes to see them here.")}</span>
             </div>
             <img

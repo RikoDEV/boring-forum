@@ -91,9 +91,9 @@
         bind:value={draft.path}
         wide
       />
-      <Field label={tr("Visible to")} bind:value={draft.visibility}
-        >{#each Object.entries(VIS) as [k, v]}<option value={k}>{v}</option>{/each}</Field
-      >
+      <Field label={tr("Visible to")} bind:value={draft.visibility}>
+        {#each Object.entries(VIS) as [k, v]}<option value={k}>{v}</option>{/each}
+      </Field>
       <div class="acp-wide">
         <Section switches><Switch label={tr("Published")} bind:checked={draft.published} /></Section>
       </div>
@@ -125,8 +125,9 @@
         <span class="acp-pill is-muted">{VIS[p.visibility]}</span>
         <a class="acp-btnlink" href={`${address(p)}?edit_layout=1`}>{tr("Design")}</a>
         <button class="secondary" onclick={() => (draft = { ...p })}>{tr("Edit")}</button>
-        <button class="is-danger" onclick={() => remove(p)}>{arming === p.id ? tr("Click again") : tr("Delete")}</button
-        >
+        <button class="is-danger" onclick={() => remove(p)}>
+          {arming === p.id ? tr("Click again") : tr("Delete")}
+        </button>
       </li>
     {:else}<li class="muted">{tr("No pages yet.")}</li>{/each}
   </ul>

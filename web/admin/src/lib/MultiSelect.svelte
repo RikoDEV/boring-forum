@@ -207,16 +207,18 @@
     }}
   >
     {#each chips as c (c.value)}
-      <span class="bf-tag-chip"
-        >{c.label}<button
+      <span class="bf-tag-chip">
+        {c.label}<button
           type="button"
           aria-label={tr("Remove {label}", { label: c.label })}
           onclick={(e) => {
             e.stopPropagation();
             remove(c.value);
-          }}>×</button
-        ></span
-      >
+          }}
+        >
+          ×
+        </button>
+      </span>
     {/each}
     <input
       bind:this={input}
@@ -242,8 +244,10 @@
           e.stopPropagation();
           value = [];
           input?.focus();
-        }}>×</button
+        }}
       >
+        ×
+      </button>
     {/if}
     <span class="bf-multi-arrow" aria-hidden="true"></span>
   </div>

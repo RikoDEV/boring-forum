@@ -154,8 +154,10 @@
     onclick={() => {
       status.clear();
       installing = true;
-    }}>{tr("Install a plugin")}</button
+    }}
   >
+    {tr("Install a plugin")}
+  </button>
 </PageHead>
 {#if installing}
   <!-- Two ways in, each with its own button, so the dialog has no single submit. -->
@@ -167,13 +169,9 @@
     save={tr("Install zip")}
   >
     <div class="acp-form">
-      <label class="acp-wide"
-        >{tr("Plugin package")}<input
-          type="file"
-          accept=".zip"
-          onchange={(e) => (file = e.currentTarget.files[0])}
-        /></label
-      >
+      <label class="acp-wide">
+        {tr("Plugin package")}<input type="file" accept=".zip" onchange={(e) => (file = e.currentTarget.files[0])} />
+      </label>
       <Field
         label={tr("Or an archive address: https://host/owner/repo/archive/v1.zip")}
         type="url"
@@ -203,9 +201,9 @@
       {#each approving.capabilities as c}
         <li class="acp-rowitem">
           <div class="acp-grow">
-            {#if approving.new_capabilities.includes(c) && approving.prev_version}<span class="acp-pill is-warn"
-                >{tr("New")}</span
-              >{/if}
+            {#if approving.new_capabilities.includes(c) && approving.prev_version}<span class="acp-pill is-warn">
+                {tr("New")}
+              </span>{/if}
             {#if risky(c)}<span class="acp-pill is-danger">{tr("Outside the sandbox")}</span>{/if}
             {describe(c)}
           </div>
@@ -234,19 +232,19 @@
       {:else}<span class="acp-pill is-muted">{tr("Off")}</span>{/if}
     {/snippet}
     <div class="acp-box-body">
-      <small class="muted"
-        >{p.version} · {tr("Checksum {checksum}… · hooks: {hooks}", {
+      <small class="muted">
+        {p.version} · {tr("Checksum {checksum}… · hooks: {hooks}", {
           checksum: p.checksum.slice(0, 16),
           hooks: p.hooks.join(", ") || tr("none"),
         })}{#if p.failures}
-          · {tn("admin.count.failures", p.failures)}{/if}</small
-      >
+          · {tn("admin.count.failures", p.failures)}{/if}
+      </small>
       {#if p.requires.length}
         <p>
           {tr("Needs: {plugins}", { plugins: p.requires.join(", ") })}
-          {#if p.requires_unmet.length}<span class="acp-pill is-danger"
-              >{tr("Missing: {plugins}", { plugins: p.requires_unmet.join(", ") })}</span
-            >{/if}
+          {#if p.requires_unmet.length}<span class="acp-pill is-danger">
+              {tr("Missing: {plugins}", { plugins: p.requires_unmet.join(", ") })}
+            </span>{/if}
         </p>
       {/if}
       {#each (p.schema?.["x-panels"] ?? []).filter((x) => x.area === "admin") as x}<p>
@@ -254,16 +252,17 @@
         </p>{/each}
       {#if p.stats.calls || p.stats.errors}
         <p>
-          <small class="muted"
-            >{tr("{calls} calls, {errors} errors, about {fuel} fuel per call", {
+          <small class="muted">
+            {tr("{calls} calls, {errors} errors, about {fuel} fuel per call", {
               calls: p.stats.calls.toLocaleString(locale()),
               errors: p.stats.errors.toLocaleString(locale()),
               fuel: p.stats.avg_fuel.toLocaleString(locale()),
-            })}</small
-          >
-          {#if p.stats.last_error}<br /><small class="err"
-              >{tr("Last error")}: <When iso={p.stats.last_error.at} /> {p.stats.last_error.message}</small
-            >{/if}
+            })}
+          </small>
+          {#if p.stats.last_error}<br /><small class="err">
+              {tr("Last error")}: <When iso={p.stats.last_error.at} />
+              {p.stats.last_error.message}
+            </small>{/if}
         </p>
       {/if}
     </div>
@@ -286,16 +285,16 @@
           <Section legend={perm.label} hint={tr("Administrators always hold it.")}>
             <div class="acp-switches">
               {#each groupList.filter((g) => g.id > 1 && !g.is_admin) as g (g.id)}
-                <label class="acp-group-style"
-                  ><input
+                <label class="acp-group-style">
+                  <input
                     type="checkbox"
                     class="acp-switch"
                     role="switch"
                     checked={perm.groups.includes(g.id)}
                     onchange={(e) => togglePerm(p, perm, g.id, e.currentTarget.checked)}
                   />
-                  {g.name}</label
-                >
+                  {g.name}
+                </label>
               {/each}
             </div>
           </Section>
@@ -303,33 +302,38 @@
       </div>
     {/if}
     <div class="acp-box-body acp-actions">
-      {#if p.enabled}<button class="secondary" onclick={() => post(`/plugins/${p.id}/disable`).then(load, status.fail)}
-          >{tr("Disable")}</button
-        >
+      {#if p.enabled}<button class="secondary" onclick={() => post(`/plugins/${p.id}/disable`).then(load, status.fail)}>
+          {tr("Disable")}
+        </button>
       {:else}<button
           onclick={() => {
             status.clear();
             approving = p;
-          }}>{tr("Review and enable")}</button
-        >{/if}
-      {#if p.prev_version}<button class="secondary" onclick={() => rollback(p)}
-          >{tr("Roll back to {version}", { version: p.prev_version })}</button
-        >{/if}
+          }}
+        >
+          {tr("Review and enable")}
+        </button>{/if}
+      {#if p.prev_version}<button class="secondary" onclick={() => rollback(p)}>
+          {tr("Roll back to {version}", { version: p.prev_version })}
+        </button>{/if}
       <button
         class="secondary is-danger"
         onclick={() =>
           confirm(tr("Uninstall {name} and delete its data?", { name: p.name })) &&
-          del(`/plugins/${p.id}`).then(load, status.fail)}>{tr("Uninstall")}</button
+          del(`/plugins/${p.id}`).then(load, status.fail)}
       >
+        {tr("Uninstall")}
+      </button>
     </div>
     {#if settingsFields(p).length || (p.schema?.["x-admin-pages"] ?? []).length}
       <div class="acp-box-body acp-actions">
-        {#if settingsFields(p).length}<button class="secondary" onclick={() => openSettings(p)}>{tr("Settings")}</button
-          >{/if}
+        {#if settingsFields(p).length}<button class="secondary" onclick={() => openSettings(p)}>
+            {tr("Settings")}
+          </button>{/if}
         {#each p.schema?.["x-admin-pages"] ?? [] as pg (pg.key)}
-          <a class="btn secondary" href="{base}/plugins/form?id={p.id}&key={pg.key}"
-            >{localized(p.schema?.["x-locales"], pg.label_key, pg.label)}</a
-          >
+          <a class="btn secondary" href="{base}/plugins/form?id={p.id}&key={pg.key}">
+            {localized(p.schema?.["x-locales"], pg.label_key, pg.label)}
+          </a>
         {/each}
       </div>
     {/if}

@@ -101,75 +101,75 @@
 
 <div class="acp-kpis">
   {#if stats}
-    <a class="acp-kpi" href="{base}/users/"
-      ><span>{tr("Members")}</span><b>{stats.users.toLocaleString(locale())}</b>{#if analytics}<small
-          >{tr("{signups_7d} joined this week", { signups_7d: analytics.signups_7d })}</small
-        ><Spark data={analytics.daily.map((d) => d.signups)} />{/if}</a
-    >
-    <a class="acp-kpi" href="{base}/forums/"
-      ><span>{tr("Topics")}</span><b>{stats.topics.toLocaleString(locale())}</b>{#if analytics}<small
-          >{change(analytics.topics_7d, analytics.topics_prev_7d)}</small
-        ><Spark data={analytics.daily.map((d) => d.topics)} />{/if}</a
-    >
+    <a class="acp-kpi" href="{base}/users/">
+      <span>{tr("Members")}</span><b>{stats.users.toLocaleString(locale())}</b>{#if analytics}<small>
+          {tr("{signups_7d} joined this week", { signups_7d: analytics.signups_7d })}
+        </small><Spark data={analytics.daily.map((d) => d.signups)} />{/if}
+    </a>
+    <a class="acp-kpi" href="{base}/forums/">
+      <span>{tr("Topics")}</span><b>{stats.topics.toLocaleString(locale())}</b>{#if analytics}<small>
+          {change(analytics.topics_7d, analytics.topics_prev_7d)}
+        </small><Spark data={analytics.daily.map((d) => d.topics)} />{/if}
+    </a>
     <div class="acp-kpi">
-      <span>{tr("Posts")}</span><b>{stats.posts.toLocaleString(locale())}</b>{#if analytics}<small
-          >{change(analytics.posts_7d, analytics.posts_prev_7d)}</small
-        ><Spark data={analytics.daily.map((d) => d.posts)} />{/if}
+      <span>{tr("Posts")}</span><b>{stats.posts.toLocaleString(locale())}</b>{#if analytics}<small>
+          {change(analytics.posts_7d, analytics.posts_prev_7d)}
+        </small><Spark data={analytics.daily.map((d) => d.posts)} />{/if}
     </div>
   {/if}
   {#if analytics}
     <div class="acp-kpi">
-      <span>{tr("Likes")}</span><b>{analytics.likes_7d.toLocaleString(locale())}</b><small
-        >{change(analytics.likes_7d, analytics.likes_prev_7d)}</small
-      ><Spark data={analytics.daily.map((d) => d.likes)} />
+      <span>{tr("Likes")}</span><b>{analytics.likes_7d.toLocaleString(locale())}</b><small>
+        {change(analytics.likes_7d, analytics.likes_prev_7d)}
+      </small><Spark data={analytics.daily.map((d) => d.likes)} />
     </div>
     <div class="acp-kpi">
-      <span>{tr("Signed in now")}</span><b>{analytics.sessions.toLocaleString(locale())}</b><small
-        >{tr("{n} active in 24 hours", { n: analytics.active_1d })}</small
-      >
+      <span>{tr("Signed in now")}</span><b>{analytics.sessions.toLocaleString(locale())}</b><small>
+        {tr("{n} active in 24 hours", { n: analytics.active_1d })}
+      </small>
     </div>
   {/if}
 </div>
 
 <div class="acp-kpis acp-kpis-watch">
   {#if stats}
-    <a class="acp-kpi" class:is-warn={stats.pending_reviews > 0} href="/review"
-      ><span>{tr("Awaiting review")}</span><b>{stats.pending_reviews.toLocaleString(locale())}</b><small
-        >{stats.pending_reviews
+    <a class="acp-kpi" class:is-warn={stats.pending_reviews > 0} href="/review">
+      <span>{tr("Awaiting review")}</span><b>{stats.pending_reviews.toLocaleString(locale())}</b><small>
+        {stats.pending_reviews
           ? analytics?.oldest_review_hours != null
             ? tr("Oldest waiting {age}", { age: age(analytics.oldest_review_hours) })
             : tr("Open the queue")
-          : tr("All clear")}</small
-      ></a
-    >
+          : tr("All clear")}
+      </small>
+    </a>
   {/if}
   {#if analytics}
     <div class="acp-kpi">
-      <span>{tr("Unanswered topics")}</span><b>{analytics.unanswered.toLocaleString(locale())}</b><small
-        >{answered === null
+      <span>{tr("Unanswered topics")}</span><b>{analytics.unanswered.toLocaleString(locale())}</b><small>
+        {answered === null
           ? tr("No topics in this period")
-          : tr("{pct}% of new topics have a reply", { pct: answered })}</small
-      >
+          : tr("{pct}% of new topics have a reply", { pct: answered })}
+      </small>
     </div>
-    <a class="acp-kpi" class:is-warn={analytics.mail_failing > 0} href="{base}/mail/"
-      ><span>{tr("Mail waiting to send")}</span><b>{analytics.mail_queued.toLocaleString(locale())}</b><small
-        >{analytics.mail_failing ? tr("{n} failing", { n: analytics.mail_failing }) : tr("None failing")}</small
-      ></a
-    >
-    <a class="acp-kpi" href="{base}/logs/"
-      ><span>{tr("Failed logins, 24 hours")}</span><b>{analytics.failed_logins_1d.toLocaleString(locale())}</b><small
-        >{tr("Over {days} days: {n}", { days: analytics.days, n: sum("failed_logins") })}</small
-      ></a
-    >
-    <a class="acp-kpi" href="{base}/users/"
-      ><span>{tr("Restricted members")}</span><b
-        >{(analytics.suspended + analytics.silenced).toLocaleString(locale())}</b
-      ><small
-        >{tr("{n} suspended, {m} silenced", { n: analytics.suspended, m: analytics.silenced })}{analytics.unapproved
+    <a class="acp-kpi" class:is-warn={analytics.mail_failing > 0} href="{base}/mail/">
+      <span>{tr("Mail waiting to send")}</span><b>{analytics.mail_queued.toLocaleString(locale())}</b><small>
+        {analytics.mail_failing ? tr("{n} failing", { n: analytics.mail_failing }) : tr("None failing")}
+      </small>
+    </a>
+    <a class="acp-kpi" href="{base}/logs/">
+      <span>{tr("Failed logins, 24 hours")}</span><b>{analytics.failed_logins_1d.toLocaleString(locale())}</b><small>
+        {tr("Over {days} days: {n}", { days: analytics.days, n: sum("failed_logins") })}
+      </small>
+    </a>
+    <a class="acp-kpi" href="{base}/users/">
+      <span>{tr("Restricted members")}</span><b>
+        {(analytics.suspended + analytics.silenced).toLocaleString(locale())}
+      </b><small>
+        {tr("{n} suspended, {m} silenced", { n: analytics.suspended, m: analytics.silenced })}{analytics.unapproved
           ? ` · ${tr("{n} awaiting approval", { n: analytics.unapproved })}`
-          : ""}</small
-      ></a
-    >
+          : ""}
+      </small>
+    </a>
   {/if}
 </div>
 
@@ -303,11 +303,11 @@
 </div>
 {#if board}
   <p class="muted">
-    <small
-      >{tr("Version {version}", { version: board.version })}{#if board.latest && board.latest !== board.version}{tr(
+    <small>
+      {tr("Version {version}", { version: board.version })}{#if board.latest && board.latest !== board.version}{tr(
           "; {latest} is available",
           { latest: board.latest },
-        )}{/if}</small
-    >
+        )}{/if}
+    </small>
   </p>
 {/if}

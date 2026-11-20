@@ -223,9 +223,9 @@
           </div>
           <div class="acp-actions">
             <button class="secondary" onclick={() => download(b)}>{tr("Email me a download link")}</button>
-            <button class="secondary" onclick={() => askRestore(b)} disabled={running || !b.restorable}
-              >{tr("Restore")}</button
-            >
+            <button class="secondary" onclick={() => askRestore(b)} disabled={running || !b.restorable}>
+              {tr("Restore")}
+            </button>
             <IconButton
               icon="trash-2"
               label={tr("Delete {name}", { name: b.name })}

@@ -28,9 +28,9 @@
   <div class="acp-sp-head"><b>{title}</b><span>{label}</span></div>
   <div class="acp-sp-page">
     <div class="acp-sp-card">
-      <a href="#preview" tabindex={compact ? -1 : 0} onclick={(e) => e.preventDefault()}
-        >{tr("A topic title that is a link")}</a
-      >
+      <a href="#preview" tabindex={compact ? -1 : 0} onclick={(e) => e.preventDefault()}>
+        {tr("A topic title that is a link")}
+      </a>
       <p>{tr("Body text sits on a card. It should be easy to read.")}</p>
       {#if !compact}<small>{tr("Secondary text: who posted and when.")}</small>{/if}
       <div class="acp-sp-actions">
@@ -39,9 +39,9 @@
       </div>
     </div>
     <div class="acp-sp-chips">
-      <span class="is-ok">{tr("Success")}</span><span class="is-warn">{tr("Warning")}</span><span class="is-bad"
-        >{tr("Danger")}</span
-      >
+      <span class="is-ok">{tr("Success")}</span><span class="is-warn">{tr("Warning")}</span><span class="is-bad">
+        {tr("Danger")}
+      </span>
       <span class="is-soft">{tr("Selected")}</span>
     </div>
   </div>

@@ -79,13 +79,17 @@
       onclick={() => {
         status.clear();
         dialog = "channel";
-      }}>{tr("New channel")}</button
-    >{:else if tab === "rules"}<button
+      }}
+    >
+      {tr("New channel")}
+    </button>{:else if tab === "rules"}<button
       onclick={() => {
         status.clear();
         dialog = "rule";
-      }}>{tr("New integration")}</button
-    >{/if}
+      }}
+    >
+      {tr("New integration")}
+    </button>{/if}
 </PageHead>
 {#if dialog === "channel"}
   <EditDialog
@@ -98,11 +102,13 @@
     <div class="acp-form">
       <Field label={tr("Name")} bind:value={channel.name} required />
       <Field label={tr("Description")} bind:value={channel.description} />
-      <Field label={tr("Who can see it")} bind:value={channel.access}
-        ><option value="open">{tr("All members")}</option><option value="groups">{tr("Chosen groups")}</option><option
-          value="invite">{tr("Invite only: you add people from the channel")}</option
-        ></Field
-      >
+      <Field label={tr("Who can see it")} bind:value={channel.access}>
+        <option value="open">{tr("All members")}</option><option value="groups">{tr("Chosen groups")}</option><option
+          value="invite"
+        >
+          {tr("Invite only: you add people from the channel")}
+        </option>
+      </Field>
       {#if channel.access === "groups"}<div class="acp-wide">
           <MultiSelect
             label={tr("Groups")}
@@ -122,12 +128,12 @@
     save={tr("Add rule")}
   >
     <div class="acp-form">
-      <Field label={tr("Service")} bind:value={rule.provider}
-        >{#each providers as p}<option>{p}</option>{/each}</Field
-      >
-      <Field label={tr("Filter")} bind:value={rule.filter}
-        ><option>{tr("watch")}</option><option>{tr("follow")}</option><option>{tr("mute")}</option></Field
-      >
+      <Field label={tr("Service")} bind:value={rule.provider}>
+        {#each providers as p}<option>{p}</option>{/each}
+      </Field>
+      <Field label={tr("Filter")} bind:value={rule.filter}>
+        <option>{tr("watch")}</option><option>{tr("follow")}</option><option>{tr("mute")}</option>
+      </Field>
       <Field label={tr("Webhook or server address")} type="url" bind:value={rule.url} />
       <Field label={tr("Token")} type="password" bind:value={rule.token} autocomplete="off" />
       <Field label={tr("Channel, chat or room")} bind:value={rule.channel} />
@@ -140,69 +146,70 @@
   {#each [["channels", tr("Channels"), channels.length], ["rules", tr("Integrations"), rules.length], ["flags", tr("Flags"), flags.length]] as [k, label, n]}<button
       role="tab"
       aria-selected={tab === k}
-      onclick={() => (tab = String(k))}>{label} ({n})</button
-    >{/each}
+      onclick={() => (tab = String(k))}
+    >
+      {label} ({n})
+    </button>{/each}
 </div>
 
 {#if tab === "channels"}
   <table class="acp-table">
-    <thead><tr><th>{tr("Name")}</th><th>{tr("Who can see it")}</th><th>{tr("Messages")}</th><th></th></tr></thead><tbody
-    >
-      {#each channels as c}<tr
-          ><td
-            >{c.name}{#if c.archived}
-              {tr("(archived)")}{/if}</td
-          ><td
-            >{ACCESS[c.access]}{#if c.access === "groups"}: {groupNames(c)}{/if}</td
-          ><td>{c.messages}</td><td
-            ><button class="btn" onclick={() => archive(c)}>{c.archived ? tr("Restore") : tr("Archive")}</button>
-            <button class="btn" onclick={() => removeChannel(c)}>{tr("Delete")}</button></td
-          ></tr
-        >{/each}
+    <thead>
+      <tr><th>{tr("Name")}</th><th>{tr("Who can see it")}</th><th>{tr("Messages")}</th><th></th></tr>
+    </thead><tbody>
+      {#each channels as c}<tr>
+          <td>
+            {c.name}{#if c.archived}
+              {tr("(archived)")}{/if}
+          </td><td>
+            {ACCESS[c.access]}{#if c.access === "groups"}: {groupNames(c)}{/if}
+          </td><td>{c.messages}</td><td>
+            <button class="btn" onclick={() => archive(c)}>{c.archived ? tr("Restore") : tr("Archive")}</button>
+            <button class="btn" onclick={() => removeChannel(c)}>{tr("Delete")}</button>
+          </td>
+        </tr>{/each}
     </tbody>
   </table>
 {:else if tab === "rules"}
   <p class="muted">
-    <small
-      >{tr("Only topics guests can read are sent.")} <strong>{tr("Follow")}</strong>
+    <small>
+      {tr("Only topics guests can read are sent.")} <strong>{tr("Follow")}</strong>
       {tr("sends new topics,")} <strong>{tr("watch")}</strong>
       {tr("every post, and")} <strong>{tr("mute")}</strong>
       {tr(
         "stops that service for what it matches. Telegram needs a bot token and chat id; Matrix a homeserver address, access token and room id; Zulip a server address,",
       )} <code>bot-email:api-key</code>
-      {tr("as token, and")} <code>stream/topic</code>{tr(". The others need an incoming webhook address.")}</small
-    >
+      {tr("as token, and")} <code>stream/topic</code>{tr(". The others need an incoming webhook address.")}
+    </small>
   </p>
   <table class="acp-table">
-    <thead
-      ><tr><th>{tr("Service")}</th><th>{tr("Sends to")}</th><th>{tr("Filter")}</th><th>{tr("Scope")}</th><th></th></tr
-      ></thead
-    ><tbody>
-      {#each rules as r}<tr
-          ><td>{r.provider}</td><td>{r.host} {r.channel}</td><td>{r.filter}</td><td
-            >{r.node_id ?? tr("All forums")}{#if r.tag}
-              · {r.tag}{/if}</td
-          ><td
-            ><button class="btn" onclick={() => testRule(r)}>{tr("Test")}</button>
-            <button class="btn" onclick={() => removeRule(r)}>{tr("Delete")}</button></td
-          ></tr
-        >{/each}
+    <thead>
+      <tr><th>{tr("Service")}</th><th>{tr("Sends to")}</th><th>{tr("Filter")}</th><th>{tr("Scope")}</th><th></th></tr>
+    </thead><tbody>
+      {#each rules as r}<tr>
+          <td>{r.provider}</td><td>{r.host} {r.channel}</td><td>{r.filter}</td><td>
+            {r.node_id ?? tr("All forums")}{#if r.tag}
+              · {r.tag}{/if}
+          </td><td>
+            <button class="btn" onclick={() => testRule(r)}>{tr("Test")}</button>
+            <button class="btn" onclick={() => removeRule(r)}>{tr("Delete")}</button>
+          </td>
+        </tr>{/each}
     </tbody>
   </table>
 {:else}
   <table class="acp-table">
-    <thead
-      ><tr><th>{tr("Message")}</th><th>{tr("By")}</th><th>{tr("Flagged by")}</th><th>{tr("Reason")}</th><th></th></tr
-      ></thead
-    ><tbody>
-      {#each flags as f}<tr
-          ><td><a href="/chat/{f.channel_id}">{f.raw}</a></td><td><UserLink name={f.author} /></td><td
-            ><UserLink name={f.flagged_by} /></td
-          ><td>{f.reason}</td><td
-            ><button class="btn" onclick={() => dismiss(f)}>{tr("Keep")}</button>
-            <button class="btn" onclick={() => removeFlagged(f)}>{tr("Remove")}</button></td
-          ></tr
-        >{:else}<tr><td colspan="5" class="muted">{tr("Nothing flagged.")}</td></tr>{/each}
+    <thead>
+      <tr><th>{tr("Message")}</th><th>{tr("By")}</th><th>{tr("Flagged by")}</th><th>{tr("Reason")}</th><th></th></tr>
+    </thead><tbody>
+      {#each flags as f}<tr>
+          <td><a href="/chat/{f.channel_id}">{f.raw}</a></td><td><UserLink name={f.author} /></td><td>
+            <UserLink name={f.flagged_by} />
+          </td><td>{f.reason}</td><td>
+            <button class="btn" onclick={() => dismiss(f)}>{tr("Keep")}</button>
+            <button class="btn" onclick={() => removeFlagged(f)}>{tr("Remove")}</button>
+          </td>
+        </tr>{:else}<tr><td colspan="5" class="muted">{tr("Nothing flagged.")}</td></tr>{/each}
     </tbody>
   </table>
 {/if}

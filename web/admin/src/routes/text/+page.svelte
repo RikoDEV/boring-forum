@@ -112,20 +112,20 @@
         autofocus
       />
       <p class="acp-wide muted">
-        <small
-          >{tr(
+        <small>
+          {tr(
             "Write a variable as { $name }, as in the English text above. For plurals use { $n -> [one] … *[other] … }.",
-          )}</small
-        >
+          )}
+        </small>
       </p>
     </div>
   </EditDialog>
 {/if}
 
 <div class="acp-settings-head">
-  <select bind:value={locale} onchange={pick} aria-label={tr("Language")}
-    >{#each locales as l (l.code)}<option value={l.code}>{l.name}</option>{/each}</select
-  >
+  <select bind:value={locale} onchange={pick} aria-label={tr("Language")}>
+    {#each locales as l (l.code)}<option value={l.code}>{l.name}</option>{/each}
+  </select>
   <input type="search" bind:value={q} placeholder={tr("Search text")} aria-label={tr("Search text")} />
 </div>
 <Section switches><Switch label="{tr('Only my changes')} ({count})" bind:checked={onlyMine} /></Section>
@@ -137,9 +137,9 @@
         <li class="acp-rowitem">
           <div class="acp-grow">
             <small class="muted acp-text-key">{c.key}</small>{#if mine(c.key)}
-              <span class="acp-pill">{tr("Changed")}</span>{/if}<br /><span dir="auto" class="acp-text-preview"
-              >{mine(c.key) || c.default}</span
-            >
+              <span class="acp-pill">{tr("Changed")}</span>{/if}<br /><span dir="auto" class="acp-text-preview">
+              {mine(c.key) || c.default}
+            </span>
           </div>
           <button class="secondary" onclick={() => edit(c)}>{tr("Edit")}</button>
         </li>

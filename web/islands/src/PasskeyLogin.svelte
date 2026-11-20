@@ -46,9 +46,9 @@
 
 {#if supported()}
   <div class="providers">
-    <button type="button" class="btn" onclick={() => ((status = ""), request(false).catch(fail))}
-      >{tr("Sign in with a passkey")}</button
-    >
+    <button type="button" class="btn" onclick={() => ((status = ""), request(false).catch(fail))}>
+      {tr("Sign in with a passkey")}
+    </button>
   </div>
   {#if status}<p class="small error" role="status">{status}</p>{/if}
 {/if}

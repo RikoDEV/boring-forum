@@ -191,14 +191,14 @@
         <li class="acp-rowitem">
           <div class="acp-grow">
             <strong class="acp-wrap">{m.subject}</strong>
-            <br /><small class="muted"
-              ><UserLink name={m.sender} fallback={tr("Staff")} /> · {when(m.created_at)} ·
-              {num(m.delivered)} / {num(m.recipients)}</small
-            >
+            <br /><small class="muted">
+              <UserLink name={m.sender} fallback={tr("Staff")} /> · {when(m.created_at)} ·
+              {num(m.delivered)} / {num(m.recipients)}
+            </small>
           </div>
-          <span class="acp-pill" class:is-ok={m.status === "done"} class:is-danger={m.status === "failed"}
-            >{STATE[m.status] ?? m.status}</span
-          >
+          <span class="acp-pill" class:is-ok={m.status === "done"} class:is-danger={m.status === "failed"}>
+            {STATE[m.status] ?? m.status}
+          </span>
         </li>
       {/each}
     </ul>

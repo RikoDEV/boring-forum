@@ -150,8 +150,9 @@
           {/if}
           <span class="acp-find-text">
             <span class="acp-find-label">{r.label}</span>
-            <span class="acp-find-hint">{r.kind === "page" ? tr("Page · {section}", { section: r.hint }) : r.hint}</span
-            >
+            <span class="acp-find-hint">
+              {r.kind === "page" ? tr("Page · {section}", { section: r.hint }) : r.hint}
+            </span>
           </span>
           {#if r.kind === "setting" && r.where}<span class="acp-pill">{r.where}</span>{/if}
         </li>

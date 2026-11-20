@@ -179,8 +179,10 @@
     onclick={() => {
       status.clear();
       editing = blank();
-    }}>{tr("New rule")}</button
+    }}
   >
+    {tr("New rule")}
+  </button>
 </PageHead>
 
 {#if editing}
@@ -232,8 +234,10 @@
             <Field label={tr("Action {n}", { n: i + 1 })} bind:value={a.type}>
               {#each Object.entries(ACTIONS) as [k, label]}<option
                   value={k}
-                  disabled={scheduled(editing.trigger) && !WRITES_TOPIC.includes(k)}>{label}</option
-                >{/each}
+                  disabled={scheduled(editing.trigger) && !WRITES_TOPIC.includes(k)}
+                >
+                  {label}
+                </option>{/each}
             </Field>
             <IconButton
               icon="trash-2"
@@ -285,8 +289,10 @@
               scheduled(editing.trigger)
                 ? { type: "create_topic", forum: "", title: "", text: "" }
                 : { type: "reply", text: "" },
-            )}>{tr("Add an action")}</button
+            )}
         >
+          {tr("Add an action")}
+        </button>
       {/if}
     </Section>
 
@@ -297,19 +303,19 @@
 {/if}
 
 <table>
-  <thead
-    ><tr
-      ><th>{tr("Rule")}</th><th>{tr("When")}</th><th>{tr("Then")}</th><th>{tr("Runs")}</th><th>{tr("Last run")}</th><th
-      ></th></tr
-    ></thead
-  >
+  <thead>
+    <tr>
+      <th>{tr("Rule")}</th><th>{tr("When")}</th><th>{tr("Then")}</th><th>{tr("Runs")}</th><th>{tr("Last run")}</th><th
+      ></th>
+    </tr>
+  </thead>
   <tbody>
     {#each rules as r (r.id)}
       <tr class:muted={!r.enabled}>
-        <td
-          ><button class="link" onclick={() => edit(r)}>{r.name}</button>{#if !r.enabled}
-            <small>{tr("(off)")}</small>{/if}</td
-        >
+        <td>
+          <button class="link" onclick={() => edit(r)}>{r.name}</button>{#if !r.enabled}
+            <small>{tr("(off)")}</small>{/if}
+        </td>
         <td>{TRIGGERS[r.trigger] ?? r.trigger}</td>
         <td>{summary(r)}</td>
         <td>{r.run_count}</td>

@@ -147,8 +147,9 @@
     aria-label={tr("Menu")}
     aria-expanded={open}
     onclick={() => (open = !open)}
-    ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#menu"></use></svg></button
   >
+    <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#menu"></use></svg>
+  </button>
   <a class="acp-brand" href="{base}/">{tr("Admin")}</a>
 </div>
 <div class="acp-shell">
@@ -156,9 +157,10 @@
     {#each groups as [title, items]}
       <div class="acp-group">{title}</div>
       {#each items as [p, label, icon]}
-        <a href="{base}{p}/" aria-current={current(p) ? "page" : undefined} onclick={() => (open = false)}
-          ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{icon}"></use></svg> {label}</a
-        >
+        <a href="{base}{p}/" aria-current={current(p) ? "page" : undefined} onclick={() => (open = false)}>
+          <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{icon}"></use></svg>
+          {label}
+        </a>
       {/each}
     {/each}
   </nav>

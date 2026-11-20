@@ -75,8 +75,10 @@
           type="button"
           class="secondary"
           aria-label={tr("Remove {n}", { n: row.name || "rank" })}
-          onclick={() => remove(row)}>{tr("Remove")}</button
+          onclick={() => remove(row)}
         >
+          {tr("Remove")}
+        </button>
       </div>
     {/each}
   {:else}

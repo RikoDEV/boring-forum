@@ -149,23 +149,23 @@
 {/if}
 
 <table>
-  <thead
-    ><tr
-      ><th>{tr("Ad")}</th><th>{tr("Where")}</th><th>{tr("Impressions")}</th><th>{tr("Clicks")}</th><th
-        >{tr("Click rate")}</th
-      ><th>{tr("Runs")}</th></tr
-    ></thead
-  >
+  <thead>
+    <tr>
+      <th>{tr("Ad")}</th><th>{tr("Where")}</th><th>{tr("Impressions")}</th><th>{tr("Clicks")}</th><th>
+        {tr("Click rate")}
+      </th><th>{tr("Runs")}</th>
+    </tr>
+  </thead>
   <tbody>
     {#each ads as a (a.id)}
       <tr class:muted={!a.active}>
-        <td
-          ><button class="link" onclick={() => edit(a)}>{a.name}</button>{#if !a.active}
-            <small>{tr("(off)")}</small>{/if}</td
-        >
-        <td>{PLACES[a.placement]}</td><td>{a.impressions}</td><td>{a.url ? a.clicks : "—"}</td><td
-          >{a.url ? ctr(a) : "—"}</td
-        >
+        <td>
+          <button class="link" onclick={() => edit(a)}>{a.name}</button>{#if !a.active}
+            <small>{tr("(off)")}</small>{/if}
+        </td>
+        <td>{PLACES[a.placement]}</td><td>{a.impressions}</td><td>{a.url ? a.clicks : "—"}</td><td>
+          {a.url ? ctr(a) : "—"}
+        </td>
         <td class="small">{a.starts_at || a.ends_at ? `${when(a.starts_at)} – ${when(a.ends_at)}` : tr("Always")}</td>
       </tr>
     {:else}

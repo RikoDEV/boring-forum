@@ -34,24 +34,27 @@
       role="tab"
       aria-selected={tab === k}
       onclick={() => (tab = String(k))}
-      >{label}{#if n !== null}<span class="acp-count">{n}</span>{/if}</button
-    >{/each}
+    >
+      {label}{#if n !== null}<span class="acp-count">{n}</span>{/if}
+    </button>{/each}
 </div>
 {#if tab === "log"}
   <table>
     <thead><tr><th>{tr("Queued")}</th><th>{tr("To")}</th><th>{tr("Subject")}</th><th>{tr("Status")}</th></tr></thead>
     <tbody>
       {#each rows as m (m.id)}
-        <tr
-          ><td><small><When iso={m.created_at} /></small></td><td>{m.to_addr}</td><td>{m.subject}</td>
-          <td
-            >{#if m.sent_at}<span class="acp-pill is-ok" title={when(m.sent_at)}>{tr("Sent")}</span
-              >{:else if m.attempts >= 5}<span class="acp-pill is-danger" title={m.last_error}>{tr("Failed")}</span
-              >{:else if m.last_error}<span class="acp-pill is-warn" title={m.last_error}
-                >{tr("Retrying ({attempts})", { attempts: m.attempts })}</span
-              >{:else}<span class="acp-pill is-muted">{tr("Queued")}</span>{/if}</td
-          ></tr
-        >
+        <tr>
+          <td><small><When iso={m.created_at} /></small></td><td>{m.to_addr}</td><td>{m.subject}</td>
+          <td>
+            {#if m.sent_at}<span class="acp-pill is-ok" title={when(m.sent_at)}>
+                {tr("Sent")}
+              </span>{:else if m.attempts >= 5}<span class="acp-pill is-danger" title={m.last_error}>
+                {tr("Failed")}
+              </span>{:else if m.last_error}<span class="acp-pill is-warn" title={m.last_error}>
+                {tr("Retrying ({attempts})", { attempts: m.attempts })}
+              </span>{:else}<span class="acp-pill is-muted">{tr("Queued")}</span>{/if}
+          </td>
+        </tr>
       {:else}<tr><td colspan="4" class="muted">{tr("No mail yet.")}</td></tr>{/each}
     </tbody>
   </table>
@@ -75,13 +78,13 @@
   </p>
   <table>
     <thead><tr><th>{tr("Member")}</th><th>{tr("Address")}</th><th>{tr("Bounces")}</th><th></th></tr></thead>
-    <tbody
-      >{#each bad as u (u.id)}<tr
-          ><td><UserLink name={u.username} /></td><td>{u.email}</td><td>{u.bounces}</td><td
-            ><button onclick={() => clearBad(u)}>{tr("Clear")}</button></td
-          ></tr
-        >{:else}<tr><td colspan="4" class="muted">{tr("No bad addresses.")}</td></tr>{/each}</tbody
-    >
+    <tbody>
+      {#each bad as u (u.id)}<tr>
+          <td><UserLink name={u.username} /></td><td>{u.email}</td><td>{u.bounces}</td><td>
+            <button onclick={() => clearBad(u)}>{tr("Clear")}</button>
+          </td>
+        </tr>{:else}<tr><td colspan="4" class="muted">{tr("No bad addresses.")}</td></tr>{/each}
+    </tbody>
   </table>
 {:else}
   <section class="acp-box">

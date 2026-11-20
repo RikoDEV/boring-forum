@@ -14,12 +14,13 @@
 </script>
 
 {#if check}
-  <label class={["acp-check", wide && "acp-wide"]}
-    ><input type="checkbox" bind:checked {...rest} /> {label}{@render children?.()}</label
-  >
+  <label class={["acp-check", wide && "acp-wide"]}>
+    <input type="checkbox" bind:checked {...rest} />
+    {label}{@render children?.()}
+  </label>
 {:else}
-  <label class={["acp-group-style", wide && "acp-wide"]}
-    ><input type="checkbox" class="acp-switch" role="switch" bind:checked {...rest} />
-    {label}{@render children?.()}</label
-  >
+  <label class={["acp-group-style", wide && "acp-wide"]}>
+    <input type="checkbox" class="acp-switch" role="switch" bind:checked {...rest} />
+    {label}{@render children?.()}
+  </label>
 {/if}

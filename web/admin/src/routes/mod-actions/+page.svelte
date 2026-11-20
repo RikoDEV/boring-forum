@@ -117,9 +117,9 @@
         </div>
       {/each}
       <div class="acp-actions">
-        <button type="button" class="secondary" disabled={draft.steps.length >= MAX_STEPS} onclick={addStep}
-          >{tr("Add a step")}</button
-        >
+        <button type="button" class="secondary" disabled={draft.steps.length >= MAX_STEPS} onclick={addStep}>
+          {tr("Add a step")}
+        </button>
       </div>
     </Section>
   </EditDialog>
@@ -129,10 +129,10 @@
   <thead><tr><th>{tr("Name")}</th><th>{tr("Steps")}</th><th class="acp-cell-end"></th></tr></thead>
   <tbody>
     {#each actions as a (a.id)}
-      <tr
-        ><td>{a.name}</td><td class="muted">{a.steps.map(stepText).join(" → ")}</td>
-        <td class="acp-cell-end"><button class="secondary" onclick={() => open(a)}>{tr("Edit")}</button></td></tr
-      >
+      <tr>
+        <td>{a.name}</td><td class="muted">{a.steps.map(stepText).join(" → ")}</td>
+        <td class="acp-cell-end"><button class="secondary" onclick={() => open(a)}>{tr("Edit")}</button></td>
+      </tr>
     {:else}
       <tr><td colspan="3" class="muted">{tr("No saved actions yet.")}</td></tr>
     {/each}

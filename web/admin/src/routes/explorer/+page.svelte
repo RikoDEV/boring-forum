@@ -98,8 +98,9 @@
     <ul class="acp-rows">
       {#each info?.queries ?? [] as q (q.id)}
         <li>
-          <button class="link" aria-current={current?.id === q.id} onclick={() => open(q)}>{q.name}</button
-          >{#if q.description}<p class="muted"><small>{q.description}</small></p>{/if}
+          <button class="link" aria-current={current?.id === q.id} onclick={() => open(q)}>
+            {q.name}
+          </button>{#if q.description}<p class="muted"><small>{q.description}</small></p>{/if}
         </li>
       {/each}
       <li>
@@ -109,8 +110,10 @@
             current = null;
             name = "";
             description = "";
-          }}>{tr("+ New query")}</button
+          }}
         >
+          {tr("+ New query")}
+        </button>
       </li>
     </ul>
     <div class="acp-box-head"><h2>{tr("Views")}</h2></div>
@@ -134,34 +137,34 @@
       <Field label={tr("Name")} bind:value={name} />
       <Field label={tr("Description")} bind:value={description} />
       <div class="acp-actions">
-        <button class="secondary" onclick={save} disabled={!name.trim()}
-          >{current ? tr("Save changes") : tr("Save query")}</button
-        >{#if current}<button class="secondary" onclick={remove}>{tr("Delete")}</button>{/if}
+        <button class="secondary" onclick={save} disabled={!name.trim()}>
+          {current ? tr("Save changes") : tr("Save query")}
+        </button>{#if current}<button class="secondary" onclick={remove}>{tr("Delete")}</button>{/if}
       </div>
     </div>
 
     {#if result}
       <p class="muted">
-        <small
-          >{tn("admin.count.rows", result.rows.length)}{result.truncated
+        <small>
+          {tn("admin.count.rows", result.rows.length)}{result.truncated
             ? ` ${tr("(the first {max_rows})", { max_rows: info.max_rows })}`
-            : ""} · {tr("{ms} ms", { ms: result.ms })}</small
-        >{#if result.rows.length}
+            : ""} · {tr("{ms} ms", { ms: result.ms })}
+        </small>{#if result.rows.length}
           <button class="link" onclick={csv}>{tr("Download CSV")}</button>{/if}
       </p>
       {#if result.rows.length}
         <div style:overflow-x="auto">
           <table>
-            <thead
-              ><tr
-                >{#each columns as c}<th>{c}</th>{/each}</tr
-              ></thead
-            >
-            <tbody
-              >{#each result.rows as r}<tr
-                  >{#each columns as c}<td>{show(r[c])}</td>{/each}</tr
-                >{/each}</tbody
-            >
+            <thead>
+              <tr>
+                {#each columns as c}<th>{c}</th>{/each}
+              </tr>
+            </thead>
+            <tbody>
+              {#each result.rows as r}<tr>
+                  {#each columns as c}<td>{show(r[c])}</td>{/each}
+                </tr>{/each}
+            </tbody>
           </table>
         </div>
       {/if}
