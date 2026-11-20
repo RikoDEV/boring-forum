@@ -123,6 +123,10 @@ jobs:
   fuzz:
     name: fuzz ${{ matrix.target }}
     runs-on: ubuntu-latest
+    env:
+      # rust-toolchain.toml pins the stable release for the workspace, and rustup would use it over
+      # the nightly installed below. Sanitizers (-Zsanitizer) only exist on nightly.
+      RUSTUP_TOOLCHAIN: nightly
     strategy:
       fail-fast: false
       matrix:

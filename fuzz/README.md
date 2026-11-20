@@ -22,14 +22,14 @@ cargo-fuzz needs a nightly toolchain:
 cargo install cargo-fuzz
 rustup toolchain install nightly
 
-# One target, until you stop it.
-cargo +nightly fuzz run cook
+# Run from the repository root. One target, until you stop it.
+cargo +nightly fuzz run --fuzz-dir fuzz cook
 
 # A fixed budget, as CI runs it.
-cargo +nightly fuzz run cook -- -max_total_time=300
+cargo +nightly fuzz run --fuzz-dir fuzz cook -- -max_total_time=300
 
 # Re-check a crash that was found.
-cargo +nightly fuzz run cook fuzz/artifacts/cook/crash-<hash>
+cargo +nightly fuzz run --fuzz-dir fuzz cook fuzz/artifacts/cook/crash-<hash>
 ```
 
 This directory is its own workspace, so the sanitizer and nightly flags cargo-fuzz needs do not
