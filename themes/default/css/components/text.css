@@ -1,0 +1,36 @@
+/* Text helpers: muted, small, inline and error text. */
+
+.muted {
+  color: var(--bf-color-muted);
+}
+
+.small {
+  font-size: var(--bf-text-sm);
+}
+
+.inline {
+  display: inline;
+}
+
+.error {
+  color: var(--bf-color-danger);
+}
+
+/* A link inside a sentence that has nothing but its colour to tell it from the words around it
+   (WCAG 1.4.1): underlined. */
+.bf-inline-link {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* A member's name inside a line of text (Layout::user_link): reads as part of the line, and
+   shows it is a link on hover. */
+.bf-user-link {
+  color: inherit;
+  font-weight: 600;
+
+  &:hover {
+    color: var(--bf-color-accent);
+    text-decoration: underline;
+  }
+}

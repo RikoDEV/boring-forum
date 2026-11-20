@@ -1,0 +1,148 @@
+/* Pagination: the arrows as bordered buttons at the ends, the pages in even squares, the present one filled,
+   and "…" where pages are left out. The older pagers (forum lists, member lists) have the same pieces
+   without the list: links with `rel`, a plain "Page n". */
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-2);
+  padding-block: var(--bf-space-5);
+  font-size: var(--bf-text-list);
+  font-variant-numeric: tabular-nums;
+
+  & a,
+  & .current,
+  & .is-off,
+  & > span {
+    display: inline-grid;
+    grid-auto-flow: column;
+    place-items: center;
+    gap: var(--bf-space-2);
+    min-inline-size: 2.25rem;
+    block-size: 2.25rem;
+    padding-inline: var(--bf-space-2);
+    border: 1px solid transparent;
+    border-radius: var(--bf-radius);
+    color: var(--bf-color-text);
+    text-decoration: none;
+  }
+
+  & a:hover {
+    border-color: var(--bf-color-border-strong);
+    background: var(--bf-color-surface-2);
+    text-decoration: none;
+  }
+
+  & .current {
+    background: var(--bf-color-accent);
+    color: var(--bf-color-accent-text);
+    font-weight: 650;
+  }
+
+  /* Previous and next. */
+  & a[rel],
+  & .bf-step {
+    padding-inline: var(--bf-space-3);
+    border-color: var(--bf-color-border-strong);
+    background: var(--bf-color-surface);
+    font-weight: 500;
+  }
+
+  & .is-off {
+    opacity: 0.4;
+  }
+
+  & .bf-step .bf-icon {
+    inline-size: 1em;
+    block-size: 1em;
+  }
+
+  & .bf-step[rel="prev"] .bf-icon,
+  & .bf-step:first-child .bf-icon {
+    transform: rotate(180deg);
+  }
+
+  /* A plain "Page n" of the older pagers. */
+  & > span:not(.bf-step, .current) {
+    border-color: transparent;
+    color: var(--bf-color-muted);
+  }
+
+  &:not(:has(*)) {
+    display: none;
+  }
+
+  /* On a phone the arrows lose their words, so the numbers fit on one row. */
+  @media (max-width: 34rem) {
+    & .bf-step > span {
+      display: none;
+    }
+
+    & .bf-step {
+      padding-inline: 0;
+      inline-size: 2.25rem;
+    }
+
+    /* ... and the pages two away from the current one step aside (the first and the last stay). */
+    & .bf-pages li:has(+ li + li > .current):not(:first-child),
+    & .bf-pages li:has(.current) + li + li:not(:last-child) {
+      display: none;
+    }
+  }
+}
+
+.bf-pages {
+  display: flex;
+  gap: var(--bf-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & li {
+    display: grid;
+  }
+
+  & .gap {
+    place-items: center;
+    min-inline-size: 1.5rem;
+    color: var(--bf-color-muted);
+  }
+}
+
+.bf-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  margin-inline-start: var(--bf-space-4);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bf-color-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.bf-switch::before {
+  content: "";
+  width: 1.75rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at 0.5rem 50%,
+    var(--bf-color-surface) 0.35rem,
+    var(--bf-color-border-strong) 0.37rem
+  );
+}
+
+.bf-switch[aria-checked="true"]::before {
+  background: radial-gradient(
+    circle at 1.25rem 50%,
+    var(--bf-color-surface) 0.35rem,
+    var(--bf-color-accent) 0.37rem
+  );
+}
+
+.bf-switch:hover {
+  color: var(--bf-color-text);
+}

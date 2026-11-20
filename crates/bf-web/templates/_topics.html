@@ -1,0 +1,62 @@
+{#- A list of topics: home, forums, latest, top, tags, search. `bulk` adds a checkbox per row. -#}
+<table class="topics">
+  <thead>
+    <tr>
+      <th scope="col">{{ layout.t.t("list.topic") }}</th>
+      <th scope="col" class="num hide-sm">{{ layout.t.t("list.replies") }}</th>
+      <th scope="col" class="hide-sm">{{ layout.t.t("list.last_post") }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in topics %}
+    <tr class="bf-topic-row{% if t.unread.is_some() %} is-unread{% endif %}" data-topic-id="{{ t.id }}">
+      <td>
+        <div class="bf-topic-main">
+          {% if bulk %}<input type="checkbox" form="bulk" name="topic" value="{{ t.id }}" aria-label="{{ layout.t.f("topics.select", [("title", t.title.as_str())]) }}">{% endif %}
+          <span class="bf-dot{% if t.unread.is_some() %} is-unread{% endif %}" aria-hidden="true"
+            {%- if layout.user.is_some() %} data-tip-side="end" data-tip="{% if t.unread.is_some() %}{{ layout.t.t("list.dot_unread") }}{% else %}{{ layout.t.t("list.dot_read") }}{% endif %}"{% endif %}></span>
+          <div>
+            <div class="bf-topic-title">
+              {%- if let Some((n, mine)) = t.vote_button %}
+              <form method="post" action="/t/{{ t.id }}/vote-topic" class="inline bf-vote-pill" data-vote>
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <input type="hidden" name="on" value="{% if mine %}0{% else %}1{% endif %}">
+                <button class="bf-badge{% if mine %} is-voted{% endif %}" aria-pressed="{{ mine }}" aria-label="{{ layout.t.f("topics.vote_for", [("title", t.title.as_str())]) }}" data-tip="{% if mine %}{{ layout.t.t("topics.unvote") }}{% else %}{{ layout.t.t("topics.vote") }}{% endif %}">▲ <span data-vote-count>{{ n }}</span></button>
+              </form>
+              {% else if let Some(n) = t.votes %}
+              <span class="bf-badge" data-tip="{{ layout.t.t("topics.votes") }}">▲ {{ n }}</span>
+              {% endif %}
+              {% if t.solved %}<span class="bf-badge is-ok">{{ layout.icon("circle-check")|safe }} {{ layout.t.t("topics.solved") }}</span>{% endif %}
+              {% if t.pinned %}<span class="bf-badge is-accent">{{ layout.icon("pin")|safe }} {{ layout.t.t("topics.pinned") }}</span>{% endif %}
+              {% if t.locked %}<span class="bf-badge">{{ layout.icon("lock")|safe }} {{ layout.t.t("topics.locked") }}</span>{% endif %}
+              {% if let Some(px) = t.prefix %}<span class="bf-badge is-accent">{{ px }}</span>{% endif %}
+              {% if let Some(x) = layout.partial("topic_title", [("title", t.title.as_str()), ("url", t.url.as_str())]) %}{{ x|safe }}{% else %}<a href="{{ t.url }}">{{ t.title }}</a>{% endif %}
+              {{- layout.slot("topic_row_after_title")|safe }}
+              {% if let Some((n, url)) = t.unread %}<a class="bf-badge is-accent" href="{{ url }}">{{ layout.t.n("topics.new", n) }}</a>{% endif %}
+              {% for (name, slug) in t.tags %}<a class="bf-badge" href="/tag/{{ slug }}">{{ name }}</a>
+              {% endfor -%}
+            </div>
+            <div class="muted small">
+              {{- layout.by_line(t.author)|safe }} · {{ t.started }}
+              {%- if let Some((fname, furl)) = t.forum %} · <a class="bf-topic-forum" href="{{ furl }}">{{ fname }}</a>{% endif -%}
+              <span class="bf-mobile-meta"> · {{ layout.t.n("count.replies", t.replies) }} · {{ layout.user_link(t.last_poster)|safe }} {{ t.last_posted }}</span>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td class="num hide-sm bf-topic-stats">
+        <div>{{ layout.t.n("count.replies", t.replies) }}</div>
+        <div>{{ layout.t.n("count.views", t.views) }}</div>
+      </td>
+      <td class="hide-sm bf-topic-last">
+        <div class="bf-last">
+          {% if !t.last_poster.is_empty() %}<a href="/u/{{ t.last_poster.to_lowercase() }}" tabindex="-1" aria-hidden="true"><img class="avatar" src="/avatar/{{ t.last_poster }}.svg" width="40" height="40" alt="" loading="lazy"></a>{% endif %}
+          <div><strong>{{ layout.user_link(t.last_poster)|safe }}</strong><span class="muted">{{ t.last_posted }}</span></div>
+        </div>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3" class="muted">{{ layout.t.t("list.empty") }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>

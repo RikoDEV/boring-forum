@@ -1,0 +1,16 @@
+/* Critical stylesheet: inlined into every page (and allowed by hash in the CSP), so the first
+   paint needs no request. crates/bf-web/build.rs resolves the imports into one minified file.
+
+   Cascade layers, lowest first. Themes and plugins add unlayered CSS, which beats every layer,
+   so they can restyle anything without fighting specificity.
+   - tokens: design tokens and colour schemes
+   - base: element defaults
+   - app: shell, components, pages and post content, in the order of app.css
+   - a11y: forced colours and high contrast, which must win over everything */
+@layer tokens, base, app, a11y;
+
+@import url("tokens/tokens.css") layer(tokens);
+@import url("base/base.css") layer(base);
+@import url("layout/shell.css") layer(app);
+@import url("accessibility/preferences.css") layer(a11y);
+@import url("a11y/forced-colors.css") layer(a11y);

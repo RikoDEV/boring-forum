@@ -1,0 +1,36 @@
+# ZAP baseline rules (DAST).
+#
+# Format: <rule id>	<WARN|IGNORE|FAIL>	<comment>  (tab separated)
+#
+# Everything not listed here keeps its default, and the job fails on any FAIL-level alert. A rule
+# is only moved to IGNORE with the reason written down, because an ignored finding that nobody
+# can justify later is indistinguishable from a vulnerability nobody noticed.
+#
+# Review this file when.4's header list changes.
+
+# --- Expected for a server-rendered forum ---------------------------------------------------
+10015	IGNORE	Incomplete cache-control on public pages is deliberate: the guest microcache caches them on purpose, and logged-in responses do send Cache-Control: private with Vary: Cookie.
+10027	IGNORE	Information disclosure in suspicious comments: template comments explain markup, carry no data.
+10109	IGNORE	Modern web application: the islands architecture is server-rendered HTML plus small scripts, which this heuristic flags by design.
+
+# --- Checked by the test suite rather than by a passive scan --------------------------------
+10202	IGNORE	Absence of anti-CSRF tokens: ZAP cannot see the per-session token, which is checked on every state-changing request and covered by the e2e suite.
+90033	IGNORE	Loosely scoped cookie: the session cookie uses the __Host- prefix, which ZAP's heuristic reads as loosely scoped.
+
+# --- Must never regress: these are the headers requires -------------------------------
+10016	FAIL	Web browser XSS protection not enabled.
+10017	FAIL	Cross-domain JavaScript source file inclusion -- scripts load only from our own origin.
+10020	FAIL	Missing anti-clickjacking header (frame-ancestors / X-Frame-Options).
+10021	FAIL	Missing X-Content-Type-Options: nosniff.
+10035	FAIL	Strict-Transport-Security header missing on an https deployment.
+10038	FAIL	Content-Security-Policy header missing.
+10063	FAIL	Permissions-Policy header missing.
+10098	FAIL	Cross-domain misconfiguration (CORS is off by default,).
+10055	FAIL	CSP: wildcard or unsafe directive -- the policy is strict.
+10096	FAIL	Timestamp disclosure.
+10105	FAIL	Weak authentication method.
+40012	FAIL	Reflected cross-site scripting.
+40014	FAIL	Persistent cross-site scripting.
+40018	FAIL	SQL injection.
+90020	FAIL	Remote OS command injection.
+90022	FAIL	Application error disclosure -- errors are problem+json without internals.

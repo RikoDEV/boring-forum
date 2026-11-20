@@ -1,0 +1,505 @@
+{% extends "layout.html" %}
+{#- A member's account settings: one long page of sections, with a menu beside it. -#}
+{% block content %}
+<h1>{{ layout.t.t("settings.title") }}</h1>
+{% if let Some(m) = message %}<p class="panel" role="status">{{ m }}</p>{% endif %}
+{% if let Some(e) = error %}<p class="panel error" role="alert">{{ e }}</p>{% endif %}
+
+<div class="bf-settings">
+<nav class="bf-settings-nav" aria-label="{{ layout.t.t("settings.sections") }}">
+  <div class="bf-nav-group">{{ layout.t.t("settings.group_account") }}</div>
+  <a href="#s-profile">{{ layout.icon("user")|safe }} {{ layout.t.t("settings.profile") }}</a>
+  <a href="#s-status">{{ layout.icon("pencil")|safe }} {{ layout.t.t("settings.signature") }}</a>
+  <a href="#s-username">{{ layout.icon("user")|safe }} {{ layout.t.t("settings.username") }}</a>
+  <a href="#s-email">{{ layout.icon("mail")|safe }} {{ layout.t.t("settings.email") }}</a>
+  <a href="#s-password">{{ layout.icon("lock")|safe }} {{ layout.t.t("settings.password") }}</a>
+  <div class="bf-nav-group">{{ layout.t.t("settings.group_preferences") }}</div>
+  <a href="#s-interface">{{ layout.icon("settings")|safe }} {{ layout.t.t("settings.interface") }}</a>
+  <a href="#s-notifications">{{ layout.icon("bell")|safe }} {{ layout.t.t("settings.notifications") }}</a>
+  <a href="#s-muted-tags">{{ layout.icon("flag")|safe }} {{ layout.t.t("settings.muted_tags") }}</a>
+  <div class="bf-nav-group">{{ layout.t.t("settings.group_security") }}</div>
+  <a href="#s-two-factor-authentication">{{ layout.icon("shield")|safe }} {{ layout.t.t("settings.two_factor") }}</a>
+  <a href="#s-passkeys">{{ layout.icon("lock")|safe }} {{ layout.t.t("settings.passkeys") }}</a>
+  <a href="#s-connected-logins">{{ layout.icon("link")|safe }} {{ layout.t.msg("Connected logins") }}</a>
+  <a href="#s-sessions">{{ layout.icon("clock")|safe }} {{ layout.t.t("settings.sessions") }}</a>
+  <a href="#s-api-keys">{{ layout.icon("link")|safe }} {{ layout.t.t("settings.api_keys") }}</a>
+  <div class="bf-nav-group">{{ layout.t.t("settings.privacy") }}</div>
+  <a href="#s-privacy">{{ layout.icon("archive")|safe }} {{ layout.t.t("settings.privacy") }}</a>
+  <div class="bf-nav-group">{{ layout.t.t("settings.group_more") }}</div>
+  <a href="/welcome">{{ layout.icon("star")|safe }} {{ layout.t.t("settings.getting_started") }}</a>
+  {% for (u, l) in layout.plugin_links("settings") %}<a href="{{ u }}">{{ l }}</a>{% endfor %}
+</nav>
+<div class="bf-settings-body">
+
+<section class="bf-box bf-set" id="s-profile">
+  <div class="bf-set-head">
+    <h2>{{ layout.t.t("settings.profile") }}</h2>
+    <p class="muted small">{{ layout.t.t("settings.profile_hint") }} <a class="bf-inline-link" href="{{ layout.user_url }}">{{ layout.t.t("settings.your_profile") }}</a>.</p>
+  </div>
+  <div class="bf-set-body">
+    <form method="post" action="/settings/profile#s-profile" class="stack">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <div class="bf-field"><input placeholder=" " id="display_name" name="display_name" value="{{ display_name }}" maxlength="40"><label class="bf-field-label" for="display_name">{{ layout.t.t("settings.display_name") }}</label></div>
+      <label class="check"><input type="checkbox" name="hide_last_seen" value="1"{% if hide_last_seen %} checked{% endif %}> {{ layout.t.t("settings.hide_last_seen") }}</label>
+      <div class="composer bf-about-editor">
+        <label for="about">{{ layout.t.t("settings.about") }}</label>
+        <textarea placeholder=" " id="about" name="about" rows="4">{{ about }}</textarea>
+        <span data-island="composer" data-props="{&quot;editorUrl&quot;:&quot;{{ layout.editor_url }}&quot;}"></span>
+      </div>
+      <div class="bf-field"><input placeholder=" " id="location" name="location" value="{{ location }}" maxlength="100"><label class="bf-field-label" for="location">{{ layout.t.t("settings.location") }}</label></div>
+      <div class="bf-field"><input id="website" name="website" type="url" value="{{ website }}" placeholder="https://"><label class="bf-field-label" for="website">{{ layout.t.t("settings.website") }}</label></div>
+      <div class="bf-field"><input id="timezone" name="timezone" value="{{ timezone }}" placeholder="Europe/Warsaw"><label class="bf-field-label" for="timezone">{{ layout.t.t("settings.timezone") }}</label></div>
+      {% for q in fields %}{% include "_field_input.html" %}{% endfor %}
+      <button class="btn primary">{{ layout.t.t("settings.save_profile") }}</button>
+    </form>
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-status">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.signature") }}</h2><p class="muted small">{{ layout.t.t("settings.signature_hint") }}</p></div>
+  <div class="bf-set-body">
+    <form method="post" action="/settings/signature#s-status" class="stack">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <div class="bf-field"><textarea placeholder=" " id="sig-text" name="signature" rows="2"></textarea><label class="bf-field-label" for="sig-text">{{ layout.t.t("settings.signature_field") }}</label></div>
+      <button class="btn">{{ layout.t.t("settings.save_signature") }}</button>
+    </form>
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-username">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.username") }}</h2><p class="muted small">{{ layout.t.t("settings.username_hint") }}</p></div>
+  <div class="bf-set-body">
+    <form method="post" action="/settings/username#s-username" class="row-form">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <label class="bf-field"><input placeholder=" " name="username" value="{{ username }}" required minlength="3" maxlength="20"><span class="bf-field-label">{{ layout.t.t("settings.username") }}</span></label>
+      <button class="btn">{{ layout.t.t("settings.change_username") }}</button>
+    </form>
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-email">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.email") }}</h2><p class="muted small">{{ layout.t.t("settings.email_hint") }}</p></div>
+  <div class="bf-set-body">
+    <p>{{ email }} — {% if email_verified %}{{ layout.t.t("settings.verified") }}{% else %}<strong>{{ layout.t.t("settings.not_verified") }}</strong>{% endif %}</p>
+    <form method="post" action="/settings/email#s-email" class="stack">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <div class="bf-field"><input placeholder=" " id="new-email" name="email" type="email" autocomplete="email" required><label class="bf-field-label" for="new-email">{{ layout.t.t("settings.new_email") }}</label></div>
+      <div class="bf-field"><input placeholder=" " id="email-pw" name="password" type="password" autocomplete="current-password" required><label class="bf-field-label" for="email-pw">{{ layout.t.t("settings.current_password") }}</label></div>
+      <button class="btn">{{ layout.t.t("settings.change_email") }}</button>
+    </form>
+    {% if !email_verified %}
+    <form method="post" action="/settings/verify-email#s-email" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.t("settings.send_verification") }}</button></form>
+    {% endif %}
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-password">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.password") }}</h2><p class="muted small">{{ layout.t.t("settings.password_hint") }}</p></div>
+  <div class="bf-set-body">
+    <form method="post" action="/settings/password#s-password" class="stack">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <div class="bf-field"><input placeholder=" " id="current" name="current" type="password" autocomplete="current-password" required><label class="bf-field-label" for="current">{{ layout.t.t("settings.current_password") }}</label></div>
+      <div class="bf-field"><input placeholder=" " id="new" name="new" type="password" autocomplete="new-password" minlength="8" required><label class="bf-field-label" for="new">{{ layout.t.t("settings.new_password") }}</label></div>
+      <button class="btn primary">{{ layout.t.t("settings.change_password") }}</button>
+    </form>
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-interface">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.interface") }}</h2><p class="muted small">{{ layout.t.t("settings.interface_hint") }}</p></div>
+  <div class="bf-set-body">
+    <form method="post" action="/settings/interface#s-interface" class="bf-iface" data-island="autosave">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <fieldset class="bf-opt-group">
+        <legend>{{ layout.t.t("layout.language") }}</legend>
+        <div class="bf-opts">
+          {% for (code, name) in locales %}
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="locale" value="{{ code }}"{% if *code == layout.t.locale %} checked{% endif %}><span class="bf-opt-preview bf-opt-big">{{ code|upper }}</span><span class="bf-opt-name">{{ name }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <fieldset class="bf-opt-group">
+        <legend>{{ layout.t.t("settings.text_size") }}</legend>
+        <div class="bf-opts">
+          {% for s in [90, 100, 110, 125] %}
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="text_size" value="{{ s }}"{% if *s == layout.text_size || (*s == 100 && layout.text_size != 90 && layout.text_size != 110 && layout.text_size != 125) %} checked{% endif %}><span class="bf-opt-preview"><span class="bf-aa-{{ s }}">Aa</span></span><span class="bf-opt-name">{{ s }}%</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <fieldset class="bf-opt-group">
+        <legend>{{ layout.t.t("settings.density") }}</legend>
+        <div class="bf-opts">
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="density" value="comfortable"{% if layout.density != "compact" %} checked{% endif %}><span class="bf-opt-preview"><span class="bf-mini-rows is-comfortable" aria-hidden="true"><i></i><i></i><i></i><i></i></span></span><span class="bf-opt-name">{{ layout.t.t("settings.density_comfortable") }}</span></label>
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="density" value="compact"{% if layout.density == "compact" %} checked{% endif %}><span class="bf-opt-preview"><span class="bf-mini-rows is-compact" aria-hidden="true"><i></i><i></i><i></i><i></i></span></span><span class="bf-opt-name">{{ layout.t.t("settings.density_compact") }}</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="bf-opt-group">
+        <legend>{{ layout.t.t("settings.dates") }}</legend>
+        <div class="bf-opts">
+          {% for (k, sample) in [("relative", "3h"), ("iso", "2026-01-31 14:05"), ("locale", "Jan 31, 2:05 PM")] %}
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="date_format" value="{{ k }}"{% if layout.date_format == *k || (*k == "relative" && layout.date_format != "iso" && layout.date_format != "locale") %} checked{% endif %}><span class="bf-opt-preview"><span class="bf-opt-sample">{% if *k == "relative" %}{{ layout.t.t("settings.dates_sample_relative") }}{% else %}{{ sample }}{% endif %}</span></span><span class="bf-opt-name">{{ layout.t.tj("settings.dates_", k) }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <fieldset class="bf-opt-group">
+        <legend>{{ layout.t.t("settings.skin_tone") }}</legend>
+        <div class="bf-opts">
+          {% for (n, emoji, key) in [(0, "👍", "default"), (1, "👍🏻", "light"), (2, "👍🏼", "medium_light"), (3, "👍🏽", "medium"), (4, "👍🏾", "medium_dark"), (5, "👍🏿", "dark")] %}
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="skin_tone" value="{{ n }}"{% if layout.skin_tone == *n %} checked{% endif %}><span class="bf-opt-preview bf-opt-emoji" aria-hidden="true">{{ emoji }}</span><span class="bf-opt-name">{{ layout.t.tj("settings.skin_", key) }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <fieldset class="bf-opt-group">
+        <legend>{{ layout.t.t("settings.visible_to") }}</legend>
+        <div class="bf-opts">
+          {% for (k, icon) in [("everyone", "globe"), ("members", "users"), ("nobody", "lock")] %}
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="profile_visibility" value="{{ k }}"{% if profile_visibility == *k || (*k == "everyone" && profile_visibility != "members" && profile_visibility != "nobody") %} checked{% endif %}><span class="bf-opt-preview" aria-hidden="true">{{ layout.icon(icon)|safe }}</span><span class="bf-opt-name">{{ layout.t.tj("settings.visible_", k) }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <noscript><div class="bf-iface-end"><button class="btn primary">{{ layout.t.t("common.save") }}</button></div></noscript>
+    </form>
+    {% if !theme_choices.is_empty() || !default_scheme.0.is_empty() %}
+    <form method="post" action="/settings/theme#s-interface" class="bf-iface" data-island="autosave">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      {% if !theme_choices.is_empty() %}
+      <fieldset class="bf-opt-group">
+        <legend>{{ layout.t.t("settings.theme") }}</legend>
+        <div class="bf-opts">
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="theme" value="" checked><span class="bf-opt-preview" aria-hidden="true"><span class="bf-mini-page"><i></i><i></i><i></i></span></span><span class="bf-opt-name">{{ layout.t.t("settings.theme_default") }}</span></label>
+          {% for (id, name) in theme_choices %}
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="theme" value="{{ id }}"{% if theme_id.as_ref() == Some(id) %} checked{% endif %}><span class="bf-opt-preview" aria-hidden="true"><span class="bf-mini-page"><i></i><i></i><i></i></span></span><span class="bf-opt-name">{{ name }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      {% endif %}
+      {% if !default_scheme.0.is_empty() %}
+      <fieldset class="bf-opt-group">
+        <legend>{{ layout.t.t("settings.colours") }}</legend>
+        <div class="bf-opts">
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="scheme" value="" checked><span class="bf-opt-preview" aria-hidden="true"><span class="bf-swatch" data-scheme="{{ default_scheme.0 }}"><i></i><i></i></span></span><span class="bf-opt-name">{% if default_scheme.1.is_empty() %}{{ layout.t.t("settings.theme_default") }}{% else %}{{ default_scheme.1 }}{% endif %}</span></label>
+          {% for (slug, name) in schemes %}
+          <label class="bf-opt"><input class="visually-hidden" type="radio" name="scheme" value="{{ slug }}"{% if layout.scheme == *slug %} checked{% endif %}><span class="bf-opt-preview" aria-hidden="true"><span class="bf-swatch" data-scheme="{{ slug }}"><i></i><i></i></span></span><span class="bf-opt-name">{{ name }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      {% endif %}
+      <noscript><div class="bf-iface-end"><button class="btn primary">{{ layout.t.t("common.save") }}</button></div></noscript>
+    </form>
+    {% endif %}
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-notifications">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.notifications") }}</h2><p class="muted small">{{ layout.t.t("settings.notifications_hint") }}</p></div>
+  <div class="bf-set-body">
+    <p data-island="push-toggle" hidden></p>
+    <form method="post" action="/settings/notifications#s-notifications">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <table class="prefs">
+        <thead><tr><th scope="col"></th><th scope="col">{{ layout.t.t("settings.in_app") }}</th><th scope="col">{{ layout.t.t("settings.email") }}</th><th scope="col">{{ layout.t.msg("Push") }}</th></tr></thead>
+        <tbody>
+          {% for (kind, label, app, email, push) in prefs %}
+          <tr>
+            <th scope="row">{{ label }}</th>
+            <td><input type="checkbox" name="{{ kind }}_app" aria-label="{{ label }}: {{ layout.t.t("settings.in_app") }}"{% if *app %} checked{% endif %}></td>
+            <td><input type="checkbox" name="{{ kind }}_email" aria-label="{{ label }}: {{ layout.t.t("settings.email") }}"{% if *email %} checked{% endif %}></td>
+            <td><input type="checkbox" name="{{ kind }}_push" aria-label="{{ label }}: {{ layout.t.msg("Push") }}"{% if *push %} checked{% endif %}></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p>
+        <label class="bf-field">
+          <select name="digest">
+            {%- for k in ["none", "daily", "weekly", "monthly"] %}<option value="{{ k }}"{% if digest == *k %} selected{% endif %}>{{ layout.t.tj("settings.digest_", k) }}</option>{% endfor -%}
+          </select>
+          <span class="bf-field-label">{{ layout.t.t("settings.digest") }}</span>
+        </label>
+      </p>
+      {% if let Some(on) = mailing_list %}<p><label><input type="checkbox" name="mailing_list" value="1"{% if *on %} checked{% endif %}> {{ layout.t.t("settings.mailing_list") }}</label></p>{% endif %}
+      {% if let Some(on) = newsletter %}<p><label><input type="checkbox" name="newsletter" value="1"{% if *on %} checked{% endif %}> {{ layout.t.t("settings.newsletter") }}</label></p>{% endif %}
+      <button class="btn primary">{{ layout.t.t("settings.save_notifications") }}</button>
+    </form>
+    <div class="bf-set-part">
+      <h3>{{ layout.t.t("settings.quiet") }}</h3>
+      <p class="muted small">{{ layout.t.t("settings.quiet_hint") }}</p>
+      <form method="post" action="/settings/quiet#s-notifications" class="stack">
+        <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+        <div class="bf-field"><input placeholder=" " id="quiet-start" type="number" name="start" min="0" max="23" value="{{ quiet_start }}"><label class="bf-field-label" for="quiet-start">{{ layout.t.t("settings.quiet_from") }}</label></div>
+        <div class="bf-field"><input placeholder=" " id="quiet-end" type="number" name="end" min="0" max="23" value="{{ quiet_end }}"><label class="bf-field-label" for="quiet-end">{{ layout.t.t("settings.quiet_until") }}</label></div>
+        <button class="btn">{{ layout.t.t("common.save") }}</button>
+      </form>
+    </div>
+    <div class="bf-set-part">
+      <h3>{{ layout.t.t("settings.dnd") }}</h3>
+      <form method="post" action="/settings/dnd#s-notifications" class="stack">
+        <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+        <div class="bf-field"><input placeholder=" " id="dnd-h" type="number" name="hours" min="0" max="8760" value="8"><label class="bf-field-label" for="dnd-h">{{ layout.t.t("settings.dnd_hours") }}</label></div>
+        <button class="btn">{{ layout.t.t("common.save") }}</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-muted-tags">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.muted_tags") }}</h2><p class="muted small">{{ layout.t.t("settings.muted_tags_hint") }}</p></div>
+  <div class="bf-set-body">
+    <form method="post" action="/settings/muted-tags#s-muted-tags" class="row-form">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <label class="bf-field"><input name="tags" value="{{ muted_tags }}" placeholder="{{ layout.t.t("topic.add_tags") }}" data-tag-input><span class="bf-field-label">{{ layout.t.t("settings.muted_tags_field") }}</span></label>
+      <button class="btn">{{ layout.t.t("common.save") }}</button>
+    </form>
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-two-factor-authentication">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.two_factor") }}</h2><p class="muted small">{{ layout.t.t("settings.two_factor_hint") }}</p></div>
+  <div class="bf-set-body">
+    {% if totp_enabled %}
+    <p class="bf-2fa-status is-on">{{ layout.icon("circle-check")|safe }} <strong>{{ layout.t.t("settings.tfa_on") }}</strong> {{ layout.t.t("settings.tfa_on_hint") }}</p>
+    {% if let Some(codes) = new_backup_codes %}
+    <div class="bf-set-part">
+      <h3>{{ layout.t.t("settings.tfa_new_codes") }}</h3>
+      <p class="small muted">{{ layout.t.t("settings.tfa_new_codes_hint") }}</p>
+      <ul class="codes" id="backup-codes-list">{% for c in codes %}<li>{{ c }}</li>{% endfor %}</ul>
+      <button type="button" class="btn small" data-copy-target="backup-codes-list">{{ layout.t.t("settings.copy_all") }}</button>
+    </div>
+    {% else if let Some(left) = backup_codes_left %}
+    <div class="bf-set-part bf-2fa-codes-left">
+      <p class="small muted">{{ layout.t.n("settings.tfa_codes_left", left) }}</p>
+      <form method="post" action="/settings/2fa/backup-codes#s-two-factor-authentication" class="stack"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><div class="bf-field"><input placeholder=" " id="code-regen" name="code" maxlength="23" autocomplete="one-time-code" required><label class="bf-field-label" for="code-regen">{{ layout.t.t("settings.tfa_current_code") }}</label></div><button class="btn">{{ layout.t.t("settings.tfa_regenerate") }}</button></form>
+    </div>
+    {% endif %}
+    <div class="bf-set-part">
+      <p class="small muted">{{ layout.t.msgf("Remembered devices skip the code for 30 days: {n}", [("n", trusted_devices.to_string().as_str())]) }}</p>
+      {% if trusted_devices > 0 %}<form method="post" action="/settings/2fa/forget-devices#s-two-factor-authentication" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.msg("Forget all devices") }}</button></form>{% endif %}
+    </div>
+    <div class="bf-set-part bf-danger">
+      <h3>{{ layout.t.t("settings.tfa_turn_off_title") }}</h3>
+      <form method="post" action="/settings/2fa/disable#s-two-factor-authentication" class="stack">
+        <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+        <div class="bf-field"><input placeholder=" " id="code-off" name="code" maxlength="23" autocomplete="one-time-code" required><label class="bf-field-label" for="code-off">{{ layout.t.t("settings.tfa_current_code") }}</label></div>
+        <button class="btn bf-btn-danger">{{ layout.t.t("settings.tfa_turn_off") }}</button>
+      </form>
+    </div>
+    {% else if let Some(setup) = totp_setup %}
+    <ol class="bf-2fa-steps">
+      <li>
+        <strong>{{ layout.t.t("settings.tfa_scan") }}</strong> {{ layout.t.t("settings.tfa_scan_hint") }}
+        {% if let Some(qr) = setup.qr %}<div class="bf-2fa-qr">{{ qr|safe }}</div>{% endif %}
+        <details class="bf-2fa-manual bf-disclosure">
+          <summary>{{ layout.t.t("settings.tfa_manual") }}</summary>
+          <p class="bf-2fa-secret"><code class="secret">{{ setup.secret }}</code> <button type="button" class="btn small" data-copy="{{ setup.secret }}">{{ layout.t.t("topic.copy") }}</button></p>
+          <p class="small muted"><a class="bf-inline-link" href="{{ setup.uri }}">{{ layout.t.t("settings.tfa_open_app") }}</a> {{ layout.t.t("settings.tfa_open_app_hint") }}</p>
+        </details>
+      </li>
+      <li>
+        <strong>{{ layout.t.t("settings.tfa_enter") }}</strong> {{ layout.t.t("settings.tfa_enter_hint") }}
+        <form method="post" action="/settings/2fa/enable#s-two-factor-authentication" class="stack">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          <input type="hidden" name="secret" value="{{ setup.secret }}">
+          <div class="bf-field"><input placeholder=" " id="code-on" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required autofocus><label class="bf-field-label" for="code-on">{{ layout.t.t("settings.tfa_code") }}</label></div>
+          <button class="btn primary">{{ layout.t.t("settings.tfa_turn_on") }}</button>
+        </form>
+      </li>
+    </ol>
+    {% else %}
+    <p class="bf-2fa-status">{{ layout.t.t("settings.tfa_off") }}</p>
+    <a class="btn primary" href="/settings?setup=2fa#s-two-factor-authentication">{{ layout.t.t("settings.tfa_set_up") }}</a>
+    {% endif %}
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-passkeys">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.passkeys") }}</h2><p class="muted small">{{ layout.t.t("settings.passkeys_hint") }}</p></div>
+  <div class="bf-set-body">
+    <ul class="activity">
+      {% for (id, name, created, used) in passkeys %}
+      <li>{{ name }} · {{ layout.t.t("settings.added") }} {{ created }} · {{ layout.t.t("settings.last_used") }} {{ used }}
+        <form method="post" action="/settings/passkeys/{{ id }}/delete#s-passkeys" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link">{{ layout.t.t("settings.remove") }}</button></form>
+      </li>
+      {% else %}
+      <li class="muted">{{ layout.t.t("settings.no_passkeys") }}</li>
+      {% endfor %}
+    </ul>
+    <span data-island="passkey-register"></span>
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-connected-logins">
+  <div class="bf-set-head"><h2>{{ layout.t.msg("Connected logins") }}</h2><p class="muted small">{{ layout.t.msg("Sign-in accounts linked to this one. You can unlink one while you have another way to sign in.") }}</p></div>
+  <div class="bf-set-body">
+    <ul class="activity">
+      {% for (key, label, email, linked) in identities %}
+      <li>{{ label }}{% if let Some(e) = email %} · {{ e }}{% endif %} · {{ layout.t.msg("linked") }} {{ linked }}
+        {% if identity_removable %}
+        <form method="post" action="/settings/identities/{{ key }}/unlink#s-connected-logins" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link">{{ layout.t.msg("Unlink") }}</button></form>
+        {% else %}
+        <span class="muted small">{{ layout.t.msg("Your only way to sign in") }}</span>
+        {% endif %}
+      </li>
+      {% else %}
+      <li class="muted">{{ layout.t.msg("No linked logins.") }}</li>
+      {% endfor %}
+    </ul>
+    {% for (key, label) in connectable %}
+    <form method="post" action="/auth/{{ key }}/link" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.msgf("Connect {provider}", [("provider", label.as_str())]) }}</button></form>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-sessions">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.sessions") }}</h2><p class="muted small">{{ layout.t.t("settings.sessions_hint") }}</p></div>
+  <div class="bf-set-body">
+    {% if sessions.len() > 1 %}
+    <div class="bf-sessions-head">
+      <p>{{ layout.t.n("settings.signed_in_on", sessions.len()) }}</p>
+      <form method="post" action="/settings/sessions/revoke-others#s-sessions"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("log-out")|safe }} {{ layout.t.t("settings.sign_out_others") }}</button></form>
+    </div>
+    {% endif %}
+    <ul class="bf-sessions">
+      {% for s in sessions %}
+      <li>
+        <span class="bf-session-icon" aria-hidden="true">{{ layout.icon(s.browser_icon.as_str())|safe }}<span class="bf-session-os">{{ layout.icon(s.os_icon.as_str())|safe }}</span></span>
+        <div class="bf-session-main">
+          <strong>{% if let Some(d) = s.device %}{{ d }}{% else %}{{ layout.t.t("settings.unknown_device") }}{% endif %}</strong>{% if s.current %}<span class="bf-session-here">{{ layout.t.t("settings.this_device") }}</span>{% endif %}
+          <div class="bf-session-meta">
+            {%- if let Some(c) = s.country %}<span><img class="bf-flag" src="/assets/flags/{{ c }}.svg" width="16" height="16" alt="" loading="lazy">{{ c|upper }}</span>{% endif %}
+            {%- if let Some(ip) = s.ip %}<span>{{ ip }}</span>{% endif -%}
+            <span>{{ layout.t.t("settings.last_active") }} {{ s.last_used }}</span>
+            <span>{{ layout.t.t("settings.signed_in") }} {{ s.created }}</span>
+          </div>
+        </div>
+        {% if !s.current %}
+        <form method="post" action="/settings/sessions/revoke#s-sessions"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><input type="hidden" name="id" value="{{ s.id }}"><button class="btn">{{ layout.t.t("settings.sign_out") }}</button></form>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-api-keys">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.api_keys") }}</h2><p class="muted small">{{ layout.t.t("settings.api_keys_hint") }}</p></div>
+  <div class="bf-set-body">
+    <form method="post" action="/settings/api-keys#s-api-keys" class="row-form">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <label class="bf-field"><input name="name" placeholder=" " required><span class="bf-field-label">{{ layout.t.t("settings.key_name") }}</span></label>
+      <label class="bf-field">
+        <select name="scope"><option value="read">{{ layout.t.t("settings.scope_read") }}</option><option value="write">{{ layout.t.t("settings.scope_write") }}</option></select>
+        <span class="bf-field-label">{{ layout.t.t("settings.access") }}</span>
+      </label>
+      {% if !plugin_scopes.is_empty() %}
+      <div class="bf-field-group">
+        <span class="muted small">{{ layout.t.t("settings.plugin_scopes") }}</span>
+        {% for (scope, label) in plugin_scopes %}<label class="check"><input type="checkbox" name="scope_{{ scope }}" value="1"> {{ label }}</label>{% endfor %}
+      </div>
+      {% endif %}
+      <label class="bf-field">
+        <select name="days"><option value="30">{{ layout.t.n("count.days", 30) }}</option><option value="90" selected>{{ layout.t.n("count.days", 90) }}</option><option value="365">{{ layout.t.t("settings.one_year") }}</option></select>
+        <span class="bf-field-label">{{ layout.t.t("settings.expires_after") }}</span>
+      </label>
+      <button class="btn">{{ layout.t.t("settings.create") }}</button>
+    </form>
+    <ul class="activity">
+      {% for (id, name, scope, used, expires) in api_keys %}
+      <li>{{ name }} <span class="muted small">{{ scope }} · {{ layout.t.t("settings.last_used") }} {{ used }} · {{ expires }}</span>
+        <form method="post" action="/settings/api-keys/{{ id }}/delete#s-api-keys" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link">{{ layout.t.t("common.delete") }}</button></form>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="bf-box bf-set" id="s-privacy">
+  <div class="bf-set-head"><h2>{{ layout.t.t("settings.privacy") }}</h2><p class="muted small">{{ layout.t.t("settings.privacy_hint") }}</p></div>
+  <div class="bf-set-body">
+    <div class="bf-set-rows">
+      <div class="bf-set-row">
+        {{ layout.icon("eye")|safe }}
+        <div><strong>{{ layout.t.t("settings.visitors") }}</strong><p>{% if keeps_visitors %}{{ layout.t.t("settings.visitors_on") }}{% else %}{{ layout.t.t("settings.visitors_off") }}{% endif %}</p></div>
+        <form method="post" action="/settings/visitors#s-privacy">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          {% if !keeps_visitors %}<input type="hidden" name="on" value="1">{% endif %}
+          <button class="btn">{% if keeps_visitors %}{{ layout.t.t("settings.visitors_turn_off") }}{% else %}{{ layout.t.t("settings.tfa_turn_on") }}{% endif %}</button>
+        </form>
+      </div>
+      <div class="bf-set-row">
+        {{ layout.icon("mail")|safe }}
+        <div><strong>{{ layout.t.t("settings.post_by_email") }}</strong><p>{{ layout.t.t("settings.post_by_email_hint") }}</p></div>
+        <form method="post" action="/settings/mail-key#s-privacy"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.t("settings.get_address") }}</button></form>
+      </div>
+      <div class="bf-set-row">
+        {{ layout.icon("archive")|safe }}
+        <div><strong>{{ layout.t.t("settings.your_data") }}</strong><p>{{ layout.t.t("settings.your_data_hint") }}</p></div>
+        <span class="bf-set-actions"><a class="btn" href="/settings/export">{{ layout.t.t("settings.download_data") }}</a> <a class="btn" href="/settings/export.zip">{{ layout.t.msg("Download with files (ZIP)") }}</a></span>
+      </div>
+      <div class="bf-set-row">
+        {{ layout.icon("mail")|safe }}
+        <div><strong>{{ layout.t.msg("Who can message me") }}</strong><p>{{ layout.t.msg("Staff can always reach you.") }}</p></div>
+        <form method="post" action="/settings/privacy#s-privacy" class="row-form">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          <select name="allow_pm_from" aria-label="{{ layout.t.msg("Who can message me") }}">
+            <option value="everyone"{% if allow_pm_from == "everyone" %} selected{% endif %}>{{ layout.t.msg("Everyone") }}</option>
+            <option value="following"{% if allow_pm_from == "following" %} selected{% endif %}>{{ layout.t.msg("Only people I follow") }}</option>
+            <option value="nobody"{% if allow_pm_from == "nobody" %} selected{% endif %}>{{ layout.t.msg("Nobody") }}</option>
+          </select>
+          <button class="btn">{{ layout.t.t("common.save") }}</button>
+        </form>
+      </div>
+    </div>
+    <div class="bf-set-part">
+      <h3>{{ layout.t.msg("Muted members") }}</h3>
+      <p class="small muted">{{ layout.t.msg("Their posts are hidden from you and they cannot message you.") }}</p>
+      {% if let Some((uid, uname)) = undo_unmute %}
+      <form method="post" action="/settings/muted/{{ uid }}#s-privacy" class="row-form" role="status">
+        <input type="hidden" name="csrf" value="{{ layout.csrf }}"><input type="hidden" name="on" value="1">
+        <span class="small">{{ layout.t.msg("Unmuted") }} {{ layout.user_link(uname)|safe }}.</span>
+        <button class="btn small">{{ layout.t.msg("Undo") }}</button>
+      </form>
+      {% endif %}
+      <ul class="activity">
+        {% for (uid, uname) in muted_users %}
+        <li>{{ layout.user_link(uname)|safe }}
+          <form method="post" action="/settings/muted/{{ uid }}#s-privacy" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><input type="hidden" name="on" value="0"><button class="link">{{ layout.t.msg("Unmute") }}</button></form>
+        </li>
+        {% else %}
+        <li class="muted">{{ layout.t.msg("You have not muted anyone.") }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="bf-danger-box">
+      <h3>{{ layout.t.t("settings.delete_account") }}</h3>
+      {% if let Some(when) = deletion_pending %}
+      <p class="small">{{ layout.t.f("settings.deletion_pending", [("when", when.as_str())]) }}</p>
+      <form method="post" action="/settings/delete/cancel#s-privacy"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.t("settings.cancel_deletion") }}</button></form>
+      {% else %}
+      <p class="small muted">{{ layout.t.t("settings.delete_hint") }}</p>
+      <button type="button" class="btn bf-btn-danger" data-dialog="delete-account">{{ layout.icon("trash-2")|safe }} {{ layout.t.t("settings.delete_mine") }}</button>
+      <dialog class="bf-dialog" id="delete-account" aria-labelledby="delete-title">
+        <header class="bf-dialog-head">
+          <h2 id="delete-title">{{ layout.t.t("settings.delete_confirm_title") }}</h2>
+          <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+        </header>
+        <div class="bf-dialog-body">
+          <form method="post" action="/settings/delete#s-privacy" class="stack">
+            <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+            <fieldset class="stack">
+              <legend>{{ layout.t.msg("What happens to your posts") }}</legend>
+              <label class="check"><input type="radio" name="content" value="keep" checked> {{ layout.t.msg("Keep them, without my name") }}</label>
+              <label class="check"><input type="radio" name="content" value="delete"> {{ layout.t.msg("Delete them too") }}</label>
+            </fieldset>
+            <div class="bf-field"><input placeholder=" " id="delete-confirm" name="confirm" autocomplete="off" required><label class="bf-field-label" for="delete-confirm">{{ layout.t.t("settings.delete_type_name") }}</label></div>
+            <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger">{{ layout.t.t("settings.delete_mine") }}</button></div>
+          </form>
+        </div>
+      </dialog>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{#- One widget in a page's area: (id, title, html, kind). -#}
+<div data-widget="{{ id }}" data-kind="{{ kind }}">
+  {%- if kind.as_str() == "browsing" %}{% include "_browsing.html" %}
+  {%- else if kind.as_str() == "suggested_topics" %}<!--bf-suggested-->
+  {%- else %}
+  <section class="bf-box widget">
+    {%- if !title.is_empty() %}<div class="bf-box-head"><h2>{{ title }}</h2></div>{% endif -%}
+    <div class="bf-box-body">{{ html|safe }}</div>
+  </section>
+  {%- endif %}
+</div>

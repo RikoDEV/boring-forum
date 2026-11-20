@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{#- An error page: the status and what went wrong. -#}
+{% block content %}
+<section class="panel" data-error="{{ status }}">
+  <h1>{{ status }}</h1>
+  <p>{{ message }}</p>
+  <p>{% if status == 422 || status == 400 %}<a href="/" data-back>{{ layout.t.t("error.back") }}</a> · {% endif %}<a href="/">{{ layout.t.t("error.home") }}</a></p>
+</section>
+{% endblock %}

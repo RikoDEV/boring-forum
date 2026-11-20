@@ -1,0 +1,19 @@
+# Text files are stored and checked out with LF line endings on every platform, so the
+# hashes of inlined CSS and scripts (CSP) and shell scripts in containers do not depend on
+# the checkout.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff2 binary
+*.wasm binary
+
+Cargo.lock linguist-generated
+**/pnpm-lock.yaml linguist-generated
+**/package-lock.json linguist-generated
+supply-chain/imports.lock linguist-generated
+web/api/src/schema.d.ts linguist-generated

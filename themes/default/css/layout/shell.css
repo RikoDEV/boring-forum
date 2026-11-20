@@ -1,0 +1,437 @@
+/* App shell: page width, sticky header bar, main navigation, the two-column grid and
+   the sidebar.
+   Inlined with the tokens, so the first paint needs no request. */
+
+.wrap {
+  max-width: var(--bf-content-width);
+  margin-inline: auto;
+  padding-inline: var(--bf-space-4);
+}
+
+/* Only the top row sticks, so the header's box must not end before the page does. */
+
+:root {
+  --bf-header-height: 3.5rem;
+  scroll-padding-block-start: calc(var(--bf-header-height) + var(--bf-space-2));
+}
+
+.site-header {
+  display: contents;
+}
+
+/* The bar and the opened menu are one block: on a phone it sticks as a whole, so the menu opens
+   under the bar wherever the page is scrolled to, not at the top of the page. */
+.bf-header-sticky {
+  display: contents;
+}
+
+.bf-header-bar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  background: var(--bf-color-header-bg);
+  color: var(--bf-color-header-text);
+  border-block-end: 1px solid var(--bf-color-border);
+}
+
+.bf-header-title {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-3);
+  flex: 0 1 auto;
+  min-width: 0;
+  line-height: 1.25;
+
+  /* The forum and the title, stacked, beside a vote box when the topic has one. */
+  & .bf-ht-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &[hidden] {
+    display: none;
+  }
+
+  /* Where the topic lives, above its title. */
+  & .bf-ht-forum {
+    overflow: hidden;
+    color: inherit;
+    font-size: var(--bf-text-xs);
+    opacity: 0.75;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  & .bf-ht-title {
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-4);
+  min-height: 3.5rem;
+}
+
+.brand {
+  color: inherit;
+  font-weight: 700;
+  font-size: var(--bf-text-lg);
+  white-space: nowrap;
+
+  &:hover {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* An uploaded logo (ACP → Settings → Branding) in place of the name. It fits the header's
+   height and never pushes the search box off a narrow screen. */
+.brand.has-logo {
+  display: flex;
+  align-items: center;
+  flex: none;
+  min-width: 0;
+}
+
+.bf-logo,
+.bf-logo-small {
+  display: block;
+  width: auto;
+  max-width: 14rem;
+  height: 2.5rem;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.bf-logo-small {
+  display: none;
+  max-width: 2.5rem;
+}
+
+.bf-logo-dark {
+  display: none;
+}
+
+/* The dark logo follows the same switch as the colours: the system, unless the theme toggle
+   chose light or dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .brand:has(.bf-logo-dark) > .bf-logo:not(.bf-logo-dark) {
+    display: none;
+  }
+
+  :root:not([data-theme="light"]) .bf-logo-dark {
+    display: block;
+  }
+}
+
+:root[data-theme="dark"] .brand:has(.bf-logo-dark) > .bf-logo:not(.bf-logo-dark) {
+  display: none;
+}
+
+:root[data-theme="dark"] .bf-logo-dark {
+  display: block;
+}
+
+@media (width <= 640px) {
+  .brand:has(.bf-logo-small) > .bf-logo {
+    display: none;
+  }
+
+  .bf-logo-small {
+    display: block;
+  }
+}
+
+.header-search {
+  position: relative;
+  flex: 0 1 18rem;
+  display: flex;
+  min-width: 0;
+  margin-inline-start: auto;
+
+  & > .bf-icon {
+    position: absolute;
+    inset-block-start: 0.6rem;
+    inset-inline-start: var(--bf-space-3);
+    color: var(--bf-color-muted);
+    pointer-events: none;
+  }
+
+  & > kbd {
+    position: absolute;
+    inset-block-start: 0.5rem;
+    inset-inline-end: var(--bf-space-2);
+    min-width: 1.25rem;
+    padding-inline: var(--bf-space-1);
+    border: 1px solid var(--bf-color-border-strong);
+    border-radius: var(--bf-radius-input);
+    color: var(--bf-color-muted);
+    font: inherit;
+    font-size: var(--bf-text-xs);
+    text-align: center;
+    pointer-events: none;
+  }
+
+  & input[name="q"] {
+    width: 100%;
+    height: 2.25rem;
+    font: inherit;
+    font-size: var(--bf-text-list);
+    padding-inline: 2.25rem 2.25rem;
+    border: 1px solid var(--bf-color-border);
+    border-radius: var(--bf-radius);
+    background: var(--bf-color-surface-2);
+    color: var(--bf-color-text);
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-1);
+}
+
+/* Reserves the theme toggle's final size before its island mounts (a module script, so it
+   runs after first paint): otherwise the empty placeholder has no width, the icons after it
+   sit shifted left to fill the gap, and they jump right once the button appears. */
+[data-island="theme-toggle"] {
+  display: inline-flex;
+  flex: none;
+  min-width: var(--bf-control-height);
+  height: var(--bf-control-height);
+}
+
+.bf-nav-row {
+  background: var(--bf-color-header-bg);
+  color: var(--bf-color-header-text);
+  border-block-end: 1px solid var(--bf-color-border);
+}
+
+.main-nav {
+  display: flex;
+  gap: var(--bf-space-1);
+  min-height: 2.5rem;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  & a {
+    display: flex;
+    align-items: center;
+    gap: var(--bf-space-1);
+    padding-inline: var(--bf-space-3);
+    color: var(--bf-color-muted);
+    font-size: var(--bf-text-list);
+    font-weight: 500;
+    white-space: nowrap;
+    border-block-end: 2px solid transparent;
+  }
+
+  & a:hover {
+    color: var(--bf-color-text);
+    text-decoration: none;
+    border-block-end-color: var(--bf-color-border-strong);
+  }
+}
+
+.bf-icon-btn.bf-nav-toggle {
+  display: none;
+}
+
+.bf-nav-check:focus-visible ~ .bf-header-sticky .bf-nav-toggle {
+  outline: 2px solid var(--bf-color-focus);
+}
+
+.main-nav.has-more,
+.main-nav:has(.bf-nav-menu[open]) {
+  overflow: visible;
+}
+
+/* A menu a plugin groups its links under: opens beneath its heading, not at the bar's end. */
+.main-nav .bf-nav-menu {
+  & > summary {
+    display: flex;
+    align-items: center;
+    gap: var(--bf-space-1);
+    block-size: 100%;
+  }
+
+  & .bf-menu-body {
+    inset-inline: 0 auto;
+  }
+}
+
+/* In the phone's column the menu opens in place, like the links around it. */
+@media (width <= 640px) {
+  .main-nav .bf-menu.bf-nav-menu {
+    display: block;
+    align-self: stretch;
+
+    & > summary {
+      padding-block: var(--bf-space-2);
+    }
+
+    & .bf-menu-body {
+      position: static;
+      max-width: none;
+      border: 0;
+      box-shadow: none;
+    }
+  }
+}
+
+.main-nav {
+  & .bf-menu {
+    align-self: center;
+  }
+
+  & .bf-menu > summary {
+    color: var(--bf-color-muted);
+    font-size: var(--bf-text-list);
+    font-weight: 500;
+    padding-inline: var(--bf-space-3);
+  }
+
+  & .bf-menu-body {
+    inset-inline-end: auto;
+    inset-inline-start: 0;
+  }
+}
+
+/* The menu's checkbox. It is fixed to the viewport, not to the top of the page: tapping the menu
+   button focuses it, and the browser scrolls a focused control into view. */
+.bf-nav-check {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+main {
+  padding-block: var(--bf-space-5);
+  min-height: 60vh;
+}
+
+.bf-grid {
+  display: grid;
+  gap: var(--bf-space-5);
+  grid-template-columns: minmax(0, 1fr);
+
+  @media (width >= 980px) {
+    grid-template-columns: minmax(0, 1fr) var(--bf-sidebar-width);
+    align-items: start;
+  }
+}
+
+@media (width <= 640px) {
+  .header-row {
+    flex-wrap: wrap;
+    padding-block: var(--bf-space-2);
+    gap: var(--bf-space-2);
+  }
+
+  :root {
+    --bf-header-height: 6.5rem;
+  }
+
+  .bf-header-sticky {
+    display: block;
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 20;
+  }
+
+  .bf-header-bar {
+    position: static;
+  }
+
+  /* A long menu scrolls inside the space under the bar. */
+  .bf-nav-row {
+    max-height: calc(100dvh - var(--bf-header-height));
+    overflow-y: auto;
+  }
+
+  .header-search {
+    order: 9;
+    flex-basis: 100%;
+    margin-inline-start: 0;
+  }
+
+  /* A page title in the header takes the site name's place, so the row keeps its height. */
+  .header-row:has(.bf-header-title:not([hidden])) > .brand {
+    display: none;
+  }
+
+  .bf-header-title {
+    flex: 1 1 0;
+  }
+
+  .header-actions {
+    flex: none;
+    margin-inline-start: auto;
+  }
+
+  /* A long site name gives way to the icons instead of pushing them onto a second row. */
+  .header-row > .brand:not(.has-logo) {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-search input {
+    max-width: none;
+  }
+
+  .bf-icon-btn.bf-nav-toggle {
+    display: inline-flex;
+  }
+
+  .bf-nav-row {
+    display: none;
+  }
+
+  .bf-nav-check:checked ~ .bf-header-sticky .bf-nav-row {
+    display: block;
+  }
+
+  .main-nav {
+    flex-direction: column;
+    overflow: visible;
+    padding-block: var(--bf-space-2);
+
+    & a {
+      padding-block: var(--bf-space-2);
+      border: 0;
+    }
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-3);
+  max-width: var(--bf-content-width);
+  margin: var(--bf-space-3) auto 0;
+}

@@ -1,0 +1,98 @@
+# A worked example of most of what a plugin can add without touching the database: a word
+# filter, a settings form and an admin page, a profile page, a widget with its own settings,
+# per-viewer slots (post footer, profile header, member card, forum header), buttons in the
+# composer and on posts, spoiler syntax and a rule answered by the module, emoji, a menu link, a
+# style sheet and translations into Polish and Arabic.
+id = "community-kit"
+name = "Community kit"
+version = "1.1.0"
+api = "^1.0"
+kind = "wasm"
+capabilities = ["kv"]
+hooks = [
+  "post.before_create", "panel.render", "widget.render", "slot.render", "action.run",
+  "cook.rule", "admin.form.save",
+]
+# Slots drawn per viewer with `slot.render` (the page asks for them after it loads).
+# `user_card` is the body of a member hover card; it has no place in the page itself.
+dynamic_slots = ["post_footer", "profile_header", "user_card", "category_header"]
+
+[server]
+module = "plugin.wasm"
+
+[client]
+# No JavaScript: only a style sheet, served from this plugin's own folder.
+css = ["style.css"]
+
+# A page on every member profile. `label_key` is translated from locales/<code>.json.
+[[panels]]
+area = "profile"
+key = "kit"
+label_key = "panel.title"
+
+# A link under a "Community" menu, with an icon, shown in the footer and the sidebar.
+[[nav]]
+label_key = "nav.kit"
+url = "/plugin/community-kit/kit"
+icon = "coffee"
+menu_key = "menu.kit"
+order = 10
+
+# A button in the composer toolbar, drawn by the forum without any client code.
+[[composer_buttons]]
+key = "shrug"
+label_key = "button.shrug"
+icon = "coffee"
+result = "insert"
+
+# A button on each post; the answer opens in a dialog.
+[[post_actions]]
+key = "length"
+label_key = "button.length"
+result = "panel"
+
+# ||text|| becomes a spoiler. No regular expressions: a marker pair and an HTML template, where
+# {} is the text between them, escaped. The pair may wrap formatting: ||some **bold** text||.
+[[cook_rules]]
+open = "||"
+close = "||"
+html = "<span class=\"plug-kit-spoiler\">{}</span>"
+
+# !!text!! is handed to the module (`cook.rule`), which answers with the HTML.
+[[cook_rules]]
+open = "!!"
+close = "!!"
+callback = "shout"
+
+# :kit-party: and :kit-cat: in posts, and in the composer emoji picker under "Community kit".
+[[emoji]]
+key = "kit-party"
+label = "Party"
+file = "assets/party.svg"
+set = "Community kit"
+
+[[emoji]]
+key = "kit-cat"
+label = "Cat"
+file = "assets/cat.svg"
+set = "Community kit"
+
+# A block the page builder offers, with a form for its settings.
+[[widgets]]
+key = "count"
+label_key = "widget.title"
+description_key = "widget.description"
+fields = [
+  { key = "heading", type = "text", label_key = "widget.heading", default = "Filtered words" },
+  { key = "bold", type = "switch", label_key = "widget.bold", default = true },
+]
+
+# A form page in the admin panel; the values are saved with the plugin settings.
+[[admin_pages]]
+key = "limits"
+label_key = "page.limits"
+intro_key = "page.limits_intro"
+fields = [
+  { key = "max_words", type = "number", label_key = "page.max_words", min = 1, max = 100, default = 20 },
+  { key = "notice", type = "textarea", label_key = "page.notice", default = "" },
+]

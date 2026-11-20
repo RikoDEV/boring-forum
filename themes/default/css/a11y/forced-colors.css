@@ -1,0 +1,150 @@
+/* Forced colours (Windows High Contrast), the rest of the site: the controls and surfaces that
+   draw their edge, state or meaning with a background, a gradient or a shadow, which the forced
+   palette flattens. System colours only. preferences.css has the first rules (buttons, fields,
+   checkboxes, focus, tooltips); the admin panel's own file is web/admin/src/lib/admin.css. */
+
+@media (forced-colors: active) {
+  /* Cards and panels keep an edge. */
+  .bf-card,
+  .bf-club-card,
+  .bf-topic-card,
+  .bf-wel-card,
+  .announcement,
+  .bf-menu-body,
+  .bf-um-tabs,
+  .bf-stat-pill,
+  .bf-vote-pill,
+  .bf-group-pill,
+  .bf-tag-chip,
+  .bf-chip,
+  .bf-callout,
+  .bf-modnotice,
+  dialog,
+  .bf-modal-body {
+    border: 1px solid CanvasText;
+  }
+
+  .bf-card:hover,
+  .bf-card:focus-within {
+    border-color: Highlight;
+  }
+
+  /* A staff mark drawn as an outline: keep it visible and distinct from a focus ring. */
+  .staff {
+    outline: 1px dashed CanvasText;
+  }
+
+  /* Avatars and medals: the picture stays, the ring and the coloured disc become an edge. */
+  .avatar,
+  .bf-hc-avatar,
+  .bf-avatar-wrap img {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+  }
+
+  .bf-medal-shape {
+    forced-color-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border: 2px solid CanvasText;
+    border-radius: 50%;
+  }
+
+  .bf-medal-level {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  /* Badges: the meaning is in the words and icon; the pill gets an edge, and the warning and
+     error states a different line so they differ without colour. */
+  .bf-badge,
+  .acp-pill {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .bf-badge.is-bad {
+    border-style: double;
+    border-width: 3px;
+  }
+
+  .bf-badge.is-warn {
+    border-style: dashed;
+  }
+
+  .bf-badge.is-ok,
+  .bf-badge.is-accent {
+    border-color: Highlight;
+  }
+
+  /* The pager's switch is a gradient knob on a track. */
+  .bf-switch {
+    forced-color-adjust: none;
+    color: ButtonText;
+  }
+
+  .bf-switch::before {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    box-shadow: inset 0.5rem 0 0 -0.1rem CanvasText;
+  }
+
+  .bf-switch[aria-checked="true"]::before {
+    background: Highlight;
+    border-color: Highlight;
+    box-shadow: inset -0.5rem 0 0 -0.1rem HighlightText;
+  }
+
+  .bf-switch[aria-disabled="true"],
+  .bf-switch:disabled {
+    color: GrayText;
+  }
+
+  /* Selected tabs and nav items: a background alone does not show the current one. */
+  .bf-um-tab {
+    border: 1px solid transparent;
+  }
+
+  .bf-um-tab.is-active,
+  .bf-modtabs a[aria-current="page"],
+  [role="tab"][aria-selected="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  .bf-modtabs a[aria-current="page"] {
+    border-block-end: 3px solid Highlight;
+  }
+
+  /* The unread marker and the chat's own bubbles are shown by colour. */
+  .is-unread,
+  .is-live-new {
+    border-inline-start: 4px solid Highlight;
+  }
+
+  /* Disabled controls read as disabled. */
+  :disabled,
+  [aria-disabled="true"] {
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  /* Hover cards and toasts float over the page; give them the full edge. */
+  .hovercard,
+  .bf-toast,
+  .live-notice {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  /* A live status line stays readable on the forced background. */
+  [role="status"],
+  [role="alert"] {
+    color: CanvasText;
+  }
+}

@@ -1,0 +1,53 @@
+;; Test plugin for tests/http/e2e.sh. Behaviour depends on the words in its input.
+(module
+  (import "bf" "kv_set" (func $kv_set (param i32 i32 i32 i32) (result i32)))
+  (import "bf" "kv_get" (func $kv_get (param i32 i32) (result i64)))
+  (memory (export "memory") 2)
+  (global $top (mut i32) (i32.const 4096))
+  (data (i32.const 16) "plugin-block")
+  (data (i32.const 29) "plugin-trap")
+  (data (i32.const 41) "plugin-spin")
+  (data (i32.const 53) "\"hook\":\"post.created\"")
+  (data (i32.const 75) "api.request")
+  (data (i32.const 87) "last")
+  (data (i32.const 92) "seen")
+  (data (i32.const 97) "{\"reject\":\"Blocked by test plugin\"}")
+  (data (i32.const 133) "{\"data\":{\"raw\":\"changed by plugin\"}}")
+  (data (i32.const 170) "plugin-swap")
+  (data (i32.const 182) "{}")
+  (data (i32.const 185) "{\"status\":200,\"json\":{\"kv\":\"seen\"}}")
+  (data (i32.const 221) "{\"status\":200,\"json\":{\"kv\":null}}")
+  (func (export "alloc") (param $n i32) (result i32)
+    (local $p i32)
+    (local.set $p (global.get $top))
+    (global.set $top (i32.add (global.get $top) (local.get $n)))
+    (local.get $p))
+  ;; Is the needle anywhere in the haystack?
+  (func $find (param $h i32) (param $hl i32) (param $nd i32) (param $nl i32) (result i32)
+    (local $i i32) (local $j i32)
+    (block $no
+      (loop $outer
+        (br_if $no (i32.gt_s (i32.add (local.get $i) (local.get $nl)) (local.get $hl)))
+        (local.set $j (i32.const 0))
+        (block $miss
+          (loop $inner
+            (br_if $miss (i32.ne (i32.load8_u (i32.add (i32.add (local.get $h) (local.get $i)) (local.get $j)))
+                                 (i32.load8_u (i32.add (local.get $nd) (local.get $j)))))
+            (local.set $j (i32.add (local.get $j) (i32.const 1)))
+            (br_if $inner (i32.lt_s (local.get $j) (local.get $nl)))
+            (return (i32.const 1))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $outer)))
+    (i32.const 0))
+  (func (export "handle") (param $p i32) (param $n i32) (result i64)
+    (if (call $find (local.get $p) (local.get $n) (i32.const 29) (i32.const 11)) (then unreachable))
+    (if (call $find (local.get $p) (local.get $n) (i32.const 41) (i32.const 11)) (then (loop $forever (br $forever))))
+    (if (call $find (local.get $p) (local.get $n) (i32.const 16) (i32.const 12)) (then (return (i64.or (i64.shl (i64.const 97) (i64.const 32)) (i64.const 35)))))
+    (if (call $find (local.get $p) (local.get $n) (i32.const 170) (i32.const 11)) (then (return (i64.or (i64.shl (i64.const 133) (i64.const 32)) (i64.const 36)))))
+    (if (call $find (local.get $p) (local.get $n) (i32.const 53) (i32.const 21)) (then
+      (drop (call $kv_set (i32.const 87) (i32.const 4) (i32.const 92) (i32.const 4)))))
+    (if (call $find (local.get $p) (local.get $n) (i32.const 75) (i32.const 11)) (then
+      (if (i64.gt_s (call $kv_get (i32.const 87) (i32.const 4)) (i64.const 0))
+        (then (return (i64.or (i64.shl (i64.const 185) (i64.const 32)) (i64.const 35))))
+        (else (return (i64.or (i64.shl (i64.const 221) (i64.const 32)) (i64.const 33)))))))
+    (i64.or (i64.shl (i64.const 182) (i64.const 32)) (i64.const 2))))

@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{#- EU DSA Art. 17: why we acted on someone's content, and how to appeal. -#}
+{% block content %}
+<header class="bf-box bf-page-head">
+  <h1>{{ layout.t.t("statement.title") }}</h1>
+  <p class="small muted">{{ layout.t.f("statement.decision", [("id", s.id.to_string().as_str())]) }} · {{ created }}</p>
+</header>
+
+<section class="bf-box" aria-labelledby="s-decision">
+  <div class="bf-box-head"><h2 id="s-decision">{{ layout.t.t("statement.the_decision") }}</h2></div>
+  <dl class="bf-box-body bf-info">
+    <dt>{{ layout.t.t("statement.what") }}</dt><dd>{{ action_text }}</dd>
+    <dt>{{ layout.t.t("statement.concerning") }}</dt><dd>{% if let Some(link) = target_link %}<a href="{{ link }}">{{ target_text }}</a>{% else %}{{ target_text }}{% endif %}</dd>
+    <dt>{{ layout.t.t("statement.ground") }}</dt><dd>{% if s.ground == "illegal" %}{{ layout.t.t("statement.ground_illegal") }}{% else %}{{ layout.t.t("statement.ground_terms") }}{% endif %}</dd>
+    <dt>{{ layout.t.t("statement.category") }}</dt><dd>{{ category_text }}</dd>
+    <dt>{{ layout.t.t("statement.facts") }}</dt><dd>{{ s.facts }}</dd>
+    <dt>{{ layout.t.t("statement.automated") }}</dt><dd>{% if s.automated_detection %}{{ layout.t.t("statement.detected_auto") }}{% else %}{{ layout.t.t("statement.detected_person") }}{% endif %} {% if s.automated_decision %}{{ layout.t.t("statement.decided_auto") }}{% else %}{{ layout.t.t("statement.decided_person") }}{% endif %}</dd>
+    {% if s.notice_id.is_some() %}<dt>{{ layout.t.t("statement.prompted") }}</dt><dd>{{ layout.t.t("statement.prompted_notice") }}</dd>{% endif %}
+  </dl>
+</section>
+
+<section class="bf-box" aria-labelledby="s-options">
+  <div class="bf-box-head"><h2 id="s-options">{{ layout.t.t("statement.options") }}</h2></div>
+  <div class="bf-box-body stack">
+    {% if let Some(outcome) = s.appeal_outcome %}
+    <p class="bf-callout" role="status">{{ layout.t.t("statement.appeal_decided") }} {% if outcome == "reversed" %}{{ layout.t.t("statement.reversed") }}{% else %}{{ layout.t.t("statement.upheld") }}{% endif %}</p>
+    {% else if s.appealed_at.is_some() %}
+    <p class="bf-callout" role="status">{{ layout.t.t("statement.appeal_received") }}</p>
+    {% else if can_appeal %}
+    <p>{{ layout.t.t("statement.appeal_lead") }}</p>
+    <form method="post" action="/statements/{{ s.id }}/appeal" class="stack">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <div class="bf-field"><textarea placeholder=" " id="appeal" name="text" rows="4" maxlength="5000" required></textarea><label class="bf-field-label" for="appeal">{{ layout.t.t("statement.appeal_why") }}</label></div>
+      <button class="btn primary">{{ layout.t.t("statement.appeal_send") }}</button>
+    </form>
+    {% endif %}
+    <p class="small muted">{{ layout.t.t("statement.other_routes") }}</p>
+  </div>
+</section>
+{% endblock %}

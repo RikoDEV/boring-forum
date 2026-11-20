@@ -1,0 +1,6 @@
+{#- A page's top widget area (the page builder). Needs `area`, `widgets` and `editing_layout`. -#}
+{% if editing_layout || !widgets.top.is_empty() %}
+<div data-area="{{ area }}_top" data-area-label="{{ layout.t.t("layout.area_top") }}">
+  {%- for (id, title, html, kind) in widgets.top.iter() %}{% include "_widget.html" %}{% endfor -%}
+</div>
+{% endif %}

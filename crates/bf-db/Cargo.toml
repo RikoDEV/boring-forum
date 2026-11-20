@@ -1,0 +1,23 @@
+[package]
+name = "bf-db"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+bf-core = { path = "../bf-core" }
+sqlx.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+tracing.workspace = true
+chrono.workspace = true
+futures-util.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+
+[lints]
+workspace = true

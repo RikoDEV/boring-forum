@@ -1,0 +1,169 @@
+/* Calendar (/calendar): a month grid. On a phone the grid becomes a list of the days with events. */
+
+.bf-cal-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--bf-space-3);
+  margin-block-end: var(--bf-space-3);
+
+  & h2 {
+    margin: 0;
+    font-size: var(--bf-text-lg);
+  }
+}
+
+.bf-cal {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+
+  & th {
+    padding: var(--bf-space-2);
+    font-size: var(--bf-text-xs);
+    color: var(--bf-color-text-muted);
+    text-align: start;
+  }
+
+  & td {
+    height: 6rem;
+    padding: var(--bf-space-1) var(--bf-space-2);
+    border: 1px solid var(--bf-color-border);
+    vertical-align: top;
+    overflow: hidden;
+  }
+
+  & td.is-other {
+    background: var(--bf-color-surface-sunken, transparent);
+    color: var(--bf-color-text-muted);
+  }
+
+  & td.is-today .bf-cal-day {
+    background: var(--bf-color-accent);
+    color: #fff;
+  }
+
+  & ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & li {
+    margin-block-start: var(--bf-space-1);
+    font-size: var(--bf-text-xs);
+    overflow-wrap: anywhere;
+  }
+}
+
+.bf-cal-day {
+  display: inline-block;
+  min-width: 1.5rem;
+  padding-inline: 0.25rem;
+  border-radius: 999px;
+  font-size: var(--bf-text-sm);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .bf-cal,
+  .bf-cal tbody,
+  .bf-cal tr,
+  .bf-cal td {
+    display: block;
+  }
+
+  .bf-cal thead,
+  .bf-cal td:not(.has-events) {
+    display: none;
+  }
+
+  .bf-cal td {
+    height: auto;
+    border-inline: 0;
+    border-block-start: 0;
+    padding: var(--bf-space-2) 0;
+  }
+
+  .bf-cal td::before {
+    content: attr(data-wd);
+    margin-inline-end: var(--bf-space-2);
+    color: var(--bf-color-text-muted);
+    font-size: var(--bf-text-sm);
+  }
+
+  .bf-cal td .bf-cal-day {
+    padding-inline: 0.5rem;
+  }
+
+  .bf-cal li {
+    font-size: var(--bf-text-sm);
+  }
+}
+
+/* The calendar widget: a small month grid in a sidebar or a block. */
+.bf-minical {
+  display: grid;
+  gap: var(--bf-space-2);
+
+  & .bf-minical-title {
+    font-weight: 600;
+    text-align: center;
+    color: var(--bf-color-text);
+  }
+
+  & table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    text-align: center;
+    font-size: var(--bf-text-sm);
+  }
+
+  & th {
+    padding-block: var(--bf-space-1);
+    color: var(--bf-color-text-muted);
+    font-size: var(--bf-text-xs);
+    font-weight: 500;
+  }
+
+  & td {
+    padding: 2px;
+  }
+
+  & td.is-other {
+    color: var(--bf-color-text-muted);
+    opacity: 0.55;
+  }
+
+  & td > a,
+  & td.is-today:not(:has(a)) {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 1.75rem;
+    block-size: 1.75rem;
+    border-radius: 999px;
+  }
+
+  & td.has-events > a {
+    background: var(--bf-color-accent-soft);
+    color: var(--bf-color-accent);
+    font-weight: 700;
+  }
+
+  & td.is-today > a,
+  & td.is-today:not(:has(a)) {
+    background: var(--bf-color-accent);
+    color: #fff;
+  }
+
+  & ul {
+    margin: 0;
+    padding-inline-start: var(--bf-space-4);
+  }
+}
+
+.bf-cal-add {
+  margin-inline-start: auto;
+}

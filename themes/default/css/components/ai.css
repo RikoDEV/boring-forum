@@ -1,0 +1,101 @@
+/* AI features: the summary panel, related topics, and similar topics under the title field. */
+
+.bf-ai-summary {
+  margin-block: var(--bf-space-2) var(--bf-space-4);
+
+  & > .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bf-space-2);
+  }
+
+  & > .bf-ai-panel {
+    margin-block-end: 0;
+  }
+}
+
+.bf-ai-panel {
+  border-inline-start: 3px solid var(--bf-color-accent);
+
+  & > p,
+  & > .bf-ai-text {
+    margin-inline: var(--bf-space-4);
+  }
+
+  & > .bf-ai-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bf-space-2);
+    margin-inline: var(--bf-space-4);
+  }
+
+  & > :last-child {
+    margin-block-end: var(--bf-space-4);
+  }
+
+  & .bf-box-head h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--bf-space-2);
+  }
+}
+
+.bf-ai-text {
+  margin-block: var(--bf-space-3);
+  line-height: 1.6;
+
+  & p {
+    margin-block: 0 var(--bf-space-2);
+  }
+
+  & ul {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  & li + li {
+    margin-block-start: var(--bf-space-1);
+  }
+}
+
+.bf-related {
+  margin-block-start: var(--bf-space-4);
+
+  & .bf-box-head h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--bf-space-2);
+  }
+
+  & ul {
+    margin: 0;
+    padding: var(--bf-space-3) var(--bf-space-4);
+    list-style: none;
+  }
+
+  & li {
+    padding-block: var(--bf-space-1);
+    overflow-wrap: anywhere;
+  }
+}
+
+.bf-ai-similar {
+  margin-block: calc(-1 * var(--bf-space-1)) var(--bf-space-3);
+  padding: var(--bf-space-2) var(--bf-space-3);
+  background: var(--bf-color-accent-soft);
+  border-radius: var(--bf-radius);
+
+  & ul {
+    margin: var(--bf-space-1) 0 0;
+    padding-inline-start: 1.25rem;
+  }
+}
+
+.bf-by-meaning {
+  color: var(--bf-color-accent);
+}
+
+.bf-tc-gist::before {
+  content: "✦ ";
+  color: var(--bf-color-accent);
+}

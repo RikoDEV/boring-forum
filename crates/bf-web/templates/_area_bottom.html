@@ -1,0 +1,6 @@
+{#- A page's bottom widget area (the page builder). Needs `area`, `widgets` and `editing_layout`. -#}
+{% if editing_layout || !widgets.bottom.is_empty() %}
+<div data-area="{{ area }}_bottom" data-area-label="{{ layout.t.t("layout.area_bottom") }}">
+  {%- for (id, title, html, kind) in widgets.bottom.iter() %}{% include "_widget.html" %}{% endfor -%}
+</div>
+{% endif %}

@@ -1,0 +1,145 @@
+{% extends "layout.html" %}
+{#- The review queue: chat flags, accounts and posts awaiting approval, reported members and posts. -#}
+{% block content %}
+<div class="head-row">
+  <h1>{{ layout.t.t("modcp.queue") }}</h1>
+  <div class="bf-head-actions">
+    {% if layout.moderator %}<a class="btn" href="/review/apps">{{ layout.icon("puzzle")|safe }} <span class="bf-btn-label">{{ layout.t.msg("Held by plugins") }}</span></a>{% endif %}
+    <a class="btn" href="/review/deleted">{{ layout.icon("trash-2")|safe }} <span class="bf-btn-label">{{ layout.t.t("deleted.title") }}</span></a>
+  </div>
+</div>
+<form method="get" action="/review" class="bf-box bf-filter-bar" aria-label="{{ layout.t.t("review.filter_label") }}">
+  <label class="bf-field">
+    <select name="kind">
+      <option value="">{{ layout.t.t("forum.show_all") }}</option>
+      <option value="report"{% if kind == "report" %} selected{% endif %}>{{ layout.t.t("review.reports") }}</option>
+      <option value="pending_post"{% if kind == "pending_post" %} selected{% endif %}>{{ layout.t.t("review.awaiting") }}</option>
+    </select>
+    <span class="bf-field-label">{{ layout.t.t("review.type") }}</span>
+  </label>
+  <label class="bf-field">
+    <select name="forum"><option value="">{{ layout.t.t("forum.show_all") }}</option>{% for (id, title, sel) in forums %}<option value="{{ id }}"{% if *sel %} selected{% endif %}>{{ title }}</option>{% endfor %}</select>
+    <span class="bf-field-label">{{ layout.t.t("forum.forum") }}</span>
+  </label>
+  <label class="bf-field">
+    <select name="sort"><option value="">{{ layout.t.t("review.priority") }}</option><option value="age"{% if sort == "age" %} selected{% endif %}>{{ layout.t.t("review.oldest") }}</option></select>
+    <span class="bf-field-label">{{ layout.t.t("review.order") }}</span>
+  </label>
+  <button class="btn">{{ layout.t.t("review.filter") }}</button>
+</form>
+
+{% if !chat_flags.is_empty() %}
+<section class="bf-box">
+  <div class="bf-box-head"><h2>{{ layout.t.t("review.chat_flags") }}</h2></div>
+  <ul class="bf-feed">
+    {% for (mid, channel, author, by, reason, text) in chat_flags %}
+    <li>
+      <img class="avatar" src="/avatar/{{ author }}.svg" width="40" height="40" alt="" loading="lazy">
+      <div>
+        <strong>{{ layout.user_link(author)|safe }}</strong> <a class="muted small" href="/chat/{{ channel }}">{{ layout.t.t("review.in_chat") }}</a>
+        <p>{{ text }}</p>
+        <div class="muted small">{{ layout.t.t("review.flagged_by") }} {{ layout.user_link(by)|safe }}{% if !reason.is_empty() %}: {{ reason }}{% endif %}</div>
+        <form method="post" action="/chat/flags/{{ mid }}" class="inline">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          <button class="btn" name="decision" value="keep">{{ layout.t.t("review.keep") }}</button> <button class="btn bf-btn-danger" name="decision" value="remove">{{ layout.t.t("settings.remove") }}</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if !pending_users.is_empty() %}
+<section class="bf-box">
+  <div class="bf-box-head"><h2>{{ layout.t.t("review.pending_accounts") }}</h2></div>
+  <ul class="bf-feed">
+    {% for (uid, name, email, joined) in pending_users %}
+    <li>
+      <img class="avatar" src="/avatar/{{ name }}.svg" width="40" height="40" alt="" loading="lazy">
+      <div><strong>{{ layout.user_link(name)|safe }}</strong><div class="muted small">{{ email }} · {{ layout.t.t("review.joined") }} {{ joined }}</div></div>
+      <form method="post" action="/review/user/{{ uid }}" class="bf-feed-end">
+        <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+        <label class="small"><input type="checkbox" name="ban_email" value="1"> {{ layout.t.t("review.ban_email") }}</label>
+        <button class="btn" name="decision" value="reject" data-tip="{{ layout.t.t("review.reject_account_hint") }}">{{ layout.t.t("review.reject") }}</button> <button class="btn primary" name="decision" value="approve">{{ layout.t.t("review.approve") }}</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if !held.is_empty() %}
+<section class="bf-box">
+  <div class="bf-box-head"><h2>{{ layout.t.t("review.held") }}</h2></div>
+  <ul class="bf-feed">
+    {% for (hid, what, author, text, when) in held %}
+    <li>
+      <img class="avatar" src="/avatar/{{ author }}.svg" width="40" height="40" alt="" loading="lazy">
+      <div><strong>{{ layout.user_link(author)|safe }}</strong> <span class="bf-badge">{{ what }}</span><div class="muted small">{{ when }}</div><p class="small bf-prewrap">{{ text }}</p></div>
+      <form method="post" action="/review/held/{{ hid }}" class="bf-feed-end">
+        <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+        <label class="bf-field"><input name="message" maxlength="500" placeholder=" "><span class="bf-field-label">{{ layout.t.t("review.note_if_rejected") }}</span></label>
+        <button class="btn" name="decision" value="reject">{{ layout.t.t("review.reject") }}</button> <button class="btn primary" name="decision" value="approve">{{ layout.t.t("review.approve") }}</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if message_reports > 0 %}
+<p class="bf-box bf-box-body"><a href="/review/messages">{{ layout.t.n("review.message_reports", message_reports) }}</a> {{ layout.t.t("review.waiting") }}</p>
+{% endif %}
+
+{% if !member_reports.is_empty() %}
+<section class="bf-box">
+  <div class="bf-box-head"><h2>{{ layout.t.t("review.reported_members") }}</h2></div>
+  <ul class="bf-feed">
+    {% for (rid, url, name, by, reason, when) in member_reports %}
+    <li>
+      <img class="avatar" src="/avatar/{{ name }}.svg" width="40" height="40" alt="" loading="lazy">
+      <div><a href="{{ url }}"><strong>{{ name }}</strong></a><div class="muted small">{{ layout.t.t("review.reported_by") }} {{ layout.user_link(by)|safe }} · {{ when }}</div><p class="small">{{ reason }}</p></div>
+      <form method="post" action="/review/member/{{ rid }}" class="bf-feed-end"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.t("review.close_report") }}</button></form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% for r in items %}
+<article class="bf-box bf-review">
+  <header class="bf-review-head">
+    <img class="avatar" src="/avatar/{{ r.author }}.svg" width="40" height="40" alt="" loading="lazy">
+    <div class="bf-review-who">
+      <div><strong>{{ layout.user_link(r.author)|safe }}</strong> <span class="muted">{{ layout.t.t("topic.in") }}</span> <a href="{{ r.post_url }}">{{ r.title }}</a></div>
+      <div class="muted small">{{ r.when }}{% if !r.reasons.is_empty() %} · {{ layout.t.t("review.reasons") }} {{ r.reasons }}{% endif %}</div>
+    </div>
+    <span class="bf-badge{% if !r.pending_post %} is-bad{% endif %}">{% if r.pending_post %}{{ layout.t.t("review.awaiting") }}{% else %}{{ layout.t.f("review.reported_score", [("score", r.score.to_string().as_str())]) }}{% endif %}</span>
+    <form method="post" action="/review/{{ r.id }}/claim" class="small">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      {% if let Some(who) = r.claimed_by %}<span class="muted">{{ layout.t.t("review.claimed_by") }} {{ layout.user_link(who)|safe }}</span> <input type="hidden" name="release" value="1"><button class="link">{{ layout.t.t("review.release") }}</button>{% else %}<button class="link">{{ layout.t.t("review.claim") }}</button>{% endif %}
+    </form>
+  </header>
+  <div class="cooked bf-review-body">{{ r.cooked|safe }}</div>
+  <form method="post" action="/review/{{ r.id }}" class="bf-review-actions">
+    <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+    <details class="bf-review-edit bf-disclosure acp-wide">
+      <summary data-tip="{{ layout.t.msg("Text to publish (used with the approve button; the author is told it was edited)") }}">{{ layout.icon("pencil")|safe }} {{ layout.t.msg("Edit the text, then approve") }}</summary>
+      <div class="composer">
+        <label for="edited-{{ r.id }}">{{ layout.t.msg("Text to publish") }}</label>
+        <textarea id="edited-{{ r.id }}" name="edited" rows="6" maxlength="60000" placeholder=" ">{{ r.raw }}</textarea>
+        <span data-island="composer" data-props="{&quot;editorUrl&quot;:&quot;{{ layout.editor_url }}&quot;}"></span>
+      </div>
+    </details>
+    <label class="bf-field"><input name="message" placeholder=" "><span class="bf-field-label">{{ layout.t.t("review.message_author") }}</span></label>
+    {% if staff %}<button class="btn bf-btn-danger" name="decision" value="spammer" data-tip="{{ layout.t.msg("Remove the post, delete everything this new member posted and suspend the account") }}">{{ layout.t.msg("Spammer: delete all") }}</button>
+    <button class="btn" name="decision" value="silence" data-tip="{{ layout.t.msg("Remove the post and silence its author") }}">{{ layout.t.msg("Remove and silence") }}</button>{% endif %}
+    <button class="btn" name="decision" value="remove">{% if r.pending_post %}{{ layout.t.t("review.reject") }}{% else %}{{ layout.t.t("review.remove_post") }}{% endif %}</button>
+    <button class="btn primary" name="decision" value="keep">{% if r.pending_post %}{{ layout.t.t("review.approve") }}{% else %}{{ layout.t.t("review.keep_post") }}{% endif %}</button>
+  </form>
+</article>
+{% else %}
+<p class="panel muted">{{ layout.t.t("review.nothing") }}</p>
+{% endfor %}
+{% endblock %}

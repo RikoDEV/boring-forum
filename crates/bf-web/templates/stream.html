@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{#- A list of topics on its own page: latest and unread, top (with its periods), and tags. -#}
+{% block content %}
+<div class="head-row">
+  <h1>{{ heading }}</h1>
+  {% if area != "tag" %}
+  <nav class="small list-controls" aria-label="{{ layout.t.t("stream.views") }}">
+    <a href="/latest"{% if !unread_view %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("nav.latest") }}</a>
+    {%- if layout.user.is_some() %} <a href="/unread"{% if unread_view %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("home.unread") }}</a>{% endif %}
+  </nav>
+  {% endif %}
+</div>
+{% if !periods.is_empty() %}
+<nav class="small list-controls" aria-label="{{ layout.t.t("stream.period") }}">
+  {%- for (p, url, active) in periods %}<a href="{{ url }}"{% if *active %} class="current" aria-current="true"{% endif %}>{{ p }}</a> {% endfor -%}
+</nav>
+{% endif %}
+{% if can_edit_layout %}{% include "_layout_edit.html" %}{% endif %}
+{% include "_area_top.html" %}
+{% let has_side = editing_layout || !widgets.side.is_empty() %}
+<div class="bf-app{% if has_side %} bf-grid{% endif %}">
+  {% if has_side %}<div class="bf-grid-main">{% endif %}
+  <section class="bf-box">
+    {% let bulk = false %}{% include "_topics.html" %}
+    {% if periods.is_empty() %}<div class="bf-live-dock" data-island="live-list" data-props="{&quot;channel&quot;:&quot;forums&quot;}"></div>{% endif %}
+  </section>
+  {% include "_area_bottom.html" %}
+  {% if has_side %}
+  </div>
+  <aside aria-label="{{ layout.t.t("layout.sidebar") }}" data-area="{{ area }}_side" data-area-label="{{ layout.t.t("layout.sidebar") }}">
+    {{- layout.ad_slot("sidebar")|safe }}
+    {%- for (id, title, html, kind) in widgets.side.iter() %}{% include "_widget.html" %}{% endfor -%}
+  </aside>
+  {% endif %}
+</div>
+{% endblock %}

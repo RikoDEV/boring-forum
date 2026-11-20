@@ -1,0 +1,81 @@
+/* The dialog behind a post's reaction pills: who reacted, with a tab for each reaction. */
+.bf-reactions .bf-dialog-body {
+  display: grid;
+  align-content: start;
+  gap: var(--bf-space-3);
+}
+
+.bf-reactions-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1);
+}
+
+.bf-reactions-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.15rem var(--bf-space-3);
+  border: 1px solid var(--bf-color-border);
+  border-radius: 999px;
+  background: none;
+  color: var(--bf-color-text);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--bf-color-accent);
+  }
+
+  &[aria-selected="true"] {
+    border-color: var(--bf-color-accent);
+    background: var(--bf-color-accent-soft);
+  }
+}
+
+.bf-reactions-count {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.bf-reactors {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bf-reactor {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--bf-space-3);
+  padding-block: var(--bf-space-2);
+
+  & + & {
+    border-block-start: 1px solid var(--bf-color-border);
+  }
+
+  & .avatar {
+    inline-size: 2rem;
+    block-size: 2rem;
+    border-radius: 50%;
+  }
+}
+
+.bf-reactor-who {
+  display: grid;
+  min-inline-size: 0;
+  line-height: 1.25;
+
+  & strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.bf-reactor-icon {
+  font-size: 1.25rem;
+}

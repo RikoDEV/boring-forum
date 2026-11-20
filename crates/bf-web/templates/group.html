@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{#- One group and its public members. -#}
+{% block content %}
+<nav class="crumbs small"><a href="/g">{{ layout.t.t("footer.groups") }}</a> {{ layout.icon("chevron-right")|safe }} <span>{{ name }}</span></nav>
+<header class="bf-box bf-page-head bf-head-row"><h1>{{ name }}</h1></header>
+<section class="bf-box">
+  <ul class="bf-people">
+    {% for m in members %}
+    <li><img class="avatar" src="/avatar/{{ m }}.svg" width="32" height="32" alt="" loading="lazy"><div><a class="bf-feed-title" href="/u/{{ m }}">{{ m }}</a></div></li>
+    {% else %}
+    <li class="muted">{{ layout.t.t("groups.no_members") }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

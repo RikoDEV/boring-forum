@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{#- A post's edit history: the current text and each revision's diff. -#}
+{% block content %}
+<div class="head-row">
+  <h1>{{ layout.t.t("history.title") }}</h1>
+  {% if staff %}
+  <form method="post" action="/post/{{ post_id }}/edit-lock" class="inline">
+    <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+    <input type="hidden" name="on" value="{% if edit_locked %}0{% else %}1{% endif %}">
+    <button class="btn">{% if edit_locked %}{{ layout.t.t("history.allow_edits") }}{% else %}{{ layout.t.t("history.lock_edits") }}{% endif %}</button>
+  </form>
+  {% endif %}
+</div>
+<p><a href="{{ post_url }}">{{ layout.t.t("history.back") }}</a></p>
+<section class="panel block"><h2>{{ layout.t.t("history.current") }}</h2><pre class="raw">{{ current }}</pre></section>
+{% for r in revisions %}
+<section class="panel block">
+  <h2>{{ layout.t.f("history.edit_n", [("n", r.n.to_string().as_str())]) }}</h2>
+  <p class="small muted">{{ layout.t.t("forum.last_by") }} {{ layout.user_link(r.editor)|safe }}, {{ r.when }}{% if let Some(reason) = r.reason %} — “{{ reason }}”{% endif %}</p>
+  {% if r.hidden && !staff %}
+  <p class="muted">{{ layout.t.t("history.hidden_by_staff") }}</p>
+  {% else %}
+  {% if r.hidden %}<p class="small error">{{ layout.t.t("post.hidden") }}</p>{% endif %}
+  <pre class="raw diff">{{ r.diff|safe }}</pre>
+  <details class="bf-disclosure is-small"><summary>{{ layout.t.t("history.before") }}</summary><pre class="raw">{{ r.raw }}</pre></details>
+  {% endif %}
+  <div class="post-actions small">
+    {% if can_revert && !r.hidden %}
+    <form method="post" action="/post/{{ post_id }}/revisions/{{ r.n }}/revert" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link">{{ layout.t.t("history.revert") }}</button></form>
+    {% endif %}
+    {% if staff %}
+    <form method="post" action="/post/{{ post_id }}/revisions/{{ r.n }}/hide" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><input type="hidden" name="on" value="{% if r.hidden %}0{% else %}1{% endif %}"><button class="link">{% if r.hidden %}{{ layout.t.t("history.show") }}{% else %}{{ layout.t.t("post.hide") }}{% endif %}</button></form>
+    <form method="post" action="/post/{{ post_id }}/revisions/{{ r.n }}/delete" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link">{{ layout.t.t("common.delete") }}</button></form>
+    {% endif %}
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

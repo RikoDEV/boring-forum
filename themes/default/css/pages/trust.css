@@ -1,0 +1,218 @@
+/* The trust level page and the small level badge beside names. */
+
+.bf-trust-head p {
+  margin: var(--bf-space-2) 0 0;
+}
+
+.bf-trust-now {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-4);
+
+  & > div {
+    display: grid;
+    gap: var(--bf-space-2);
+  }
+
+  & h2,
+  & p {
+    margin: 0;
+  }
+}
+
+.bf-trust-badge {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border-radius: 50%;
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  &.is-small {
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    font-size: var(--bf-text-sm);
+  }
+}
+
+.bf-trust-note {
+  margin-block-start: var(--bf-space-2);
+  color: var(--bf-color-text);
+
+  &.is-warn {
+    color: var(--bf-color-danger, var(--bf-color-text));
+  }
+}
+
+.bf-trust-reqs,
+.bf-trust-list,
+.bf-trust-levels {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bf-trust-reqs {
+  display: grid;
+  gap: var(--bf-space-5);
+}
+
+.bf-trust-req-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+  margin-block-end: var(--bf-space-2);
+}
+
+.bf-trust-list {
+  display: grid;
+  gap: var(--bf-space-2);
+
+  & li::before {
+    content: "• ";
+    color: var(--bf-color-muted);
+  }
+}
+
+.bf-trust-levels {
+  display: grid;
+  gap: var(--bf-space-4);
+
+  & > li {
+    display: grid;
+    gap: var(--bf-space-3);
+    padding: var(--bf-space-4);
+    border: 1px solid var(--bf-color-border);
+    border-radius: var(--bf-radius-input);
+
+    &.is-current {
+      border-color: var(--bf-color-accent);
+    }
+  }
+
+  & h3 {
+    margin: 0;
+  }
+
+  & p {
+    margin: 0;
+  }
+}
+
+.bf-trust-level-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+}
+
+/* A trust level wherever a member is named: its number on the left, then its name. */
+.bf-level {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--bf-color-border);
+  border-radius: 4px;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-weight: 500;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  text-decoration: none;
+
+  & > b {
+    padding-inline: 0.375rem;
+    background: var(--bf-color-accent-soft);
+    color: var(--bf-color-accent);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The name is a bare text node after the number, so the badge pads it with a gap. */
+  gap: 0;
+  padding-inline-end: 0.375rem;
+}
+
+/* The reputation rank: an achievement, shown as a small medal under the trust level. */
+.bf-author-rank,
+.bf-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-1);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  white-space: nowrap;
+
+  & .bf-medal {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+  }
+
+  & .bf-medal .bf-icon {
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+  }
+}
+
+.bf-author-rank {
+  margin-block-start: var(--bf-space-3);
+}
+
+/* The trust level on an avatar's corner. Its border is the presence indicator: green while the
+   member is online, grey otherwise. */
+.bf-lvl {
+  position: absolute;
+  z-index: 1;
+  inset-block-end: -2px;
+  inset-inline-end: -4px;
+  box-sizing: border-box;
+  min-inline-size: 1.5rem;
+  padding-inline: 0.25rem;
+  border: 2px solid var(--bf-color-border-strong);
+  border-radius: 6px;
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  font-size: var(--bf-text-xs);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1.1rem;
+  text-align: center;
+
+  &[data-online="1"] {
+    border-color: var(--bf-color-success);
+  }
+
+  &.is-small {
+    min-inline-size: 1rem;
+    padding-inline: 0.125rem;
+    border-width: 1.5px;
+    border-radius: 4px;
+    font-size: 0.625rem;
+    line-height: 0.8rem;
+  }
+}
+
+/* In the profile's stat rows the value sits at the end of the row, like the other values; the
+   rows' own rule for <b> must not reach the number inside the badge. */
+.bf-stat-rows .bf-level {
+  align-self: center;
+  margin-inline-start: auto;
+
+  & > b {
+    margin: 0;
+    font-size: inherit;
+    font-weight: 700;
+  }
+}
+
+/* No room for the rank beside the name on a phone; the profile and the member card show it. */
+@media (width <= 639px) {
+  .bf-rank {
+    display: none;
+  }
+}

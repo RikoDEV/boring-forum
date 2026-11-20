@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{#- One badge: what it is for, and who has earned it. -#}
+{% block content %}
+<nav class="crumbs small"><a href="/badges">{{ layout.t.t("footer.badges") }}</a> {{ layout.icon("chevron-right")|safe }} <span>{{ name }}</span></nav>
+<header class="bf-box bf-page-head bf-badge-head">
+  {{ layout.medal(tier, icon, color, level)|safe }}
+  <h1>{{ name }}</h1>
+  {% if !description.is_empty() %}<p>{{ description }}</p>{% endif %}
+  <p class="small muted">{{ layout.t.n("badges.earned", total) }}{% if points != 0 %} · {{ layout.t.n("count.points", points) }}{% endif %}</p>
+</header>
+<section class="bf-box">
+  <ul class="bf-people">
+    {% for (who, when) in holders %}
+    <li><img class="avatar" src="/avatar/{{ who }}.svg" width="32" height="32" alt="" loading="lazy"><div><a class="bf-feed-title" href="/u/{{ who }}">{{ who }}</a></div><span class="small muted">{{ when }}</span></li>
+    {% else %}
+    <li class="muted">{{ layout.t.t("badges.nobody") }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

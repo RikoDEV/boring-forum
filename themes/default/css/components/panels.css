@@ -1,0 +1,236 @@
+/* Panels and boxes: the surfaces every page is built from. */
+
+.panel {
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  padding: var(--bf-space-4);
+
+  & h1 {
+    margin-block-start: 0;
+  }
+}
+
+.block {
+  margin-block-end: var(--bf-space-4);
+
+  & > h2,
+  & > summary {
+    margin: 0 0 var(--bf-space-3);
+  }
+}
+
+.bf-box {
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  margin-block-end: var(--bf-space-4);
+  overflow: hidden;
+}
+
+/* A box with a heading and nothing under it (an empty category) has no divider to draw. */
+.bf-box-head:last-child {
+  border-block-end: 0;
+}
+
+.bf-box-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+  flex-wrap: wrap;
+  padding: var(--bf-space-3) var(--bf-space-4);
+  border-block-end: 1px solid var(--bf-color-border);
+
+  & h2 {
+    margin: 0;
+    font-size: var(--bf-text-list);
+    font-weight: 650;
+  }
+
+  & h2 a {
+    color: inherit;
+  }
+}
+
+/* Actions at the end of a box heading stay on one line, whatever language their names are in:
+   a long action is an icon button with its name as the tooltip. */
+.bf-box-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  white-space: nowrap;
+
+  & form {
+    margin: 0;
+  }
+
+  & .bf-icon-btn {
+    width: var(--bf-control-height-sm);
+    height: var(--bf-control-height-sm);
+  }
+}
+
+/* With actions at its end, the heading stays one row: the title gives way, not the actions. */
+.bf-box-head:has(.bf-box-actions) {
+  flex-wrap: nowrap;
+
+  & h2 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  & .bf-box-actions {
+    flex: none;
+  }
+}
+
+.bf-box-body {
+  padding: var(--bf-space-4);
+}
+
+.head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--bf-space-3);
+  flex-wrap: wrap;
+  margin-block-end: var(--bf-space-3);
+
+  & h1,
+  & h2 {
+    margin: 0;
+  }
+}
+
+.bf-head-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-1);
+  font: inherit;
+  font-size: var(--bf-text-list);
+  font-weight: 500;
+  line-height: 1.25;
+  box-sizing: border-box;
+  height: var(--bf-control-height);
+  padding: 0 var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  cursor: pointer;
+  transition: background-color var(--bf-motion);
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--bf-color-surface-2);
+    color: var(--bf-color-text);
+    text-decoration: none;
+  }
+}
+
+.btn.small {
+  height: var(--bf-control-height-sm);
+  padding-inline: var(--bf-space-2);
+  font-size: var(--bf-text-sm);
+}
+
+.btn.primary {
+  background: var(--bf-color-accent);
+  border-color: var(--bf-color-accent);
+  color: var(--bf-color-accent-text);
+
+  &:hover {
+    background: var(--bf-color-accent-hover);
+    border-color: var(--bf-color-accent-hover);
+    color: var(--bf-color-accent-text);
+  }
+}
+
+.bf-icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-2);
+  min-width: var(--bf-control-height);
+  height: var(--bf-control-height);
+  padding-inline: var(--bf-space-2);
+  border: 0;
+  border-radius: var(--bf-radius);
+  background: none;
+  color: var(--bf-color-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--bf-text-list);
+  list-style: none;
+}
+
+.bf-icon-btn::-webkit-details-marker {
+  display: none;
+}
+
+.bf-icon-btn:hover {
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-text);
+  text-decoration: none;
+}
+
+.panel table:not(.topics) {
+  border-collapse: collapse;
+}
+
+/* The invitation under a topic for someone who is not signed in. */
+.bf-join {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-3) var(--bf-space-4);
+  padding: var(--bf-space-4);
+
+  & .bf-join-icon {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--bf-color-accent-soft);
+    color: var(--bf-color-accent);
+  }
+
+  & .bf-join-text {
+    flex: 1 1 14rem;
+
+    & p {
+      margin: var(--bf-space-1) 0 0;
+      color: var(--bf-color-muted);
+      font-size: var(--bf-text-sm);
+    }
+  }
+
+  & .bf-join-actions {
+    display: flex;
+    gap: var(--bf-space-2);
+  }
+
+  @media (width <= 639px) {
+    & .bf-join-actions {
+      flex: 1 1 100%;
+    }
+
+    & .bf-join-actions > .btn {
+      flex: 1;
+      text-align: center;
+    }
+  }
+}

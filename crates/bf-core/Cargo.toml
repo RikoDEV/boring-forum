@@ -1,0 +1,47 @@
+[package]
+name = "bf-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+bcrypt = "0.19"
+# Legacy password hashes from imported forums (phpass, Invision 3).
+md-5 = "0.11"
+axum.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+utoipa.workspace = true
+sqlx.workspace = true
+argon2 = "0.6"
+# Field encryption at rest for TOTP and webhook secrets; same version as bf-server's
+# web-push encryption, so the workspace carries one AES implementation.
+aes-gcm.workspace = true
+rand.workspace = true
+sha2.workspace = true
+subtle = "2"
+hmac.workspace = true
+sha1.workspace = true
+p256 = { workspace = true, features = ["ecdsa"] }
+ciborium = "0.2"
+base64.workspace = true
+# Unicode usernames: NFKC and UTS #39 confusable skeletons and script checks.
+unicode-normalization = "0.1"
+unicode-security = "0.1"
+# TOTP enrollment QR code: pure matrix generation, no raster/image dependency; rendered
+# as inline SVG.
+qrcode = { version = "0.14", default-features = false }
+fluent-syntax = "0.12.0"
+fluent-bundle = "0.16.0"
+
+[dev-dependencies]
+# Permission property tests: the resolver is checked against a specification
+# over randomly generated groups, grants and actors, not only over hand-written cases.
+proptest = "1.12"
+
+[lints]
+workspace = true

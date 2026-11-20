@@ -1,0 +1,71 @@
+/* A <details> that opens more content in place: a form, a table, the original text of a
+   translation. Its <summary> is an outlined button, drawn like .btn, with a chevron that turns
+   when it opens. Use `<details class="bf-disclosure"><summary>…</summary>…</details>`, and
+   `is-small` on the details for the compact size. Popover menus are .bf-menu, a different
+   component. A spoiler in a post (`<details><summary>`, written by the post renderer and kept in
+   stored posts) takes the same look through the `.cooked details` selector.
+
+   It does not rely on .btn, so the admin panel (which shares this file, not the buttons) gets the
+   same control. */
+
+/* `:is()` keeps the selector short, so a page rule with one more class can still adjust the box. */
+:is(.bf-disclosure, .cooked details) > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+  min-block-size: var(--bf-control-height);
+  margin: 0;
+  padding: var(--bf-space-1) var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  font-size: var(--bf-text-list);
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--bf-motion);
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  /* The chevron is two borders turned 45 degrees, so it takes the text colour and needs no icon. */
+  &::after {
+    content: "";
+    flex: none;
+    inline-size: 0.45em;
+    block-size: 0.45em;
+    border-inline-end: 2px solid currentColor;
+    border-block-end: 2px solid currentColor;
+    rotate: 45deg;
+    translate: 0 -0.15em;
+    transition:
+      rotate var(--bf-motion),
+      translate var(--bf-motion);
+  }
+
+  &:hover {
+    background: var(--bf-color-surface-2);
+  }
+}
+
+.bf-disclosure[open] > summary,
+.cooked details[open] > summary {
+  margin-block-end: var(--bf-space-3);
+
+  &::after {
+    rotate: -135deg;
+    translate: 0 0.15em;
+  }
+}
+
+.bf-disclosure.is-small > summary {
+  min-block-size: var(--bf-control-height-sm);
+  padding-inline: var(--bf-space-2);
+  font-size: var(--bf-text-sm);
+}

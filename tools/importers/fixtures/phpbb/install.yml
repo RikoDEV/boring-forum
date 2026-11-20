@@ -1,0 +1,27 @@
+installer:
+  admin:
+    name: admin
+    password: AdminPass-12345
+    email: admin@example.org
+  board:
+    lang: en
+    name: Fixture Board
+    description: A phpBB used to test the importer
+  database:
+    dbms: mysqli
+    dbhost: fx-db
+    dbport: ~
+    dbuser: root
+    dbpasswd: root
+    dbname: phpbb
+    table_prefix: phpbb_
+  email:
+    enabled: false
+  server:
+    cookie_secure: false
+    server_protocol: http://
+    force_server_vars: false
+    server_name: localhost
+    server_port: 8000
+    script_path: /
+  extensions: []

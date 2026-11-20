@@ -1,0 +1,103 @@
+/* The translation editor (/translate/{post|node}/{id}): the editor on the left, the versions
+   that exist and the original text beside it; one column on a phone, editor first. */
+
+.bf-tr {
+  display: grid;
+  gap: var(--bf-space-4);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+
+  @media (width >= 980px) {
+    grid-template-columns: minmax(0, 1fr) 22rem;
+  }
+
+  & .bf-box {
+    margin-block-end: 0;
+  }
+}
+
+.bf-tr-editor {
+  display: grid;
+}
+
+.bf-tr-fields {
+  display: grid;
+  gap: var(--bf-space-4);
+  padding: var(--bf-space-4);
+}
+
+.bf-tr-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-3) var(--bf-space-4);
+  border-block-start: 1px solid var(--bf-color-border);
+  background: var(--bf-color-surface-2);
+}
+
+.bf-tr-side {
+  display: grid;
+  gap: var(--bf-space-4);
+}
+
+.bf-tr-versions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bf-tr-version {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "lang del" "meta del";
+  align-items: center;
+  column-gap: var(--bf-space-3);
+  padding: var(--bf-space-2) var(--bf-space-4);
+
+  & + & {
+    border-block-start: 1px solid var(--bf-color-border);
+  }
+
+  &.is-current {
+    background: var(--bf-color-accent-soft);
+  }
+
+  & form {
+    grid-area: del;
+    margin: 0;
+  }
+}
+
+.bf-tr-lang {
+  grid-area: lang;
+  font-weight: 600;
+}
+
+.bf-tr-meta {
+  grid-area: meta;
+}
+
+.bf-tr-empty {
+  margin: 0;
+  padding: var(--bf-space-4);
+}
+
+.bf-tr-source {
+  padding: var(--bf-space-3) var(--bf-space-4) var(--bf-space-4);
+
+  & p {
+    margin: 0;
+  }
+
+  & pre {
+    margin: var(--bf-space-2) 0 0;
+    max-height: 20rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
+
+.bf-tr-source-title {
+  font-weight: 650;
+}

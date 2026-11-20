@@ -1,0 +1,45 @@
+id = "ext-plugin"
+name = "Extension Test Plugin"
+version = "1.0.0"
+api = "^1.0"
+kind = "wasm"
+capabilities = ["tables", "content.read", "content.write", "jobs", "notify", "api_route", "kv", "http:127.0.0.1", "login"]
+hooks = ["api.request", "job.run", "post.after_cook", "panel.render", "widget.render", "sitemap.urls", "api.serialize", "member.filter", "login.begin", "login.callback"]
+
+[server]
+module = "server.wat"
+
+[[tables]]
+name = "notes"
+columns = { body = "text" }
+index = ["body"]
+
+[[panels]]
+area = "settings"
+key = "prefs"
+label = "Ext prefs"
+
+[[panels]]
+area = "modcp"
+key = "mod"
+label = "Ext mod"
+
+[[panels]]
+area = "profile"
+key = "tab"
+label = "Ext tab"
+
+[[panels]]
+area = "content"
+key = "articles"
+label = "Articles"
+
+[[panels]]
+area = "login"
+key = "idp"
+label = "Sign in with Test IdP"
+
+[[panels]]
+area = "admin"
+key = "admin"
+label = "Ext admin"

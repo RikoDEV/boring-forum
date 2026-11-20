@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{#- About the site: description, totals, staff and the useful links. -#}
+{% block content %}
+<header class="bf-box bf-page-head">
+  <h1>{{ layout.t.f("about.title", [("site", layout.site_name.as_str())]) }}</h1>
+  {% if !layout.site_description.is_empty() %}<p>{{ layout.site_description }}</p>{% endif %}
+  {% if !since.is_empty() %}<p class="small muted">{{ layout.t.t("about.since") }} {{ since }}</p>{% endif %}
+</header>
+<div class="bf-tiles">
+  <a class="bf-box bf-tile" href="/u">{{ layout.icon("users")|safe }}<b>{{ members }}</b><span>{{ layout.t.t("footer.members") }}</span></a>
+  <a class="bf-box bf-tile" href="/latest">{{ layout.icon("folder")|safe }}<b>{{ topics }}</b><span>{{ layout.t.t("profile.tab_topics") }}</span></a>
+  <div class="bf-box bf-tile">{{ layout.icon("message-square")|safe }}<b>{{ posts }}</b><span>{{ layout.t.t("profile.posts") }}</span></div>
+  <a class="bf-box bf-tile" href="/online">{{ layout.icon("globe")|safe }}<b>{{ online }}</b><span>{{ layout.t.t("about.online") }}</span></a>
+</div>
+<section class="bf-box">
+  <div class="bf-box-head"><h2>{{ layout.t.t("about.staff") }}</h2></div>
+  <ul class="bf-people">
+    {% for (name, group) in staff %}
+    <li><img class="avatar" src="/avatar/{{ name }}.svg" width="32" height="32" alt="" loading="lazy"><div><a class="bf-feed-title" href="/u/{{ name }}">{{ name }}</a></div><span class="small muted">{{ group }}</span></li>
+    {% else %}
+    <li class="muted">{{ layout.t.t("about.no_staff") }}</li>
+    {% endfor %}
+  </ul>
+</section>
+<p class="small">
+  {%- if layout.legal.terms %}<a href="/legal/terms">{{ layout.t.t("footer.terms") }}</a> · {% endif %}
+  {%- if layout.legal.privacy %}<a href="/legal/privacy">{{ layout.t.t("footer.privacy") }}</a> · {% endif -%}
+  <a href="/badges">{{ layout.t.t("footer.badges") }}</a> · <a href="/g">{{ layout.t.t("footer.groups") }}</a>
+  {%- if contact %} · <a href="/contact">{{ layout.t.t("about.contact") }}</a>{% endif -%}
+</p>
+{% endblock %}

@@ -1,0 +1,20 @@
+/target
+node_modules/
+web/islands/dist/
+web/admin/build/
+web/admin/.svelte-kit/
+web/api/openapi.json
+.env
+tools/devdb/node_modules/
+__pycache__/
+
+# Local runtime data: uploads, captured mail, logs
+/data/
+sbom-*.json
+sbom-rust.json
+
+# Agent worktrees
+.claude/worktrees/
+
+# Forum exports and backups
+*.tar.gz

@@ -1,0 +1,3 @@
+{#- Opens the layout editor (the page builder): admins, desktop only (pages/home.css). The island
+    keeps the page's own query in the link and loads the editor once it is open. -#}
+<a class="bf-layout-fab" href="?edit_layout=1" data-island="edit-layout" data-props="{&quot;editorUrl&quot;:&quot;{{ layout.editor_url }}&quot;}" aria-label="{{ layout.t.t("layout.edit_layout") }}" data-tip="{{ layout.t.t("layout.edit_layout") }}" data-tip-side="end">{{ layout.icon("settings")|safe }}</a>

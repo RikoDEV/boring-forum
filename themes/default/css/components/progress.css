@@ -1,0 +1,49 @@
+/* A progress bar: `<progress class="bf-progress" value max aria-label>`. `is-met` turns it green,
+   `is-rating` gives it the star colour. */
+
+.bf-progress {
+  appearance: none;
+  display: block;
+  inline-size: 100%;
+  block-size: 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bf-color-border);
+  color: var(--bf-color-accent);
+  overflow: hidden;
+
+  &::-webkit-progress-bar {
+    background: var(--bf-color-border);
+  }
+
+  &::-webkit-progress-value {
+    border-radius: 999px;
+    background: var(--bf-color-accent);
+  }
+
+  &::-moz-progress-bar {
+    border-radius: 999px;
+    background: var(--bf-color-accent);
+  }
+
+  &.is-met,
+  .is-met > & {
+    &::-webkit-progress-value {
+      background: var(--bf-color-success, var(--bf-color-accent));
+    }
+
+    &::-moz-progress-bar {
+      background: var(--bf-color-success, var(--bf-color-accent));
+    }
+  }
+
+  &.is-rating {
+    &::-webkit-progress-value {
+      background: var(--bf-color-warning);
+    }
+
+    &::-moz-progress-bar {
+      background: var(--bf-color-warning);
+    }
+  }
+}

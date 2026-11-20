@@ -1,0 +1,62 @@
+/* Tooltips: the site's one hover bubble, used instead of the native `title` tooltip.
+
+   - Any element: `data-tip="Text"`. It opens above, centred, or below when there is no room above.
+     `data-tip-side="below"` opens it under the element, `data-tip-side="end"` beside it (after it
+     in reading order); `data-tip-gate` lets a long reason wrap.
+   - Icon buttons (`.bf-icon-btn` with an aria-label) get it without markup: the label doubles as
+     the tooltip text.
+
+   The bubble is one element in the browser's top layer, made and placed by web/islands/src/tooltip.js
+   (a popover, positioned from the trigger's place on screen). It is not a pseudo-element of the
+   trigger, so no `overflow: hidden` box, dialog or scroller can cut it off: do not add per-page
+   rules to keep a tooltip visible. Shown on hover and keyboard focus after a short delay; not on
+   touch screens. */
+
+.bf-tip {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  max-inline-size: min(22rem, calc(100vw - 1rem));
+  padding: var(--bf-space-1) var(--bf-space-2);
+  overflow: visible;
+  border: 0;
+  border-radius: var(--bf-radius-input);
+  background: var(--bf-color-text);
+  color: var(--bf-color-surface);
+  font-size: var(--bf-text-xs);
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: var(--bf-shadow-menu);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+
+  &:popover-open {
+    opacity: 1;
+  }
+
+  /* A reason that does not fit on one line (a control disabled until a trust level). */
+  &.is-gate {
+    inline-size: max-content;
+    white-space: normal;
+  }
+}
+
+@starting-style {
+  .bf-tip:popover-open {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bf-tip {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* A trigger with data-tip that has no position of its own is positioned: other rules (badges,
+   dots) anchor to it. */
+:where([data-tip]) {
+  position: relative;
+}

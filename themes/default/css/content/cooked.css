@@ -1,0 +1,230 @@
+/* Rendered posts: what the Markdown cooker produces. */
+
+/* Member text colours from `[text]{colour}`. */
+.clr-red { color: var(--bf-clr-red); }
+.clr-orange { color: var(--bf-clr-orange); }
+.clr-yellow { color: var(--bf-clr-yellow); }
+.clr-green { color: var(--bf-clr-green); }
+.clr-blue { color: var(--bf-clr-blue); }
+.clr-purple { color: var(--bf-clr-purple); }
+.clr-gray { color: var(--bf-clr-gray); }
+
+.cooked {
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+
+  & > * {
+    max-width: var(--bf-measure);
+  }
+
+  & > :first-child {
+    margin-block-start: 0;
+  }
+
+  & > :last-child {
+    margin-block-end: 0;
+  }
+
+  /* A link in a post is underlined: inside a sentence, colour alone does not set it apart
+     (WCAG 1.4.1, and Lighthouse's link-in-text-block). */
+  & p a,
+  & li a,
+  & blockquote a {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  & img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--bf-radius-input);
+  }
+
+  & img:not(a img) {
+    cursor: zoom-in;
+  }
+
+  & pre {
+    position: relative;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: var(--bf-space-3);
+    background: var(--bf-color-surface-2);
+    border-radius: var(--bf-radius);
+    font-size: var(--bf-text-sm);
+  }
+
+  & :not(pre) > code {
+    padding: 0 var(--bf-space-1);
+    background: var(--bf-color-surface-2);
+    border-radius: var(--bf-radius-input);
+    font-size: 0.9em;
+  }
+
+  & blockquote {
+    margin: var(--bf-space-2) 0;
+    padding: var(--bf-space-2) var(--bf-space-3);
+    border-inline-start: 3px solid var(--bf-color-border-strong);
+    background: var(--bf-color-surface-2);
+    color: var(--bf-color-muted);
+  }
+
+  & table {
+    border-collapse: collapse;
+  }
+
+  & th,
+  & td {
+    padding: var(--bf-space-1) var(--bf-space-2);
+    border: 1px solid var(--bf-color-border);
+  }
+}
+
+.copy {
+  position: absolute;
+  inset-block-start: var(--bf-space-1);
+  inset-inline-end: var(--bf-space-1);
+  min-height: 1.5rem;
+  font-size: var(--bf-text-xs);
+  padding: 0 var(--bf-space-2);
+}
+
+.cooked {
+  & .hl-comment {
+    color: var(--bf-color-muted);
+    font-style: italic;
+  }
+
+  & .hl-string {
+    color: var(--bf-color-code-string);
+  }
+
+  & .hl-keyword,
+  & .hl-storage {
+    color: var(--bf-color-code-keyword);
+  }
+
+  & .hl-constant {
+    color: var(--bf-color-code-constant);
+  }
+
+  & .hl-entity,
+  & .hl-support {
+    color: var(--bf-color-code-entity);
+  }
+
+  & a > img[src^="https://i.ytimg.com/"]
+  {
+    display: block;
+    max-width: 480px;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--bf-radius);
+  }
+
+  & a[href^="/uploads/"]:not(:has(img)) {
+    display: inline-flex;
+    gap: var(--bf-space-1);
+    padding: var(--bf-space-2) var(--bf-space-3);
+    border: 1px solid var(--bf-color-border);
+    border-radius: var(--bf-radius);
+    background: var(--bf-color-surface-2);
+  }
+
+  /* TeX before and after KaTeX: the source is shown as code until the chunk has loaded. */
+  & [data-math-style] {
+    font-family: var(--bf-font-mono);
+  }
+
+  & div.math {
+    margin-block: var(--bf-space-3);
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  & math {
+    font-size: 1.1em;
+  }
+
+  /* Content translation: the original folds away under the translated text. */
+  & .bf-original {
+    margin-block-start: var(--bf-space-3);
+    padding-block-start: var(--bf-space-2);
+    border-block-start: 1px dashed var(--bf-color-border);
+    color: var(--bf-color-muted);
+
+    & > div {
+      color: var(--bf-color-text);
+    }
+  }
+}
+
+/* A picture grid (`[grid]` … `[/grid]`): the pictures side by side in even tiles, as many to a row as
+   fit. Each is cropped to its tile; the viewer shows it whole. */
+.cooked .bf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+  gap: var(--bf-space-2);
+  margin-block: var(--bf-space-3);
+  /* The pictures are big files: without this their natural width sets how narrow the grid can get, and a
+     phone's page grows wider than the screen. The grid takes the width of its box instead. */
+  contain: inline-size;
+  min-inline-size: 0;
+
+  /* The lines of pictures are paragraphs; their pictures are the tiles. */
+  & p {
+    display: contents;
+  }
+
+  & br {
+    display: none;
+  }
+
+  /* The width stays a share of the column (and the global `max-width: 100%`), so a big file never makes the grid wider than its box. */
+  & img {
+    inline-size: 100%;
+    block-size: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  /* A number of columns the writer chose (`[grid=3]`); phones keep at most three, so tiles stay big enough to see. */
+  &.bf-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &.bf-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  &.bf-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  &.bf-grid-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  &.bf-grid-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  @media (max-width: 34rem) {
+    &.bf-grid-4,
+    &.bf-grid-5,
+    &.bf-grid-6 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}
+
+/* An emoji or sticker from `:name:` stays inline with the text, whatever size its file is. */
+.cooked img[alt^=":"][alt$=":"] {
+  display: inline-block;
+  max-block-size: 1.5em;
+  inline-size: auto;
+  vertical-align: middle;
+  cursor: default;
+}
+

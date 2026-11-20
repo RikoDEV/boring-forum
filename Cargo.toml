@@ -1,0 +1,121 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+# The toolchain CI builds with (rust-toolchain.toml); a dependency that needs newer fails CI.
+rust-version = "1.99"
+license = "AGPL-3.0-only"
+repository = "https://github.com/RikoDEV/boring-forum"
+
+# Enforced for every crate in the workspace. `unsafe_code` is forbidden rather
+# than denied, so it cannot be re-enabled with a local `allow`; an exception would have to be a
+# reviewed, documented change to this table.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+# SQL injection is kept out by sqlx's `SqlSafeStr`, which makes a `format!`-built query a
+# compile error, plus the CI grep and the semgrep rules in .semgrep.yml for the `AssertSqlSafe`
+# escape hatch. No clippy lint covers it.
+#
+# A panic in a request path is a denial of service, so the dangerous constructs are at least
+# visible in review. Not `deny` yet: the existing code uses `expect` where a failure is a
+# programming error, and converting those is tracked in rather than done in one sweep.
+#
+# `unwrap` is out of non-test code (tests are exempt in clippy.toml); `expect("why this cannot fail")`
+# stays for invariants, with the reason as its message. Indexing and arithmetic stay allowed: the
+# hits are overwhelmingly checked lengths, and rewriting them costs readability.
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unreachable = "warn"
+indexing_slicing = "allow"
+arithmetic_side_effects = "allow"
+# Debug leftovers.
+dbg_macro = "warn"
+todo = "warn"
+unimplemented = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+# Readability: the idioms big Rust codebases settle on.
+redundant_closure_for_method_calls = "warn"
+single_match_else = "warn"
+map_unwrap_or = "warn"
+semicolon_if_nothing_returned = "warn"
+needless_raw_string_hashes = "warn"
+items_after_statements = "warn"
+wildcard_imports = "warn"
+match_same_arms = "warn"
+manual_is_variant_and = "warn"
+assigning_clones = "warn"
+default_trait_access = "warn"
+unreadable_literal = "warn"
+needless_pass_by_value = "warn"
+uninlined_format_args = "warn"
+
+[workspace.dependencies]
+axum = { version = "0.8", features = ["multipart"] }
+tokio = { version = "1", features = ["full"] }
+tower = "0.5"
+tower-http = { version = "0.7", features = ["trace", "request-id", "compression-br", "compression-gzip", "set-header", "util", "fs", "catch-panic"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "tls-rustls", "postgres", "macros", "migrate", "json", "chrono", "ipnetwork"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+thiserror = "2"
+moka = { version = "0.12", features = ["future"] }
+askama = "0.16"
+utoipa = { version = "6", features = ["axum_extras"] }
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+bytes = "1"
+dashmap = "6"
+mimalloc = "0.1"
+imagesize = "0.15"
+sha2 = "0.11"
+base64 = "0.23"
+rand = "0.10"
+aes-gcm = "0.11"
+hmac = "0.13"
+sha1 = "0.11"
+ammonia = "4"
+futures-util = "0.3"
+p256 = "0.14"
+
+# Less debug info links and compiles much faster; backtraces still have line numbers.
+[profile.dev]
+debug = "line-tables-only"
+
+# Picture encoding is unusably slow unoptimised (the first AVIF thumbnail of a picture took ten
+# seconds): these crates alone are optimised in dev builds.
+[profile.dev.package.rav1e]
+opt-level = 3
+[profile.dev.package.ravif]
+opt-level = 3
+[profile.dev.package.v_frame]
+opt-level = 3
+[profile.dev.package.av1-grain]
+opt-level = 3
+[profile.dev.package.image]
+opt-level = 3
+[profile.dev.package.image-webp]
+opt-level = 3
+[profile.dev.package.zune-jpeg]
+opt-level = 3
+[profile.dev.package.png]
+opt-level = 3
+
+[profile.test]
+debug = "line-tables-only"
+
+[profile.release]
+lto = true
+codegen-units = 1
+# Unwinding, so a panic in one request is caught (`CatchPanicLayer`) and does not end the process.
+panic = "unwind"
+strip = true

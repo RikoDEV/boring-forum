@@ -1,0 +1,26 @@
+/* Toast messages. */
+
+.bf-toasts {
+  position: fixed;
+  z-index: 50;
+  inset-block-end: var(--bf-space-4);
+  inset-inline-end: var(--bf-space-4);
+  display: grid;
+  gap: var(--bf-space-2);
+  max-width: min(24rem, calc(100vw - 2rem));
+}
+
+.bf-toast {
+  padding: var(--bf-space-3) var(--bf-space-4);
+  border: 1px solid var(--bf-color-danger);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  font-size: var(--bf-text-list);
+  box-shadow: var(--bf-shadow-menu);
+}
+
+form.is-busy {
+  opacity: 0.6;
+  pointer-events: none;
+}

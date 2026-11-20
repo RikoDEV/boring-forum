@@ -1,0 +1,8 @@
+node_modules
+build
+dist
+.svelte-kit
+api/src/schema.d.ts
+api/openapi.json
+pnpm-lock.yaml
+admin/src/app.html

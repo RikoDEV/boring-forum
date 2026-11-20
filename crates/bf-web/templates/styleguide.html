@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Styleguide</h1>
+<p class="muted">Every shared component. Use the theme switch in the header to check dark mode.</p>
+<div class="bf-grid"><div>
+<section class="bf-box"><div class="bf-box-head"><h2>Buttons and icons</h2></div><div class="bf-box-body">
+  <p class="row-form"><button class="btn primary">Primary</button> <button class="btn">Default</button> <a class="btn" href="#">Link button</a> <button class="link">Text button</button> <a class="bf-icon-btn" href="#" aria-label="Notifications">{{ layout.icon("bell")|safe }}<span class="badge">3</span></a></p>
+  <p>{% for n in icons %}{{ layout.icon(n)|safe }} {% endfor %}</p>
+</div></section>
+<section class="bf-box"><div class="bf-box-head"><h2>Badges and text</h2></div><div class="bf-box-body">
+  <p><span class="bf-badge">Pinned</span> <span class="bf-badge is-accent">Question</span> <span class="group-badge">Staff</span> <a class="bf-badge is-accent" href="#">3 new</a> <span class="badge">7</span></p>
+  <p>Body text with a <a href="#">link</a>, <span class="muted">muted text</span>, <span class="small">small text</span> and <span class="error">an error</span>.</p>
+  <nav class="crumbs"><a href="#">Forums</a> › <a href="#">General</a></nav>
+  <nav class="list-controls small" aria-label="Example filter"><a href="#" class="current" aria-current="true">Latest</a> <a href="#">Top</a> <a href="#">Unanswered</a></nav>
+  <nav class="pager" aria-label="Example pages"><a href="#">← Previous</a><a href="#">1</a><span class="current">2</span><a href="#">3</a><a href="#">Next →</a></nav>
+</div></section>
+<section class="bf-box"><div class="bf-box-head"><h2>Forms</h2></div><div class="bf-box-body">
+  <form class="stack narrow-form"><label class="bf-field"><input placeholder="Placeholder"><span class="bf-field-label">Text</span></label><label class="bf-field"><select><option>One</option></select><span class="bf-field-label">Select</span></label><label class="bf-field"><textarea placeholder=" " rows="3"></textarea><span class="bf-field-label">Long text</span></label><label class="check"><input type="checkbox"> A choice</label><label class="check"><input type="radio"> Another</label><button type="button" class="btn primary">Save</button></form>
+</div></section>
+<section class="bf-box"><div class="bf-box-head"><h2>Rendered post</h2></div><div class="bf-box-body cooked"><h2>Heading</h2><p>Paragraph with <code>inline code</code> and a <a href="#">link</a>.</p><blockquote>A quote from someone.</blockquote><pre><code><span class="hl-keyword">fn</span> <span class="hl-entity">main</span>() { <span class="hl-string">"text"</span>; <span class="hl-comment">// note</span> }</code></pre></div></section>
+</div>
+<aside><section class="bf-box"><div class="bf-box-head"><h2>Menu</h2></div><div class="bf-box-body"><details class="bf-menu"><summary class="btn">Open menu</summary><div class="bf-menu-body"><a href="#">{{ layout.icon("user")|safe }} Item</a><div class="bf-menu-sep"></div><a href="#">{{ layout.icon("log-out")|safe }} Another</a></div></details></div></section></aside>
+</div>
+{% endblock %}

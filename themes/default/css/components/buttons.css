@@ -1,0 +1,214 @@
+/* Buttons, icon buttons and the actions in page headers. */
+
+/* Every action in a page header is an outlined button, icon-only or not. */
+
+.bf-head-actions .bf-icon-btn {
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-input);
+}
+
+.bf-dialog-head .bf-icon-btn {
+  border: 0;
+}
+
+.bf-icon-btn .badge {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+}
+
+button.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--bf-color-accent);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+summary.link {
+  color: var(--bf-color-accent);
+  cursor: pointer;
+}
+
+.stack {
+  display: grid;
+  gap: var(--bf-space-3);
+
+  & input:not([type="checkbox"], [type="radio"]),
+  & textarea,
+  & select {
+    width: 100%;
+  }
+
+  & button {
+    justify-self: start;
+  }
+
+  & label {
+    display: grid;
+    gap: var(--bf-space-1);
+    font-weight: 500;
+  }
+}
+
+.stack label.check,
+.check {
+  display: flex;
+  gap: var(--bf-space-2);
+  align-items: baseline;
+  font-weight: 400;
+}
+
+.row-form,
+.mod-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+  align-items: center;
+  margin-block: var(--bf-space-2);
+}
+
+.narrow {
+  max-width: 26rem;
+  margin-inline: auto;
+}
+
+.narrow-form {
+  max-width: 24rem;
+}
+
+.badge {
+  display: inline-block;
+  min-width: 1.125rem;
+  padding-inline: var(--bf-space-1);
+  border-radius: 999px;
+  background: var(--bf-color-danger);
+  color: var(--bf-color-surface);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.125rem;
+  text-align: center;
+}
+
+/* A group's own style (ACP → Groups): its colour, set from `data-group-colour` through CSSOM,
+   and an icon before its name. Labels without one keep their usual look. */
+/* Two classes' weight, so it wins over `.muted` on the same label. The text uses
+   `--bf-group-ink`: the group's colour, lightened or darkened by the islands script (ink.js)
+   until it is readable on what is really behind it. Before that runs, the theme's text colour. */
+:is(.bf-badge, .group-badge, .bf-group-pill, .bf-author-group, .bf-post-group)[data-group-colour] {
+  color: var(--bf-group-ink, var(--bf-color-text));
+}
+
+/* The tint is the group's own colour; the edge comes from the readable text colour, so the pill
+   keeps its shape even when the tint vanishes into the page (a dark colour on the dark theme). */
+:is(.bf-badge, .group-badge, .bf-group-pill)[data-group-colour] {
+  background: color-mix(in srgb, var(--bf-group-colour) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bf-group-ink, var(--bf-color-text)) 35%, transparent);
+}
+
+:is(.bf-badge, .group-badge, .bf-group-pill, .bf-author-group, .bf-post-group) > .bf-icon {
+  width: 1em;
+  height: 1em;
+  margin-inline-end: 0.3em;
+  vertical-align: -0.125em;
+}
+
+/* A group's uploaded badge picture (ACP → Groups), in place of its icon: as tall as the text in
+   pills and beside names, and up to a rank banner's size under the name in the author column. */
+.bf-group-image {
+  display: inline-block;
+  width: auto;
+  max-width: 6rem;
+  height: 1.25em;
+  margin-inline-end: 0.3em;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.bf-author-group > .bf-group-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 2.5rem;
+  margin: 0 auto var(--bf-space-1);
+}
+
+.avatar {
+  border-radius: 50%;
+  vertical-align: middle;
+  background: var(--bf-color-surface-2);
+}
+
+.staff {
+  outline: 1px solid var(--bf-color-warning);
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1);
+  margin-block-end: var(--bf-space-3);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+
+  & a {
+    color: inherit;
+  }
+}
+
+.list-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1);
+  align-items: center;
+  margin-block: var(--bf-space-3);
+
+  & a {
+    padding: var(--bf-space-1) var(--bf-space-3);
+    border-radius: var(--bf-radius);
+    color: var(--bf-color-muted);
+    font-weight: 500;
+  }
+
+  & a:hover {
+    background: var(--bf-color-surface-2);
+    color: var(--bf-color-text);
+    text-decoration: none;
+  }
+
+  & a.current {
+    background: var(--bf-color-accent-soft);
+    color: var(--bf-color-accent);
+  }
+
+  & .sep {
+    margin-inline-start: var(--bf-space-3);
+  }
+}
+
+/* A button the member cannot use yet. Wrap it in an element with data-tip (a disabled button gets
+   no hover of its own in every browser) to say why. */
+:is(.btn, .bf-icon-btn, .chat-btn):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Tab bars of links keep one row on a phone and scroll inside themselves. */
+
+@media (width <= 639px) {
+  .list-controls.bf-list-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    & a {
+      flex: none;
+      white-space: nowrap;
+    }
+  }
+}

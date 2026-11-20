@@ -1,0 +1,13 @@
+{
+  "name": "bf-devdb",
+  "private": true,
+  "type": "module",
+  "description": "In-process Postgres (PGlite) for running the sqlx tests without Docker",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
+    "@electric-sql/pglite-socket": "^0.2.19"
+  }
+}

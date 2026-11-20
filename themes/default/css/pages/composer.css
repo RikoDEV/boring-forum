@@ -1,0 +1,1064 @@
+/* Composer: the inline editor and the new-topic sheet. */
+
+/* Composer */
+
+.composer {
+  display: grid;
+  gap: var(--bf-space-2);
+
+  & input:not([type="checkbox"], [type="radio"], [type="file"]),
+  & textarea {
+    width: 100%;
+  }
+
+  & > button {
+    justify-self: start;
+  }
+}
+
+.composer-editor {
+  /* A cell of the composer's grid: it takes the width of its column, whatever the preview holds. */
+  min-inline-size: 0;
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface);
+}
+
+/* Focus ring on the whole editor box, so it follows the rounded corners (an
+   outline on the inner CodeMirror would be a sharp rectangle). `:focus-within`
+   crosses the editor's open shadow boundary. */
+.composer-editor:focus-within {
+  border-color: var(--bf-color-accent);
+  box-shadow: inset 0 0 0 1px var(--bf-color-accent);
+}
+
+/* The profile "About you" editor is a short bio, not a post: a smaller minimum
+   height than the composer's default. The variable reaches the editor through
+   the shadow boundary, which custom properties cross. */
+.bf-about-editor {
+  --bf-editor-min: 5.5rem;
+}
+
+/* The bar above the text: formatting and inserting on the left; the mode, helpers and options on
+   the right. On a phone only the first few buttons stay (the rest are in the Insert menu). */
+.composer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  min-width: 0;
+  padding-block-end: var(--bf-space-1);
+
+  & .bf-icon-btn {
+    min-width: 2rem;
+    height: 2rem;
+    padding-inline: var(--bf-space-1);
+  }
+
+  & .bf-icon-btn[aria-pressed="true"] {
+    background: var(--bf-color-accent-soft);
+    color: var(--bf-color-accent);
+  }
+}
+
+.composer-dock {
+  display: contents;
+}
+
+.composer-tools,
+.composer-side {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.composer-side {
+  margin-inline-start: auto;
+}
+
+/* Write | Preview, as one control. */
+.composer-modes {
+  display: flex;
+  padding: 2px;
+  background: var(--bf-color-surface-2);
+  border-radius: var(--bf-radius);
+
+  & .bf-icon-btn {
+    gap: var(--bf-space-1);
+    height: 1.75rem;
+    padding-inline: var(--bf-space-2);
+    font-size: var(--bf-text-sm);
+  }
+
+  & .bf-icon-btn[aria-pressed="true"] {
+    background: var(--bf-color-surface);
+    color: var(--bf-color-text);
+    box-shadow: var(--bf-shadow-sm, 0 1px 2px rgb(0 0 0 / 0.2));
+  }
+}
+
+.composer-toolbar .composer-insert {
+  gap: var(--bf-space-1);
+  padding-inline: var(--bf-space-2);
+  font-size: var(--bf-text-sm);
+}
+
+.bf-narrow-only {
+  display: none !important;
+}
+
+@media (width <= 639px) {
+  .bf-narrow-hide {
+    display: none !important;
+  }
+
+  .bf-narrow-only {
+    display: flex !important;
+  }
+
+  .composer-btn-text {
+    display: none;
+  }
+}
+
+/* Over selected text. */
+.composer-editor {
+  position: relative;
+}
+
+.composer-selbar {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+
+  &[hidden] {
+    display: none;
+  }
+
+  & .bf-icon-btn {
+    min-width: 1.875rem;
+    height: 1.875rem;
+  }
+}
+
+/* Draft, upload and length notes: one quiet line under the text. */
+.composer-footline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+
+  &:has(:empty:only-child),
+  &:empty {
+    display: none;
+  }
+}
+
+/* Extra post options as chips under the title: an event, a publish time. Each opens a dialog
+   and shows what was set. */
+.bf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+}
+
+.bf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-1);
+  padding: 2px var(--bf-space-3) 2px var(--bf-space-2);
+  border: 1px dashed var(--bf-color-border-strong);
+  border-radius: 999px;
+  background: none;
+  color: var(--bf-color-muted);
+  font: inherit;
+  font-size: var(--bf-text-sm);
+  cursor: pointer;
+
+  &::before {
+    content: "+";
+    font-weight: 600;
+  }
+
+  &:hover {
+    background: var(--bf-color-surface-2);
+    color: var(--bf-color-text);
+  }
+
+  &.is-set {
+    border-style: solid;
+    border-color: var(--bf-color-accent);
+    background: var(--bf-color-accent-soft);
+    color: var(--bf-color-accent);
+
+    &::before {
+      content: none;
+    }
+  }
+}
+
+.composer-foot > .composer-discard + .btn {
+  margin-inline-start: 0;
+}
+
+.composer-discard:hover {
+  background: var(--bf-color-danger-soft);
+  color: var(--bf-color-danger);
+}
+
+.composer-discard.is-armed {
+  background: var(--bf-color-danger);
+  color: var(--bf-color-surface);
+  font-weight: 600;
+}
+
+.composer-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2);
+  /* A grid item: without this it grows to its tools' width instead of letting them scroll. */
+  min-width: 0;
+
+  & > .btn {
+    margin-inline-start: auto;
+  }
+
+  @media (width <= 639px) {
+    & > .composer-discard {
+      margin-inline-start: 0;
+    }
+
+    & > .composer-discard + .btn {
+      margin-inline-start: auto;
+    }
+  }
+}
+
+.composer-preview {
+  padding: var(--bf-space-3);
+  min-height: 10rem;
+}
+
+.composer-status {
+  font-size: var(--bf-text-sm);
+  color: var(--bf-color-muted);
+  padding: var(--bf-space-1) var(--bf-space-2);
+}
+
+/* Empty most of the time: no padding, so it adds no gap below the editor. */
+.composer-status:empty {
+  padding: 0;
+}
+
+/* The table-builder popover: a hover grid for picking rows and columns. */
+.composer-table-picker {
+  position: fixed;
+  z-index: 60;
+  padding: var(--bf-space-2);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+}
+
+.composer-table-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 8), 1fr);
+  gap: 3px;
+}
+
+.composer-table-cell {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: 2px;
+  background: var(--bf-color-surface);
+  cursor: pointer;
+}
+
+.composer-table-cell.is-on {
+  border-color: var(--bf-color-accent);
+  background: var(--bf-color-accent-soft);
+}
+
+.composer-table-size {
+  margin-block-start: var(--bf-space-1);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+  text-align: center;
+}
+
+/* The colour swatch menu, opened from the toolbar. */
+.composer-color-menu {
+  position: fixed;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: var(--bf-space-2);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+}
+
+.composer-swatch {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.composer-swatch:hover,
+.composer-swatch:focus-visible {
+  outline: 2px solid var(--bf-color-accent);
+  outline-offset: 1px;
+}
+
+/* The in-place editor for a single table cell. Lives in document.body, positioned over the cell,
+   so it stays clear of the editor's own contentEditable. */
+.cm-cell-editor {
+  position: fixed;
+  z-index: 70;
+  box-sizing: border-box;
+  /* Width and height are set inline to match the cell exactly; these override the global
+     `textarea` rules (control height, radius, max-width) that would otherwise enlarge the box. */
+  min-height: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0.3rem 0.55rem;
+  border: 2px solid var(--bf-color-accent);
+  border-radius: 0;
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  resize: none;
+  overflow: auto;
+}
+
+.composer.docked {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 30;
+  height: var(--dock-height, 40vh);
+  margin: 0;
+  overflow: auto;
+  border-radius: var(--bf-radius) var(--bf-radius) 0 0;
+  box-shadow: var(--bf-shadow-menu);
+}
+
+/* A column, so the editor takes the height and the rest keeps its own (a grid shares it out). */
+
+.composer.docked {
+  &:not(.bf-sheet) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bf-space-2);
+    width: min(62rem, 100%);
+    margin-inline: auto;
+    padding: var(--bf-space-1) var(--bf-space-4) var(--bf-space-3);
+    overflow: hidden;
+    background: var(--bf-color-surface);
+    border: 1px solid var(--bf-color-border);
+    border-block-end: 0;
+    --bf-editor-max: none;
+  }
+
+  &:not(.bf-sheet) > * {
+    flex: none;
+  }
+
+  &:not(.bf-sheet) > .composer-editor {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  &:not(.bf-sheet) > .composer-editor > div:first-child {
+    display: grid;
+    flex: 1;
+    min-height: 0;
+  }
+
+  &:not(.bf-sheet) > .composer-handle {
+    width: 3rem;
+    height: 4px;
+    margin-inline: auto;
+    border-radius: 2px;
+  }
+}
+
+.composer.fullscreen:not(.bf-sheet) {
+  width: 100%;
+}
+
+.composer-editor > [hidden] {
+  display: none !important;
+}
+
+/* Minimized: the composer is out of the way, and a button in the corner brings it back. */
+.composer.minimized,
+.composer.bf-sheet.minimized {
+  display: none !important;
+}
+
+.bf-composer-fab {
+  position: fixed;
+  z-index: 31;
+  inset-block-end: var(--bf-space-4);
+  inset-inline-end: var(--bf-space-4);
+  gap: var(--bf-space-2);
+  border-radius: 999px;
+  box-shadow: var(--bf-shadow-menu);
+
+  &[hidden] {
+    display: none;
+  }
+
+  /* Clear of the topic page's bottom bar on a phone. */
+  @media (width <= 859px) {
+    inset-block-end: calc(var(--bf-space-4) + 3.5rem);
+  }
+}
+
+.composer.fullscreen {
+  height: 100dvh;
+}
+
+.composer-handle {
+  height: var(--bf-space-2);
+  cursor: ns-resize;
+  background: var(--bf-color-border);
+  touch-action: none;
+}
+
+.upload-row {
+  display: flex;
+  gap: var(--bf-space-2);
+  align-items: center;
+  font-size: var(--bf-text-sm);
+}
+
+.reply-context {
+  font-size: var(--bf-text-list);
+}
+
+/* New-topic composer: a page of its own without JS, a bottom sheet with it */
+
+.bf-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-2);
+}
+
+.bf-sheet-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+
+.bf-sheet-controls {
+  display: flex;
+  gap: 2px;
+  margin-inline-start: auto;
+}
+
+.bf-composer-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+
+  & > select {
+    flex: 1 1 12rem;
+    width: auto;
+    min-width: 0;
+  }
+
+  & > .bf-tags,
+  & > input {
+    flex: 2 1 16rem;
+    min-width: 0;
+  }
+}
+
+.composer.bf-sheet {
+  display: none;
+  position: fixed;
+  inset-block-end: 0;
+  inset-inline: 0;
+  z-index: 30;
+  flex-direction: column;
+  gap: var(--bf-space-2);
+  width: min(62rem, 100%);
+  height: var(--dock-height, min(34rem, 75vh));
+  margin-inline: auto;
+  padding: var(--bf-space-1) var(--bf-space-4) var(--bf-space-3);
+  overflow: visible;
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-block-end: 0;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -8px 32px rgb(0 0 0 / 0.3);
+}
+
+.bf-sheet {
+  & .composer-handle {
+    flex: none;
+    width: 3rem;
+    height: 4px;
+    margin: var(--bf-space-1) auto 0;
+    border-radius: 2px;
+  }
+
+  & .composer-editor {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  & .composer-editor > div:first-child {
+    display: grid;
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+.composer-editor > div:first-child {
+  cursor: text;
+}
+
+.bf-sheet .similar {
+  flex: none;
+  max-height: 5rem;
+  overflow: auto;
+}
+
+.bf-sheet.fullscreen {
+  width: 100%;
+  height: 100dvh;
+  border-radius: 0;
+}
+
+.composer.docked:not(.bf-sheet) .composer-foot {
+  position: sticky;
+  inset-block-end: 0;
+  background: var(--bf-color-surface);
+}
+
+.composer.bf-sheet.is-open,
+.composer.bf-sheet:target {
+  display: flex;
+}
+
+.bf-sheet {
+  & textarea {
+    flex: 1;
+  }
+
+  & [data-sheet-error] {
+    margin: 0;
+  }
+}
+
+/* Editor emoji panel */
+
+.composer-emoji {
+  position: relative;
+}
+
+.composer-emoji-panel {
+  position: absolute;
+  z-index: 35;
+  inset-block-end: calc(100% + var(--bf-space-1));
+  inset-inline-start: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 2.25rem);
+  gap: 2px;
+  padding: var(--bf-space-1);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+
+  &[hidden] {
+    display: none;
+  }
+
+  & button {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--bf-radius-input);
+    background: none;
+    font-size: 1.125rem;
+    cursor: pointer;
+  }
+
+  & button:hover {
+    background: var(--bf-color-surface-2);
+  }
+}
+
+/* The tools scroll sideways on a phone, which would clip a panel that opens from one of them, so
+   the emoji panel becomes a sheet along the bottom of the screen. */
+@media (width <= 639px) {
+  .composer-emoji-panel {
+    position: fixed;
+    inset-block-end: var(--bf-space-3);
+    inset-inline: var(--bf-space-3);
+    grid-template-columns: repeat(auto-fill, minmax(2.25rem, 1fr));
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+}
+
+/* A button that opens a list of actions under it (Insert, editor options). */
+
+.composer-more {
+  position: relative;
+}
+
+.composer-more-panel {
+  position: absolute;
+  z-index: 35;
+  inset-block-start: calc(100% + var(--bf-space-1));
+  inset-inline-start: 0;
+  display: grid;
+  min-width: 16rem;
+  max-height: min(24rem, 60vh);
+  padding: var(--bf-space-1);
+  overflow-y: auto;
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.composer-more-panel.is-up {
+  inset-block: auto calc(100% + var(--bf-space-1));
+}
+
+.composer-side .composer-more-panel {
+  inset-inline: auto 0;
+}
+
+.composer-toolbar .composer-more-item {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  width: 100%;
+  height: 2.25rem;
+  padding-inline: var(--bf-space-2);
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: var(--bf-text-sm);
+  text-align: start;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--bf-color-surface-2);
+  }
+
+  & kbd {
+    margin-inline-start: auto;
+    padding-inline-start: var(--bf-space-3);
+    color: var(--bf-color-muted);
+    font: inherit;
+    font-size: var(--bf-text-xs);
+  }
+}
+
+@media (width <= 639px) {
+  .composer-more-panel {
+    position: fixed;
+    inset-block: auto var(--bf-space-3);
+    inset-inline: var(--bf-space-3);
+    max-height: 60vh;
+  }
+
+  .composer-side .composer-more-panel {
+    inset-inline: var(--bf-space-3);
+  }
+}
+
+/* How much of the length limit the post uses; appears near it. */
+.composer-count {
+  padding: var(--bf-space-1) var(--bf-space-2);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+  text-align: end;
+
+  &.is-over {
+    color: var(--bf-color-danger);
+    font-weight: 600;
+  }
+}
+
+.composer-preview {
+  min-height: var(--bf-editor-min, 10rem);
+  padding: var(--bf-space-3);
+  overflow-y: auto;
+  max-height: var(--bf-editor-max, 60vh);
+}
+
+/* Editor AI helper: a menu of actions, and the answer under it for the member to accept. */
+
+.composer-ai {
+  position: relative;
+}
+
+.composer-ai-panel {
+  position: absolute;
+  z-index: 35;
+  inset-block-end: calc(100% + var(--bf-space-1));
+  inset-inline-start: 0;
+  display: grid;
+  gap: var(--bf-space-2);
+  width: min(22rem, 90vw);
+  padding: var(--bf-space-2);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+
+  &[hidden] {
+    display: none;
+  }
+
+  &[aria-busy="true"] {
+    opacity: 0.7;
+  }
+}
+
+.composer-ai-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1);
+}
+
+.composer-ai-item {
+  padding: var(--bf-space-1) var(--bf-space-2);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-input);
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-text);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--bf-color-accent);
+  }
+}
+
+.composer-ai-result:empty {
+  display: none;
+}
+
+.composer-ai-result {
+  display: grid;
+  gap: var(--bf-space-2);
+  font-size: 0.9rem;
+}
+
+.composer-ai-text {
+  max-height: 14rem;
+  overflow-y: auto;
+  padding: var(--bf-space-2);
+  background: var(--bf-color-surface-2);
+  border-radius: var(--bf-radius-input);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.composer-ai-actions {
+  display: flex;
+  gap: var(--bf-space-2);
+  flex-wrap: wrap;
+}
+
+.composer-ai-choice {
+  padding: var(--bf-space-2);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-input);
+  background: none;
+  color: var(--bf-color-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--bf-color-accent);
+  }
+}
+
+@media (width <= 639px) {
+  .composer-ai-panel {
+    position: fixed;
+    inset-block-end: var(--bf-space-3);
+    inset-inline: var(--bf-space-3);
+    width: auto;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}
+
+/* Emoji from plugins in the picker: a heading per set, then the images. */
+.composer-emoji-panel .bf-emoji-set {
+  grid-column: 1 / -1;
+  padding-block: var(--bf-space-1);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+  font-weight: 600;
+}
+
+.composer-emoji-panel button img {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  object-fit: contain;
+}
+
+
+/* GIF picker: a dialog with the provider's search box, a grid that loads as it is scrolled, and
+   the provider's name below. */
+.composer-gif-btn {
+  width: auto;
+  padding-inline: var(--bf-space-2);
+  font-size: var(--bf-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.composer-gif {
+  inline-size: min(40rem, calc(100vw - 2rem));
+  max-inline-size: none;
+  block-size: min(36rem, calc(100dvh - 2rem));
+  padding: 0;
+  color: var(--bf-color-text);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+}
+.composer-gif[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+.composer-gif::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+.composer-gif-head {
+  display: flex;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-3);
+  border-block-end: 1px solid var(--bf-color-border);
+}
+.composer-gif-head input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.composer-gif-scroll {
+  overflow-y: auto;
+  padding: var(--bf-space-3);
+  overscroll-behavior: contain;
+}
+.composer-gif-grid {
+  column-count: 3;
+  column-gap: var(--bf-space-2);
+}
+.composer-gif-item {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 0;
+  margin: 0 0 var(--bf-space-2);
+  padding: 0;
+  overflow: hidden;
+  background: var(--bf-color-surface-2);
+  border: 2px solid transparent;
+  border-radius: var(--bf-radius);
+  break-inside: avoid;
+  cursor: pointer;
+}
+.composer-gif-item:hover,
+.composer-gif-item:focus-visible {
+  border-color: var(--bf-color-accent);
+}
+.composer-gif-item img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+.composer-gif-note {
+  margin: var(--bf-space-3) 0 0;
+  text-align: center;
+}
+.composer-gif-foot {
+  margin: 0;
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border-block-start: 1px solid var(--bf-color-border);
+  font-size: var(--bf-text-xs);
+  text-align: end;
+}
+@media (max-width: 40rem) {
+  .composer-gif {
+    inline-size: calc(100vw - 1rem);
+    block-size: calc(100dvh - 1rem);
+  }
+  .composer-gif-grid {
+    column-count: 2;
+  }
+}
+
+/* The small panel for one picture in the editor: its description, caption and size. */
+.composer-image-pop {
+  position: fixed;
+  z-index: 60;
+  display: grid;
+  gap: var(--bf-space-2);
+  inline-size: min(21rem, calc(100vw - 1rem));
+  padding: var(--bf-space-3);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+}
+
+.composer-image-size {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+
+.composer-image-lock[aria-pressed="false"] {
+  opacity: 0.45;
+}
+
+.composer-image-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1);
+
+  & .btn {
+    flex: 1 1 0;
+    min-inline-size: 0;
+    padding-inline: var(--bf-space-2);
+  }
+}
+
+.composer-image-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bf-space-2);
+}
+
+/* The editor's right-click menu: a list of actions at the pointer, with submenus that open beside it. */
+.composer-ctx {
+  position: fixed;
+  z-index: 70;
+  min-inline-size: 13rem;
+  max-inline-size: min(20rem, calc(100vw - 1rem));
+  padding: var(--bf-space-1);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+
+  &[hidden] {
+    display: none;
+  }
+
+  /* A submenu hangs off its row, not off the window. */
+  &.is-sub {
+    position: absolute;
+    inset-block-start: calc(-1 * var(--bf-space-1) - 1px);
+    inset-inline-start: calc(100% - 2px);
+
+    &.is-left {
+      inset-inline-start: auto;
+      inset-inline-end: calc(100% - 2px);
+    }
+  }
+}
+
+.composer-ctx-row {
+  position: relative;
+}
+
+.composer-ctx-item {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  inline-size: 100%;
+  padding: 0.35rem var(--bf-space-2);
+  border: 0;
+  border-radius: calc(var(--bf-radius) - 2px);
+  background: none;
+  color: var(--bf-color-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus-visible,
+  &[aria-expanded="true"] {
+    background: var(--bf-color-surface-2);
+    outline: none;
+  }
+
+  &:disabled {
+    color: var(--bf-color-muted);
+    cursor: default;
+  }
+
+  & .bf-icon,
+  & .composer-ctx-gap {
+    flex: none;
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
+  & kbd {
+    margin-inline-start: auto;
+    padding-inline-start: var(--bf-space-3);
+    color: var(--bf-color-muted);
+    font: inherit;
+    font-size: 0.8rem;
+  }
+
+  /* The arrow of a submenu item sits at the end. */
+  &[aria-haspopup] .bf-icon:last-child {
+    margin-inline-start: auto;
+  }
+}
+
+.composer-ctx-label {
+  white-space: nowrap;
+}
+
+.composer-ctx-sep {
+  block-size: 1px;
+  margin-block: var(--bf-space-1);
+  background: var(--bf-color-border);
+}

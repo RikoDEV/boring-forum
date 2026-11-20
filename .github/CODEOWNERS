@@ -1,0 +1,64 @@
+# "changes to auth, permissions, the sanitizer, uploads, the plugin host or crypto
+# need two reviewers."
+#
+# CODEOWNERS alone only requires ONE approval from the listed owners. The second approval comes
+# from the branch protection rule on the default branch, which must be set to:
+#
+#   Require a pull request before merging
+#     Required approvals: 1
+#     Require review from Code Owners: on
+#   plus, for the paths below, a ruleset with "Required approvals: 2"
+#
+# GitHub cannot express "two approvals for these paths only" in this file, so the paths are
+# listed here as the single source of truth and the ruleset points at the same globs. Changing
+# this file without changing the ruleset does not change what is enforced -- check both.
+#
+# Replace the placeholder teams with real ones before launch. A team, not a person, so a single
+# maintainer being away does not block a security fix.
+
+# Default: any maintainer.
+*                                           @RikoDEV
+
+# --- Two reviewers required below this line -------------------------------------------------
+
+# Authentication, sessions, 2FA, passkeys, OAuth/OIDC and SSO.
+/crates/bf-core/src/auth.rs                 @RikoDEV
+/crates/bf-core/src/totp.rs                 @RikoDEV
+/crates/bf-core/src/webauthn.rs             @RikoDEV
+/crates/bf-core/src/oauth.rs                @RikoDEV
+/crates/bf-server/src/auth/                 @RikoDEV
+/crates/bf-server/src/account/              @RikoDEV
+/crates/bf-server/src/http/                 @RikoDEV
+/crates/bf-server/src/moderation/scan.rs    @RikoDEV
+/crates/bf-server/src/platform/outbound.rs  @RikoDEV
+/crates/bf-db/src/accounts/                 @RikoDEV
+
+# Permissions and authorization.
+/crates/bf-core/src/perms.rs                @RikoDEV
+
+# Cryptography and secrets at rest.
+/crates/bf-core/src/secretbox.rs            @RikoDEV
+/crates/bf-db/src/platform/secrets.rs       @RikoDEV
+/crates/bf-server/src/platform/push.rs      @RikoDEV
+
+# The sanitizer and cook pipeline: the XSS boundary.
+/crates/bf-cook/                            @RikoDEV
+/crates/bf-web/src/security.rs              @RikoDEV
+
+# Uploads: content sniffing, re-encoding, storage names.
+/crates/bf-server/src/forum/uploads.rs      @RikoDEV
+
+# The plugin and theme host: sandbox, capabilities, package verification.
+/crates/bf-server/src/platform/plugins.rs   @RikoDEV
+/crates/bf-server/src/platform/webhooks.rs  @RikoDEV
+/crates/bf-server/src/admin/themes.rs       @RikoDEV
+
+# Request gates: HTTPS, CSP, origin checks, rate limits, bans.
+/crates/bf-server/src/admin/maintenance.rs  @RikoDEV
+
+# The security process and its enforcement.
+/SECURITY.md                                @RikoDEV
+/.github/CODEOWNERS                         @RikoDEV
+/.github/workflows/                         @RikoDEV
+/.semgrep.yml                               @RikoDEV
+/deploy/postgres/roles.sql                  @RikoDEV

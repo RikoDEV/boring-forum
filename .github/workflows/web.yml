@@ -1,0 +1,127 @@
+name: Web
+
+# Front-end quality gates that ci.yml does not run: lint and formatting, type checks for the
+# islands and the admin panel, asset budgets, and the browser checks (axe accessibility, screenshot
+# diffs, Lighthouse) against the real server.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: "Record new screenshot baselines for Linux and upload them as an artifact"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with: { package_json_file: web/package.json, version: 11 }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+        working-directory: web
+      - name: ESLint
+        run: pnpm lint
+        working-directory: web
+      - name: Prettier
+        run: pnpm format:check
+        working-directory: web
+      - name: Types (islands with checkJs, admin with svelte-check)
+        run: pnpm check
+        working-directory: web
+      - name: Unit tests
+        run: pnpm test
+        working-directory: web
+      - name: Build
+        run: pnpm build
+        working-directory: web
+      - name: Asset size budgets
+        run: pnpm size
+        working-directory: web
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env: { POSTGRES_USER: forum, POSTGRES_PASSWORD: forum, POSTGRES_DB: forum }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U forum" --health-interval 2s --health-retries 30
+    env:
+      PGPASSWORD: forum
+      BF_TEST_DB_HOST: localhost
+      BF_E2E_BIN: ${{ github.workspace }}/target/debug/boring-forum
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with: { package_json_file: web/package.json, version: 11 }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile && pnpm build
+        working-directory: web
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      # The islands and the admin panel are embedded in the binary, so they are built first.
+      - name: Build the server
+        run: cargo build --locked -p bf-server --bin boring-forum
+
+      # Accessibility (axe) and screenshot diffs, one server and database per spec file, as in
+      # the HTTP specs (scripts/test.sh), but with a browser. Playwright's Chromium is only the
+      # browser: the specs drive it through playwright-core.
+      - name: Install Chromium
+        run: npm ci --no-audit --no-fund && npx playwright-core install --with-deps chromium
+        working-directory: tests/e2e
+      - name: Accessibility (axe) and screenshot diffs
+        run: npx vitest run -c vitest.browser.config.ts
+        working-directory: tests/e2e
+        env:
+          CI: "true"
+      - name: Record screenshot baselines (manual run)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.update_snapshots }}
+        run: npx vitest run -c vitest.browser.config.ts browser/visual
+        working-directory: tests/e2e
+        env:
+          UPDATE_SNAPSHOTS: "1"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: browser-results
+          # Diffs and actual images of failed or baseline-less screenshots, and, after a manual
+          # run that records baselines, the new baselines (copy them into the repo).
+          path: |
+            tests/e2e/test-results
+            tests/e2e/browser/__screenshots__/linux
+          if-no-files-found: ignore
+
+      # Lighthouse: the home page, a topic and a profile, against a fresh database.
+      - name: Lighthouse CI
+        run: |
+          psql -h localhost -U forum -d forum -c "CREATE DATABASE bf_lh"
+          npm ci --no-audit --no-fund
+          npx lhci autorun --config=./lighthouserc.cjs
+        working-directory: tests/lighthouse
+        env:
+          BF_BIN: ${{ github.workspace }}/target/debug/boring-forum
+          BF_DATABASE_URL: postgres://forum:forum@localhost:5432/bf_lh?sslmode=disable
+          CHROME_PATH: /usr/bin/google-chrome
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: tests/lighthouse/.lighthouseci
+          if-no-files-found: ignore

@@ -1,0 +1,17 @@
+{
+  "name": "@bf/api",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "generate": "cargo run -q -p bf-server --bin boring-forum -- openapi > openapi.json && openapi-typescript openapi.json -o src/schema.d.ts",
+    "build": "echo api: types only"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.17.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0",
+    "typescript": "~6.0.3"
+  }
+}

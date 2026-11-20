@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{#- Every badge, by category. -#}
+{% block content %}
+<header class="bf-box bf-page-head"><h1>{{ layout.t.t("footer.badges") }}</h1></header>
+{% for (group, badges) in groups %}
+<section class="bf-badge-group">
+  <h2>{{ group }}</h2>
+  <div class="bf-card-grid">
+    {% for (id, name, description, points, holders, tier, icon, color, level) in badges %}
+    <a class="bf-box bf-card" href="/badges/{{ id }}">
+      {{ layout.medal(tier, icon, color, level)|safe }}
+      <div>
+        <strong>{{ name }}</strong>
+        {%- if !description.is_empty() %}<span class="small">{{ description }}</span>{% endif -%}
+        <span class="small muted">{{ layout.t.n("badges.earned", holders) }}{% if *points != 0 %} · {{ layout.t.n("count.points", points) }}{% endif %}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<p class="muted">{{ layout.t.t("profile.no_badges") }}</p>
+{% endfor %}
+{% endblock %}

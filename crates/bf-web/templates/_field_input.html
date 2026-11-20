@@ -1,0 +1,17 @@
+{#- One custom profile field `q` (FieldInput): on the sign-up form and in account settings. -#}
+<div class="bf-field">
+  {% if q.kind == "textarea" %}
+  <textarea id="field-{{ q.id }}" name="field_{{ q.id }}" rows="3" placeholder=" "{% if q.required %} required{% endif %}>{{ q.value }}</textarea>
+  {% else if q.kind == "select" %}
+  <select id="field-{{ q.id }}" name="field_{{ q.id }}"{% if q.required %} required{% endif %}>
+    <option value=""></option>
+    {% for o in q.options %}<option{% if *o == q.value %} selected{% endif %}>{{ o }}</option>{% endfor %}
+  </select>
+  {% else %}
+  <input id="field-{{ q.id }}" name="field_{{ q.id }}" type="{% if q.kind == "url" && !q.shorthand %}url{% else %}text{% endif %}"
+    {%- if q.kind == "url" %} inputmode="url" autocomplete="url" spellcheck="false"{% endif %} value="{{ q.value }}" placeholder=" "
+    {%- if q.required %} required{% endif %}{% if q.hint.is_some() %} aria-describedby="field-{{ q.id }}-hint"{% endif %}>
+  {% endif %}
+  <label class="bf-field-label" for="field-{{ q.id }}">{{ q.label }}{% if !q.required %} {{ layout.t.t("common.optional") }}{% endif %}</label>
+  {% if let Some(h) = q.hint %}<small class="muted" id="field-{{ q.id }}-hint">{{ h }}</small>{% endif %}
+</div>

@@ -1,0 +1,79 @@
+/* Badges: the one pill for a state (Solved, Locked, Pinned), a tag, a topic prefix, a group, a
+   staff note, a count of unread posts. In the admin panel too (`.acp-pill` is the same pill).
+
+   <span class="bf-badge">Text</span>, with an icon first when it helps. Meaning is a modifier:
+   `is-ok` (done, solved), `is-warn` (needs care, staff only), `is-bad` (refused, failed),
+   `is-accent` (highlighted: pinned, a prefix, unread); none is a quiet, neutral one. A badge that
+   is a link or a button (`a.bf-badge`) darkens a little on hover.
+
+   `.tag`, `.prefix` and `.group-badge` are older names that a theme's own markup may still use;
+   they are drawn the same. */
+
+:is(.bf-badge, .tag, .prefix, .group-badge) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  min-height: 1.25rem;
+  padding-inline: var(--bf-space-2);
+  border-radius: 999px;
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-weight: 600;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  vertical-align: middle;
+
+  & .bf-icon {
+    flex: none;
+    width: 0.9em;
+    height: 0.9em;
+  }
+}
+
+:is(a, button):is(.bf-badge, .tag, .group-badge):hover {
+  background: color-mix(in srgb, var(--bf-color-surface-2) 80%, var(--bf-color-text));
+  color: var(--bf-color-text);
+  text-decoration: none;
+}
+
+button.bf-badge {
+  border: 0;
+  font: inherit;
+  font-size: var(--bf-text-xs);
+  font-weight: 600;
+  line-height: 1.25rem;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.bf-badge.is-ok {
+  background: var(--bf-color-success-soft);
+  color: var(--bf-color-success);
+}
+
+.bf-badge.is-warn {
+  background: var(--bf-color-warning-soft);
+  color: var(--bf-color-warning);
+}
+
+.bf-badge.is-bad {
+  background: var(--bf-color-danger-soft);
+  color: var(--bf-color-danger);
+}
+
+.bf-badge.is-accent,
+.prefix {
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+}
+
+:is(a, button).bf-badge:is(.is-ok, .is-warn, .is-bad, .is-accent):hover {
+  background: color-mix(in srgb, currentcolor 22%, var(--bf-color-surface));
+  color: inherit;
+}
+
+/* A badge in a line of text sits on its middle. */
+.bf-topic-title .bf-badge {
+  vertical-align: 1px;
+}

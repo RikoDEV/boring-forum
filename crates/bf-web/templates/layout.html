@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="{{ layout.t.locale }}" dir="{{ layout.t.dir() }}" data-post-style="{{ layout.post_style }}" data-forum-layout="{{ layout.forum_layout }}" data-density="{{ layout.density }}"
+  {%- if !layout.scheme.is_empty() %} data-scheme="{{ layout.scheme }}"{% endif %}
+  {%- if layout.date_format != "relative" %} data-date="{{ layout.date_format }}"{% endif %}
+  {%- if layout.skin_tone != 0 %} data-skin="{{ layout.skin_tone }}"{% endif %}
+  {%- if layout.text_size != 100 %} data-text-size="{{ layout.text_size / 5 * 5 }}"{% endif %}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ layout.title }}</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  {% if !layout.brand.favicon.is_empty() %}<link rel="icon" href="{{ layout.brand.favicon }}">{% endif %}{#- No icon set: the browser asks for /favicon.ico, which answers "none" (204). A data: link would be blocked by the image policy. #}
+  {% if !layout.brand.large_icon.is_empty() %}<link rel="apple-touch-icon" href="{{ layout.brand.large_icon }}">{% endif %}
+  <meta name="description" content="{{ layout.description }}">
+  <meta name="color-scheme" content="light dark">
+  {% if let Some(c) = layout.canonical %}<link rel="canonical" href="{{ c }}">{% endif %}
+  {% if layout.noindex %}<meta name="robots" content="noindex">{% endif %}
+  {% if let Some(u) = layout.prev_link %}<link rel="prev" href="{{ u }}">{% endif %}
+  {% if let Some(u) = layout.next_link %}<link rel="next" href="{{ u }}">{% endif %}
+  <meta name="csrf-token" content="{{ layout.csrf }}">
+  {% if layout.user.is_some() %}<meta name="bf-post" content="{{ layout.post_max }}"{% if layout.math %} data-math{% endif %}>{% endif %}
+  {% if let Some(g) = layout.gifs %}{% if layout.user.is_some() %}<meta name="bf-gif" content="{{ g.key }}" data-provider="{{ g.provider }}" data-format="{{ g.format }}" data-filter="{{ g.filter }}" data-country="{{ g.country }}" data-limit="{{ g.limit }}">{% endif %}{% endif %}
+  {% if layout.ai_helper && layout.user.is_some() %}<meta name="bf-ai-helper" content="1">{% endif %}
+  {% if layout.admin %}<meta name="bf-brands" content="{{ layout.brand_sprite() }}">{% endif %}
+
+  {#- Sharing: Open Graph and Twitter cards. #}
+  <meta property="og:title" content="{{ layout.title }}">
+  <meta property="og:description" content="{{ layout.description }}">
+  <meta property="og:type" content="{% if layout.og_type.is_empty() %}website{% else %}{{ layout.og_type }}{% endif %}">
+  <meta property="og:site_name" content="{{ layout.site_name }}">
+  {% if let Some(c) = layout.canonical %}<meta property="og:url" content="{{ c }}">{% endif %}
+  {% if let Some(img) = layout.og_image %}
+  <meta property="og:image" content="{{ img }}">
+  <meta name="twitter:image" content="{{ img }}">
+  <meta name="twitter:card" content="summary_large_image">
+  {% else if let Some(img) = layout.generated_image() %}
+  <meta property="og:image" content="{{ img }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:image" content="{{ img }}">
+  <meta name="twitter:card" content="summary_large_image">
+  {% else if !layout.brand.og_image.is_empty() %}
+  <meta property="og:image" content="{{ layout.brand.og_image }}">
+  <meta name="twitter:image" content="{{ layout.brand.og_image }}">
+  <meta name="twitter:card" content="summary_large_image">
+  {% else %}
+  <meta name="twitter:card" content="summary">
+  {% endif %}
+  <meta name="twitter:title" content="{{ layout.title }}">
+  <meta name="twitter:description" content="{{ layout.description }}">
+
+  {#- Feeds: the site's latest topics, and this page's own. #}
+  <link rel="alternate" type="application/rss+xml" title="{{ layout.t.t("home.latest") }}" href="/latest.rss">
+  <link rel="alternate" type="application/atom+xml" title="{{ layout.t.t("home.latest") }}" href="/latest.atom">
+  <link rel="alternate" type="application/feed+json" title="{{ layout.t.t("home.latest") }}" href="/latest.json">
+  {% if let Some(feed) = layout.feed %}
+  <link rel="alternate" type="application/rss+xml" title="{{ layout.title }}" href="{{ feed }}">
+  <link rel="alternate" type="application/atom+xml" title="{{ layout.title }}" href="{{ feed.trim_end_matches(".rss") }}.atom">
+  <link rel="alternate" type="application/feed+json" title="{{ layout.title }}" href="{{ feed.trim_end_matches(".rss") }}.json">
+  {% endif %}
+  {% if let Some(c) = layout.canonical %}{% if c.contains("/t/") %}<link rel="alternate" type="application/json+oembed" href="/oembed?format=json&amp;url={{ c|urlencode }}" title="{{ layout.title }}">{% endif %}{% endif %}
+
+  {#- Styles. The inline scripts below are allowed by hash (security.rs): keep them byte for byte. #}
+  <style>{{ layout.critical_css|safe }}</style>
+  <link rel="stylesheet" href="{{ layout.css_url }}">
+  {% if let Some(u) = layout.scheme_css %}<link rel="stylesheet" href="{{ u }}">{% endif %}
+  {% if let Some(th) = layout.theme %}<link rel="stylesheet" href="{{ th.url }}">{% endif %}
+  {{ layout.plugin_css()|safe }}
+  {% for ld in layout.json_ld %}<script type="application/ld+json">{{ ld|safe }}</script>
+  {% endfor %}
+  <script>try{var t=localStorage.getItem("bf-theme");if(t){document.documentElement.dataset.theme=t;document.querySelector('meta[name="color-scheme"]').content=t}}catch(e){}</script>
+  {{ layout.analytics.head()|safe }}
+  {% if let Some(c) = layout.custom %}
+  {% if !c.css.is_empty() %}<style>{{ c.css|safe }}</style>{% endif %}
+  {{ c.head|safe }}
+  {% endif %}
+  <script type="speculationrules">{"prerender":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/logout","/t/*","/notifications/*","/language/*","/safe-mode","/c/*/go"]}}]},"eagerness":"moderate"}]}</script>
+</head>
+<body>
+<a class="skip-link" href="#main">{{ layout.t.t("nav.skip") }}</a>
+{% if layout.impersonating %}
+<form method="post" action="/impersonate/stop" class="impersonating" role="status">
+  <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+  {% if let Some(u) = layout.user %}{{ layout.t.f("layout.impersonating", [("name", u.as_str())]) }}{% endif %} <button class="btn">{{ layout.t.t("layout.impersonating_stop") }}</button>
+</form>
+{% endif %}
+{% include "_header.html" %}
+{% if !layout.sidebar.is_empty() %}
+<div class="wrap">
+  <nav class="sidebar panel" aria-label="{{ layout.t.t("layout.sidebar") }}">
+    {%- for (url, label) in layout.sidebar %}<a href="{{ url }}">{{ label }}</a>{% endfor -%}
+  </nav>
+</div>
+{% endif %}
+{{ layout.slot("header_after")|safe }}
+{{ layout.ad()|safe }}
+
+<main id="main" class="wrap">
+  {% if layout.legal_pending %}
+  <aside class="panel bf-terms-banner" aria-label="{{ layout.t.t("layout.terms_label") }}">
+    {{ layout.icon("file-text")|safe }}
+    <p><strong>{{ layout.t.t("layout.terms_changed") }}</strong> {{ layout.t.t("layout.terms_body") }}</p>
+    <a class="btn primary" href="/legal/accept" data-terms-open>{{ layout.t.t("layout.terms_review") }}</a>
+  </aside>
+  {% endif %}
+
+  {% if layout.welcome %}
+  <aside class="panel bf-terms-banner" aria-label="{{ layout.t.msg("Getting started") }}">
+    {{ layout.icon("circle-check")|safe }}
+    <p><strong>{{ layout.t.msg("Welcome!") }}</strong> {{ layout.t.msg("A few quick steps will get your account set up.") }}</p>
+    <a class="btn primary" href="/welcome">{{ layout.t.msg("Open the checklist") }}</a>
+    <form method="post" action="/welcome/dismiss">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <button class="btn" type="submit">{{ layout.t.msg("Dismiss") }}</button>
+    </form>
+  </aside>
+  {% endif %}
+
+  {% for a in layout.announcements() %}
+  <aside class="bf-box announcement" data-island="announcement" data-props="{&quot;id&quot;:{{ a.id }}}" aria-label="{{ layout.t.msg("Announcement") }}">
+    <span class="announcement-icon" aria-hidden="true">{{ layout.icon("megaphone")|safe }}</span>
+    <div class="announcement-body">
+      <strong class="announcement-title">{{ a.title }}</strong>
+      <div class="cooked">{{ a.html|safe }}</div>
+    </div>
+  </aside>
+  {% endfor %}
+
+  {#- Widget areas around the content, for pages that opt in (`PageArea`). #}
+  {% if let Some(a) = layout.area %}
+  {% if layout.admin %}{% include "_layout_edit.html" %}{% endif %}
+  {% if a.editing || !a.widgets.top.is_empty() %}
+  <div data-area="{{ a.name }}_top" data-area-label="{{ layout.t.t("layout.area_top") }}">
+    {%- for (id, title, html, kind) in a.widgets.top.iter() %}{% include "_widget.html" %}{% endfor -%}
+  </div>
+  {% endif %}
+  {% if a.has_side() %}<div class="bf-grid"><div class="bf-grid-main">{% endif %}
+  {% endif %}
+
+  {% block content %}{% endblock %}
+
+  {% if let Some(a) = layout.area %}
+  {% if a.editing || !a.widgets.bottom.is_empty() %}
+  <div data-area="{{ a.name }}_bottom" data-area-label="{{ layout.t.t("layout.area_bottom") }}">
+    {%- for (id, title, html, kind) in a.widgets.bottom.iter() %}{% include "_widget.html" %}{% endfor -%}
+  </div>
+  {% endif %}
+  {% if a.has_side() %}
+  </div>
+  <aside aria-label="{{ layout.t.t("layout.sidebar") }}" data-area="{{ a.name }}_side" data-area-label="{{ layout.t.t("layout.sidebar") }}">
+    {{- layout.ad_slot("sidebar")|safe }}
+    {%- for (id, title, html, kind) in a.widgets.side.iter() %}{% include "_widget.html" %}{% endfor -%}
+  </aside>
+  </div>
+  {% endif %}
+  {% endif %}
+
+</main>
+
+{% if layout.legal_pending %}<div data-island="terms-gate" data-props="{}" hidden></div>{% endif %}
+{% if !layout.cookie_text.is_empty() %}
+<div data-island="cookie-consent" class="cookie-consent panel" role="region" aria-label="{{ layout.t.t("layout.cookies") }}" data-props="{}" hidden><span>{{ layout.cookie_text }}</span></div>
+{% endif %}
+{{ layout.ad_slot("footer")|safe }}
+{{ layout.slot("footer")|safe }}
+
+{% if let Some(f) = layout.partial("footer", [("site_name", layout.site_name.as_str())]) %}
+<footer class="site-footer">{{ f|safe }}</footer>
+{% else %}
+<footer class="site-footer">
+  <div class="wrap bf-footer">
+    <div class="bf-footer-brand">
+      <strong>{{ layout.site_name }}</strong>
+      {% if !layout.site_description.is_empty() %}<p>{{ layout.site_description }}</p>{% endif %}
+    </div>
+    <nav class="bf-footer-col" aria-label="{{ layout.t.t("footer.browse") }}">
+      <strong>{{ layout.t.t("footer.browse") }}</strong>
+      {% for (url, label) in layout.nav %}<a href="{{ url }}">{{ label }}</a>{% endfor %}
+      {{ layout.plugin_nav_html()|safe }}
+    </nav>
+    <nav class="bf-footer-col" aria-label="{{ layout.t.t("footer.community") }}">
+      <strong>{{ layout.t.t("footer.community") }}</strong>
+      <a href="/u">{{ layout.t.t("footer.members") }}</a>
+      <a href="/g">{{ layout.t.t("footer.groups") }}</a>
+      <a href="/badges">{{ layout.t.t("footer.badges") }}</a>
+      <a href="/leaderboard">{{ layout.t.t("footer.leaderboard") }}</a>
+      {% for (url, label) in layout.modules %}<a href="{{ url }}">{{ label }}</a>{% endfor %}
+      <a href="/about">{{ layout.t.t("footer.about") }}</a>
+    </nav>
+    <nav class="bf-footer-col" aria-label="{{ layout.t.t("footer.legal") }}">
+      <strong>{{ layout.t.t("footer.legal") }}</strong>
+      {% if layout.legal.terms %}<a href="/legal/terms">{{ layout.t.t("footer.terms") }}</a>{% endif %}
+      {% if layout.legal.privacy %}<a href="/legal/privacy">{{ layout.t.t("footer.privacy") }}</a>{% endif %}
+      {% if layout.legal.guidelines %}<a href="/legal/guidelines">{{ layout.t.t("footer.guidelines") }}</a>{% endif %}
+      {% if layout.dsa_notices %}<a href="/legal/notice">{{ layout.t.t("footer.notice") }}</a>{% endif %}
+      <a href="/transparency">{{ layout.t.t("footer.transparency") }}</a>
+    </nav>
+    <div class="bf-footer-tools">
+      <details class="bf-menu bf-menu-up">
+        <summary class="btn" aria-label="{{ layout.t.t("layout.language") }}: {{ layout.language_name() }}">{{ layout.icon("globe")|safe }} {{ layout.language_name() }} {{ layout.icon("chevron-down")|safe }}</summary>
+        <div class="bf-menu-body">
+          {%- for (code, name, dir) in layout.languages() %}<a href="/language/{{ code }}" lang="{{ code }}" dir="{{ dir }}">{{ name }}</a>{% endfor -%}
+        </div>
+      </details>
+      <a class="bf-icon-btn" href="#main" aria-label="{{ layout.t.t("layout.back_to_top") }}">{{ layout.icon("arrow-up")|safe }}</a>
+    </div>
+  </div>
+</footer>
+{% endif %}
+
+{% if let Some(c) = layout.custom %}{{ c.footer|safe }}{% endif %}
+<div id="bf-live" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+<div id="bf-alert" class="visually-hidden" role="alert" aria-live="assertive" aria-atomic="true"></div>
+{{ layout.analytics.island()|safe }}
+<script type="application/json" id="bf-i18n">{{ layout.client_messages()|safe }}</script>
+<script type="module">{{ layout.loader|safe }}</script>
+<script type="application/json" id="bf-plugin-modules">{{ layout.plugin_modules()|safe }}</script>
+<script type="application/json" id="bf-plugin-actions">{{ layout.plugin_actions()|safe }}</script>
+</body>
+</html>

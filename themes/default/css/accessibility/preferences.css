@@ -1,0 +1,145 @@
+/* User preferences that must beat everything else: forced colours (Windows High Contrast)
+   and a request for more contrast. In the last layer, so no component overrides them. */
+
+/* Windows High Contrast and other forced palettes. Borders stand in for the
+   backgrounds and shadows that forced colours remove, so controls and panels keep their edges. */
+
+@media (forced-colors: active) {
+  .btn,
+  button,
+  input,
+  select,
+  textarea,
+  .panel,
+  .bf-box,
+  .bf-menu-body,
+  .hovercard,
+  .bf-toast {
+    border: 1px solid CanvasText;
+  }
+
+  .btn.primary,
+  .btn[aria-pressed="true"],
+  [aria-current="page"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  a {
+    color: LinkText;
+  }
+
+  :focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px;
+  }
+
+  .bf-icon {
+    forced-color-adjust: auto;
+  }
+
+  .badge,
+  .bf-badge,
+  .unread-count {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* A member who asks the system for more contrast gets darker text and stronger borders. */
+
+@media (prefers-contrast: more) {
+  :root {
+    --bf-color-muted: light-dark(#363d47, #c9d0d9);
+    --bf-color-border: light-dark(#8a929e, #6b7380);
+    --bf-color-border-strong: light-dark(#5b636f, #8f98a5);
+    --bf-color-text: light-dark(#000000, #ffffff);
+  }
+
+  :focus-visible {
+    outline-width: 3px;
+  }
+
+  a {
+    text-decoration-thickness: 2px;
+  }
+}
+
+.bf-offline-notice {
+  background: var(--bf-color-surface);
+  border-block-end: 1px solid currentColor;
+  padding: var(--bf-space-2) var(--bf-space-4);
+  text-align: center;
+}
+
+/* Forced colours, custom controls: the checkbox tick, radio dot, tooltip and progress bar are
+   drawn with backgrounds and borders the palette would flatten, so they are given system
+   colours directly. */
+@media (forced-colors: active) {
+  input[type="checkbox"],
+  input[type="radio"] {
+    forced-color-adjust: none;
+    background-color: Field;
+    border-color: FieldText;
+  }
+
+  :is(input[type="checkbox"], input[type="radio"]):checked,
+  input[type="checkbox"]:indeterminate {
+    background-color: Highlight;
+    border-color: Highlight;
+  }
+
+  input[type="checkbox"]::before {
+    border-color: HighlightText;
+  }
+
+  input[type="radio"]::before {
+    background: HighlightText;
+  }
+
+  input[type="checkbox"]:indeterminate::before {
+    border-color: HighlightText;
+  }
+
+  :is(input[type="checkbox"], input[type="radio"]):disabled {
+    border-color: GrayText;
+  }
+
+  .bf-progress {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: Highlight;
+
+    &::-webkit-progress-bar {
+      background: Canvas;
+    }
+
+    &::-webkit-progress-value,
+    &::-moz-progress-bar {
+      background: Highlight;
+    }
+  }
+
+  .bf-tip {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  /* A pressed toggle (like, vote, pill) must differ from an unpressed one without colour. */
+  [aria-pressed="true"]:not(.btn) {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .bf-field:focus-within {
+    outline: 2px solid Highlight;
+  }
+
+  .live-notice,
+  .bf-toast {
+    border: 1px solid CanvasText;
+  }
+}

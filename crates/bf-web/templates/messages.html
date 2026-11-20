@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{#- Private messages: folders, search, the new-message form and the conversations. -#}
+{% block content %}
+<h1>{{ layout.t.t("nav.messages") }}</h1>
+<div class="bf-box bf-msg-bar">
+  <nav class="small list-controls" aria-label="{{ layout.t.t("messages.folders") }}">
+    <a href="/messages"{% if !archived && current_folder.is_empty() %} class="current" aria-current="true"{% endif %}>{{ layout.icon("mail")|safe }} {{ layout.t.t("messages.inbox") }}</a>
+    <a href="/messages?folder=archive"{% if archived %} class="current" aria-current="true"{% endif %}>{{ layout.icon("archive")|safe }} {{ layout.t.t("topic.archive") }}</a>
+    {% for f in folders %}<a href="/messages?folder={{ f|urlencode }}"{% if *f == current_folder %} class="current" aria-current="true"{% endif %}>{{ layout.icon("folder")|safe }} {{ f }}</a> {% endfor %}
+    <a href="/messages?to=@staff#new-message">{{ layout.icon("shield")|safe }} {{ layout.t.t("messages.to_staff") }}</a>
+  </nav>
+  <form method="get" action="/messages" class="bf-msg-search" role="search">
+    {% if archived %}<input type="hidden" name="folder" value="archive">{% endif %}
+    <label class="bf-field"><input type="search" name="q" value="{{ query }}" placeholder=" "><span class="bf-field-label">{{ layout.t.t("messages.search") }}</span></label>
+    <button class="btn" aria-label="{{ layout.t.t("nav.search") }}">{{ layout.icon("search")|safe }}</button>
+  </form>
+  {% if let Some(tip) = new_blocked %}<span data-tip="{{ tip }}" data-tip-gate><button class="btn primary" disabled>{{ layout.icon("pencil")|safe }} {{ layout.t.t("messages.new") }}</button></span>{% else %}<a class="btn primary" href="#new-message">{{ layout.icon("pencil")|safe }} {{ layout.t.t("messages.new") }}</a>{% endif %}
+</div>
+
+<section class="bf-box bf-compose{% if !to.is_empty() %} is-open{% endif %}" id="new-message">
+  <div class="bf-box-head"><h2>{{ layout.t.t("messages.new") }}</h2><a class="bf-icon-btn" href="#" aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</a></div>
+  <form method="post" action="/messages" class="stack bf-box-body composer">
+    <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+    <div class="bf-field"><input id="pm-to" name="to" value="{{ to }}" required data-people-input placeholder="{{ layout.t.t("messages.to_hint") }}"><label class="bf-field-label" for="pm-to">{{ layout.t.t("messages.to") }}</label></div>
+    <div class="bf-field"><input placeholder=" " id="pm-subject" name="subject" maxlength="150" required><label class="bf-field-label" for="pm-subject">{{ layout.t.t("messages.subject") }}</label></div>
+    <label for="body">{{ layout.t.t("composer.message") }}</label>
+    <textarea id="body" name="body" rows="6" required></textarea>
+    <span data-island="composer" data-props="{&quot;editorUrl&quot;:&quot;{{ layout.editor_url }}&quot;}"></span>
+    <div class="composer-foot" data-composer-foot><button class="btn primary">{{ layout.t.t("messages.send") }}</button></div>
+  </form>
+</section>
+
+<section class="bf-box">
+  <ul class="bf-feed bf-inbox">
+    {% for c in lines %}
+    <li{% if c.unread %} class="unread"{% endif %}>
+      <img class="avatar" src="/avatar/{{ c.avatar }}.svg" width="40" height="40" alt="" loading="lazy">
+      <div>
+        <a class="bf-feed-title" href="{{ c.url }}">{{ c.subject }}</a>
+        {%- if !c.preview.is_empty() %}<p>{{ c.preview }}</p>{% endif -%}
+        <div class="muted small bf-meta">
+          <span>{{ layout.icon("users")|safe }} {{ layout.t.t("messages.with") }} {% for (url, name) in c.people %}<a href="{{ url }}">{{ name }}</a>{% if !loop.last %}, {% endif %}{% endfor %}</span>
+          <span>{{ layout.icon("message-square")|safe }} {{ c.count }}</span>
+          <span>{{ layout.icon("clock")|safe }} {{ c.when }}</span>
+        </div>
+      </div>
+    </li>
+    {% else %}
+    <li class="muted">{{ layout.t.t("messages.none") }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

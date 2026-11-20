@@ -1,0 +1,87 @@
+{#- One block of the home page: the forum list, the latest topics, the statistics, or a widget. -#}
+<div data-widget="{{ id }}" data-kind="{{ kind }}">
+{%- if kind.as_str() == "forum_list" %}
+  {% let beside_latest = layout.forum_layout == "latest" && !categories.is_empty() %}
+  {% if beside_latest %}<div class="bf-cats-latest"><div class="bf-cats-col">{% endif %}
+  {% for c in categories %}
+  <section class="bf-box{% if c.headless %} is-bare{% endif %}"{% if !c.headless %} data-node="{{ c.id }}"{% endif %}>
+    {% if !c.headless %}<div class="bf-box-head">
+      <h2 class="bf-cat-title">
+        {%- if c.icon.is_some() || c.icon_image.is_some() %}<span class="bf-cat-icon">{{ layout.node_icon(&c.icon, &c.icon_image, "folder")|safe }}</span>{% endif %}{{ c.title }}
+        {%- if layout.admin %}<button type="button" class="bf-quick-edit" data-node-edit="{{ c.id }}" aria-label="{{ layout.t.f("forum.edit_named", [("name", c.title.as_str())]) }}" data-tip="{{ layout.t.t("forum.edit_category") }}">{{ layout.icon("pencil")|safe }}</button>{% endif -%}
+      </h2>
+    </div>{% endif %}
+    {% if !c.forums.is_empty() %}<ul class="forums">
+      {% for f in c.forums %}{% include "_forum_row.html" %}{% endfor %}
+    </ul>{% endif %}
+  </section>
+  {% else %}
+  <section class="panel block"><p>{{ layout.t.t("home.no_forums") }} {{ layout.t.t("home.no_forums_hint") }}</p></section>
+  {% endfor %}
+  {% if beside_latest %}
+  </div>
+  <section class="bf-box bf-cats-topics">
+    <div class="bf-box-head"><h2>{{ layout.t.t("home.latest") }}</h2><a class="small" href="/latest">{{ layout.t.t("nav.latest") }}</a></div>
+    <ul class="bf-latest">
+      {% for t in latest.iter().take(15) %}
+      <li{% if t.unread.is_some() %} class="is-unread"{% endif %} data-topic-id="{{ t.id }}">
+        <img class="avatar" src="/avatar/{{ t.last_poster }}.svg" width="32" height="32" alt="" loading="lazy">
+        <div>
+          <a class="bf-last-title" href="{{ t.url }}">{{ t.title }}</a>
+          <div class="muted small">{% if let Some((forum, url)) = t.forum %}<a href="{{ url }}">{{ forum }}</a> · {% endif %}{{ layout.user_link(t.last_poster)|safe }} · {{ t.last_posted }}</div>
+        </div>
+        <span class="bf-cats-replies small muted" data-tip="{{ layout.t.t("list.replies") }}">{{ t.replies }}</span>
+      </li>
+      {% else %}
+      <li class="muted">{{ layout.t.t("list.empty") }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  </div>
+  {% endif %}
+
+{%- else if kind.as_str() == "home_latest" %}
+  <section class="bf-box">
+    <div class="bf-box-head">
+      <h2>{{ layout.t.t("home.latest") }}</h2>
+      {% if member %}
+      <span class="bf-box-actions small"><a class="bf-icon-btn" href="/unread" aria-label="{{ layout.t.t("home.unread") }}">{{ layout.icon("mail")|safe }}</a><form method="post" action="/read-all" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="bf-icon-btn" aria-label="{{ layout.t.t("home.mark_all_read") }}">{{ layout.icon("circle-check")|safe }}</button></form></span>
+      {% endif %}
+    </div>
+    <ul class="bf-latest">
+      {% for t in latest.iter().take(8) %}
+      <li{% if t.unread.is_some() %} class="is-unread"{% endif %} data-topic-id="{{ t.id }}">
+        <img class="avatar" src="/avatar/{{ t.last_poster }}.svg" width="32" height="32" alt="" loading="lazy">
+        <div>
+          <a class="bf-last-title" href="{{ t.url }}">{{ t.title }}</a>
+          <div class="muted small">{{ layout.user_link(t.last_poster)|safe }} · {{ t.last_posted }}</div>
+        </div>
+      </li>
+      {% else %}
+      <li class="muted">{{ layout.t.t("list.empty") }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+{%- else if kind.as_str() == "home_stats" %}
+  {% if let Some((topics, posts, members, newest)) = stats %}
+  <section class="bf-box stats-row" aria-label="{{ layout.t.t("stats.title") }}">
+    <div class="bf-box-head"><h2>{{ layout.t.t("stats.title") }}</h2></div>
+    <ul class="activity bf-box-body small">
+      <li>{{ layout.t.n("count.topics", *topics) }}</li>
+      <li>{{ layout.t.n("count.posts", *posts) }}</li>
+      <li>{{ layout.t.n("count.members", *members) }}</li>
+      {% if let Some((name, _)) = newest %}<li>{{ layout.t.t("stats.newest") }} {{ layout.user_link(name)|safe }}</li>{% endif %}
+    </ul>
+  </section>
+  {% endif %}
+
+{%- else if kind.as_str() == "browsing" %}
+  {% include "_browsing.html" %}
+{%- else %}
+  <section class="bf-box widget">
+    {%- if !title.is_empty() %}<div class="bf-box-head"><h2>{{ title }}</h2></div>{% endif -%}
+    <div class="bf-box-body">{{ html|safe }}</div>
+  </section>
+{%- endif %}
+</div>

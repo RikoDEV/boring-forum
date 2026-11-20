@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{#- Chat: the island draws everything. -#}
+{% block content %}
+<h1 class="visually-hidden">{{ layout.t.t("nav.chat") }}</h1>
+<span data-island="lightbox" hidden></span>
+<div class="bf-chat" data-island="chat" data-props="{{ props }}"><noscript>{{ layout.t.t("chat.needs_js") }}</noscript></div>
+{% endblock %}

@@ -1,0 +1,9 @@
+target
+**/node_modules
+web/islands/dist
+web/admin/build
+web/admin/.svelte-kit
+.env
+ips_5.0.20
+
+data/

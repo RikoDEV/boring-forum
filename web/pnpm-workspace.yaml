@@ -1,0 +1,10 @@
+packages:
+  - islands
+  - admin
+  - api
+allowBuilds:
+  esbuild: true
+# Supply-chain cooldown: never install a version published less than 3 days ago, so a
+# freshly published malicious release (the Shai-Hulud pattern) is not pulled before it is caught
+# and yanked. Measured in minutes.
+minimumReleaseAge: 4320

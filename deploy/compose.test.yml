@@ -1,0 +1,40 @@
+# Fast Linux test stack: `scripts/test.sh [smoke|e2e|unit|all]`.
+# Postgres keeps everything in memory with durability off, so it must never hold real data.
+name: boring-forum-test
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: forum
+      POSTGRES_PASSWORD: forum
+      POSTGRES_DB: forum
+    command: >-
+      postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+      -c shared_buffers=256MB -c max_connections=800
+    tmpfs: [/var/lib/postgresql]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forum"]
+      interval: 1s
+      retries: 30
+
+  runner:
+    build: { context: .., dockerfile: deploy/docker/test.Dockerfile }
+    working_dir: /src
+    environment:
+      BF_TEST_DB_HOST: db
+      BF_DATABASE_URL: postgres://forum:forum@db:5432/forum?sslmode=disable
+      CARGO_TARGET_DIR: /target
+      PGPASSWORD: forum
+    volumes:
+      - ..:/src
+      # Linux build output and downloads live on Docker volumes, so they survive runs.
+      - target:/target
+      - cargo-registry:/usr/local/cargo/registry
+      - e2e-modules:/src/tests/e2e/node_modules
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  target:
+  cargo-registry:
+  e2e-modules:

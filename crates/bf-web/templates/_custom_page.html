@@ -1,0 +1,23 @@
+{#- The body of a custom page: the areas of its layout (`page_template`). Needs `area`, `widgets`,
+    `editing_layout` and `page_template`. -#}
+{% if page_template == "columns2" || page_template == "columns3" %}
+<div class="bf-page-cols{% if page_template == "columns3" %} is-3{% else %} is-2{% endif %}">
+  <div data-area="{{ area }}_col1" data-area-label="{{ layout.t.msg("First column") }}">
+    {%- for (id, title, html, kind) in widgets.col1.iter() %}{% include "_widget.html" %}{% endfor -%}
+  </div>
+  <div data-area="{{ area }}_col2" data-area-label="{{ layout.t.msg("Second column") }}">
+    {%- for (id, title, html, kind) in widgets.col2.iter() %}{% include "_widget.html" %}{% endfor -%}
+  </div>
+  {% if page_template == "columns3" %}
+  <div data-area="{{ area }}_col3" data-area-label="{{ layout.t.msg("Third column") }}">
+    {%- for (id, title, html, kind) in widgets.col3.iter() %}{% include "_widget.html" %}{% endfor -%}
+  </div>
+  {% endif %}
+</div>
+{% else %}
+{% if editing_layout || !widgets.main.is_empty() %}
+<div data-area="{{ area }}_main" data-area-label="{{ layout.t.msg("Page content") }}">
+  {%- for (id, title, html, kind) in widgets.main.iter() %}{% include "_widget.html" %}{% endfor -%}
+</div>
+{% endif %}
+{% endif %}

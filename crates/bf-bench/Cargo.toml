@@ -1,0 +1,17 @@
+[package]
+name = "bf-bench"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+bf-core = { path = "../bf-core" }
+bf-server = { path = "../bf-server" }
+axum.workspace = true
+tokio.workspace = true
+tower.workspace = true
+
+[lints]
+workspace = true

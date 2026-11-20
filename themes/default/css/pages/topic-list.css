@@ -1,0 +1,330 @@
+/* Topic lists: rows, tools, the latest-topics column and status labels. */
+
+/* Topic lists */
+
+.topics {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--bf-text-list);
+
+  & th {
+    padding: var(--bf-space-2) var(--bf-space-3);
+    text-align: start;
+    font-size: var(--bf-text-xs);
+    font-weight: 600;
+    color: var(--bf-color-muted);
+    border-block-end: 1px solid var(--bf-color-border);
+    white-space: nowrap;
+  }
+
+  & th.num {
+    text-align: end;
+  }
+
+  & td {
+    padding: var(--bf-space-3);
+    border-block-start: 1px solid var(--bf-color-border);
+    vertical-align: middle;
+  }
+
+  & tbody tr:first-child td {
+    border-block-start: 0;
+  }
+
+  & tbody tr:hover {
+    background: var(--bf-color-surface-2);
+  }
+}
+
+.num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.bf-topic-main {
+  display: flex;
+  gap: var(--bf-space-3);
+  align-items: flex-start;
+}
+
+.bf-dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-block-start: 0.4rem;
+  border-radius: 50%;
+  border: 1px solid var(--bf-color-border-strong);
+}
+
+.bf-dot.is-unread {
+  background: var(--bf-color-accent);
+  border-color: var(--bf-color-accent);
+}
+
+/* The dot's tooltip (components/tooltip.css) opens beside it. The dot is 8px, so ::before
+   widens the hover target. */
+.bf-dot[data-tip] {
+  cursor: help;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -0.5rem;
+  }
+}
+
+.bf-topic-title {
+  font-size: var(--bf-text-body);
+  font-weight: 500;
+}
+
+.bf-topic-row.is-unread .bf-topic-title {
+  font-weight: 650;
+}
+
+.bf-topic-title {
+  & > a:not(.bf-badge) {
+    color: var(--bf-color-text);
+  }
+
+}
+
+.posters {
+  white-space: nowrap;
+
+  & .avatar {
+    margin-inline-end: -6px;
+    border: 2px solid var(--bf-color-surface);
+  }
+}
+
+.bf-mobile-meta,
+.list-list .topics thead,
+.list-list .topics .hide-sm {
+  display: none;
+}
+
+@media (width <= 640px) {
+  .hide-sm {
+    display: none;
+  }
+
+  .bf-mobile-meta {
+    display: inline;
+  }
+
+  .topics thead {
+    display: none;
+  }
+}
+
+html {
+  &[data-density="compact"] .topics td {
+    padding-block: var(--bf-space-1);
+  }
+
+  &[data-density="compact"] .forums > li {
+    padding-block: var(--bf-space-2);
+  }
+
+  &[data-density="compact"] .post {
+    margin-block-end: var(--bf-space-2);
+  }
+}
+
+.bulk-bar {
+  margin-block: var(--bf-space-2);
+}
+
+/* Topic rows */
+
+.topics {
+  & thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  & td {
+    padding: var(--bf-space-3) var(--bf-space-4);
+  }
+}
+
+.bf-topic-title {
+  font-size: var(--bf-text-body);
+}
+
+.bf-topic-stats {
+  width: 7rem;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+  white-space: nowrap;
+}
+
+.bf-topic-last {
+  width: 15rem;
+}
+
+.bf-last strong {
+  display: block;
+  font-weight: 600;
+}
+
+/* Latest topics in the right column */
+
+.bf-latest {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  & li {
+    display: flex;
+    gap: var(--bf-space-3);
+    padding: var(--bf-space-3) var(--bf-space-4);
+    border-block-start: 1px solid var(--bf-color-border);
+  }
+
+  & li:first-child {
+    border-block-start: 0;
+  }
+
+  & li > div {
+    min-width: 0;
+  }
+
+  & .bf-last-title {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--bf-color-text);
+    font-size: var(--bf-text-list);
+    font-weight: 500;
+  }
+
+  & .is-unread .bf-last-title {
+    font-weight: 700;
+  }
+}
+
+/* Topic list tools */
+
+.bf-list-box {
+  overflow: visible;
+}
+
+.bf-list-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-2);
+}
+
+.bf-segments {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface-2);
+  /* More tabs than the width holds scroll inside their own bar, not the page. */
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  & a {
+    flex: none;
+    white-space: nowrap;
+    padding: var(--bf-space-1) var(--bf-space-3);
+    border-radius: var(--bf-radius-input);
+    color: var(--bf-color-muted);
+    font-weight: 500;
+  }
+
+  & a:hover {
+    color: var(--bf-color-text);
+    text-decoration: none;
+  }
+
+  & a[aria-current="true"] {
+    background: var(--bf-color-surface);
+    color: var(--bf-color-text);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  }
+}
+
+.bf-list-menus {
+  display: flex;
+  gap: var(--bf-space-2);
+
+  & .btn {
+    height: var(--bf-control-height-sm);
+    gap: var(--bf-space-1);
+    font-size: var(--bf-text-sm);
+  }
+}
+
+.bulk-bar {
+  margin: 0;
+  padding: var(--bf-space-2) var(--bf-space-4);
+  border-block-end: 1px solid var(--bf-color-border);
+  background: var(--bf-color-accent-soft);
+}
+
+.bf-list-box:not(:has(input[form="bulk"]:checked)) .bulk-bar {
+  display: none;
+}
+
+/* Which forum a suggested or similar topic is in */
+
+.bf-topic-forum {
+  color: inherit;
+}
+
+.bf-similar-forum {
+  padding-inline: var(--bf-space-1);
+  border-radius: 3px;
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-weight: 500;
+}
+
+/* Ideas forums: a vote button before each title, and how many votes the member has left. */
+.bf-vote-pill {
+  display: inline;
+
+  & > button.bf-badge.is-voted {
+    background: var(--bf-color-accent-soft);
+    color: var(--bf-color-accent);
+  }
+}
+
+.bf-votes-left {
+  margin: 0;
+  padding: 0 var(--bf-space-4) var(--bf-space-2);
+}
+
+/* The tabs and the sort menu share one bar on a phone: the tabs scroll, the menu keeps its place. */
+
+@media (width <= 639px) {
+  .bf-list-tools {
+    flex-wrap: nowrap;
+    padding: var(--bf-space-2) var(--bf-space-3);
+  }
+
+  .bf-list-tools .bf-segments {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .bf-list-menus {
+    flex: none;
+  }
+
+  .bf-menu-hint {
+    display: none;
+  }
+}

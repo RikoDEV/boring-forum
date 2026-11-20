@@ -1,0 +1,128 @@
+# Static analysis for this project's own rules.
+#
+# clippy catches general Rust mistakes. These rules catch the ones specific to how this codebase
+# stays safe: SQL is parameterized, raw HTML comes only from the sanitizer, and secrets do not
+# reach logs. Run locally with:
+#
+#   semgrep --config .semgrep.yml --error
+#
+# A finding is either a real problem or a place that needs a `nosemgrep` comment explaining why
+# it is not. "It was easier this way" is not a reason.
+
+rules:
+  - id: sql-built-with-format
+    languages: [rust]
+    severity: ERROR
+    message: >-
+      SQL built with format!/push_str. Use bind parameters, or a typed query builder that only
+      accepts enum values for column and direction names. If the string provably cannot
+      contain attacker input, wrap it in sqlx::AssertSqlSafe and say why in a comment.
+    patterns:
+      - pattern-either:
+          - pattern: sqlx::query(&format!(...))
+          - pattern: sqlx::query_as(&format!(...))
+          - pattern: sqlx::query_scalar(&format!(...))
+          - pattern: sqlx::query(format!(...))
+          - pattern: sqlx::query_as(format!(...))
+          - pattern: sqlx::query_scalar(format!(...))
+
+# `AssertSqlSafe` is checked by scripts/assert-sql-safe-baseline.sh instead of here: semgrep
+# cannot reliably tell whether a Rust comment sits directly above an expression, and the
+# baseline script also ratchets against the uses that predate the rule.
+
+  - id: raw-html-outside-the-sanitizer
+    languages: [rust]
+    severity: ERROR
+    message: >-
+      Raw HTML must come from the sanitizer or the cook pipeline. Constructing SafeHtml
+      by hand bypasses the only XSS boundary this codebase has.
+    patterns:
+      - pattern-either:
+          - pattern: SafeHtml::new_unchecked(...)
+          - pattern: $X.new_unchecked(...)
+    paths:
+      exclude:
+        - "crates/bf-cook/**"
+        - "**/tests/**"
+
+  - id: secret-in-a-log-line
+    languages: [rust]
+    severity: ERROR
+    message: >-
+      Logs must not contain passwords, tokens, cookies, full email addresses or post content
+. Log an id instead, or redact with bf_core::log::redact_email / redact_uri.
+    patterns:
+      - pattern-either:
+          - pattern: tracing::$LEVEL!(..., password = $X, ...)
+          - pattern: tracing::$LEVEL!(..., token = $X, ...)
+          - pattern: tracing::$LEVEL!(..., secret = $X, ...)
+          - pattern: tracing::$LEVEL!(..., cookie = $X, ...)
+          - pattern: tracing::$LEVEL!(..., email = $X, ...)
+          - pattern: tracing::$LEVEL!(..., body = $X, ...)
+    paths:
+      exclude:
+        - "**/tests/**"
+        - "crates/bf-core/src/log.rs"
+
+  - id: full-uri-in-a-log-line
+    languages: [rust]
+    severity: WARNING
+    message: >-
+      A request URI can carry a reset, magic-link or OAuth credential in its query string. Log
+      bf_core::log::redact_uri(...) instead of the URI itself.
+    patterns:
+      - pattern-either:
+          - pattern: tracing::$LEVEL!(..., uri = %$REQ.uri(), ...)
+          - pattern: tracing::$LEVEL!(..., url = %$REQ.uri(), ...)
+    paths:
+      exclude:
+        - "**/tests/**"
+
+  - id: outbound-http-without-the-ssrf-guard
+    languages: [rust]
+    severity: WARNING
+    message: >-
+      Build outbound HTTP through the guarded helpers in bf_server::platform::outbound (fetch_public /
+      post_public / request_public): they resolve DNS once, refuse private, loopback and metadata ranges, pin the
+      checked address, and cap redirects, time and size. A bare reqwest client does none
+      of that, so a user-supplied URL becomes an SSRF.
+    patterns:
+      - pattern: reqwest::Client::builder()
+    paths:
+      exclude:
+        - "crates/bf-server/src/platform/outbound.rs"
+        - "crates/bf-server/src/platform/webhooks.rs"
+        - "crates/bf-server/src/platform/push.rs"
+        - "**/tests/**"
+        - "scripts/**"
+
+  - id: timing-unsafe-secret-comparison
+    languages: [rust]
+    severity: ERROR
+    message: >-
+      Comparing a token, signature or password digest with == leaks its contents through timing.
+      Use subtle's ConstantTimeEq, or constant_time_eq.
+    patterns:
+      - pattern-either:
+          - pattern: $TOKEN == $EXPECTED
+          - pattern: $TOKEN.eq($EXPECTED)
+      - metavariable-regex:
+          metavariable: $TOKEN
+          regex: (?i).*(token|signature|digest|secret|hmac|mac)$
+    paths:
+      exclude:
+        - "**/tests/**"
+        - "crates/bf-core/src/log.rs"
+
+  - id: cookie-without-the-security-flags
+    languages: [rust]
+    severity: WARNING
+    message: >-
+      Session and auth cookies are HttpOnly, Secure, SameSite=Lax and `__Host-` prefixed
+. Check this cookie needs none of those before silencing the rule.
+    patterns:
+      - pattern-regex: 'Set-Cookie[^\n]*='
+      - pattern-not-regex: '(?i)httponly'
+    paths:
+      exclude:
+        - "**/tests/**"

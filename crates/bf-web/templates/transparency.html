@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{#- EU DSA Art. 15 and 24: moderation figures for a reporting period. -#}
+{% block content %}
+<header class="bf-box bf-page-head bf-report-head">
+  <div>
+    <h1>{{ layout.t.t("transparency.title") }}</h1>
+    <p class="small muted">{{ layout.t.f("transparency.lead", [("site", layout.site_name.as_str()), ("from", from.as_str()), ("to", to.as_str())]) }}</p>
+  </div>
+  <nav class="bf-segments small" aria-label="{{ layout.t.t("transparency.period") }}">
+    {%- for (key, label) in periods %}<a href="/transparency?period={{ key }}"{% if *key == period %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor -%}
+  </nav>
+</header>
+
+<section class="bf-box" aria-labelledby="t-notices">
+  <div class="bf-box-head"><h2 id="t-notices">{{ layout.t.t("transparency.notices") }}</h2></div>
+  <dl class="bf-figures">
+    <div><dt>{{ layout.t.t("transparency.received") }}</dt><dd>{{ r.notices }}</dd></div>
+    <div><dt>{{ layout.t.t("transparency.actioned") }}</dt><dd>{{ r.notices_actioned }}</dd></div>
+    <div><dt>{{ layout.t.t("transparency.no_action") }}</dt><dd>{{ r.notices_rejected }}</dd></div>
+    <div><dt>{{ layout.t.t("transparency.median") }}</dt><dd>{% if let Some(h) = notice_hours %}{{ layout.t.f("transparency.hours", [("n", h.to_string().as_str())]) }}{% else %}—{% endif %}</dd></div>
+  </dl>
+  {% if !r.notices_by_category.is_empty() %}
+  <div class="bf-tables">
+    <table class="bf-table">
+      <caption>{{ layout.t.t("transparency.by_category") }}</caption>
+      <thead><tr><th scope="col">{{ layout.t.t("statement.category") }}</th><th scope="col">{{ layout.t.t("dsa_review.notices") }}</th></tr></thead>
+      <tbody>{% for (k, n) in r.notices_by_category %}<tr><td>{{ k }}</td><td>{{ n }}</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+
+<section class="bf-box" aria-labelledby="t-restrictions">
+  <div class="bf-box-head"><h2 id="t-restrictions">{{ layout.t.t("transparency.restrictions") }}</h2></div>
+  <dl class="bf-figures">
+    <div><dt>{{ layout.t.t("transparency.decisions") }}</dt><dd>{{ r.statements }}</dd></div>
+    <div><dt>{{ layout.t.t("transparency.auto_detected") }}</dt><dd>{{ r.automated_detection }}</dd></div>
+    <div><dt>{{ layout.t.t("transparency.auto_decided") }}</dt><dd>{{ r.automated_decision }}</dd></div>
+  </dl>
+  {% if r.statements > 0 %}
+  <div class="bf-tables">
+    <table class="bf-table">
+      <caption>{{ layout.t.t("transparency.by_measure") }}</caption>
+      <thead><tr><th scope="col">{{ layout.t.t("transparency.measure") }}</th><th scope="col">{{ layout.t.t("transparency.count") }}</th></tr></thead>
+      <tbody>{% for (k, n) in r.by_action %}<tr><td>{{ k }}</td><td>{{ n }}</td></tr>{% endfor %}</tbody>
+    </table>
+    <table class="bf-table">
+      <caption>{{ layout.t.t("transparency.by_ground") }}</caption>
+      <thead><tr><th scope="col">{{ layout.t.t("statement.ground") }}</th><th scope="col">{{ layout.t.t("transparency.count") }}</th></tr></thead>
+      <tbody>{% for (k, n) in r.by_ground %}<tr><td>{{ k }}</td><td>{{ n }}</td></tr>{% endfor %}</tbody>
+    </table>
+    <table class="bf-table">
+      <caption>{{ layout.t.t("transparency.by_category") }}</caption>
+      <thead><tr><th scope="col">{{ layout.t.t("statement.category") }}</th><th scope="col">{{ layout.t.t("transparency.count") }}</th></tr></thead>
+      <tbody>{% for (k, n) in r.by_category %}<tr><td>{{ k }}</td><td>{{ n }}</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+
+<section class="bf-box" aria-labelledby="t-appeals">
+  <div class="bf-box-head"><h2 id="t-appeals">{{ layout.t.t("dsa_review.appeals") }}</h2></div>
+  <dl class="bf-figures">
+    <div><dt>{{ layout.t.t("dsa_review.appeals") }}</dt><dd>{{ r.appeals }}</dd></div>
+    <div><dt>{{ layout.t.t("transparency.reversed") }}</dt><dd>{{ r.appeals_reversed }}</dd></div>
+    <div><dt>{{ layout.t.t("transparency.upheld") }}</dt><dd>{{ r.appeals_upheld }}</dd></div>
+    <div><dt>{{ layout.t.t("transparency.median") }}</dt><dd>{% if let Some(h) = appeal_hours %}{{ layout.t.f("transparency.hours", [("n", h.to_string().as_str())]) }}{% else %}—{% endif %}</dd></div>
+  </dl>
+</section>
+
+<p class="small muted bf-report-note">{{ layout.t.t("transparency.orders") }}{% if !contact.is_empty() %} {{ layout.t.t("transparency.contact") }} <a href="mailto:{{ contact }}">{{ contact }}</a>.{% endif %}</p>
+{% endblock %}

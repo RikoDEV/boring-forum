@@ -1,0 +1,6 @@
+# The toolchain CI and contributors build with, pinned so a new release cannot change a build.
+# Bump it on purpose (and `rust-version` in Cargo.toml with it).
+[toolchain]
+channel = "1.99.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

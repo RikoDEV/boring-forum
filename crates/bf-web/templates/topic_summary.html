@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{#- A topic's summary: totals, the replies people reacted to most, and who took part. -#}
+{% block content %}
+<nav class="crumbs small"><a href="/">{{ layout.t.t("nav.forums") }}</a> {{ layout.icon("chevron-right")|safe }} <a href="{{ forum_url }}">{{ forum_title }}</a> {{ layout.icon("chevron-right")|safe }} <a href="{{ topic_url }}">{{ title }}</a> {{ layout.icon("chevron-right")|safe }} <span>{{ layout.t.t("topic.top_replies") }}</span></nav>
+<header class="bf-box bf-page-head">
+  <h1>{{ title }}</h1>
+  <div class="bf-page-meta">
+    <div class="bf-byline">
+      <img class="avatar" src="/avatar/{{ author }}.svg" width="44" height="44" alt="">
+      <div>{{ layout.t.t("summary.started_by") }} <strong>{{ layout.user_link(author)|safe }}</strong><div class="muted">{{ started }} {{ layout.t.t("topic.in") }} <a class="muted" href="{{ forum_url }}">{{ forum_title }}</a></div></div>
+    </div>
+    <a class="btn primary" href="{{ topic_url }}">{{ layout.icon("message-square")|safe }} {{ layout.t.t("summary.back") }}</a>
+  </div>
+</header>
+<div class="bf-tiles">
+  <div class="bf-box bf-tile">{{ layout.icon("reply")|safe }}<b>{{ replies }}</b><span>{{ layout.t.t("list.replies") }}</span></div>
+  <div class="bf-box bf-tile">{{ layout.icon("eye")|safe }}<b>{{ views }}</b><span>{{ layout.t.t("list.views") }}</span></div>
+  <div class="bf-box bf-tile">{{ layout.icon("users")|safe }}<b>{{ participants }}</b><span>{{ layout.t.t("conversation.participants") }}</span></div>
+  <div class="bf-box bf-tile">{{ layout.icon("heart")|safe }}<b>{{ reactions }}</b><span>{{ layout.t.t("summary.reactions") }}</span></div>
+  <div class="bf-box bf-tile">{{ layout.icon("clock")|safe }}<b>{{ layout.t.f("summary.minutes", [("n", read_minutes.to_string().as_str())]) }}</b><span>{{ layout.t.t("summary.to_read") }}</span></div>
+</div>
+<div class="bf-grid">
+  <section class="bf-box">
+    <div class="bf-box-head"><h2>{{ layout.t.t("topic.top_replies") }}</h2></div>
+    <ol class="bf-top-replies">
+      {% for (n, who, cooked, likes, url) in top %}
+      <li>
+        <div class="bf-top-rank"><span class="bf-react-pill">❤️ {{ likes }}</span></div>
+        <div class="bf-top-main">
+          <header class="small"><img class="avatar" src="/avatar/{{ who }}.svg" width="28" height="28" alt="" loading="lazy"> <strong>{{ layout.user_link(who)|safe }}</strong> <a class="muted" href="{{ url }}">{{ layout.t.f("search.post_number", [("n", n.to_string().as_str())]) }}</a></header>
+          <div class="cooked">{{ cooked|safe }}</div>
+        </div>
+      </li>
+      {% else %}
+      <li class="bf-search-state">{{ layout.icon("heart")|safe }}<h3>{{ layout.t.t("summary.none") }}</h3><p class="muted">{{ layout.t.t("summary.none_hint") }}</p></li>
+      {% endfor %}
+    </ol>
+  </section>
+  <aside aria-label="{{ layout.t.t("summary.about_topic") }}">
+    <section class="bf-box">
+      <div class="bf-box-head"><h2>{{ layout.t.t("summary.activity") }}</h2></div>
+      <dl class="bf-box-body bf-info">
+        <dt>{{ layout.t.t("summary.created") }}</dt><dd>{{ started }}</dd>
+        <dt>{{ layout.t.t("summary.last_reply") }}</dt><dd>{{ last_posted }}{% if !last_poster.is_empty() %} {{ layout.by_line(last_poster)|safe }}{% endif %}</dd>
+      </dl>
+    </section>
+    {% if !posters.is_empty() %}
+    <section class="bf-box">
+      <div class="bf-box-head"><h2>{{ layout.t.t("summary.most_active") }}</h2></div>
+      <ul class="bf-people">
+        {% for (name, n) in posters %}
+        <li><img class="avatar" src="/avatar/{{ name }}.svg" width="32" height="32" alt="" loading="lazy"><div><a href="/u/{{ name }}"><strong>{{ name }}</strong></a></div><span class="muted small">{{ layout.t.n("count.posts", n) }}</span></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+    {% if !links.is_empty() %}
+    <section class="bf-box">
+      <div class="bf-box-head"><h2>{{ layout.t.t("summary.links") }}</h2></div>
+      <ul class="bf-people bf-links">
+        {% for (url, clicks) in links %}
+        <li><div><a href="{{ url }}" rel="nofollow ugc noopener">{{ url }}</a></div><span class="muted small" data-tip="{{ layout.t.t("summary.clicks") }}">{{ clicks }}</span></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

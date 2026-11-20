@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{#- A small form page (password reset, sign-in link, two-factor code…): the text comes from the handler. -#}
+{% block content %}
+<section class="bf-box bf-auth">
+  <header class="bf-auth-head">
+    <h1>{{ heading }}</h1>
+    {% if let Some(m) = message %}<p class="muted" role="status">{{ m }}</p>{% endif %}
+  </header>
+  {% if error.is_some() || !button.is_empty() %}
+  <div class="bf-auth-body">
+    {% if let Some(e) = error %}<p class="bf-auth-error" role="alert">{{ e }}</p>{% endif %}
+    {% if !button.is_empty() %}
+    <form method="post" action="{{ action }}" class="bf-auth-form">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      {% for f in fields %}
+      {% if f.kind == "checkbox" %}
+      <label class="check"><input type="checkbox" name="{{ f.name }}" value="1"> {{ layout.t.msg(f.label) }}</label>
+      {% else %}
+      <div class="bf-field"><input placeholder=" " id="f-{{ f.name }}" name="{{ f.name }}" type="{{ f.kind }}" autocomplete="{{ f.autocomplete }}"{% if f.kind == "text" && f.name == "code" %} maxlength="23"{% endif %} required><label class="bf-field-label" for="f-{{ f.name }}">{{ layout.t.msg(f.label) }}</label></div>
+      {% endif %}
+      {% endfor %}
+      <button class="btn primary">{{ button }}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if !links.is_empty() %}<footer class="bf-auth-foot small">{% for (label, href) in links %}<a href="{{ href }}">{{ layout.t.msg(label) }}</a>{% endfor %}</footer>{% endif %}
+</section>
+{% endblock %}

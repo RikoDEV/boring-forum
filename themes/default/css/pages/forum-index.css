@@ -1,0 +1,515 @@
+/* Forum index: category and forum rows, forum headings and node icons. */
+
+/* Forum index rows */
+
+.forums {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  & > li {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) 6rem minmax(0, 17rem);
+    gap: var(--bf-space-3);
+    align-items: center;
+    padding: var(--bf-space-4) var(--bf-space-5);
+    border-block-start: 1px solid var(--bf-color-border);
+  }
+
+  & > li:first-child {
+    border-block-start: 0;
+  }
+}
+
+.bf-forum-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+  font-size: 1.125rem;
+}
+
+.bf-forum-row.is-unread {
+  & .bf-forum-icon {
+    background: var(--bf-color-accent);
+    color: var(--bf-color-accent-text);
+  }
+
+  & .forum-title {
+    font-weight: 700;
+  }
+}
+
+.forum-title {
+  font-size: var(--bf-text-lg);
+  font-weight: 500;
+  color: var(--bf-color-text);
+}
+
+.forum-desc {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+
+  & p {
+    margin: 0;
+  }
+}
+
+.forum-children {
+  font-size: var(--bf-text-sm);
+  margin-block-start: var(--bf-space-1);
+}
+
+.stats {
+  display: flex;
+  gap: var(--bf-space-4);
+  justify-content: flex-end;
+  font-size: var(--bf-text-sm);
+  color: var(--bf-color-muted);
+  font-variant-numeric: tabular-nums;
+
+  & b {
+    display: block;
+    color: var(--bf-color-text);
+    font-weight: 500;
+    font-size: var(--bf-text-lg);
+    line-height: 1.2;
+  }
+
+  & > span {
+    text-align: end;
+  }
+}
+
+.bf-last {
+  display: flex;
+  gap: var(--bf-space-2);
+  align-items: center;
+  min-width: 0;
+  font-size: var(--bf-text-sm);
+
+  & > div {
+    min-width: 0;
+  }
+
+  & a.bf-last-title {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /* 24px tall: a target of at least that size (WCAG 2.5.8). */
+    line-height: 1.5rem;
+    font-weight: 500;
+    color: var(--bf-color-text);
+  }
+}
+
+@media (width <= 980px) {
+  .forums > li {
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+  }
+
+  .forums .bf-last {
+    grid-column: 2 / -1;
+  }
+}
+
+@media (width <= 640px) {
+  .forums > li {
+    grid-template-columns: 3rem minmax(0, 1fr);
+    padding-inline: var(--bf-space-3);
+  }
+
+  .stats {
+    grid-column: 2;
+    justify-content: flex-start;
+
+    & b {
+      display: inline;
+    }
+  }
+
+  .forums .bf-last {
+    display: none;
+  }
+}
+
+/* Forum index layouts (the forum_layout setting, on <html data-forum-layout>). "list" is the
+   rows above; the others restyle the same markup. */
+
+/* Boxes: a card for each forum. */
+
+[data-forum-layout="boxes"] .forums {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-3);
+}
+
+[data-forum-layout="boxes"] .forums > li,
+[data-forum-layout="boxes"] .forums > li:first-child {
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+  gap: var(--bf-space-2) var(--bf-space-3);
+  padding: var(--bf-space-4);
+  border: 1px solid var(--bf-color-border);
+  border-block-start: 3px solid var(--bf-color-accent);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface);
+  transition: border-color var(--bf-motion);
+}
+
+/* Forums at the top level have no category: in the boxes layout their cards stand on the page
+   without a box around them. (On a phone the box stays: it holds the plain rows together.) */
+@media (width >= 640px) {
+  [data-forum-layout="boxes"] .bf-box.is-bare {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  [data-forum-layout="boxes"] .bf-box.is-bare .forums {
+    padding: 0;
+  }
+
+  /* A lone forum fills the row instead of one grid column. */
+  [data-forum-layout="boxes"] .bf-box.is-bare .forums:has(> li:only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+[data-forum-layout="boxes"] .forums > li:hover {
+  border-color: var(--bf-color-border-strong);
+  border-block-start-color: var(--bf-color-accent);
+}
+
+[data-forum-layout="boxes"] .bf-forum-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1rem;
+}
+
+[data-forum-layout="boxes"] .stats {
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+
+  & b {
+    display: inline;
+    font-size: inherit;
+  }
+}
+
+[data-forum-layout="boxes"] .forums .bf-last {
+  display: flex;
+  grid-column: 1 / -1;
+  padding-block-start: var(--bf-space-2);
+  border-block-start: 1px solid var(--bf-color-border);
+
+  & .avatar {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+
+/* Compact: one line per forum, no descriptions. Forums beside the latest topics use it too, with
+   their descriptions. */
+
+:is([data-forum-layout="compact"], [data-forum-layout="latest"]) .forums > li {
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  gap: var(--bf-space-2) var(--bf-space-3);
+  padding: var(--bf-space-2) var(--bf-space-4);
+}
+
+:is([data-forum-layout="compact"], [data-forum-layout="latest"]) .bf-forum-icon {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.875rem;
+}
+
+:is([data-forum-layout="compact"], [data-forum-layout="latest"]) .forum-title {
+  font-size: var(--bf-text-list);
+}
+
+:is([data-forum-layout="compact"], [data-forum-layout="latest"]) .stats {
+  grid-column: auto;
+
+  & b {
+    display: inline;
+    font-size: inherit;
+  }
+}
+
+:is([data-forum-layout="compact"], [data-forum-layout="latest"]) .forums .bf-last,
+[data-forum-layout="compact"] .forum-desc {
+  display: none;
+}
+
+[data-forum-layout="compact"] .forum-children {
+  margin: 0;
+}
+
+/* Forums and latest topics side by side. */
+
+.bf-cats-latest {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--bf-space-4);
+  align-items: start;
+}
+
+.bf-cats-topics .bf-latest li {
+  align-items: center;
+}
+
+.bf-cats-replies {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (width <= 900px) {
+  .bf-cats-latest {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (width <= 640px) {
+  :is([data-forum-layout="compact"], [data-forum-layout="latest"]) .forums > li {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    padding-inline: var(--bf-space-3);
+  }
+
+  :is([data-forum-layout="compact"], [data-forum-layout="latest"]) .stats {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+}
+
+/* Forum heading */
+
+.bf-page-head.bf-forum-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3) var(--bf-space-5);
+  overflow: visible;
+}
+
+.bf-forum-title {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.bf-forum-head {
+  & form {
+    margin: 0;
+  }
+
+  & .bf-head-actions {
+    flex-wrap: nowrap;
+  }
+
+  /* Five controls do not fit one row on a phone: they wrap instead of pushing the page sideways. */
+  @media (width <= 639px) {
+    & .bf-head-actions {
+      flex-wrap: wrap;
+    }
+  }
+}
+
+.bf-follow-menu {
+  width: 19rem;
+  max-width: 90vw;
+
+  & small {
+    display: block;
+    font-size: var(--bf-text-xs);
+    font-weight: 400;
+  }
+}
+
+.bf-menu-body [aria-current="true"] {
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+}
+
+/* Node icons */
+
+.bf-forum-icon {
+  & img {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+  }
+
+  overflow: hidden;
+}
+
+.bf-cat-title {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+
+.bf-cat-icon {
+  display: inline-flex;
+  color: var(--bf-color-accent);
+
+  & img {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 4px;
+    object-fit: cover;
+  }
+}
+
+/* Administrators: a pencil beside a forum or category name opens its quick edit
+   (islands quick-edit.js). It shows on hover or focus; touch screens always show it. */
+.bf-quick-edit {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-inline-start: var(--bf-space-1);
+  padding: 0;
+  vertical-align: middle;
+  border: 0;
+  border-radius: var(--bf-radius-input);
+  background: none;
+  color: var(--bf-color-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s;
+
+  & .bf-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &:hover {
+    background: var(--bf-color-surface-2);
+    color: var(--bf-color-accent);
+  }
+
+  &:focus-visible {
+    opacity: 1;
+  }
+}
+
+:is(.bf-forum-row, .bf-cat-title, .bf-forum-title h1):hover .bf-quick-edit,
+.bf-forum-row:focus-within .bf-quick-edit {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .bf-quick-edit {
+    opacity: 1;
+  }
+}
+
+/* A forum on a phone: a compact head (title, then one row of controls), one bar for the tabs and
+   the sort menu, and tighter boxes, so the topics start near the top of the screen. */
+
+@media (width <= 639px) {
+  .bf-page-head.bf-forum-head {
+    padding: var(--bf-space-3) var(--bf-space-4);
+    gap: var(--bf-space-2);
+  }
+
+  .bf-forum-head {
+    & h1 {
+      font-size: 1.25rem;
+      line-height: 1.3;
+    }
+
+    & .bf-page-desc {
+      margin-block-start: var(--bf-space-1);
+      font-size: var(--bf-text-sm);
+    }
+
+    /* Icon buttons, with the new-topic button pushed to the end of the same row. */
+    & .bf-head-actions {
+      flex: 1 1 100%;
+      gap: var(--bf-space-1);
+
+      & .btn.primary {
+        margin-inline-start: auto;
+      }
+    }
+
+    & .bf-btn-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+}
+
+/* The forum index on a phone: a card inside a box doubles every border and wastes a third of the
+   screen. Boxes become plain rows: icon, name and description, the count at the end, the latest
+   topic as one quiet line. */
+
+@media (width <= 639px) {
+  [data-forum-layout="boxes"] .forums {
+    display: block;
+    padding: 0;
+  }
+
+  [data-forum-layout="boxes"] .forums > li,
+  [data-forum-layout="boxes"] .forums > li:first-child {
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    grid-template-rows: auto;
+    gap: var(--bf-space-1) var(--bf-space-3);
+    padding: var(--bf-space-3) var(--bf-space-4);
+    border: 0;
+    border-block-start: 1px solid var(--bf-color-border);
+    border-radius: 0;
+    background: none;
+  }
+
+  [data-forum-layout="boxes"] .forums > li:first-child {
+    border-block-start: 0;
+  }
+
+  [data-forum-layout="boxes"] .bf-forum-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  [data-forum-layout="boxes"] .forum-desc {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: var(--bf-text-sm);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  [data-forum-layout="boxes"] .stats {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: start;
+    font-size: var(--bf-text-sm);
+  }
+
+  [data-forum-layout="boxes"] .forums .bf-last {
+    grid-column: 2 / -1;
+    padding: 0;
+    border: 0;
+    font-size: var(--bf-text-sm);
+
+    & .avatar {
+      display: none;
+    }
+  }
+}

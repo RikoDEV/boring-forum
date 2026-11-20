@@ -1,0 +1,464 @@
+/* Outlined text fields (Material style), selects, tag and people inputs. Shared by the site and
+   the admin panel. */
+
+.hp {
+  position: absolute;
+  inset-inline-start: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+textarea,
+select {
+  max-width: 100%;
+  min-height: var(--bf-control-height);
+  padding: var(--bf-space-1) var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-input);
+  background-color: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  font: inherit;
+  font-size: var(--bf-text-list);
+  transition:
+    border-color var(--bf-motion),
+    box-shadow var(--bf-motion);
+}
+
+textarea {
+  width: 100%;
+  padding-block: var(--bf-space-2);
+  line-height: 1.5;
+}
+
+:is(
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+  textarea,
+  select
+):hover {
+  border-color: var(--bf-color-text);
+}
+
+:is(
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+  textarea,
+  select
+):focus {
+  border-color: var(--bf-color-accent);
+  box-shadow: inset 0 0 0 1px var(--bf-color-accent);
+  outline: 0;
+}
+
+:is(input, textarea, select):user-invalid {
+  border-color: var(--bf-color-danger);
+}
+
+:is(input, textarea, select):user-invalid:focus {
+  box-shadow: inset 0 0 0 1px var(--bf-color-danger);
+}
+
+:is(input, textarea, select):disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* The arrow is drawn with gradients so it follows the theme's colours. */
+
+select {
+  &:not([multiple]) {
+    appearance: none;
+    padding-inline-end: 2rem;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--bf-color-muted) 50%),
+      linear-gradient(135deg, var(--bf-color-muted) 50%, transparent 50%);
+    background-position:
+      calc(100% - 0.95rem) 50%,
+      calc(100% - 0.65rem) 50%;
+    background-size: 0.3rem 0.3rem;
+    background-repeat: no-repeat;
+  }
+
+  &:not([multiple]):dir(rtl) {
+    background-position:
+      0.65rem 50%,
+      0.95rem 50%;
+  }
+}
+
+/* Custom checkboxes and radios. The native box is replaced so it matches the
+   outlined fields: same border, radius, surface and accent. The tick (checkbox)
+   and dot (radio) are drawn as a pseudo-element, sized in em so the control
+   scales with the surrounding text. */
+
+input[type="checkbox"],
+input[type="radio"] {
+  flex: none;
+  display: inline-grid;
+  place-content: center;
+  box-sizing: border-box;
+  width: 1.15em;
+  height: 1.15em;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--bf-color-border-strong);
+  background-color: var(--bf-color-surface);
+  font-size: inherit;
+  /* The empty box takes its baseline from its bottom edge, which sits lower than
+     the native control did; a small visual lift realigns it with the text, both
+     in the baseline-aligned `.check` labels and in plain inline labels. */
+  vertical-align: baseline;
+  transform: translateY(-0.15em);
+  appearance: none;
+  cursor: pointer;
+  transition:
+    border-color var(--bf-motion),
+    background-color var(--bf-motion),
+    box-shadow var(--bf-motion);
+}
+
+input[type="checkbox"] {
+  border-radius: var(--bf-radius-input);
+}
+
+input[type="radio"] {
+  border-radius: 50%;
+}
+
+input[type="checkbox"]::before,
+input[type="radio"]::before {
+  content: "";
+  transform: scale(0);
+  transition: transform var(--bf-motion);
+}
+
+/* A tick: the lower-right corner of a box, rotated to a check. */
+input[type="checkbox"]::before {
+  width: 0.34em;
+  height: 0.6em;
+  margin-block-start: -0.09em;
+  border: solid var(--bf-color-accent-text);
+  border-width: 0 0.14em 0.14em 0;
+  transform: scale(0) rotate(45deg);
+}
+
+input[type="radio"]::before {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--bf-color-accent-text);
+}
+
+:is(input[type="checkbox"], input[type="radio"]):checked {
+  border-color: var(--bf-color-accent);
+  background-color: var(--bf-color-accent);
+}
+
+input[type="checkbox"]:checked::before {
+  transform: scale(1) rotate(45deg);
+}
+
+input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+/* An indeterminate checkbox shows a dash. */
+input[type="checkbox"]:indeterminate {
+  border-color: var(--bf-color-accent);
+  background-color: var(--bf-color-accent);
+
+  &::before {
+    width: 0.6em;
+    height: 0;
+    margin: 0;
+    border: 0;
+    border-block-start: 0.14em solid var(--bf-color-accent-text);
+    transform: scale(1);
+  }
+}
+
+/* Match the text fields' hover and focus. */
+:is(input[type="checkbox"], input[type="radio"]):hover {
+  border-color: var(--bf-color-text);
+}
+
+:is(input[type="checkbox"], input[type="radio"]):focus-visible {
+  border-color: var(--bf-color-accent);
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 1px;
+}
+
+:is(input[type="checkbox"], input[type="radio"]):disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+input[type="range"] {
+  accent-color: var(--bf-color-accent);
+}
+
+label {
+  font-size: var(--bf-text-list);
+}
+
+.bf-field {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  font-weight: 400;
+
+  & > :is(input, textarea, select) {
+    width: 100%;
+  }
+
+  & > :is(input, select) {
+    min-height: var(--bf-control-height);
+  }
+
+  & > textarea {
+    padding-block: 0.7rem;
+  }
+
+  & > .bf-field-label {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: 0;
+    inset-inline-start: var(--bf-space-2);
+    display: block;
+    max-width: calc(100% - var(--bf-space-4));
+    padding-inline: var(--bf-space-1);
+    overflow: hidden;
+    color: var(--bf-color-muted);
+    font-size: var(--bf-text-xs);
+    font-weight: 400;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateY(-50%);
+    /* Breaks the outline behind the label; the upper half stays see-through for any page colour. */
+
+    background: linear-gradient(to bottom, transparent 45%, var(--bf-color-surface) 45%);
+    transition:
+      inset-block-start var(--bf-motion),
+      font-size var(--bf-motion),
+      color var(--bf-motion);
+  }
+
+  & > :is(input, textarea)[placeholder=" "]:placeholder-shown:not(:focus) ~ .bf-field-label {
+    inset-block-start: 1.375rem;
+    font-size: var(--bf-text-list);
+    background: none;
+  }
+
+  & > :is(input, textarea, select):focus ~ .bf-field-label {
+    color: var(--bf-color-accent);
+  }
+
+  & > :is(input, textarea, select):user-invalid ~ .bf-field-label {
+    color: var(--bf-color-danger);
+  }
+
+  & > small {
+    margin-block-start: var(--bf-space-1);
+  }
+}
+
+/* Tag and people inputs draw the outline on their wrapper, not on the inner input. */
+
+.bf-field > .bf-tags {
+  min-height: var(--bf-control-height);
+  padding-inline: var(--bf-space-3);
+}
+
+.bf-tags input:focus {
+  box-shadow: none;
+}
+
+/* Tag input */
+
+.bf-tags {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-1);
+  min-height: var(--bf-control-height);
+  padding: 2px var(--bf-space-2);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-input);
+  background: var(--bf-color-surface);
+  cursor: text;
+
+  &:focus-within {
+    border-color: var(--bf-color-accent);
+    box-shadow: inset 0 0 0 1px var(--bf-color-accent);
+  }
+
+  & input {
+    flex: 1;
+    min-width: 6rem;
+    min-height: 1.75rem !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0;
+    background: none !important;
+  }
+}
+
+.bf-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-1);
+  padding-inline: var(--bf-space-2) var(--bf-space-1);
+  border-radius: var(--bf-radius-input);
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+  font-size: var(--bf-text-sm);
+  font-weight: 500;
+
+  & button {
+    padding: 0 2px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+  }
+}
+
+.bf-tags-list {
+  position: absolute;
+  z-index: 40;
+  inset-block-start: calc(100% + 2px);
+  inset-inline: 0;
+  max-height: 14rem;
+  margin: 0;
+  padding: var(--bf-space-1);
+  overflow: auto;
+  list-style: none;
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+
+  & li {
+    padding: var(--bf-space-1) var(--bf-space-2);
+    border-radius: var(--bf-radius-input);
+    font-size: var(--bf-text-list);
+    cursor: pointer;
+  }
+
+  & li:hover,
+  & .is-active {
+    background: var(--bf-color-surface-2);
+  }
+}
+
+/* Multi-select: the tag input with a fixed list of options (admin group, forum and event
+   pickers). Chosen options are chips; the list marks them with a tick. */
+
+.bf-multi {
+  & > .bf-tags {
+    padding-inline-end: 3.75rem;
+    cursor: pointer;
+  }
+
+  & input {
+    cursor: text;
+  }
+
+  /* With a floating label, the label is the placeholder until the field is focused. */
+  &.has-label:not(.has-value, :focus-within) > .bf-field-label {
+    inset-block-start: 1.375rem;
+    font-size: var(--bf-text-list);
+    background: none;
+  }
+
+  &.has-label:not(:focus-within) input::placeholder {
+    color: transparent;
+  }
+
+  &:focus-within > .bf-field-label {
+    color: var(--bf-color-accent);
+  }
+
+  & .bf-tags-list li {
+    position: relative;
+    padding-inline-start: 1.75rem;
+  }
+
+  & .bf-tags-list [aria-selected="true"] {
+    font-weight: 600;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset-block-start: 50%;
+      inset-inline-start: 0.65rem;
+      width: 0.35rem;
+      height: 0.65rem;
+      border: solid var(--bf-color-accent);
+      border-width: 0 2px 2px 0;
+      transform: translateY(-60%) rotate(45deg);
+    }
+  }
+
+  & .bf-tags-list [aria-disabled="true"] {
+    color: var(--bf-color-muted);
+    cursor: default;
+  }
+
+  & .bf-tags-list [aria-disabled="true"]:hover {
+    background: none;
+  }
+
+  & .bf-multi-empty {
+    color: var(--bf-color-muted);
+    cursor: default;
+  }
+}
+
+.bf-multi-clear {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 2rem;
+  padding: 0 var(--bf-space-1);
+  border: 0;
+  background: none;
+  color: var(--bf-color-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bf-color-text);
+  }
+}
+
+/* The same arrow as a single select, turned up while the list is open. */
+.bf-multi-arrow {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 0.85rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border: solid var(--bf-color-muted);
+  border-width: 0 1.5px 1.5px 0;
+  pointer-events: none;
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform var(--bf-motion);
+
+  .is-open & {
+    transform: translateY(-20%) rotate(-135deg);
+  }
+}
+
+.row-form > .bf-field,
+.bf-manage-row > .bf-field,
+form[method="get"] > .bf-field {
+  flex: 1 1 10rem;
+}

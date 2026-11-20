@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{#- The member directory: search, sort and the list. -#}
+{% block content %}
+<header class="bf-box bf-page-head"><h1>{{ layout.t.t("footer.members") }}</h1></header>
+<form method="get" action="/u" class="bf-box bf-filter-bar" role="search">
+  {% if sort != "posts" %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+  <label class="bf-field"><input type="search" name="q" value="{{ q }}" placeholder=" "><span class="bf-field-label">{{ layout.t.t("users.find") }}</span></label>
+  <nav class="bf-dir-sort small" aria-label="{{ layout.t.t("users.sort") }}">
+    {%- for (label, url, cur) in sorts %}<a href="{{ url }}"{% if *cur %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor -%}
+  </nav>
+</form>
+<section class="bf-box">
+  <ul class="bf-dir">
+    {% for (name, group, posts, reputation, joined, level) in rows %}
+    <li>
+      <span class="bf-presence"><img class="avatar" src="/avatar/{{ name }}.svg" width="40" height="40" alt="" loading="lazy">{% if let Some((n, lname)) = level %}<span class="bf-lvl is-small" data-tip="{{ layout.t.msgf("Trust level {n}: {name}", [("n", n.to_string().as_str()), ("name", lname.as_str())]) }}">{{ n }}</span>{% endif %}</span>
+      <div class="bf-dir-who"><a class="bf-feed-title" href="/u/{{ name }}">{{ name }}</a><span class="small muted">{{ group }}</span></div>
+      <dl class="bf-dir-stats small">
+        <div><dt>{{ layout.t.t("profile.posts") }}</dt><dd>{{ posts }}</dd></div>
+        <div><dt>{{ layout.t.t("post.reputation") }}</dt><dd>{{ reputation }}</dd></div>
+        <div><dt>{{ layout.t.t("profile.joined") }}</dt><dd>{{ joined }}</dd></div>
+      </dl>
+    </li>
+    {% else %}
+    <li class="muted">{{ layout.t.t("users.none") }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% if prev_url.is_some() || next_url.is_some() %}
+<nav class="pager" aria-label="{{ layout.t.t("pager.pages") }}">
+  {%- if let Some(u) = prev_url %}<a rel="prev" href="{{ u }}">{{ layout.t.t("pager.previous") }}</a>{% endif -%}
+  <span>{{ layout.t.f("pager.page", [("n", page.to_string().as_str())]) }}</span>
+  {%- if let Some(u) = next_url %}<a rel="next" href="{{ u }}">{{ layout.t.t("pager.next") }}</a>{% endif -%}
+</nav>
+{% endif %}
+{% endblock %}

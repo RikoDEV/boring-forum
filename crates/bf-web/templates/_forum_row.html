@@ -1,0 +1,27 @@
+{#- One forum in a category's list: icon, title, sub-forums, post count and the latest topic. -#}
+<li class="bf-forum-row{% if f.unread %} is-unread{% endif %}" data-node="{{ f.id }}">
+  <span class="bf-forum-icon" aria-hidden="true">
+    {%- if f.clicks.is_some() %}{{ layout.node_icon(&f.icon, &f.icon_image, "link")|safe }}{% else %}{{ layout.node_icon(&f.icon, &f.icon_image, "message-square")|safe }}{% endif -%}
+  </span>
+  <div>
+    <a class="forum-title" href="{{ f.url }}">{{ f.title }}</a>
+    {%- if layout.admin %}<button type="button" class="bf-quick-edit" data-node-edit="{{ f.id }}" aria-label="{{ layout.t.f("forum.edit_named", [("name", f.title.as_str())]) }}" data-tip="{{ layout.t.t("forum.edit") }}">{{ layout.icon("pencil")|safe }}</button>{% endif %}
+    {% if !f.children.is_empty() %}
+    <div class="forum-children">{{ layout.icon("corner-down-right")|safe }} {% for (url, title) in f.children %}<a href="{{ url }}">{{ title }}</a>{% if !loop.last %}, {% endif %}{% endfor %}</div>
+    {% endif %}
+    <div class="forum-desc">{{ f.description_html|safe }}</div>
+  </div>
+  <div class="stats">
+    {%- if let Some(c) = f.clicks %}
+    {%- let (num, label) = layout.count_parts("count.clicks", c) %}<span><b>{{ num }}</b> {{ label }}</span>
+    {%- else %}
+    {%- let (num, label) = layout.count_parts("count.posts", f.post_count as i64) %}<span><b>{{ num }}</b> {{ label }}</span>
+    {%- endif -%}
+  </div>
+  <div class="bf-last">
+    {%- if let Some((url, title, poster, when)) = f.last %}
+    {%- if !poster.is_empty() %}<img class="avatar" src="/avatar/{{ poster }}.svg" width="40" height="40" alt="" loading="lazy">{% endif %}
+    <div><a class="bf-last-title" href="{{ url }}">{{ title }}</a><span class="muted">{{ layout.t.t("forum.last_by") }} {{ layout.user_link(poster)|safe }}, {{ when }}</span></div>
+    {%- endif -%}
+  </div>
+</li>

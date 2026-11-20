@@ -1,0 +1,27 @@
+{#- Who is on this page now: the "Recently browsing" block, placed through the page builder. -#}
+  {% if let Some(b) = layout.browsing %}
+  <section class="bf-box bf-browsing" aria-label="{{ layout.t.t("browsing.title") }}">
+    <div class="bf-box-head">
+      <h2>{{ layout.t.t("browsing.title") }}</h2>
+      <span class="bf-browsing-counts">
+        <span class="bf-browsing-count" data-tip-gate data-tip="{{ layout.t.msg("Signed-in members on this page in the last 15 minutes") }}">{{ layout.icon("user")|safe }} {{ layout.t.n("count.members", b.members.len() as i64) }}</span>
+        <span class="bf-browsing-count" data-tip-gate data-tip="{{ layout.t.msg("Visitors who are not signed in") }}">{{ layout.icon("eye")|safe }} {{ layout.t.n("count.guests", b.guests as i64) }}</span>
+        <span class="bf-browsing-count" data-tip-gate data-tip="{{ layout.t.msg("Search engines and other crawlers") }}">{{ layout.icon("cpu")|safe }} {{ layout.t.n("count.bots", b.bot_count as i64) }}</span>
+      </span>
+    </div>
+    <div class="bf-box-body">
+      {% if b.members.is_empty() && b.bots.is_empty() %}
+      <p class="muted bf-browsing-empty">{{ layout.t.t("browsing.empty") }}</p>
+      {% else %}
+      <ul class="bf-browsing-list">
+        {% for (name, url) in b.members %}
+        <li><a class="bf-browsing-chip" href="{{ url }}"><img class="avatar bf-browsing-avatar" src="/avatar/{{ name }}.svg" width="32" height="32" alt="" loading="lazy"><span class="bf-browsing-name">{{ name }}</span></a></li>
+        {% endfor %}
+        {% for name in b.bots %}
+        <li><span class="bf-browsing-chip is-bot" data-tip="{{ layout.t.msg("A crawler, not a person") }}"><span class="bf-browsing-avatar bf-browsing-bot">{{ layout.icon("cpu")|safe }}</span><span class="bf-browsing-name">{{ name }}</span></span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}

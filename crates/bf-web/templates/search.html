@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+{#- Search: the query, filters and operators beside the results, and names that match. -#}
+{% block content %}
+<h1>{{ layout.t.t("nav.search") }}</h1>
+<form method="get" action="/search" id="search-form" class="bf-box bf-search-hero" role="search">
+  {% if let Some(t) = topic %}<input type="hidden" name="topic" value="{{ t }}">{% endif %}
+  <label class="bf-field"><input name="q" value="{{ q }}" type="search" placeholder=" " required><span class="bf-field-label">{{ layout.t.t("search.terms") }}</span></label>
+  <button class="btn primary">{{ layout.t.t("nav.search") }}</button>
+</form>
+{% if topic.is_some() %}
+<p class="bf-search-note small">{{ layout.icon("message-square")|safe }} {{ layout.t.t("search.in_topic") }} <a href="/search?q={{ q|urlencode }}">{{ layout.t.t("search.everywhere") }}</a></p>
+{% endif %}
+{% if can_edit_layout %}{% include "_layout_edit.html" %}{% endif %}
+{% let area = "search" %}
+{% include "_area_top.html" %}
+
+<div class="bf-search-page">
+  <aside aria-label="{{ layout.t.t("search.filters") }}">
+    <section class="bf-box">
+      <div class="bf-box-head">
+        <h2>{{ layout.t.t("search.filters") }}</h2>
+        {% if filtered %}<a class="small" href="/search?q={{ q|urlencode }}">{{ layout.t.t("search.clear") }}</a>{% endif %}
+      </div>
+      <div class="bf-box-body bf-search-filters">
+        <fieldset>
+          <legend>{{ layout.t.t("search.look_in") }}</legend>
+          <label class="check"><input form="search-form" type="radio" name="in" value=""{% if !topics_only %} checked{% endif %}> {{ layout.t.t("search.all_posts") }}</label>
+          <label class="check"><input form="search-form" type="radio" name="in" value="topics"{% if topics_only %} checked{% endif %}> {{ layout.t.t("search.titles") }}</label>
+        </fieldset>
+        <label class="bf-field"><input form="search-form" name="author" value="{{ author }}" autocomplete="off" placeholder="{{ layout.t.t("search.any_member") }}"><span class="bf-field-label">{{ layout.t.t("search.author") }}</span></label>
+        <label class="bf-field">
+          <select form="search-form" name="forum">
+            <option value="">{{ layout.t.t("search.all_forums") }}</option>
+            {%- for (id, title, sel) in forums %}<option value="{{ id }}"{% if *sel %} selected{% endif %}>{{ title }}</option>{% endfor -%}
+          </select>
+          <span class="bf-field-label">{{ layout.t.t("forum.forum") }}</span>
+        </label>
+        <div class="bf-search-dates">
+          <label class="bf-field"><input form="search-form" name="after" type="date" value="{{ after }}"><span class="bf-field-label">{{ layout.t.t("search.from") }}</span></label>
+          <label class="bf-field"><input form="search-form" name="before" type="date" value="{{ before }}"><span class="bf-field-label">{{ layout.t.t("search.to") }}</span></label>
+        </div>
+        <button form="search-form" class="btn">{{ layout.t.t("search.apply") }}</button>
+      </div>
+    </section>
+    <details class="bf-box bf-search-help bf-disclosure">
+      <summary>{{ layout.t.t("search.operators") }}</summary>
+      <dl class="small">
+        <dt><code>@name</code></dt><dd>{{ layout.t.t("search.op_member") }}</dd>
+        <dt><code>#forum</code></dt><dd>{{ layout.t.t("search.op_forum") }}</dd>
+        <dt><code>tags:a,b</code></dt><dd>{{ layout.t.t("search.op_tags") }}</dd>
+        <dt><code>after:2026-01-01</code></dt><dd>{{ layout.t.t("search.op_after") }} <code>before:</code></dd>
+        <dt><code>status:closed</code></dt><dd>{{ layout.t.t("search.op_closed") }}</dd>
+        <dt><code>in:first</code></dt><dd>{{ layout.t.t("search.op_first") }}</dd>
+        <dt><code>in:mine</code></dt><dd>{{ layout.t.t("search.op_mine") }}</dd>
+        <dt><code>in:bookmarks</code></dt><dd>{{ layout.t.t("search.op_bookmarks") }}</dd>
+        <dt><code>likes:3</code></dt><dd>{{ layout.t.t("search.op_likes") }}</dd>
+      </dl>
+    </details>
+    {% if editing_layout || !widgets.side.is_empty() %}
+    <div data-area="search_side" data-area-label="{{ layout.t.t("search.area_side") }}">
+      {%- for (id, title, html, kind) in widgets.side.iter() %}{% include "_widget.html" %}{% endfor -%}
+    </div>
+    {% endif %}
+  </aside>
+
+  <div>
+    {% if q.is_empty() %}
+    <section class="bf-box bf-search-state">
+      {{ layout.icon("search")|safe }}
+      <h2>{{ layout.t.t("search.empty_title") }}</h2>
+      <p class="muted">{{ layout.t.t("search.empty_body") }}</p>
+    </section>
+    {% else %}
+    {% if !matches.is_empty() %}
+    <section class="bf-box bf-search-names">
+      <h2 class="visually-hidden">{{ layout.t.t("search.names") }}</h2>
+      {%- for (kind, url, name) in matches %}
+      <a class="bf-search-name" href="{{ url }}">
+        {%- if *kind == "member" %}<img class="avatar" src="/avatar/{{ name }}.svg" width="20" height="20" alt="">{% else if *kind == "tag" %}{{ layout.icon("flag")|safe }}{% else %}{{ layout.icon("folder")|safe }}{% endif -%}
+        {{ name }}<small class="muted">{{ layout.t.tj("search.kind.", kind) }}</small></a>
+      {%- endfor %}
+    </section>
+    {% endif %}
+    <section class="bf-box">
+      <div class="bf-box-head"><h2>{{ layout.t.f("search.results_for", [("count", layout.t.n("count.results", total).as_str()), ("q", q.as_str())]) }}</h2></div>
+      {% if results.is_empty() %}
+      <div class="bf-search-state">
+        {{ layout.icon("search")|safe }}
+        <h3>{{ layout.t.t("search.none") }}</h3>
+        <p class="muted">{{ layout.t.t("search.none_hint") }}{% if filtered %} <a href="/search?q={{ q|urlencode }}">{{ layout.t.t("search.clear_filters") }}</a>{% endif %}</p>
+      </div>
+      {% else %}
+      <ol class="results bf-feed">
+        {% for r in results %}
+        <li>
+          <img class="avatar" src="/avatar/{{ r.author }}.svg" width="40" height="40" alt="" loading="lazy">
+          <div>
+            <a class="bf-feed-title" href="{{ r.url }}">{% for (t, hit) in r.title_parts %}{% if *hit %}<mark>{{ t }}</mark>{% else %}{{ t }}{% endif %}{% endfor %}</a>
+            <p>{% for (t, hit) in r.snippet_parts %}{% if *hit %}<mark>{{ t }}</mark>{% else %}{{ t }}{% endif %}{% endfor %}</p>
+            <div class="muted small bf-meta">
+              <span>{{ layout.icon("user")|safe }} {{ layout.user_link(r.author)|safe }}</span>
+              {%- if !r.forum.is_empty() %}<span>{{ layout.icon("folder")|safe }} <a class="muted" href="{{ r.forum_url }}">{{ r.forum }}</a></span>{% endif -%}
+              <span>{{ layout.icon("clock")|safe }} {{ r.when }}</span>
+              {%- if r.by_meaning %}<span class="bf-by-meaning">{{ layout.icon("sparkles")|safe }} {{ layout.t.msg("Similar in meaning") }}</span>{% endif -%}
+              {%- if r.number > 1 %}<span>{{ layout.icon("reply")|safe }} {{ layout.t.f("search.post_number", [("n", r.number.to_string().as_str())]) }}</span>{% endif -%}
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+      {% endif %}
+    </section>
+    {% include "_pager.html" %}
+    {% endif %}
+    {% if editing_layout || !widgets.bottom.is_empty() %}
+    <div data-area="search_bottom" data-area-label="{{ layout.t.t("search.area_bottom") }}">
+      {%- for (id, title, html, kind) in widgets.bottom.iter() %}{% include "_widget.html" %}{% endfor -%}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

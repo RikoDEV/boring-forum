@@ -1,0 +1,220 @@
+{% extends "layout.html" %}
+{#- A forum: its head, subforums, the topic list with its filters, and the new-topic composer. -#}
+{% block content %}
+<nav class="crumbs small"><a href="/">{{ layout.t.t("nav.forums") }}</a> {{ layout.icon("chevron-right")|safe }} <span>{{ title }}</span></nav>
+
+<header class="bf-box bf-page-head bf-forum-head" data-node="{{ forum_id }}">
+  <div class="bf-forum-title">
+    <h1>{{ title }}
+      {%- if layout.admin %}<button type="button" class="bf-quick-edit" data-node-edit="{{ forum_id }}" aria-label="{{ layout.t.f("forum.edit_named", [("name", title.as_str())]) }}" data-tip="{{ layout.t.t("forum.edit") }}">{{ layout.icon("pencil")|safe }}</button>{% endif -%}
+    </h1>
+    {% if !description_html.is_empty() %}<div class="muted bf-page-desc">{{ description_html|safe }}</div>{% endif %}
+  </div>
+  <div class="bf-head-actions">
+    {% if let Some(feed) = layout.feed %}<a class="bf-icon-btn" href="{{ feed }}" aria-label="{{ layout.t.t("feed.subscribe") }}">{{ layout.icon("rss")|safe }}</a>{% endif %}
+    {% if member %}
+    <form method="post" action="/c/{{ forum_id }}/read">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <button class="bf-icon-btn" aria-label="{{ layout.t.t("forum.mark_read") }}">{{ layout.icon("circle-check")|safe }}</button>
+    </form>
+    <details class="bf-menu">
+      <summary class="btn">{{ layout.icon("bell")|safe }} <span class="bf-btn-label">{{ layout.t.tj("follow.", follow) }}</span> {{ layout.icon("chevron-down")|safe }}</summary>
+      <div class="bf-menu-body bf-follow-menu">
+        <form method="post" action="/c/{{ forum_id }}/follow">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          {%- for k in ["watch", "normal", "mute"] %}
+          <button name="level" value="{{ k }}"{% if follow == *k %} aria-current="true"{% endif %}><span><strong>{{ layout.t.tj("follow.", k) }}</strong><small class="muted">{{ layout.t.tj("follow.forum_hint.", k) }}</small></span></button>
+          {%- endfor %}
+        </form>
+      </div>
+    </details>
+    {% endif %}
+    {% if layout.translations && layout.admin %}<a class="bf-icon-btn" href="/admin/text?q={{ stored_title|urlencode }}" aria-label="{{ layout.t.t("post.translate") }}">{{ layout.icon("globe")|safe }}</a>{% endif %}
+    {% if composer.is_some() %}<a class="btn primary" href="#new-topic">{{ layout.icon("plus")|safe }} {{ layout.t.t("forum.start_topic") }}</a>{% else if let Some(tip) = composer_blocked %}<span data-tip="{{ tip }}" data-tip-gate><button class="btn primary" disabled>{{ layout.icon("plus")|safe }} {{ layout.t.t("forum.start_topic") }}</button></span>{% endif %}
+  </div>
+</header>
+{{ layout.slot("category_header")|safe }}
+
+{% if can_edit_layout %}{% include "_layout_edit.html" %}{% endif %}
+{% let area = "forum" %}
+{% include "_area_top.html" %}
+{% let has_side = editing_layout || !widgets.side.is_empty() %}
+<div{% if has_side %} class="bf-grid"{% endif %}>
+<div class="bf-grid-main">
+  {% if let Some(r) = rules_html %}
+  <details class="panel block bf-disclosure" open><summary>{{ layout.t.t("forum.rules") }}</summary><div class="cooked">{{ r|safe }}</div></details>
+  {% endif %}
+
+  {% if !subforums.is_empty() %}
+  <section class="bf-box">
+    <div class="bf-box-head"><h2>{{ layout.t.t("forum.subforums") }}</h2></div>
+    <ul class="forums">
+      {% for f in subforums %}{% include "_forum_row.html" %}{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if !moved.is_empty() %}
+  <ul class="panel block small moved">
+    {% for (url, title) in moved %}<li>{{ layout.t.t("forum.moved") }} <a href="{{ url }}">{{ title }}</a></li>{% endfor %}
+  </ul>
+  {% endif %}
+  {{ layout.ad_slot("topic_list")|safe }}
+
+  <section class="bf-box bf-list-box list-{{ list_style }}">
+    <div class="bf-list-bar bf-list-tools">
+      <nav class="bf-segments small" aria-label="{{ layout.t.t("forum.show") }}">
+        {%- for (label, url, active) in filters %}<a href="{{ url }}"{% if *active %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor -%}
+      </nav>
+      <div class="bf-list-menus small">
+        {% if !prefixes.is_empty() %}
+        <details class="bf-menu">
+          <summary class="btn">{% for (px, _, active) in prefixes %}{% if *active %}{{ px }}{% endif %}{% endfor %}<span class="muted bf-menu-hint">{{ layout.t.t("forum.prefix") }}</span> {{ layout.icon("chevron-down")|safe }}</summary>
+          <div class="bf-menu-body">
+            {%- for (px, url, active) in prefixes %}<a href="{{ url }}"{% if *active %} aria-current="true"{% endif %}>{{ px }}</a>{% endfor -%}
+          </div>
+        </details>
+        {% endif %}
+        <details class="bf-menu">
+          <summary class="btn"><span class="muted bf-menu-hint">{{ layout.t.t("forum.sort") }}</span> {% for (label, _, active) in sorts %}{% if *active %}{{ label }}{% endif %}{% endfor %} {{ layout.icon("chevron-down")|safe }}</summary>
+          <div class="bf-menu-body">
+            {%- for (label, url, active) in sorts %}<a href="{{ url }}"{% if *active %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor -%}
+          </div>
+        </details>
+      </div>
+    </div>
+    {% if let Some((left, limit)) = votes_left %}
+    <p class="small muted bf-votes-left" data-votes-left>{{ layout.t.f("forum.votes_left", [("left", left.to_string().as_str()), ("limit", limit.to_string().as_str())]) }}</p>
+    {% endif %}
+    {% if moderator %}
+    <form method="post" action="/c/{{ forum_id }}/bulk" id="bulk" class="row-form small bulk-bar">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <span class="muted">{{ layout.t.t("forum.selected") }}</span>
+      <label class="bf-field">
+        <select name="action">
+          <option value="lock">{{ layout.t.t("forum.bulk_lock") }}</option>
+          <option value="unlock">{{ layout.t.t("forum.bulk_unlock") }}</option>
+          <option value="pin">{{ layout.t.t("forum.bulk_pin") }}</option>
+          <option value="unpin">{{ layout.t.t("forum.bulk_unpin") }}</option>
+          <option value="archive">{{ layout.t.msg("Archive") }}</option>
+          <option value="unarchive">{{ layout.t.msg("Unarchive") }}</option>
+          <option value="tag">{{ layout.t.msg("Add tags") }}</option>
+          {% if layout.staff %}<option value="owner">{{ layout.t.msg("Change owner") }}</option>{% endif %}
+          <option value="delete">{{ layout.t.t("common.delete") }}</option>
+          {% if !move_targets.is_empty() %}<option value="move">{{ layout.t.t("forum.bulk_move") }}</option>{% endif %}
+        </select>
+        <span class="bf-field-label">{{ layout.t.t("forum.bulk_action") }}</span>
+      </label>
+      {% if !move_targets.is_empty() %}
+      <label class="bf-field">
+        <select name="to">{% for (fid, ftitle) in move_targets %}<option value="{{ fid }}">{{ ftitle }}</option>{% endfor %}</select>
+        <span class="bf-field-label">{{ layout.t.t("forum.move_to") }}</span>
+      </label>
+      {% endif %}
+      <label class="bf-field">
+        <input name="tags" placeholder=" " autocomplete="off">
+        <span class="bf-field-label">{{ layout.t.msg("Tags to add (for Add tags), comma separated") }}</span>
+      </label>
+      {% if layout.staff %}
+      <label class="bf-field">
+        <input name="owner" placeholder=" " autocomplete="off">
+        <span class="bf-field-label">{{ layout.t.msg("New owner username (for Change owner)") }}</span>
+      </label>
+      {% endif %}
+      <button class="btn">{{ layout.t.t("common.apply") }}</button>
+    </form>
+    {% endif %}
+    {% let bulk = moderator %}{% include "_topics.html" %}
+    {% if page == 1 %}<div class="bf-live-dock" data-island="live-list" data-props="{&quot;channel&quot;:&quot;forum:{{ forum_id }}&quot;}"></div>{% endif %}
+  </section>
+  {% if layout.user.is_some() %}<span data-island="infinite" data-props="{&quot;on&quot;:{{ layout.infinite }}}" hidden></span>{% endif %}
+  <nav class="pager">
+    {%- if let Some(u) = prev_url %}<a rel="prev" href="{{ u }}">{{ layout.t.t("pager.newer") }}</a>{% endif %}
+    {%- if prev_url.is_some() || next_url.is_some() %}<span>{{ layout.t.f("pager.page", [("n", page.to_string().as_str())]) }}</span>{% endif %}
+    {%- if let Some(u) = next_url %}<a rel="next" href="{{ u }}">{{ layout.t.t("pager.older") }}</a>{% endif -%}
+  </nav>
+</div>
+{% if editing_layout || !widgets.side.is_empty() %}
+<aside aria-label="{{ layout.t.t("footer.community") }}" data-area="forum_side" data-area-label="{{ layout.t.t("layout.sidebar") }}">
+  {{- layout.ad_slot("sidebar")|safe }}
+  {%- for (id, title, html, kind) in widgets.side.iter() %}{% include "_widget.html" %}{% endfor -%}
+</aside>
+{% endif %}
+</div>
+{% include "_area_bottom.html" %}
+
+{% if let Some(c) = composer %}
+<form method="post" action="/c/{{ forum_id }}/new" class="composer bf-sheet" id="new-topic">
+  <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+  <div class="bf-sheet-head">
+    <strong class="bf-sheet-title">{{ layout.icon("pencil")|safe }} {{ layout.t.t("forum.create_topic") }}</strong>
+    <div class="bf-sheet-controls" data-composer-controls><a class="bf-icon-btn" href="#" data-sheet-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</a></div>
+  </div>
+  <p class="error small" role="alert" data-sheet-error hidden></p>
+  <div class="bf-composer-row">
+    <select data-forum-picker aria-label="{{ layout.t.t("forum.forum") }}" hidden>
+      {%- for (cat, list) in c.forums %}<optgroup label="{{ cat }}">{% for (fid, name) in list %}<option value="{{ fid }}"{% if *fid == forum_id %} selected{% endif %}>{{ name }}</option>{% endfor %}</optgroup>{% endfor -%}
+    </select>
+    {% if !c.prefixes.is_empty() %}
+    <label class="bf-field">
+      <select id="prefix" name="prefix"><option value="">{{ layout.t.t("forum.no_prefix") }}</option>{% for p in c.prefixes %}<option>{{ p }}</option>{% endfor %}</select>
+      <span class="bf-field-label">{{ layout.t.t("forum.prefix") }}</span>
+    </label>
+    {% endif %}
+    <label class="bf-field"><input id="tags" name="tags" autocomplete="off" placeholder="{{ layout.t.t("forum.tags_hint") }}" data-tag-input><span class="bf-field-label">{{ layout.t.t("forum.tags") }}</span></label>
+  </div>
+  <label class="bf-field"><input id="title" name="title" placeholder=" " required><span class="bf-field-label">{{ layout.t.t("forum.title") }}</span></label>
+  <div class="bf-chips">
+    <button type="button" class="bf-chip" data-chip="event" data-dialog="event-dialog" data-empty="{{ layout.t.msg("Event") }}">{{ layout.icon("calendar")|safe }}<span class="bf-chip-label">{{ layout.t.msg("Event") }}</span></button>
+    {% if moderator %}<button type="button" class="bf-chip" data-chip="publish" data-dialog="publish-dialog" data-empty="{{ layout.t.msg("Publish later") }}">{{ layout.icon("clock")|safe }}<span class="bf-chip-label">{{ layout.t.msg("Publish later") }}</span></button>{% endif %}
+  </div>
+  {% if layout.ai_related %}<span data-island="ai-similar" hidden></span>{% endif %}
+  <textarea id="body" name="body" rows="10" aria-label="{{ layout.t.t("composer.message") }}" placeholder="{{ layout.t.t("composer.placeholder") }}" required>{{ c.body }}</textarea>
+  <dialog class="bf-dialog" id="event-dialog" aria-labelledby="event-title">
+    <header class="bf-dialog-head">
+      <h2 id="event-title">{{ layout.icon("calendar")|safe }} {{ layout.t.msg("Add to the calendar") }}</h2>
+      <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+    </header>
+    <div class="bf-dialog-body stack">
+      <div class="bf-manage-row">
+        <label class="bf-field"><input placeholder=" " type="date" name="event_date" value="{{ c.event_date }}"><span class="bf-field-label">{{ layout.t.t("event.date") }}</span></label>
+        <label class="bf-field"><input placeholder=" " type="time" name="event_start"><span class="bf-field-label">{{ layout.t.t("event.starts") }}</span></label>
+        <label class="bf-field"><input placeholder=" " type="time" name="event_end"><span class="bf-field-label">{{ layout.t.t("event.ends") }}</span></label>
+      </div>
+      <div class="bf-manage-row">
+        <label class="bf-field"><input placeholder=" " name="event_timezone" value="UTC" list="bf-timezones" autocomplete="off"><span class="bf-field-label">{{ layout.t.t("event.timezone") }}</span></label>
+        <label class="bf-field"><input placeholder=" " name="event_location" maxlength="200"><span class="bf-field-label">{{ layout.t.t("event.location") }}</span></label>
+      </div>
+      <div class="bf-manage-row">
+        <label class="bf-field">
+          <select name="event_repeat">
+            <option value="none">{{ layout.t.t("event.repeat_none") }}</option>
+            <option value="daily">{{ layout.t.t("event.repeat_daily") }}</option>
+            <option value="weekly">{{ layout.t.t("event.repeat_weekly") }}</option>
+            <option value="monthly">{{ layout.t.t("event.repeat_monthly") }}</option>
+            <option value="yearly">{{ layout.t.t("event.repeat_yearly") }}</option>
+          </select>
+          <span class="bf-field-label">{{ layout.t.t("event.repeats") }}</span>
+        </label>
+        <label class="bf-field"><input placeholder=" " type="date" name="event_repeat_until"><span class="bf-field-label">{{ layout.t.t("event.last_date") }}</span></label>
+      </div>
+      <datalist id="bf-timezones"><option value="UTC"><option value="Europe/London"><option value="Europe/Warsaw"><option value="Europe/Berlin"><option value="America/New_York"><option value="America/Chicago"><option value="America/Los_Angeles"><option value="Asia/Tokyo"><option value="Australia/Sydney"></datalist>
+      <div class="bf-dialog-actions"><button type="button" class="btn" data-chip-clear>{{ layout.t.msg("Remove") }}</button><button type="button" class="btn primary" data-dialog-close>{{ layout.t.msg("Done") }}</button></div>
+    </div>
+  </dialog>
+  {% if moderator %}
+  <dialog class="bf-dialog is-narrow" id="publish-dialog" aria-labelledby="publish-title">
+    <header class="bf-dialog-head">
+      <h2 id="publish-title">{{ layout.t.t("forum.publish_later") }}</h2>
+      <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+    </header>
+    <div class="bf-dialog-body stack">
+      <label class="bf-field"><input placeholder=" " type="number" name="publish_minutes" min="1"><span class="bf-field-label">{{ layout.t.t("forum.minutes_from_now") }}</span></label>
+      <div class="bf-dialog-actions"><button type="button" class="btn" data-chip-clear>{{ layout.t.msg("Remove") }}</button><button type="button" class="btn primary" data-dialog-close>{{ layout.t.msg("Done") }}</button></div>
+    </div>
+  </dialog>
+  {% endif %}
+  <div class="composer-foot" data-composer-foot><button class="btn primary">{{ layout.t.t("forum.create_topic") }}</button></div>
+</form>
+{% endif %}
+{% endblock %}

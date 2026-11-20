@@ -1,0 +1,94 @@
+/* Design tokens: the only values components read. Colours are declared once
+   with light-dark(), so the system and explicit dark paths cannot drift apart. */
+
+:root {
+  color-scheme: light dark;
+
+  --bf-font-body:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bf-font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+  --bf-text-xs: 0.75rem;
+  --bf-text-sm: 0.8125rem;
+  --bf-text-list: 0.875rem;
+  --bf-text-body: 0.9375rem;
+  --bf-text-lg: 1.0625rem;
+  --bf-text-xl: 1.375rem;
+  --bf-measure: 72ch;
+
+  --bf-space-1: 0.25rem;
+  --bf-space-2: 0.5rem;
+  --bf-space-3: 0.75rem;
+  --bf-space-4: 1rem;
+  --bf-space-5: 1.25rem;
+  --bf-space-6: 1.5rem;
+  --bf-space-8: 2rem;
+
+  --bf-radius: 6px;
+  --bf-radius-input: 4px;
+  /* One height for every button, field and select, so controls in a row line up; the small one
+     is for dense toolbars and menus. */
+  --bf-control-height: 2.5rem;
+  --bf-control-height-sm: 2rem;
+  --bf-content-width: 1340px;
+  --bf-sidebar-width: 300px;
+  --bf-author-width: 160px;
+  --bf-shadow-menu: 0 4px 16px rgb(0 0 0 / 0.14);
+  --bf-motion: 150ms ease-out;
+
+  --bf-color-bg: light-dark(#f5f6f8, #111419);
+  --bf-color-surface: light-dark(#ffffff, #191d23);
+  --bf-color-surface-2: light-dark(#f0f2f5, #22272e);
+  --bf-color-text: light-dark(#1a1f27, #e6e9ee);
+  --bf-color-muted: light-dark(#596371, #9fa9b6);
+  --bf-color-border: light-dark(#e1e4e9, #2c323b);
+  --bf-color-border-strong: light-dark(#c4cad3, #454c58);
+  --bf-color-accent: light-dark(#0b64c0, #6fb1f5);
+  --bf-color-accent-hover: light-dark(#09529e, #92c5f8);
+  --bf-color-accent-text: light-dark(#ffffff, #0b1a2b);
+  --bf-color-accent-soft: light-dark(#e7f0fa, #1b2d42);
+  --bf-color-header-bg: var(--bf-color-surface);
+  --bf-color-header-text: var(--bf-color-text);
+  --bf-color-focus: light-dark(#0b64c0, #92c5f8);
+  --bf-color-success: light-dark(#17693c, #6fcf97);
+  --bf-color-success-soft: light-dark(#e3f4ea, #17301f);
+  --bf-color-warning: light-dark(#8a5300, #e4b567);
+  --bf-color-warning-soft: light-dark(#fbf0db, #36290f);
+  --bf-color-danger: light-dark(#b42318, #f28b82);
+  --bf-color-danger-soft: light-dark(#fdeceb, #3d1d1b);
+  --bf-color-code-string: light-dark(#17693c, #7cc59a);
+  --bf-color-code-keyword: light-dark(#a23b5f, #e48aa9);
+  --bf-color-code-constant: light-dark(#8a5300, #e0a85c);
+  --bf-color-code-entity: light-dark(#0b64c0, #8fbbe6);
+  /* Member text colours (`[text]{colour}`), tuned for contrast in both schemes. */
+
+  --bf-clr-red: light-dark(#c0362c, #f28b82);
+  --bf-clr-orange: light-dark(#b45309, #f7a44a);
+  --bf-clr-yellow: light-dark(#8a6d00, #d9c200);
+  --bf-clr-green: light-dark(#1a7f37, #6fcf97);
+  --bf-clr-blue: light-dark(#0b64c0, #6fb1f5);
+  --bf-clr-purple: light-dark(#7a3e9d, #cfa1ea);
+  --bf-clr-gray: light-dark(#6b7280, #9fa9b6);
+  /* Names from before the refactor, for saved theme CSS that reads them. */
+
+  --bf-bg: var(--bf-color-bg);
+  --bf-surface: var(--bf-color-surface);
+  --bf-text: var(--bf-color-text);
+  --bf-muted: var(--bf-color-muted);
+  --bf-border: var(--bf-color-border);
+  --bf-accent: var(--bf-color-accent);
+  --bf-accent-text: var(--bf-color-accent-text);
+  --bf-header-bg: var(--bf-color-header-bg);
+  --bf-header-text: var(--bf-color-header-text);
+  --bf-focus: var(--bf-color-focus);
+  --bf-font: var(--bf-font-body);
+  --bf-gap: var(--bf-space-4);
+  --bf-wrap: var(--bf-content-width);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}

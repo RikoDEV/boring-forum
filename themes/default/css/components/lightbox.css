@@ -1,0 +1,335 @@
+/* The image viewer (web/islands/src/lightbox.js): a full-screen dialog over a dark, blurred page.
+   A counter and tools along the top, the picture in the middle with an arrow at each side, and a
+   strip of thumbnails along the bottom. It is dark in every colour scheme, like a photo viewer. */
+
+.lb {
+  --lb-ink: #fff;
+  --lb-muted: rgb(255 255 255 / 0.68);
+  --lb-glass: rgb(255 255 255 / 0.12);
+  --lb-glass-hover: rgb(255 255 255 / 0.22);
+
+  position: fixed;
+  inset: 0;
+  width: 100dvw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--lb-ink);
+
+  &[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    animation: lb-in 180ms ease-out;
+  }
+
+  &::backdrop {
+    background: rgb(6 8 12 / 0.94);
+    backdrop-filter: blur(12px);
+  }
+
+  & [hidden] {
+    display: none !important;
+  }
+}
+
+@keyframes lb-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes lb-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* The top: where you are, and what you can do with the picture. */
+
+.lb-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-3) var(--bf-space-4);
+}
+
+.lb-count {
+  padding: 0.125rem var(--bf-space-3);
+  border-radius: 999px;
+  background: var(--lb-glass);
+  color: var(--lb-muted);
+  font-size: var(--bf-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-tools {
+  display: flex;
+  gap: var(--bf-space-2);
+  margin-inline-start: auto;
+}
+
+.lb .lb-btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--lb-glass);
+  color: var(--lb-ink);
+  cursor: pointer;
+  transition: background var(--bf-motion);
+
+  &:hover {
+    background: var(--lb-glass-hover);
+    color: var(--lb-ink);
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lb-ink);
+    outline-offset: 2px;
+  }
+
+  &[aria-pressed="true"] {
+    background: var(--lb-ink);
+    color: #111;
+  }
+
+  & .bf-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke-width: 1.75;
+  }
+}
+
+/* The middle: the picture, centred and as large as fits; zoomed, it is its own size and scrolls. */
+
+.lb-stage {
+  position: relative;
+  display: grid;
+  /* One track as large as the stage: the picture's height is a share of it, not of itself. */
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: center;
+  min-height: 0;
+  padding: 0 var(--bf-space-4);
+  overflow: hidden;
+
+  &:has(.is-zoomed) {
+    grid-template: auto / auto;
+    overflow: auto;
+    place-items: start center;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+/* The picture gets the whole stage minus its caption, and is never larger than that, whatever its size. */
+
+.lb-figure {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: var(--bf-space-3);
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  transition: opacity 200ms;
+
+  &.is-loaded {
+    opacity: 1;
+  }
+
+  /* Zoomed: its own size, in a box as wide as the picture (or the stage, when it is smaller). */
+  &.is-zoomed {
+    display: flex;
+    justify-content: center;
+    width: max-content;
+    min-width: 100%;
+    height: auto;
+  }
+}
+
+.lb-img {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--bf-radius);
+  box-shadow: 0 12px 48px rgb(0 0 0 / 0.55);
+  cursor: zoom-in;
+  user-select: none;
+
+  .is-zoomed & {
+    max-width: none;
+    max-height: none;
+    cursor: zoom-out;
+  }
+}
+
+.lb-caption {
+  max-width: 60ch;
+  color: var(--lb-muted);
+  font-size: var(--bf-text-sm);
+  text-align: center;
+
+  &:empty,
+  .is-zoomed & {
+    display: none;
+  }
+}
+
+.lb-spinner {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  width: 2rem;
+  height: 2rem;
+  margin: -1rem;
+  border: 2px solid var(--lb-glass-hover);
+  border-block-start-color: var(--lb-ink);
+  border-radius: 50%;
+  animation: lb-spin 0.8s linear infinite;
+}
+
+/* An arrow at each side. The icon is one chevron, turned for "previous" and for right-to-left. */
+
+.lb .lb-nav {
+  position: absolute;
+  inset-block-start: 50%;
+  z-index: 1;
+  width: 3rem;
+  height: 3rem;
+  translate: 0 -50%;
+  backdrop-filter: blur(6px);
+}
+
+.lb-prev {
+  inset-inline-start: var(--bf-space-4);
+
+  & .bf-icon {
+    rotate: 180deg;
+  }
+}
+
+.lb-next {
+  inset-inline-end: var(--bf-space-4);
+}
+
+.lb:dir(rtl) {
+  & .lb-prev .bf-icon {
+    rotate: 0deg;
+  }
+
+  & .lb-next .bf-icon {
+    rotate: 180deg;
+  }
+}
+
+.lb.is-single :is(.lb-nav, .lb-count) {
+  display: none;
+}
+
+/* The bottom: every picture of the set, the open one lit. */
+
+.lb-strip {
+  display: flex;
+  gap: var(--bf-space-2);
+  justify-content: safe center;
+  padding: var(--bf-space-3) var(--bf-space-4) var(--bf-space-4);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lb-glass-hover) transparent;
+}
+
+.lb .lb-thumb {
+  flex: none;
+  width: 4.5rem;
+  height: 3.25rem;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: var(--bf-radius-input);
+  background: #000;
+  opacity: 0.5;
+  cursor: pointer;
+  transition:
+    opacity var(--bf-motion),
+    border-color var(--bf-motion);
+
+  & img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lb-ink);
+    outline-offset: 2px;
+  }
+
+  &[aria-current] {
+    border-color: var(--lb-ink);
+    opacity: 1;
+  }
+}
+
+@media (width <= 640px) {
+  .lb-top {
+    padding: var(--bf-space-2) var(--bf-space-3);
+  }
+
+  .lb-stage {
+    padding: 0 var(--bf-space-2);
+  }
+
+  .lb .lb-nav {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgb(0 0 0 / 0.45);
+  }
+
+  .lb-prev {
+    inset-inline-start: var(--bf-space-2);
+  }
+
+  .lb-next {
+    inset-inline-end: var(--bf-space-2);
+  }
+
+  .lb-strip {
+    padding: var(--bf-space-2) var(--bf-space-3) var(--bf-space-3);
+  }
+
+  .lb .lb-thumb {
+    width: 3.5rem;
+    height: 2.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lb[open],
+  .lb-figure,
+  .lb-spinner {
+    animation: none;
+    transition: none;
+  }
+}

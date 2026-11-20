@@ -1,0 +1,33 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests", ":semanticCommits"],
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "timezone": "UTC",
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+  "prConcurrentLimit": 10,
+  "enabledManagers": ["cargo", "npm", "dockerfile", "docker-compose", "github-actions"],
+  "ignorePaths": ["**/node_modules/**", "fuzz/corpus/**"],
+  "vulnerabilityAlerts": { "minimumReleaseAge": null, "labels": ["security"] },
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 6am on monday"] },
+  "packageRules": [
+    {
+      "description": "Rust crates: minor and patch updates in one pull request",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "rust minor and patch"
+    },
+    {
+      "description": "JavaScript packages: minor and patch updates in one pull request",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "js minor and patch"
+    },
+    {
+      "description": "GitHub Actions in one pull request",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    }
+  ]
+}

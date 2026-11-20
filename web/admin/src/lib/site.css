@@ -1,0 +1,11 @@
+/* The forum's own styles that the admin panel shares, in the same cascade layers the site uses
+   (themes/default/css/critical.css). Imported unlayered, they would beat every layered rule of
+   the site header the panel embeds, whatever its specificity: the header search lost its room for
+   the magnifier that way. The panel's own admin.css stays unlayered, so it still wins. */
+@layer tokens, base, app, a11y;
+@import url("../../../../themes/default/css/tokens/tokens.css") layer(tokens);
+@import url("../../../../themes/default/css/components/fields.css") layer(app);
+@import url("../../../../themes/default/css/components/text.css") layer(app);
+@import url("../../../../themes/default/css/components/tooltip.css") layer(app);
+@import url("../../../../themes/default/css/components/badges.css") layer(app);
+@import url("../../../../themes/default/css/components/disclosure.css") layer(app);

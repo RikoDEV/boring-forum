@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{#- Every public group. -#}
+{% block content %}
+<header class="bf-box bf-page-head"><h1>{{ layout.t.t("footer.groups") }}</h1></header>
+<div class="bf-card-grid">
+  {% for (name, slug, members) in groups %}
+  <a class="bf-box bf-card" href="/g/{{ slug }}">{{ layout.icon("users")|safe }}<div><strong>{{ name }}</strong><span class="small muted">{{ layout.t.n("count.members", members) }}</span></div></a>
+  {% else %}
+  <p class="muted">{{ layout.t.t("groups.none") }}</p>
+  {% endfor %}
+</div>
+{% endblock %}

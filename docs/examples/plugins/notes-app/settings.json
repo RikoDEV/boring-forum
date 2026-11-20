@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "moderate": {
+      "type": "boolean",
+      "title": "Hold new notes for review",
+      "title_key": "setting.moderate",
+      "description": "Notes by moderators and administrators are always published at once.",
+      "description_key": "setting.moderate_help",
+      "default": true
+    }
+  }
+}

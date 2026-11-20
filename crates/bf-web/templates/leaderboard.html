@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{#- The members with the most reputation. -#}
+{% block content %}
+<header class="bf-box bf-page-head">
+  <h1>{{ layout.t.t("footer.leaderboard") }}</h1>
+  <p class="small muted">{{ layout.t.t("leaderboard.hint") }}</p>
+</header>
+<section class="bf-box">
+  <ol class="bf-dir bf-leaders">
+    {% for (place, name, reputation, posts) in rows %}
+    <li>
+      <span class="bf-place">{{ place }}</span>
+      <img class="avatar" src="/avatar/{{ name }}.svg" width="40" height="40" alt="" loading="lazy">
+      <div class="bf-dir-who"><a class="bf-feed-title" href="/u/{{ name }}">{{ name }}</a></div>
+      <dl class="bf-dir-stats small">
+        <div><dt>{{ layout.t.t("post.reputation") }}</dt><dd>{{ reputation }}</dd></div>
+        <div><dt>{{ layout.t.t("profile.posts") }}</dt><dd>{{ posts }}</dd></div>
+      </dl>
+    </li>
+    {% else %}
+    <li class="muted">{{ layout.t.t("leaderboard.empty") }}</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

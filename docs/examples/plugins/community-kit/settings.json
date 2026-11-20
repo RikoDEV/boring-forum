@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "banned_words": {
+      "type": "string",
+      "title": "Banned words",
+      "title_key": "setting.banned",
+      "description": "Separated by commas. Whole words, any case.",
+      "description_key": "setting.banned_help",
+      "default": "spamword,scamword"
+    },
+    "mode": {
+      "type": "string",
+      "title": "When a post has one",
+      "title_key": "setting.mode",
+      "enum": ["mask", "reject"],
+      "enum_labels": { "mask": "Hide it with stars", "reject": "Refuse the post" },
+      "enum_label_keys": { "mask": "setting.mode_mask", "reject": "setting.mode_reject" },
+      "default": "mask"
+    },
+    "show_footer": {
+      "type": "boolean",
+      "title": "Show the line under posts",
+      "title_key": "setting.footer",
+      "default": true
+    }
+  }
+}

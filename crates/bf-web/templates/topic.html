@@ -1,0 +1,346 @@
+{% extends "layout.html" %}
+{#- A topic: its head (status, votes, tags, byline, actions and the Manage dialog), the posts,
+    the reply composer and the progress rail. -#}
+{% block content %}
+<nav class="crumbs small"><a href="/">{{ layout.t.t("nav.forums") }}</a> {{ layout.icon("chevron-right")|safe }} <a href="{{ forum_url }}">{{ forum_title }}</a> {{ layout.icon("chevron-right")|safe }} <span>{{ title }}</span></nav>
+
+<header class="bf-box bf-page-head bf-topic-head">
+  <div class="bf-topic-titlerow">
+  {%- if ideas %}
+  <div class="bf-vote-box{% if voted %} is-voted{% endif %}" data-vote-group data-topic="{{ id }}">
+    {%- if can_vote_topic %}
+    <form method="post" action="/t/{{ id }}/vote-topic" class="inline" data-vote>
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <input type="hidden" name="on" value="{% if voted %}0{% else %}1{% endif %}">
+      <button class="bf-vote-up{% if voted %} is-voted{% endif %}" aria-pressed="{{ voted }}" aria-label="{% if voted %}{{ layout.t.t("topics.unvote") }}{% else %}{{ layout.t.t("topics.vote") }}{% endif %}">{{ layout.icon("arrow-up")|safe }}</button>
+    </form>
+    {%- else %}
+    <span class="bf-vote-up is-static" aria-hidden="true">{{ layout.icon("arrow-up")|safe }}</span>
+    {%- endif %}
+    <span class="bf-vote-count" data-vote-count aria-label="{{ layout.t.t("topics.votes") }}">{{ topic_votes }}</span>
+  </div>
+  {%- endif %}
+  <div class="bf-topic-titlecol">
+  <h1>
+    {%- if solved.is_some() %}<span class="bf-badge is-ok">{{ layout.icon("circle-check")|safe }} {{ layout.t.t("topics.solved") }}</span> {% endif %}
+    {%- if pinned %}<span class="bf-badge is-accent">{{ layout.icon("pin")|safe }} {{ layout.t.t("topics.pinned") }}</span> {% endif %}
+    {%- if locked %}<span class="bf-badge">{{ layout.icon("lock")|safe }} {{ layout.t.t("topics.locked") }}</span> {% endif %}
+    {%- if archived %}<span class="bf-badge">{{ layout.icon("archive")|safe }} {{ layout.t.t("topic.archived") }}</span> {% endif %}
+    {%- if featured %}<span class="bf-badge is-accent">{{ layout.icon("star")|safe }} {{ layout.t.t("topic.featured") }}</span> {% endif %}
+    {%- if let Some(px) = prefix %}<span class="bf-badge is-accent">{{ px }}</span> {% endif %}{{ title -}}
+  </h1>
+  {#- Ideas forums: the topic's votes and who cast them. #}
+  {% if ideas %}
+  <div class="bf-topic-votes">
+    {%- if can_vote_topic %}
+    {%- if let Some((left, limit)) = votes_left %}<span class="small muted" data-votes-left>{{ layout.t.f("topic.votes_left", [("left", left.to_string().as_str()), ("limit", limit.to_string().as_str())]) }}</span>{% endif %}
+    {%- endif -%}
+    <span class="bf-voters"{% if voters.is_empty() %} hidden{% endif %}>
+      <span class="small muted">{{ layout.t.t("topic.voted_by") }}</span>
+      <span class="bf-voter-list">
+        {%- for (url, name) in voters %}<a href="{{ url }}" data-tip="{{ name }}" data-voter="{{ name }}"><img class="avatar" src="/avatar/{{ name }}.svg" width="24" height="24" alt="{{ name }}" loading="lazy"></a>{% endfor -%}
+      </span>
+      {%- if more_voters > 0 %}<span class="small muted">{{ layout.t.n("topic.more_voters", more_voters) }}</span>{% endif -%}
+    </span>
+  </div>
+  {% endif %}
+  </div>
+  </div>
+
+
+  {% if !tags.is_empty() || solved.is_some() || (assigned && can_moderate) %}
+  <div class="bf-topic-tags">
+    {%- if let Some(n) = solved %}<a class="bf-badge is-ok" href="/t/x/{{ id }}/{{ n }}">{{ layout.icon("circle-check")|safe }} {{ layout.t.t("topic.jump_answer") }}</a>{% endif %}
+    {%- if assigned && can_moderate %}<span class="bf-badge is-accent">{{ layout.icon("user")|safe }} {{ layout.t.t("topic.assigned") }}</span>{% endif %}
+    {%- for (name, slug) in tags %}<a class="bf-badge" href="/tag/{{ slug }}">{{ name }}</a>{% endfor -%}
+  </div>
+  {% endif %}
+
+  <div class="bf-page-meta">
+    <div class="bf-byline">
+      <img class="avatar" src="/avatar/{{ author }}.svg" width="44" height="44" alt="">
+      <div>{{ layout.t.t("topic.by") }} <a href="{{ author_url }}"><strong>{{ author }}</strong></a><div class="muted">{{ started }} {{ layout.t.t("topic.in") }} <a class="muted" href="{{ forum_url }}">{{ forum_title }}</a></div></div>
+    </div>
+    <div class="bf-head-actions">
+      {% if let Some(feed) = layout.feed %}<a class="bf-icon-btn" href="{{ feed }}" aria-label="{{ layout.t.t("feed.subscribe") }}">{{ layout.icon("rss")|safe }}</a>{% endif %}
+      <a class="btn" href="/t/{{ id }}/summary">{{ layout.icon("star")|safe }} <span class="bf-btn-label">{{ layout.t.t("topic.top_replies") }}</span></a>
+      <button type="button" class="bf-icon-btn" data-copy-link aria-label="{{ layout.t.t("topic.copy_link") }}">{{ layout.icon("link")|safe }}</button>
+      {% if layout.user.is_some() %}
+      <details class="bf-menu">
+        <summary class="btn">{{ layout.icon("mail")|safe }} <span class="bf-btn-label">{{ layout.t.t("topic.invite") }}</span></summary>
+        <div class="bf-menu-body">
+          <form method="post" action="/t/{{ id }}/invite" class="stack">
+            <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+            <label class="bf-field"><input name="username" placeholder=" " autocomplete="off" required><span class="bf-field-label">{{ layout.t.t("topic.invite_who") }}</span></label>
+            <button class="btn">{{ layout.t.t("topic.invite_send") }}</button>
+          </form>
+        </div>
+      </details>
+      <details class="bf-menu">
+        <summary class="btn">{{ layout.icon("bell")|safe }} <span class="bf-follow-label bf-btn-label">{{ layout.t.tj("follow.", follow) }}</span> <span class="bf-btn-label">{{ layout.icon("chevron-down")|safe }}</span></summary>
+        <div class="bf-menu-body bf-follow-menu">
+          <form method="post" action="/t/{{ id }}/follow">
+            <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+            {%- for k in ["watch", "track", "normal", "mute"] %}
+            <button name="level" value="{{ k }}"{% if follow == *k %} aria-current="true"{% endif %}><span><strong>{{ layout.t.tj("follow.", k) }}</strong></span></button>
+            {%- endfor %}
+          </form>
+        </div>
+      </details>
+      {% endif %}
+
+      {#- Manage: everything a moderator (or a member who may tag) can change about the topic. #}
+      {% if can_tag || can_moderate %}
+      <button type="button" class="btn" data-dialog="manage-topic">{{ layout.icon("settings")|safe }} <span class="bf-btn-label">{{ layout.t.t("topic.manage") }}</span></button>
+      <dialog class="bf-dialog bf-manage" id="manage-topic" aria-labelledby="manage-title">
+        <header class="bf-dialog-head">
+          <h2 id="manage-title">{{ layout.t.t("topic.manage_title") }}</h2>
+          <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+        </header>
+        <div class="bf-dialog-body">
+          {% if can_moderate %}
+          <form method="post" action="/t/{{ id }}/mod" class="bf-manage-quick">
+            <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+            <div class="bf-manage-toggles">
+              <button class="bf-toggle" name="action" value="{% if pinned %}unpin{% else %}pin{% endif %}" aria-pressed="{{ pinned }}">{{ layout.icon("pin")|safe }}<span>{% if pinned %}{{ layout.t.t("forum.bulk_unpin") }}{% else %}{{ layout.t.t("forum.bulk_pin") }}{% endif %}</span></button>
+              <button class="bf-toggle" name="action" value="{% if locked %}unlock{% else %}lock{% endif %}" aria-pressed="{{ locked }}">{{ layout.icon("lock")|safe }}<span>{% if locked %}{{ layout.t.t("forum.bulk_unlock") }}{% else %}{{ layout.t.t("forum.bulk_lock") }}{% endif %}</span></button>
+              <button class="bf-toggle" name="action" value="{% if listed %}unlist{% else %}list{% endif %}" aria-pressed="{{ !listed }}">{{ layout.icon("eye-off")|safe }}<span>{% if listed %}{{ layout.t.t("topic.unlist") }}{% else %}{{ layout.t.t("topic.list") }}{% endif %}</span></button>
+              <button class="bf-toggle" name="action" value="{% if archived %}unarchive{% else %}archive{% endif %}" aria-pressed="{{ archived }}">{{ layout.icon("archive")|safe }}<span>{% if archived %}{{ layout.t.t("topic.unarchive") }}{% else %}{{ layout.t.t("topic.archive") }}{% endif %}</span></button>
+              <button class="bf-toggle" name="action" value="{% if featured %}unfeature{% else %}feature{% endif %}" aria-pressed="{{ featured }}">{{ layout.icon("star")|safe }}<span>{% if featured %}{{ layout.t.t("topic.unfeature") }}{% else %}{{ layout.t.t("topic.feature") }}{% endif %}</span></button>
+            </div>
+            <label class="bf-field"><input name="reason" placeholder=" "><span class="bf-field-label">{{ layout.t.t("post.report_reason") }}</span></label>
+          </form>
+          {% if !mod_actions.is_empty() %}
+          <div class="bf-manage-extra">
+            {% for (aid, aname) in mod_actions %}<form method="post" action="/t/{{ id }}/action/{{ aid }}"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ aname }}</button></form>{% endfor %}
+          </div>
+          {% endif %}
+          {% endif %}
+
+          <div class="bf-manage-groups">
+            {% if can_tag %}
+            <details>
+              <summary>{{ layout.icon("flag")|safe }}<span><strong>{{ layout.t.t("forum.tags") }}</strong><small>{{ layout.t.t("topic.tags_hint") }}</small></span></summary>
+              <form method="post" action="/t/{{ id }}/tags" class="stack">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input name="tags" value="{{ tags_csv }}" placeholder="{{ layout.t.t("topic.add_tags") }}" data-tag-input><span class="bf-field-label">{{ layout.t.t("forum.tags") }}</span></label>
+                <button class="btn">{{ layout.t.t("topic.save_tags") }}</button>
+              </form>
+            </details>
+            <details>
+              <summary>{{ layout.icon("pencil")|safe }}<span><strong>{{ layout.t.t("forum.title") }}</strong><small>{{ layout.t.t("topic.title_hint") }}</small></span></summary>
+              <form method="post" action="/t/{{ id }}/title" class="bf-manage-row">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input placeholder=" " name="title" value="{{ title }}" required><span class="bf-field-label">{{ layout.t.t("forum.title") }}</span></label>
+                <button class="btn">{{ layout.t.t("common.save") }}</button>
+              </form>
+            </details>
+            <details>
+              <summary>{{ layout.icon("list")|safe }}<span><strong>{{ layout.t.t("topic.poll_or_date") }}</strong><small>{{ layout.t.t("topic.poll_or_date_hint") }}</small></span></summary>
+              <form method="post" action="/t/{{ id }}/poll" class="stack">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                {{ poll_form|safe }}
+                <button class="btn">{{ layout.t.t("poll.add") }}</button>
+              </form>
+              <form method="post" action="/t/{{ id }}/event" class="stack">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <div class="bf-manage-row">
+                  <label class="bf-field"><input placeholder=" " type="date" name="date" required><span class="bf-field-label">{{ layout.t.t("event.date") }}</span></label>
+                  <label class="bf-field"><input placeholder=" " type="time" name="start_time"><span class="bf-field-label">{{ layout.t.t("event.starts") }}</span></label>
+                  <label class="bf-field"><input placeholder=" " type="time" name="end_time"><span class="bf-field-label">{{ layout.t.t("event.ends") }}</span></label>
+                </div>
+                <div class="bf-manage-row">
+                  <label class="bf-field"><input placeholder=" " name="timezone" value="UTC" list="bf-timezones" autocomplete="off"><span class="bf-field-label">{{ layout.t.t("event.timezone") }}</span></label>
+                  <label class="bf-field"><input placeholder=" " name="location" maxlength="200"><span class="bf-field-label">{{ layout.t.t("event.location") }}</span></label>
+                </div>
+                <div class="bf-manage-row">
+                  <label class="bf-field">
+                    <select name="recurrence">
+                      <option value="none">{{ layout.t.t("event.repeat_none") }}</option>
+                      <option value="daily">{{ layout.t.t("event.repeat_daily") }}</option>
+                      <option value="weekly">{{ layout.t.t("event.repeat_weekly") }}</option>
+                      <option value="monthly">{{ layout.t.t("event.repeat_monthly") }}</option>
+                      <option value="yearly">{{ layout.t.t("event.repeat_yearly") }}</option>
+                    </select>
+                    <span class="bf-field-label">{{ layout.t.t("event.repeats") }}</span>
+                  </label>
+                  <label class="bf-field"><input placeholder=" " type="date" name="repeat_until"><span class="bf-field-label">{{ layout.t.t("event.last_date") }}</span></label>
+                  <label class="bf-field"><input placeholder=" " type="number" min="1" name="capacity"><span class="bf-field-label">{{ layout.t.t("event.capacity") }}</span></label>
+                </div>
+                <datalist id="bf-timezones"><option value="UTC"><option value="Europe/London"><option value="Europe/Warsaw"><option value="Europe/Berlin"><option value="America/New_York"><option value="America/Chicago"><option value="America/Los_Angeles"><option value="Asia/Tokyo"><option value="Australia/Sydney"></datalist>
+                <button class="btn">{{ layout.t.t("event.save") }}</button>
+              </form>
+            </details>
+            {% endif %}
+
+            {% if can_moderate %}
+            <details>
+              <summary>{{ layout.icon("folder")|safe }}<span><strong>{{ layout.t.t("topic.move_copy") }}</strong><small>{{ layout.t.t("topic.move_copy_hint") }}</small></span></summary>
+              <form method="post" action="/t/{{ id }}/move" class="stack">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><select name="to">{% for (nid, ntitle) in move_targets %}<option value="{{ nid }}">{{ ntitle }}</option>{% endfor %}</select><span class="bf-field-label">{{ layout.t.t("forum.move_to") }}</span></label>
+                <label class="check"><input type="checkbox" name="redirect" value="1"> {{ layout.t.t("topic.leave_link") }}</label>
+                <label class="bf-field"><input name="redirect_days" inputmode="numeric" placeholder="{{ layout.t.t("topic.always") }}"><span class="bf-field-label">{{ layout.t.t("topic.link_days") }}</span></label>
+                <button class="btn">{{ layout.t.t("topic.move") }}</button>
+              </form>
+              <form method="post" action="/t/{{ id }}/copy" class="stack">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input placeholder=" " name="title" value="{{ title }}" required><span class="bf-field-label">{{ layout.t.t("topic.copy_as") }}</span></label>
+                <label class="bf-field"><select name="to">{% for (nid, ntitle) in move_targets %}<option value="{{ nid }}">{{ ntitle }}</option>{% endfor %}</select><span class="bf-field-label">{{ layout.t.t("topic.copy_to") }}</span></label>
+                <button class="btn">{{ layout.t.t("topic.copy") }}</button>
+              </form>
+            </details>
+            <details>
+              <summary>{{ layout.icon("link")|safe }}<span><strong>{{ layout.t.t("topic.merge_split") }}</strong><small>{{ layout.t.t("topic.merge_split_hint") }}</small></span></summary>
+              <form method="post" action="/t/{{ id }}/merge" class="bf-manage-row">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input name="into" inputmode="numeric" placeholder=" " required><span class="bf-field-label">{{ layout.t.t("topic.merge_into") }}</span></label>
+                <button class="btn">{{ layout.t.t("topic.merge") }}</button>
+              </form>
+              <form method="post" action="/t/{{ id }}/split" class="stack" id="split-form">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input placeholder=" " name="title" required><span class="bf-field-label">{{ layout.t.t("topic.split_title") }}</span></label>
+                <p class="small muted">{{ layout.t.t("topic.split_hint") }}</p>
+                <button class="btn">{{ layout.t.t("topic.split") }}</button>
+              </form>
+            </details>
+            <details>
+              <summary>{{ layout.icon("clock")|safe }}<span><strong>{{ layout.t.t("topic.timing") }}</strong><small>{{ layout.t.t("topic.timing_hint") }}</small></span></summary>
+              <form method="post" action="/t/{{ id }}/timer" class="bf-manage-row">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field">
+                  <select name="action">
+                    <option value="close">{{ layout.t.t("timer.close") }}</option>
+                    <option value="open">{{ layout.t.t("timer.open") }}</option>
+                    <option value="bump">{{ layout.t.t("timer.bump") }}</option>
+                    <option value="delete">{{ layout.t.t("common.delete") }}</option>
+                    <option value="none">{{ layout.t.t("timer.clear") }}</option>
+                  </select>
+                  <span class="bf-field-label">{{ layout.t.t("timer.action") }}</span>
+                </label>
+                <label class="bf-field"><input placeholder=" " type="number" name="hours" min="1" value="24"><span class="bf-field-label">{{ layout.t.t("timer.after_hours") }}</span></label>
+                <span class="small muted">{{ layout.t.t("timer.hours") }}</span>
+                <button class="btn">{{ layout.t.t("timer.set") }}</button>
+              </form>
+              <form method="post" action="/t/{{ id }}/slow" class="bf-manage-row">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input placeholder=" " type="number" name="seconds" min="0" max="86400" value="0"><span class="bf-field-label">{{ layout.t.t("slow.seconds") }}</span></label>
+                <span class="small muted">{{ layout.t.t("slow.hint") }}</span>
+                <button class="btn">{{ layout.t.t("slow.set") }}</button>
+              </form>
+              <form method="post" action="/t/{{ id }}/pin" class="bf-manage-row">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input name="days" inputmode="numeric" placeholder=" "><span class="bf-field-label">{{ layout.t.t("topic.pin_days") }}</span></label>
+                <label class="check"><input type="checkbox" name="global" value="1"> {{ layout.t.t("topic.pin_global") }}</label>
+                <button class="btn">{{ layout.t.t("forum.bulk_pin") }}</button>
+              </form>
+              <form method="post" action="/t/{{ id }}/date" class="bf-manage-row">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input placeholder=" " type="date" name="date" required><span class="bf-field-label">{{ layout.t.t("topic.new_date") }}</span></label>
+                <button class="btn">{{ layout.t.t("topic.change_date") }}</button>
+              </form>
+            </details>
+            <details>
+              <summary>{{ layout.icon("users")|safe }}<span><strong>{{ layout.t.t("topic.people") }}</strong><small>{{ layout.t.t("topic.people_hint") }}</small></span></summary>
+              <form method="post" action="/t/{{ id }}/assign" class="bf-manage-row">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input name="username" placeholder=" "><span class="bf-field-label">{{ layout.t.t("topic.assign_who") }}</span></label>
+                <button class="btn">{{ layout.t.t("topic.assign") }}</button>
+              </form>
+              {% if layout.staff %}
+              <form method="post" action="/t/{{ id }}/author" class="bf-manage-row">
+                <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+                <label class="bf-field"><input name="username" placeholder=" " required><span class="bf-field-label">{{ layout.t.t("topic.author_to") }}</span></label>
+                <button class="btn">{{ layout.t.t("topic.change_author") }}</button>
+              </form>
+              {% endif %}
+            </details>
+            <details>
+              <summary>{{ layout.icon("bell")|safe }}<span><strong>{{ layout.t.t("topic.banner") }}</strong><small>{{ layout.t.t("topic.banner_hint") }}</small></span></summary>
+              <form method="post" action="/t/{{ id }}/banner"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.t("topic.make_banner") }}</button></form>
+            </details>
+            {% endif %}
+          </div>
+        </div>
+      </dialog>
+      {% endif %}
+    </div>
+  </div>
+</header>
+{{ layout.slot("topic_header")|safe }}
+
+{% if can_edit_layout %}{% include "_layout_edit.html" %}{% endif %}
+{% let area = "topic" %}
+{% include "_area_top.html" %}
+<div class="bf-topic-layout">
+  <div class="bf-topic-body">
+    {{ event_html|safe }}
+    {{ poll_html|safe }}
+    <div id="posts">
+      {% for p in posts %}{% include "_post.html" %}
+      {%- if p.number == 1 && layout.ai_summaries && highest > layout.ai_summary_min %}
+      <div class="bf-ai-summary" data-ai-summary-box>
+        <section class="bf-box bf-ai-panel" data-ai-panel hidden aria-live="polite"></section>
+        {% if layout.user.is_some() %}<button type="button" class="btn" data-ai-summary>{{ layout.icon("sparkles")|safe }} <span class="bf-btn-label">{{ layout.t.msg("Summarize") }}</span></button>{% endif %}
+      </div>
+      {% endif %}
+      {{ layout.ad_between(loop.index, posts.len())|safe }}{% endfor %}
+    </div>
+    {% include "_pager.html" %}
+
+    {% if can_reply %}
+    <form method="post" action="/t/{{ id }}/reply" class="panel composer" id="reply">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <input type="hidden" name="reply_to" value="">
+      <p class="small muted replying" hidden></p>
+      <textarea id="body" name="body" rows="6" required placeholder="{{ layout.t.t("post.reply") }}" aria-label="{{ layout.t.t("post.reply") }}"></textarea>
+      <span data-island="composer" data-props="{&quot;editorUrl&quot;:&quot;{{ layout.editor_url }}&quot;,&quot;draft&quot;:&quot;reply:{{ id }}&quot;}"></span>
+      {% if can_post_anonymously %}<label class="small"><input type="checkbox" name="anonymous" value="1"> {{ layout.t.t("topic.anonymous") }}</label>{% endif %}
+      <div class="composer-foot" data-composer-foot><button class="btn primary">{{ layout.t.t("topic.post_reply") }}</button></div>
+    </form>
+    {% else if locked %}
+    <p class="muted">{{ layout.t.t("topic.locked_note") }}</p>
+    {% else if layout.user.is_none() %}
+    <section class="bf-box bf-join">
+      <span class="bf-join-icon" aria-hidden="true">{{ layout.icon("reply")|safe }}</span>
+      <div class="bf-join-text">
+        <strong>{{ layout.t.msg("Join the discussion") }}</strong>
+        <p>{{ layout.t.msg("Log in or create an account to reply to this topic.") }}</p>
+      </div>
+      <div class="bf-join-actions">
+        <a class="btn primary" href="/login">{{ layout.t.t("nav.login") }}</a>
+        <a class="btn" href="/register">{{ layout.t.t("nav.register") }}</a>
+      </div>
+    </section>
+    {% endif %}
+    {% if can_moderate %}<span data-island="saved-replies" hidden></span>{% endif %}
+    {{ layout.slot("topic_after")|safe }}
+    {% include "_area_bottom.html" %}
+    {% if layout.ai_related %}
+    <section class="bf-box bf-related" data-ai-related hidden>
+      <div class="bf-box-head"><h2>{{ layout.icon("sparkles")|safe }} {{ layout.t.msg("Related topics") }}</h2></div>
+      <ul></ul>
+    </section>
+    {% endif %}
+  </div>
+
+  <aside class="bf-rail" aria-label="{{ layout.t.t("topic.progress") }}">
+    <div data-island="scrubber" data-props="{&quot;highest&quot;:{{ highest }},&quot;base&quot;:&quot;{{ base_url }}&quot;,&quot;id&quot;:{{ id }},&quot;first_at&quot;:&quot;{{ started.iso() }}&quot;,&quot;last_at&quot;:&quot;{{ last_ago.iso() }}&quot;,&quot;first&quot;:&quot;{{ first_month }}&quot;,&quot;last&quot;:&quot;{{ last_ago.text() }}&quot;}"></div>
+    <div class="bf-rail-links small">
+      <a href="/t/{{ id }}/summary">{{ layout.icon("star")|safe }} {{ layout.t.t("topic.top_replies") }}</a>
+      {%- if can_reply %} <a href="#reply" aria-label="{{ layout.t.t("post.reply") }}" data-tip="{{ layout.t.t("post.reply") }}">{{ layout.icon("reply")|safe }}</a>{% endif -%}
+    </div>
+    {% if editing_layout || !widgets.side.is_empty() %}
+    <div data-area="topic_side" data-area-label="{{ layout.t.t("layout.sidebar") }}">
+      {{- layout.ad_slot("sidebar")|safe }}
+      {%- for (id, title, html, kind) in widgets.side.iter() %}{% include "_widget.html" %}{% endfor -%}
+    </div>
+    {% endif %}
+  </aside>
+</div>
+{% if layout.ai_summaries || layout.ai_translate || layout.ai_related %}<span data-island="ai-topic" data-props="{&quot;id&quot;:{{ id }},&quot;summary&quot;:{{ layout.ai_summaries && highest > layout.ai_summary_min }},&quot;member&quot;:{{ layout.user.is_some() }},&quot;related&quot;:{{ layout.ai_related }},&quot;translate&quot;:{{ layout.ai_translate && layout.user.is_some() }},&quot;unread&quot;:true}" hidden></span>{% endif %}
+<span data-island="link-counts" data-props="{&quot;id&quot;:{{ id }}}" hidden></span>
+<span data-island="lightbox" hidden></span>
+{% if layout.user.is_some() %}<span data-island="infinite" data-props="{&quot;on&quot;:{{ layout.infinite }}}" hidden></span>{% endif %}
+<div class="bf-live-dock" data-island="live" data-props="{&quot;channel&quot;:&quot;item:{{ id }}&quot;}"></div>
+{% endblock %}

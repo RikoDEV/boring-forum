@@ -1,0 +1,60 @@
+[package]
+name = "bf-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+license = "AGPL-3.0-only"
+
+# Its own workspace: cargo-fuzz builds with nightly and sanitizer flags that must not apply to
+# the main workspace, and the main workspace's `members = ["crates/*"]` does not pick this up.
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+bf-cook = { path = "../crates/bf-cook" }
+bf-core = { path = "../crates/bf-core" }
+
+[[bin]]
+name = "cook"
+path = "fuzz_targets/cook.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sanitize"
+path = "fuzz_targets/sanitize.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "bbcode"
+path = "fuzz_targets/bbcode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "search_query"
+path = "fuzz_targets/search_query.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "hidden"
+path = "fuzz_targets/hidden.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "redact"
+path = "fuzz_targets/redact.rs"
+test = false
+doc = false
+bench = false

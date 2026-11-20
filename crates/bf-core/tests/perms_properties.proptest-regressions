@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 9147fb51f644835fbb39dff64b3e9bd3697587d53d35ad9b80e6e7f71c13ecbb # shrinks to mut actor = Actor { user_id: Some(1), groups: [1], is_admin: false, silenced: false, moderated_nodes: [] }, node = 1, grants = {1: Perms(41)}
+cc 75602f1ff5c264d815926919df1dbc7756c2ef2a5d70e05e6138aa4469b675c3 # shrinks to actor = Actor { denied: Denials { actions: [], nodes: {} }, user_id: None, groups: [GroupId(4)], is_admin: false, silenced: false, moderated_nodes: [] }, node = ForumId(1), grants = {GroupId(4): Perms(67)}

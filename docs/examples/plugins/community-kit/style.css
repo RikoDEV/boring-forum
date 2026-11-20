@@ -1,0 +1,22 @@
+/* Logical properties only (inline-start, not left), so the Arabic page mirrors by itself. */
+.plug-kit-spoiler {
+  background: currentColor;
+  border-radius: 0.2em;
+  padding-inline: 0.25em;
+  cursor: pointer;
+}
+.plug-kit-spoiler:hover { background: transparent; }
+.kit-footer { margin-block-start: 0.5rem; }
+.kit-footer::before {
+  content: url(assets/leaf.svg);
+  display: inline-block;
+  inline-size: 1rem;
+  margin-inline-end: 0.4rem;
+  vertical-align: middle;
+}
+.kit-panel dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
+.plug-kit-shout { letter-spacing: 0.05em; }
+.kit-header { padding: 0.75rem; margin-block-end: 0.75rem; border: 1px solid var(--bf-color-border, currentColor); border-radius: var(--bf-radius, 0.5rem); }
+.kit-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.kit-chips li { padding: 0.15rem 0.6rem; border: 1px solid currentColor; border-radius: 999px; opacity: 0.85; }
+.kit-note { margin-block: 0.5rem; }

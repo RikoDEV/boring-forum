@@ -1,0 +1,63 @@
+# cargo-deny: advisories, licences, banned crates and sources.
+# `cargo deny check` runs in .github/workflows/security.yml.
+
+[graph]
+all-features = true
+
+[advisories]
+# Every RustSec advisory fails the check, including unmaintained and yanked crates. An accepted
+# advisory goes in `ignore` with the reason and a date to look at it again.
+version = 2
+yanked = "deny"
+ignore = [
+    # "Unmaintained" notices for build-time or transitive crates with no known vulnerability.
+    # Review again by 2027-05-01, or sooner if the parent crate replaces them.
+    { id = "RUSTSEC-2026-0374", reason = "basic-toml: askama_derive reads its config at compile time only" },
+    { id = "RUSTSEC-2025-0141", reason = "bincode 1: syntect's bundled syntax dumps, trusted input compiled in" },
+    { id = "RUSTSEC-2024-0436", reason = "paste: proc-macro inside rav1e (AVIF encoding), no runtime code" },
+    # No fixed release exists. The `rsa` crate here only signs our own outbound ActivityPub requests
+    # and verifies remote ones: no RSA decryption, and no endpoint lets a client time a private-key
+    # operation on input it chose. Review again by 2027-05-01, or when a fixed release appears.
+    { id = "RUSTSEC-2023-0071", reason = "rsa Marvin timing: signing own outbound requests only, no decryption oracle" },
+]
+
+[licenses]
+version = 2
+# The project is AGPL-3.0-only, so anything compatible with it may be linked.
+allow = [
+    "AGPL-3.0-only",
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "CC0-1.0",
+    "MPL-2.0",
+    "BSL-1.0",
+    "CDLA-Permissive-2.0",
+    "0BSD",
+    "OpenSSL",
+    "NCSA",
+]
+confidence-threshold = 0.9
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# Workspace path dependencies have no version; that is not a wildcard.
+allow-wildcard-paths = true
+deny = [
+    # OpenSSL is never linked: TLS is rustls everywhere (static musl build).
+    { name = "openssl-sys" },
+    { name = "native-tls" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

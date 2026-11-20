@@ -1,0 +1,251 @@
+# Automated security testing.
+#
+# Separate from ci.yml so a slow or flaky external scanner cannot block ordinary pull requests,
+# and so the fuzzing and DAST jobs can run on a schedule as well as on changes. The fast,
+# deterministic jobs (semgrep, the XSS corpus, the permission and IDOR suites) do gate pull
+# requests, because they are this project's own rules rather than a third-party scan.
+
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Nightly, so the fuzzers and the scanners keep running even in a quiet week.
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  # --- Supply chain: gates every PR --------------------------------------------
+  supply-chain:
+    name: cargo-deny, cargo-audit, cargo-vet, osv-scanner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Advisories, licences, bans, sources (deny.toml)
+        uses: EmbarkStudios/cargo-deny-action@70f81531115945ba6eb6b941ec9d39d063438eb9 # v2.1.2
+        with: { command: check, arguments: --all-features }
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with: { tool: "cargo-audit,cargo-vet" }
+      - name: RustSec audit of Cargo.lock
+        # The same ignores as deny.toml, so the two tools cannot disagree about what is accepted.
+        run: |
+          ignores=$(grep -oE 'RUSTSEC-[0-9]{4}-[0-9]{4}' deny.toml | sed 's/^/--ignore /' | tr '
+' ' ')
+          cargo audit --deny warnings $ignores
+      - name: Every dependency audited or exempted (supply-chain/)
+        run: cargo vet --locked
+      - name: Front-end dependencies (pnpm-lock.yaml)
+        uses: google/osv-scanner-action/osv-scanner-action@32d3cd482bdadfb38b186c0ad1b031902d55d932 # v2.7.1
+        with:
+          scan-args: |-
+            --lockfile=web/pnpm-lock.yaml
+            --lockfile=tools/devdb/pnpm-lock.yaml
+            --lockfile=tests/e2e/package-lock.json
+
+  # --- This project's own rules: fast, deterministic, gates every PR -----------------------
+  semgrep:
+    name: semgrep (our own patterns)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: returntocorp/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
+        with:
+          config: .semgrep.yml
+        env:
+          # Fail the job on any finding; a false positive is silenced in the rule or with a
+          # `nosemgrep` comment that says why, never by lowering the severity.
+          SEMGREP_RULES: .semgrep.yml
+
+  grep-rules:
+    name: CI greps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: No SQL built with format!
+        # "A CI grep rejects format! used to build SQL." Kept alongside the semgrep rule
+        # so the check still runs if semgrep is unavailable.
+        run: |
+          if grep -rnE 'sqlx::query(_as|_scalar)?\(&?format!' crates --include='*.rs'; then
+            echo "::error::SQL built with format! -- use bind parameters"
+            exit 1
+          fi
+      - name: No new unexplained AssertSqlSafe
+        # A ratchet against a committed baseline: the 38 uses that predate the rule are recorded
+        # as debt, and a new one fails the build. See the script's header.
+        run: bash scripts/assert-sql-safe-baseline.sh
+      - name: unsafe_code is forbidden workspace-wide
+        run: |
+          grep -q 'unsafe_code = "forbid"' Cargo.toml || {
+            echo "::error::the workspace lint table no longer forbids unsafe_code"
+            exit 1
+          }
+          for f in crates/*/Cargo.toml; do
+            grep -qA1 '^\[lints\]' "$f" || { echo "::error::$f does not inherit workspace lints"; exit 1; }
+          done
+
+  xss-and-permissions:
+    name: XSS corpus, permission properties
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - name: XSS corpus against the cook pipeline
+        run: cargo test -p bf-cook --test xss_corpus
+      - name: Permission property tests
+        run: cargo test -p bf-core --test perms_properties
+      - name: Log redaction and field encryption
+        run: "cargo test -p bf-core --lib -- log:: secretbox::"
+
+  idor:
+    name: IDOR suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26 }
+      - name: Every endpoint refuses another member's ids
+        # test.sh passes its argument to vitest as a path filter, so this runs idor.test.ts only.
+        run: bash scripts/test.sh idor
+
+  # --- Fuzzing: a short budget per PR, a long one nightly ---------------------------------
+  fuzz:
+    name: fuzz ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [cook, sanitize, bbcode, search_query, hidden, redact]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: nightly }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with: { workspaces: "fuzz" }
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz --locked
+      # Keeping the corpus between runs means each run continues where the last stopped rather
+      # than rediscovering the same shallow inputs every time.
+      - name: Restore corpus
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: fuzz/corpus/${{ matrix.target }}
+          key: fuzz-corpus-${{ matrix.target }}-${{ github.run_id }}
+          restore-keys: fuzz-corpus-${{ matrix.target }}-
+      - name: Fuzz
+        # 60 seconds on a pull request to catch an obvious regression; 15 minutes on the nightly
+        # run, where finding something new is the point.
+        run: |
+          budget=60
+          [ "${{ github.event_name }}" = "schedule" ] && budget=900
+          cargo fuzz run ${{ matrix.target }} -- -max_total_time=$budget
+        working-directory: .
+      - name: Upload any crash
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fuzz-artifacts-${{ matrix.target }}
+          path: fuzz/artifacts/${{ matrix.target }}
+          if-no-files-found: ignore
+
+  # --- Third-party analysis ---------------------------------------------------------------
+  codeql:
+    name: CodeQL (TypeScript)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          languages: javascript-typescript
+          # The islands and the admin SPA are ours; built output and dependencies are not.
+          config: |
+            paths:
+              - web/islands/src
+              - web/admin/src
+              - web/api/src
+              - tests/e2e
+            paths-ignore:
+              - "**/node_modules"
+              - "**/dist"
+              - "**/build"
+              - "**/.svelte-kit"
+      - uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+
+  zap:
+    name: ZAP baseline (DAST)
+    # Only on main and on the nightly run: it needs a built server and a seeded database, and a
+    # passive scan of a freshly seeded forum tells a pull request little that the static checks
+    # have not already said.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: forum
+          POSTGRES_PASSWORD: forum
+          POSTGRES_DB: forum
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 2s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with: { package_json_file: web/package.json, version: 11 }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - name: Build the front end
+        run: pnpm install --frozen-lockfile && pnpm --filter @bf/islands build && pnpm --filter @bf/admin build
+        working-directory: web
+      - name: Build the server
+        run: cargo build --release -p bf-server --bin boring-forum
+      - name: Start it with a seeded forum
+        env:
+          BF_DATABASE_URL: postgres://forum:forum@127.0.0.1:5432/forum
+          BF_BIND: 127.0.0.1:8080
+          BF_BASE_URL: http://127.0.0.1:8080
+          BF_SECRET_KEY: ${{ secrets.BF_TEST_SECRET_KEY || 'BdQhL1ZB9PJ3YLYOqBsBLQvJx8kqNwgJ1w3fqkqkRnQ' }}
+        run: |
+          set -e
+          ./target/release/boring-forum &
+          server_pid=$!
+          healthy=0
+          for i in $(seq 1 120); do
+            if curl -sf http://127.0.0.1:8080/readyz; then healthy=1; break; fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then break; fi
+            sleep 1
+          done
+          if [ "$healthy" -ne 1 ]; then
+            echo "::error::boring-forum did not become healthy on /readyz"
+            exit 1
+          fi
+          # The first account is the admin, so the seed can create forums and content to scan.
+          BF_URL=http://127.0.0.1:8080 node tools/seed-dev.mjs register
+          BF_URL=http://127.0.0.1:8080 node tools/seed-dev.mjs content
+      - name: ZAP baseline scan
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+        with:
+          target: http://127.0.0.1:8080
+          # Documented, accepted findings live in the rules file rather than being re-triaged
+          # on every run. Anything not listed there fails the job.
+          rules_file_name: .github/zap-rules.tsv
+          fail_action: true
+          cmd_options: "-a"

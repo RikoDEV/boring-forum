@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE api_idempotency SET completed = true, status = $2, content_type = $3, body = $4 WHERE key_digest = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int2",
+        "Text",
+        "Bytea"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e49a9e97d1038b42891c2ceb1173cc0d25b9235ddff8bc57443114c408c8cc80"
+}

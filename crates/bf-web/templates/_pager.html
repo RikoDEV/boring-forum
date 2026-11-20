@@ -1,0 +1,16 @@
+{#- The numbered pager of a topic and of search results: `prev_url`, `next_url` and `pages` (number, address, current; number 0 is a gap). -#}
+{% if pages.len() > 1 || prev_url.is_some() || next_url.is_some() %}
+<nav class="pager" aria-label="{{ layout.t.t("pager.pages") }}">
+  {%- if let Some(u) = prev_url %}<a class="bf-step" rel="prev" href="{{ u }}" aria-label="{{ layout.t.msg("Previous") }}">{{ layout.icon("chevron-right")|safe }}<span>{{ layout.t.msg("Previous") }}</span></a>
+  {%- else %}<span class="bf-step is-off" aria-hidden="true">{{ layout.icon("chevron-right")|safe }}<span>{{ layout.t.msg("Previous") }}</span></span>{% endif %}
+  <ol class="bf-pages">
+    {%- for (n, u, cur) in pages %}
+    {%- if *n == 0 %}<li class="gap" aria-hidden="true">…</li>
+    {%- else if *cur %}<li><span class="current" aria-current="page">{{ n }}</span></li>
+    {%- else %}<li><a href="{{ u }}" aria-label="{{ layout.t.f("pager.page", [("n", n.to_string().as_str())]) }}">{{ n }}</a></li>{% endif %}
+    {%- endfor %}
+  </ol>
+  {%- if let Some(u) = next_url %}<a class="bf-step" rel="next" href="{{ u }}" aria-label="{{ layout.t.msg("Next") }}"><span>{{ layout.t.msg("Next") }}</span>{{ layout.icon("chevron-right")|safe }}</a>
+  {%- else %}<span class="bf-step is-off" aria-hidden="true"><span>{{ layout.t.msg("Next") }}</span>{{ layout.icon("chevron-right")|safe }}</span>{% endif %}
+</nav>
+{% endif %}

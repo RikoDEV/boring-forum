@@ -1,0 +1,10 @@
+/* Logical properties only, so the Arabic page mirrors by itself. */
+.notes-list { display: grid; gap: 1rem; margin-block-start: 1rem; }
+.notes-card h2 { margin-block: 0 0.25rem; }
+.notes-meta { color: var(--text-muted, inherit); font-size: 0.875rem; }
+.notes-body p { margin-block: 0 1em; }
+.notes-form { display: grid; gap: 0.75rem; max-inline-size: 40rem; }
+.notes-form label { display: grid; gap: 0.25rem; }
+.notes-form input, .notes-form textarea { inline-size: 100%; }
+.notes-error { color: var(--danger, #b00020); }
+.notes-pager { display: flex; gap: 1rem; margin-block-start: 1rem; }

@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{#- A new member's first steps, and where to go next. -#}
+{% block content %}
+<div class="bf-wel">
+  <header class="bf-wel-hero">
+    <div class="bf-wel-hero-text">
+      <p class="bf-wel-eyebrow">{{ layout.t.t("settings.getting_started") }}</p>
+      <h1>{% if done == total %}{{ layout.t.f("welcome.all_set", [("name", name.as_str())]) }}{% else %}{{ layout.t.f("welcome.title", [("name", name.as_str())]) }}{% endif %}</h1>
+      <p class="bf-wel-lead">{% if done == total %}{{ layout.t.t("welcome.lead_done") }}{% else %}{{ layout.t.t("welcome.lead") }}{% endif %}</p>
+    </div>
+    <div class="bf-wel-progress">
+      <p class="bf-wel-count">{{ layout.t.f("welcome.progress", [("done", done.to_string().as_str()), ("total", total.to_string().as_str())]) }}</p>
+      <div class="bf-wel-bar" aria-hidden="true">{% for s in steps %}<span{% if s.done %} class="is-done"{% endif %}></span>{% endfor %}</div>
+    </div>
+  </header>
+
+  <h2 class="visually-hidden">{{ layout.t.t("welcome.steps") }}</h2>
+  <ol class="bf-wel-steps">
+    {% for s in steps %}
+    <li class="bf-wel-step{% if s.done %} is-done{% else if s.next %} is-next{% endif %}">
+      <span class="bf-wel-step-icon" aria-hidden="true">{% if s.done %}{{ layout.icon("circle-check")|safe }}{% else %}{{ layout.icon(s.icon)|safe }}{% endif %}</span>
+      <div class="bf-wel-step-text">
+        <h3>{{ layout.t.msg(s.title) }}{% if s.done %}<span class="visually-hidden"> {{ layout.t.t("welcome.done") }}</span>{% endif %}</h3>
+        <p>{{ layout.t.msg(s.text) }}</p>
+      </div>
+      {% if s.done %}<a class="bf-wel-step-again" href="{{ s.url }}">{{ layout.t.t("welcome.review") }}</a>{% else %}<a class="btn{% if s.next %} primary{% endif %}" href="{{ s.url }}">{{ layout.t.msg(s.action) }}</a>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+
+  <h2 class="bf-wel-more-title">{{ layout.t.t("welcome.more") }}</h2>
+  <div class="bf-wel-more">
+    {% for (icon, key, url) in [("folder", "browse", "/"), ("search", "search", "/search"), ("users", "members", "/members"), ("bell", "notifications", "/settings#s-notifications"), ("palette", "yours", "/settings#s-interface"), ("shield", "protect", "/settings#s-two-factor-authentication")] %}
+    <a class="bf-wel-card" href="{{ url }}"><span class="bf-wel-card-icon" aria-hidden="true">{{ layout.icon(icon)|safe }}</span><span><strong>{{ layout.t.tj("welcome.card_title.", key) }}</strong><span class="bf-wel-card-text">{{ layout.t.tj("welcome.card_text.", key) }}</span></span></a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

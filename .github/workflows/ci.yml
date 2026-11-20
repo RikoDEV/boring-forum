@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with: { package_json_file: web/package.json, version: 11 }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+        working-directory: web
+      - run: pnpm --filter @bf/islands build && pnpm --filter @bf/admin build
+        working-directory: web
+      - name: Asset size budgets
+        run: node scripts/size-check.mjs
+        working-directory: web
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with: { name: islands, path: web/islands/dist }
+
+  rust:
+    needs: web
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env: { POSTGRES_USER: forum, POSTGRES_PASSWORD: forum, POSTGRES_DB: forum }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U forum" --health-interval 2s --health-retries 30
+    env:
+      BF_DATABASE_URL: postgres://forum:forum@localhost:5432/forum
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: islands, path: web/islands/dist }
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1", components: "rustfmt, clippy" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - name: Migrations apply cleanly
+        run: cargo test -p bf-db -- --ignored
+      - name: Least-privilege roles (deploy/postgres/roles.sql)
+        # The app role must be able to serve the schema but not change it, and the migration
+        # role must be enough to apply it again.
+        env:
+          PGPASSWORD: forum
+        run: |
+          psql -h localhost -U forum -d forum -v ON_ERROR_STOP=1 \
+            -v app_password="'app'" -v migrate_password="'migrate'" -v readonly_password="'readonly'" \
+            -f deploy/postgres/roles.sql
+          PGPASSWORD=app psql -h localhost -U forum_app -d forum -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM users"
+          if PGPASSWORD=app psql -h localhost -U forum_app -d forum -c "DROP TABLE users"; then
+            echo "forum_app could drop a table"; exit 1
+          fi
+          BF_DATABASE_URL=postgres://forum_migrate:migrate@localhost:5432/forum \
+            cargo test -p bf-db -- --ignored migrations_are_idempotent
+      - name: Benchmark budgets
+        run: cargo run --release -p bf-bench
+
+  e2e:
+    needs: web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: islands, path: web/islands/dist }
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26 }
+      - name: End-to-end checks on Postgres in memory
+        # No argument: test.sh passes one straight to vitest as a path filter, and paths are
+        # relative to tests/e2e, so "e2e" matched no spec file and the step ran nothing.
+        run: bash scripts/test.sh
+      - name: At most 3 SQL statements per page
+        run: |
+          docker compose -f deploy/compose.yml up -d --wait db
+          cargo build -p bf-server --bin boring-forum
+          bash scripts/query-count.sh
+
+  openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with: { package_json_file: web/package.json, version: 11 }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26 }
+      - run: pnpm install --frozen-lockfile && pnpm openapi
+        working-directory: web
+      - name: Generated TS client is up to date
+        run: git diff --exit-code web/api/src/schema.d.ts

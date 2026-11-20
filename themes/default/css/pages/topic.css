@@ -1,0 +1,1498 @@
+/* Topic view: posts, timeline rail, reactions, link previews, topic tools and summaries. */
+
+/* Topic view */
+
+.follow select {
+  margin-inline: var(--bf-space-1);
+}
+
+.post {
+  display: grid;
+  grid-template-columns: var(--bf-author-width) minmax(0, 1fr);
+  padding: 0;
+  margin-block-end: var(--bf-space-3);
+
+  & > details {
+    grid-column: 1 / -1;
+    padding: var(--bf-space-3) var(--bf-space-4);
+  }
+
+  & > details .bf-author {
+    display: none;
+  }
+
+  & > details .bf-post-compact {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bf-space-2);
+  }
+}
+
+.bf-author {
+  padding: var(--bf-space-4);
+  border-inline-end: 1px solid var(--bf-color-border);
+  font-size: var(--bf-text-sm);
+  text-align: center;
+  overflow-wrap: anywhere;
+
+  & .avatar {
+    display: block;
+    margin: 0 auto var(--bf-space-2);
+  }
+}
+
+.bf-author-name {
+  display: block;
+  margin-block-end: var(--bf-space-2);
+  font-size: var(--bf-text-lg);
+  font-weight: 650;
+
+  & a {
+    color: var(--bf-color-text);
+  }
+}
+
+.bf-author-group {
+  margin-block-start: var(--bf-space-2);
+  font-weight: 600;
+  color: var(--bf-color-accent);
+}
+
+.bf-author-facts {
+  margin-block-start: var(--bf-space-2);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.bf-post-main {
+  min-width: 0;
+  padding: var(--bf-space-3) var(--bf-space-5) var(--bf-space-2);
+  display: flex;
+  flex-direction: column;
+}
+
+.post-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1) var(--bf-space-2);
+  align-items: center;
+  margin-block-end: var(--bf-space-2);
+  color: var(--bf-color-muted);
+
+  & a {
+    color: inherit;
+  }
+}
+
+.bf-post-compact {
+  display: none;
+}
+
+.bf-actions-gap {
+  flex: 1;
+}
+
+.bf-post-end {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  margin-inline-start: auto;
+}
+
+.bf-group-pill {
+  padding: 2px var(--bf-space-3);
+  border-radius: 999px;
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+  font-size: var(--bf-text-xs);
+  font-weight: 500;
+}
+
+.reply-to {
+  margin: 0 0 var(--bf-space-2);
+}
+
+.bf-post-main > .cooked {
+  flex: 1;
+}
+
+.signature {
+  margin-block-start: var(--bf-space-3);
+  padding-block-start: var(--bf-space-2);
+  border-block-start: 1px solid var(--bf-color-border);
+}
+
+.likes {
+  margin-block-start: var(--bf-space-2);
+  color: var(--bf-color-muted);
+
+  & .link {
+    color: inherit;
+  }
+
+  & .link.liked {
+    color: var(--bf-color-danger);
+    font-weight: 650;
+  }
+}
+
+.post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--bf-space-1);
+  margin-block-start: var(--bf-space-2);
+
+  & > a,
+  & > .link,
+  & > form > .link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bf-space-1);
+    padding: var(--bf-space-1) var(--bf-space-2);
+    border-radius: var(--bf-radius-input);
+    color: var(--bf-color-muted);
+  }
+
+  & > a:hover,
+  & > .link:hover,
+  & > form > .link:hover {
+    background: var(--bf-color-surface-2);
+    color: var(--bf-color-text);
+    text-decoration: none;
+  }
+}
+
+.report {
+  display: block;
+
+  & summary {
+    list-style: none;
+    cursor: pointer;
+  }
+}
+
+.post:target,
+.action-entry:target {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+
+.action-entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--bf-space-1) var(--bf-space-5);
+  margin-block: var(--bf-space-4);
+  padding-inline: var(--bf-space-5);
+  font-size: var(--bf-text-list);
+  font-weight: 600;
+
+  & time {
+    font-size: var(--bf-text-sm);
+  }
+
+  & a {
+    color: inherit;
+  }
+}
+
+.quote-float {
+  position: absolute;
+  z-index: 20;
+}
+
+@media (width <= 980px) {
+  .post {
+    display: block;
+  }
+
+  .bf-author {
+    display: none;
+  }
+
+  .bf-post-compact {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bf-space-2);
+  }
+
+  .bf-post-main {
+    padding: var(--bf-space-3) var(--bf-space-4) var(--bf-space-2);
+  }
+}
+
+@media (width <= 640px) {
+  .post-actions {
+    justify-content: space-between;
+    border-block-start: 1px solid var(--bf-color-border);
+    padding-block-start: var(--bf-space-1);
+  }
+}
+
+.back-place {
+  display: flex;
+  justify-content: center;
+  width: fit-content;
+  margin-block: 0 var(--bf-space-3);
+}
+
+/* Topic layout and timeline rail */
+
+.bf-topic-layout {
+  display: block;
+}
+
+.bf-topic-body {
+  min-width: 0;
+}
+
+.bf-rail {
+  position: sticky;
+  inset-block-end: var(--bf-space-2);
+  z-index: 5;
+}
+
+.bf-rail-links {
+  display: none;
+}
+
+/* The live-update bar waits above the bottom rail, not on top of it. */
+@media (width < 1200px) {
+  .bf-topic-layout ~ .bf-live-dock {
+    inset-block-end: calc(var(--bf-space-2) * 2 + 3rem);
+  }
+}
+
+/* The rail is a bar along the bottom on small screens, with no room for blocks. */
+
+.bf-rail [data-area] {
+  display: none;
+  margin-block-start: var(--bf-space-4);
+}
+
+.bf-grid-main {
+  min-width: 0;
+}
+
+.scrubber {
+  display: flex;
+  gap: var(--bf-space-2);
+  align-items: center;
+  margin-block: var(--bf-space-2);
+  padding: var(--bf-space-1) var(--bf-space-2);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  font-size: var(--bf-text-sm);
+  font-variant-numeric: tabular-nums;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.scrub-end {
+  display: inline-block;
+  flex: none;
+  padding: 2px var(--bf-space-2);
+  border-radius: 999px;
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  white-space: nowrap;
+}
+
+.scrub-track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 2.75rem;
+  border-block-end: 3px solid var(--bf-color-border);
+
+  & input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: grab;
+  }
+}
+
+.scrub-handle {
+  position: absolute;
+  inset-block: 0 -3px;
+  inset-inline-start: calc(var(--p, 0) * (100% - 5.5rem));
+  width: 5.5rem;
+  padding: 2px var(--bf-space-2);
+  border-block-end: 3px solid var(--bf-color-accent);
+  border-radius: var(--bf-radius) var(--bf-radius) 0 0;
+  background: var(--bf-color-surface-2);
+  pointer-events: none;
+
+  & strong,
+  & small {
+    display: block;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  & small {
+    color: var(--bf-color-muted);
+  }
+}
+
+.scrub-track input:focus-visible + .scrub-handle {
+  outline: 2px solid var(--bf-color-focus);
+}
+
+@media (width <= 359px) {
+  .scrub-end {
+    display: none;
+  }
+}
+
+@media (width >= 1200px) {
+  .bf-topic-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 11rem;
+    gap: var(--bf-space-5);
+    align-items: start;
+  }
+
+  .bf-rail {
+    inset-block: calc(var(--bf-header-height) + var(--bf-space-3)) auto;
+
+    & [data-area] {
+      display: block;
+    }
+  }
+
+  .bf-rail-links {
+    display: flex;
+    align-items: center;
+    gap: var(--bf-space-3);
+    margin-block-start: var(--bf-space-3);
+
+    & a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--bf-space-1);
+      color: var(--bf-color-muted);
+    }
+  }
+
+  .scrubber {
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+  }
+
+  .scrub-track {
+    height: 16rem;
+    margin-block: var(--bf-space-2);
+    border-block-end: 0;
+    border-inline-start: 3px solid var(--bf-color-border);
+
+    & input {
+      writing-mode: vertical-lr;
+      direction: ltr;
+    }
+  }
+
+  .scrub-handle {
+    inset-block: calc(var(--p, 0) * (100% - 3.25rem)) auto;
+    inset-inline: -3px 0;
+    width: auto;
+    height: 3.25rem;
+    padding: var(--bf-space-1) var(--bf-space-3);
+    border-block-end: 0;
+    border-inline-start: 3px solid var(--bf-color-accent);
+    border-radius: 0 var(--bf-radius) var(--bf-radius) 0;
+  }
+}
+
+/* Post reactions */
+
+.bf-react-pills {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.post-actions > .bf-react-pills:hover {
+  background: none;
+}
+
+.bf-react-pills:hover .bf-react-pill {
+  border-color: var(--bf-color-accent);
+}
+
+.bf-react-pill {
+  padding: 1px var(--bf-space-2);
+  border: 1px solid var(--bf-color-border);
+  border-radius: 999px;
+  color: var(--bf-color-text);
+  font-size: var(--bf-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.bf-react-pill.is-mine {
+  border-color: var(--bf-color-accent);
+  background: var(--bf-color-accent-soft);
+}
+
+.bf-react {
+  position: relative;
+  display: inline-flex;
+
+  & form {
+    margin: 0;
+  }
+}
+
+.bf-react-main {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--bf-space-1) var(--bf-space-2) !important;
+  border-radius: var(--bf-radius-input);
+  color: var(--bf-color-muted) !important;
+
+  &:hover {
+    background: var(--bf-color-surface-2) !important;
+    color: var(--bf-color-danger) !important;
+    text-decoration: none !important;
+  }
+}
+
+.bf-react-main.liked {
+  color: var(--bf-color-danger) !important;
+
+  & svg {
+    fill: currentColor;
+  }
+}
+
+.bf-react-pop {
+  position: absolute;
+  z-index: 15;
+  inset-block-end: 100%;
+  inset-inline-end: 0;
+  display: none;
+  gap: 2px;
+  padding: var(--bf-space-1);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: 999px;
+  box-shadow: var(--bf-shadow-menu);
+}
+
+.bf-react-pop::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  height: 0.5rem;
+}
+
+.bf-react:hover .bf-react-pop,
+.bf-react:focus-within .bf-react-pop {
+  display: flex;
+}
+
+/* Plugins add reactions: on a phone the picker wraps instead of running off the screen. */
+@media (max-width: 30rem) {
+  .bf-react-pop {
+    flex-wrap: wrap;
+    inline-size: max-content;
+    max-inline-size: 9rem;
+    border-radius: var(--bf-radius);
+  }
+}
+
+/* A post's "More" menu is as wide as its longest item and hangs from a button that can sit
+   anywhere in the row: on a phone that put it past the screen edge. It opens as a sheet at the
+   bottom of the screen instead. */
+@media (max-width: 30rem) {
+  .post-actions .bf-menu {
+    position: static;
+  }
+
+  .post-actions .bf-menu-body {
+    position: fixed;
+    inset-inline: var(--bf-space-3);
+    inset-block: auto var(--bf-space-3);
+    min-width: 0;
+    max-width: none;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
+
+.bf-react-pop {
+  & button {
+    display: block;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform var(--bf-motion);
+  }
+
+  & button:hover,
+  & button:focus-visible {
+    transform: scale(1.25);
+    background: var(--bf-color-surface-2);
+  }
+
+  & button[aria-pressed="true"] {
+    background: var(--bf-color-accent-soft);
+  }
+}
+
+/* Topic heading */
+
+.bf-topic-head {
+  overflow: visible;
+}
+
+.bf-topic-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1);
+  margin-block-start: var(--bf-space-2);
+}
+
+.bf-menu-body .bf-follow-menu {
+  min-width: 0;
+}
+
+/* Manage topic */
+
+/* The shared .bf-dialog (islands dialog.js), a little wider than the default. */
+.bf-manage {
+  --bf-dialog-width: 38rem;
+}
+
+.bf-manage-quick {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin: 0;
+
+  & > input {
+    width: 100%;
+  }
+}
+
+.bf-manage-toggles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  gap: var(--bf-space-2);
+}
+
+.bf-toggle {
+  display: grid;
+  justify-items: center;
+  gap: var(--bf-space-1);
+  padding: var(--bf-space-3) var(--bf-space-1);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  background: none;
+  color: var(--bf-color-text);
+  font: inherit;
+  font-size: var(--bf-text-sm);
+  cursor: pointer;
+
+  & .bf-icon {
+    font-size: 1.25rem;
+    color: var(--bf-color-muted);
+  }
+
+  &:hover {
+    background: var(--bf-color-surface-2);
+  }
+
+  &[aria-pressed="true"] {
+    border-color: var(--bf-color-accent);
+    background: var(--bf-color-accent-soft);
+    color: var(--bf-color-accent);
+  }
+
+  &[aria-pressed="true"] .bf-icon {
+    color: inherit;
+  }
+}
+
+.bf-manage-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+
+  & form {
+    margin: 0;
+  }
+}
+
+.bf-manage-groups {
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+
+  & > details + details {
+    border-block-start: 1px solid var(--bf-color-border);
+  }
+
+  & summary {
+    display: flex;
+    align-items: center;
+    gap: var(--bf-space-3);
+    padding: var(--bf-space-2) var(--bf-space-3);
+    list-style: none;
+    cursor: pointer;
+  }
+}
+
+.bf-manage-groups summary::-webkit-details-marker {
+  display: none;
+}
+
+.bf-manage-groups {
+  & summary:hover {
+    background: var(--bf-color-surface-2);
+  }
+
+  & summary > .bf-icon {
+    font-size: 1.125rem;
+    color: var(--bf-color-muted);
+  }
+
+  & summary strong {
+    display: block;
+    font-size: var(--bf-text-list);
+  }
+
+  & summary small {
+    color: var(--bf-color-muted);
+    font-size: var(--bf-text-sm);
+  }
+
+  & details > form {
+    margin: 0;
+    padding: var(--bf-space-2) var(--bf-space-3) var(--bf-space-3);
+  }
+}
+
+.bf-manage-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2);
+
+  & input:not([type="checkbox"]),
+  & select {
+    flex: 1 1 7rem;
+    min-width: 0;
+  }
+
+  & .btn {
+    flex: none;
+  }
+}
+
+/* Link previews */
+
+.bf-onebox {
+  display: flex;
+  gap: var(--bf-space-3);
+  max-width: 38rem;
+  overflow: hidden;
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-text);
+
+  &:hover {
+    border-color: var(--bf-color-accent);
+    color: var(--bf-color-text);
+    text-decoration: none;
+  }
+
+  & img {
+    flex: none;
+    width: 7.5rem;
+    height: 7.5rem;
+    margin: 0;
+    border-radius: 0;
+    object-fit: cover;
+  }
+}
+
+.bf-onebox-text {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--bf-space-3);
+
+  & small {
+    color: var(--bf-color-muted);
+    font-size: var(--bf-text-xs);
+  }
+
+  & > span {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--bf-color-muted);
+    font-size: var(--bf-text-sm);
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
+
+/* Reply selection bar */
+
+.bf-select-below {
+  display: none;
+}
+
+.post:hover .bf-select-below,
+.post.is-selected .bf-select-below,
+.bf-select-below:focus-visible {
+  display: inline;
+}
+
+.post.is-selected {
+  border-color: var(--bf-color-accent);
+  box-shadow: 0 0 0 1px var(--bf-color-accent);
+}
+
+.bf-select-bar {
+  position: fixed;
+  z-index: 28;
+  inset-block-end: var(--bf-space-4);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-2) var(--bf-space-3);
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  padding: var(--bf-space-2) var(--bf-space-3);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+  font-size: var(--bf-text-list);
+
+  &:dir(rtl) {
+    transform: translateX(50%);
+  }
+
+  &[hidden] {
+    display: none;
+  }
+
+  & input {
+    width: 14rem;
+    max-width: 100%;
+  }
+}
+
+.bf-select-head,
+.bf-select-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+
+.bf-select-bar .btn {
+  gap: var(--bf-space-1);
+}
+
+.bf-select-bar .btn > .bf-icon {
+  flex: none;
+}
+
+.bf-select-head .btn {
+  height: var(--bf-control-height-sm);
+  padding-inline: var(--bf-space-2);
+  font-size: var(--bf-text-sm);
+}
+
+/* Below 1200px the topic's timeline is a bar along the bottom edge: the selection bar rises above it. */
+@media (width < 1200px) {
+  .bf-select-bar {
+    inset-block-end: calc(var(--bf-space-2) * 2 + 3rem);
+  }
+}
+
+/* On a phone: a small card, two tight rows (how many and the two quick choices; then what to do).
+   The title for a new topic opens as a third row once "Move" is tapped. */
+@media (width <= 639px) {
+  .bf-select-bar {
+    /* The same side margins as the timeline bar under it. */
+    inset-inline: var(--bf-space-4);
+    width: auto;
+    max-width: none;
+    gap: var(--bf-space-1);
+    padding: var(--bf-space-2);
+    font-size: var(--bf-text-xs);
+    transform: none;
+    justify-content: stretch;
+
+    &:dir(rtl) {
+      transform: none;
+    }
+
+    & .btn {
+      height: 2rem;
+      justify-content: center;
+      padding-inline: var(--bf-space-2);
+      font-size: var(--bf-text-sm);
+    }
+
+    & > .bf-select-head {
+      flex: 1 1 100%;
+    }
+
+    & > .bf-select-actions {
+      flex: 1 1 100%;
+    }
+
+    & > .bf-select-actions .btn:first-child {
+      flex: 1;
+    }
+
+    & > .bf-field {
+      display: none;
+      order: 2;
+      flex-basis: 100%;
+    }
+
+    &.is-moving > .bf-field {
+      display: block;
+    }
+
+    & input {
+      width: 100%;
+    }
+  }
+
+  .bf-select-head > strong {
+    margin-inline-end: auto;
+  }
+}
+
+.bf-op-pill {
+  background: var(--bf-color-success-soft);
+  color: var(--bf-color-success);
+}
+
+.bf-tags-list .avatar {
+  vertical-align: -5px;
+}
+
+/* Topic summary */
+
+.bf-top-replies {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  & > li:not(.bf-search-state) {
+    display: flex;
+    gap: var(--bf-space-3);
+    padding: var(--bf-space-4);
+    border-block-start: 1px solid var(--bf-color-border);
+  }
+
+  & > li:first-child {
+    border-block-start: 0;
+  }
+}
+
+.bf-top-rank {
+  flex: none;
+}
+
+.bf-top-main {
+  flex: 1;
+  min-width: 0;
+
+  & header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bf-space-2);
+    margin-block-end: var(--bf-space-2);
+  }
+}
+
+.bf-links a {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Topic header actions stay on one row on phones */
+
+@media (width <= 639px) {
+  .bf-topic-head .bf-btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Icon buttons of one size, close together, so the row takes one line. */
+  .bf-topic-head .bf-head-actions {
+    gap: var(--bf-space-1);
+
+    & > .btn,
+    & > details > summary.btn,
+    & > .bf-icon-btn {
+      min-inline-size: 2.5rem;
+      justify-content: center;
+      padding-inline: var(--bf-space-2);
+    }
+  }
+
+  .back-place {
+    width: 100%;
+  }
+}
+
+@media (width <= 359px) {
+  .bf-topic-head {
+    & .bf-head-actions {
+      gap: var(--bf-space-1);
+    }
+
+    & .bf-follow-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+}
+
+/* Share menu, for browsers without a share sheet */
+
+/* Share dialog (islands main.js, in the shared .bf-dialog): the link to copy, then the sites. */
+.bf-share-link {
+  display: flex;
+  gap: var(--bf-space-2);
+
+  & > .bf-field {
+    flex: 1;
+  }
+}
+
+.bf-share-sites {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: var(--bf-space-2);
+}
+
+/* Post style setting: avatar beside the text, no author column or boxes */
+
+[data-post-style="discourse"] .post {
+  display: block;
+  position: relative;
+  margin: 0;
+  background: none;
+  border: 0;
+  border-block-start: 1px solid var(--bf-color-border);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+[data-post-style="discourse"] .bf-author {
+  display: none;
+}
+
+[data-post-style="discourse"] .bf-post-main {
+  padding: var(--bf-space-4) 0 var(--bf-space-2);
+  padding-inline-start: calc(3rem + var(--bf-space-3));
+}
+
+[data-post-style="discourse"] .bf-post-compact {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--bf-space-2);
+}
+
+[data-post-style="discourse"] .bf-post-compact .avatar {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: var(--bf-space-4);
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Online status wraps the avatar for members: the wrapper takes the avatar's place. */
+
+[data-post-style="discourse"] .bf-post-compact .bf-presence {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: var(--bf-space-4);
+  width: 3rem;
+  height: 3rem;
+}
+
+[data-post-style="discourse"] .bf-post-compact .bf-presence > .avatar {
+  position: static;
+}
+
+[data-post-style="discourse"] .post-head {
+  font-size: var(--bf-text-list);
+}
+
+/* The pill and post number sit together on the right, with the date last. */
+
+[data-post-style="discourse"] .bf-post-when {
+  order: 9;
+}
+
+[data-post-style="discourse"] .bf-post-end {
+  order: 8;
+}
+
+/* The group already follows the name. */
+
+[data-post-style="discourse"] .bf-post-end .bf-group-pill:not(.bf-op-pill),
+[data-post-style="discourse"] .bf-posted-word,
+.bf-post-group {
+  display: none;
+}
+
+[data-post-style="discourse"] .bf-post-group {
+  display: inline;
+}
+
+/* Recently browsing */
+
+.bf-browsing {
+  margin-block-start: var(--bf-space-4);
+
+  /* Boxes clip their corners; this one holds tooltips that open outside it. */
+  overflow: visible;
+
+  & .bf-box-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  & .bf-box-body p {
+    margin: 0;
+  }
+}
+
+.bf-browsing-counts {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--bf-space-2);
+}
+
+.bf-browsing-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bf-browsing-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each member is a rounded chip: avatar hugging the left, name to the right. */
+.bf-browsing-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-1);
+  padding: 3px 12px 3px 3px;
+  border: 1px solid var(--bf-color-border);
+  border-radius: 999px;
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-text);
+  font-size: var(--bf-text-sm);
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background var(--bf-motion),
+    border-color var(--bf-motion),
+    color var(--bf-motion),
+    transform var(--bf-motion);
+}
+
+.bf-browsing-chip:hover,
+.bf-browsing-chip:focus-visible {
+  border-color: var(--bf-color-accent);
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.bf-browsing-avatar {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+}
+
+/* A crawler: not a link, a chip with a chip icon where the avatar would be. */
+.bf-browsing-chip.is-bot {
+  border-style: dashed;
+  color: var(--bf-color-muted);
+
+  &:hover {
+    transform: none;
+  }
+}
+
+.bf-browsing-bot {
+  display: inline-grid;
+  place-items: center;
+  background: var(--bf-color-surface);
+  color: var(--bf-color-muted);
+
+  & .bf-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+/* Table of contents on wiki topics */
+
+.bf-toc {
+  display: none;
+  max-height: calc(100vh - var(--bf-header-height) - 16rem);
+  margin-block-end: var(--bf-space-4);
+  overflow-y: auto;
+  border-inline-start: 1px solid var(--bf-color-border);
+  font-size: var(--bf-text-sm);
+}
+
+.bf-toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  & a {
+    display: block;
+    padding: var(--bf-space-1) var(--bf-space-3);
+    color: var(--bf-color-muted);
+  }
+
+  & a:hover {
+    color: var(--bf-color-text);
+    text-decoration: none;
+  }
+}
+
+.bf-toc a.is-current {
+  margin-inline-start: -1px;
+  border-inline-start: 2px solid var(--bf-color-accent);
+  color: var(--bf-color-text);
+  font-weight: 600;
+}
+
+.bf-toc-depth-1 a {
+  padding-inline-start: var(--bf-space-5);
+}
+
+.bf-toc-depth-2 a,
+.bf-toc-depth-3 a,
+.bf-toc-depth-4 a,
+.bf-toc-depth-5 a {
+  padding-inline-start: calc(var(--bf-space-5) * 2);
+}
+
+.bf-toc-fold {
+  margin-block-end: var(--bf-space-3);
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  font-size: var(--bf-text-sm);
+
+  & > summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+}
+
+@media (width >= 1200px) {
+  .bf-toc {
+    display: block;
+  }
+
+  .bf-toc-fold {
+    display: none;
+  }
+}
+
+/* A long silence between two posts */
+
+.bf-time-gap {
+  margin-block: var(--bf-space-4);
+  text-align: center;
+
+  & > span {
+    display: inline-block;
+    padding: var(--bf-space-1) var(--bf-space-3);
+    border-radius: 999px;
+    background: var(--bf-color-surface-2);
+    color: var(--bf-color-muted);
+    font-size: var(--bf-text-sm);
+  }
+}
+
+/* The vote box: an up arrow over the number of votes, beside the title. */
+.bf-topic-titlerow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bf-space-4);
+
+  /* The title, with the votes left and the voters under it. */
+  & > .bf-topic-titlecol {
+    flex: 1;
+    min-width: 0;
+
+    & > h1 {
+      margin: 0;
+    }
+
+    & > .bf-topic-votes {
+      margin-block: var(--bf-space-2) 0;
+    }
+  }
+}
+
+.bf-vote-box {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  inline-size: 3.25rem;
+  overflow: hidden;
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-input);
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  text-align: center;
+
+  & form {
+    display: block;
+    margin: 0;
+  }
+
+  & .bf-vote-up {
+    display: grid;
+    place-items: center;
+    inline-size: 100%;
+    block-size: 2rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--bf-color-muted);
+    cursor: pointer;
+
+    & .bf-icon {
+      inline-size: 1rem;
+      block-size: 1rem;
+    }
+
+    &:is(button):hover,
+    &:is(button):focus-visible {
+      background: var(--bf-color-accent-soft);
+      color: var(--bf-color-accent);
+    }
+
+    &.is-static {
+      cursor: default;
+    }
+  }
+
+  & .bf-vote-count {
+    padding-block: 0.25rem;
+    border-block-start: 1px solid var(--bf-color-border);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 1.25rem;
+  }
+
+  /* Voted: the arrow lights up, and so does the number's edge. */
+  &.is-voted {
+    border-color: var(--bf-color-accent);
+
+    & .bf-vote-up {
+      background: var(--bf-color-accent-soft);
+      color: var(--bf-color-accent);
+    }
+  }
+
+  /* In the sticky header. */
+  &.is-small {
+    inline-size: 2.25rem;
+
+    & .bf-vote-up {
+      block-size: 1.125rem;
+
+      & .bf-icon {
+        inline-size: 0.75rem;
+        block-size: 0.75rem;
+      }
+    }
+
+    & .bf-vote-count {
+      padding-block: 0.0625rem;
+      font-size: var(--bf-text-xs);
+      line-height: 1rem;
+    }
+  }
+}
+
+/* Ideas forums: the votes left, and the latest voters' pictures. */
+.bf-topic-votes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2) var(--bf-space-3);
+  margin-block: var(--bf-space-2);
+
+  & form {
+    margin: 0;
+  }
+
+  & [data-vote-count] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.bf-voters {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.bf-voter-list {
+  display: inline-flex;
+
+  & > a + a {
+    margin-inline-start: -6px;
+  }
+
+  & img {
+    display: block;
+    border: 2px solid var(--bf-color-surface);
+    border-radius: 50%;
+  }
+}
+
+/* Recently browsing, tighter on a phone */
+
+@media (width <= 639px) {
+  .bf-browsing {
+    margin-block-start: var(--bf-space-3);
+
+    & .bf-box-head {
+      padding: var(--bf-space-2) var(--bf-space-3);
+    }
+
+    & .bf-box-body {
+      padding: var(--bf-space-2) var(--bf-space-3);
+    }
+  }
+
+  .bf-browsing-counts {
+    justify-content: flex-start;
+  }
+}
+
+/* The widgets under the topic sit apart from the reply box above them. */
+.bf-topic-body > [data-area="topic_bottom"] {
+  margin-block-start: var(--bf-space-4);
+}
+
+/* Staff notes on a post: shown to staff only, below the post's text. */
+.bf-staff-notes {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-block: var(--bf-space-3);
+}
+
+.bf-staff-note {
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border: 1px solid color-mix(in srgb, var(--bf-color-warning) 35%, transparent);
+  border-inline-start-width: 3px;
+  border-radius: var(--bf-radius);
+  background: color-mix(in srgb, var(--bf-color-warning-soft) 55%, var(--bf-color-surface));
+}
+
+.bf-staff-note-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-1) var(--bf-space-2);
+
+  & form {
+    margin: 0;
+    margin-inline-start: auto;
+  }
+
+  & .bf-icon-btn {
+    width: var(--bf-control-height-sm);
+    height: var(--bf-control-height-sm);
+  }
+}
+
+.bf-staff-note-body {
+  margin: var(--bf-space-1) 0 0;
+  font-size: var(--bf-text-list);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

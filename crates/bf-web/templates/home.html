@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1 class="visually-hidden">{{ layout.site_name }}</h1>
+{{ layout.slot("home_top")|safe }}
+{% if can_edit_layout %}{% include "_layout_edit.html" %}{% endif %}
+<div data-area="home_top" data-area-label="{{ layout.t.t("layout.area_top") }}">
+  {%- for (id, title, html, kind) in widgets_top %}{% include "_home_block.html" %}{% endfor -%}
+</div>
+<div class="bf-grid">
+  <div data-area="home_main" data-area-label="{{ layout.t.t("layout.area_main") }}">
+    {%- for (id, title, html, kind) in widgets_main %}{% include "_home_block.html" %}{% endfor -%}
+  </div>
+  <aside aria-label="{{ layout.t.t("footer.community") }}" data-area="home_bottom" data-area-label="{{ layout.t.t("layout.sidebar") }}">
+    {%- for (id, title, html, kind) in widgets_bottom %}{% include "_home_block.html" %}{% endfor -%}
+  </aside>
+</div>
+{% endblock %}

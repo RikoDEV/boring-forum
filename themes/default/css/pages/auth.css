@@ -1,0 +1,89 @@
+/* Sign-in, registration and other single-form pages. */
+
+.bf-auth {
+  width: min(28rem, 100%);
+  margin: var(--bf-space-6) auto;
+  overflow: hidden;
+}
+
+.bf-auth-head {
+  padding: var(--bf-space-5) var(--bf-space-5) var(--bf-space-4);
+  border-block-end: 1px solid var(--bf-color-border);
+
+  & h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  & p {
+    margin: var(--bf-space-1) 0 0;
+  }
+}
+
+.bf-auth-body {
+  display: grid;
+  gap: var(--bf-space-4);
+  padding: var(--bf-space-5);
+}
+
+.bf-auth-form {
+  display: grid;
+  gap: var(--bf-space-4);
+  margin: 0;
+
+  & > .btn.primary {
+    width: 100%;
+  }
+}
+
+.bf-auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--bf-space-1) var(--bf-space-3);
+  margin: calc(var(--bf-space-2) * -1) 0 0;
+}
+
+.bf-auth-error {
+  margin: 0;
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border-radius: var(--bf-radius-input);
+  background: var(--bf-color-danger-soft);
+  color: var(--bf-color-danger);
+  font-size: var(--bf-text-list);
+}
+
+.bf-auth-alt {
+  display: grid;
+  gap: var(--bf-space-2);
+
+  &:has(> .btn, > span > *) {
+    padding-block-start: var(--bf-space-4);
+    border-block-start: 1px solid var(--bf-color-border);
+  }
+
+  & .btn {
+    width: 100%;
+  }
+}
+
+.bf-auth-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--bf-space-1) var(--bf-space-3);
+  padding: var(--bf-space-3) var(--bf-space-5);
+  border-block-start: 1px solid var(--bf-color-border);
+  background: var(--bf-color-surface-2);
+  text-align: center;
+}
+
+.bf-inline-edit {
+  margin-block: var(--bf-space-3);
+}
+
+.bf-inline-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+}

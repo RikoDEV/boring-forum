@@ -1,0 +1,65 @@
+# A small blog as a content app: a list, an entry page with SEO, a form to write one, a feed,
+# search, a review queue and a permission. It shows what Host API 1.3 adds (docs/plugins/abi.md,
+# "Content apps"). Build with `sh build.sh`.
+id = "notes-app"
+name = "Notes"
+version = "1.0.0"
+api = "^1.3"
+kind = "wasm"
+capabilities = ["tables", "pages", "content_types", "permissions"]
+hooks = ["page.request", "sitemap.urls", "content.review"]
+
+[server]
+module = "plugin.wasm"
+
+[client]
+# No JavaScript: only a style sheet.
+css = ["style.css"]
+
+# Entries. `slug` is unique, so two notes never share an address; `author` is a member's id, so
+# a member's notes go when the member is erased.
+[[tables]]
+name = "entries"
+columns = { slug = "text", title = "text", body = "text", author = "int", author_name = "text", status = "text", created = "timestamp" }
+unique = ["slug"]
+index = ["status", "created", "author"]
+user_column = "author"
+
+# Who may write: an administrator picks the groups on the plugin's card.
+[[permissions]]
+key = "write"
+label = "Write notes"
+
+# Entries take part in site search and wait for a moderator when `moderate` is on.
+[[content_types]]
+key = "entry"
+label_key = "type.entry"
+search = true
+review = true
+
+# The pages, under /app/notes-app/. A literal segment beats a parameter, so "new" is not a slug.
+[[routes]]
+key = "home"
+path = ""
+
+[[routes]]
+key = "new"
+path = "new"
+methods = ["GET", "POST"]
+permission = "write"
+
+[[routes]]
+key = "entry"
+path = "entries/{slug}"
+
+# The host writes RSS, Atom (feed.atom) and JSON Feed (feed.json) from one answer.
+[[routes]]
+key = "feed"
+path = "feed.rss"
+kind = "feed"
+
+[[nav]]
+label_key = "nav.notes"
+url = "/app/notes-app"
+icon = "star"
+order = 30

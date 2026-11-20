@@ -1,0 +1,23 @@
+/* Edit history: raw text and diffs. */
+
+.raw {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--bf-text-list);
+  margin: 0;
+}
+
+.diff {
+  white-space: pre-wrap;
+
+  & ins {
+    background: var(--bf-color-success-soft);
+    color: var(--bf-color-success);
+    text-decoration: none;
+  }
+
+  & del {
+    background: var(--bf-color-danger-soft);
+    color: var(--bf-color-danger);
+  }
+}

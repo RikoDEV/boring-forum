@@ -1,0 +1,157 @@
+/* Element defaults, text sizing, view transitions and the hidden-content helpers. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  /* Reserves the scrollbar's width whether or not a given page needs one, so a header laid
+     out with margin-inline-start: auto doesn't shift sideways as content height varies
+     between loads (a desktop-only issue: touch/overlay scrollbars take no layout space). */
+  scrollbar-gutter: stable;
+
+  &[data-text-size="90"] {
+    font-size: 90%;
+  }
+
+  &[data-text-size="95"] {
+    font-size: 95%;
+  }
+
+  &[data-text-size="105"] {
+    font-size: 105%;
+  }
+
+  &[data-text-size="110"] {
+    font-size: 110%;
+  }
+
+  &[data-text-size="115"] {
+    font-size: 115%;
+  }
+
+  &[data-text-size="120"] {
+    font-size: 120%;
+  }
+
+  &[data-text-size="125"] {
+    font-size: 125%;
+  }
+}
+
+body {
+  margin: 0;
+  font: var(--bf-text-body) / 1.5 var(--bf-font-body);
+  background: var(--bf-color-bg);
+  color: var(--bf-color-text);
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 80ms;
+}
+
+a {
+  color: var(--bf-color-accent);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--bf-color-accent-hover);
+    text-decoration: underline;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+
+code,
+pre {
+  font-family: var(--bf-font-mono);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  font-weight: 650;
+}
+
+h1 {
+  font-size: var(--bf-text-xl);
+  margin: 0 0 var(--bf-space-2);
+}
+
+h2 {
+  font-size: var(--bf-text-lg);
+}
+
+.bf-icon {
+  width: 1.125em;
+  height: 1.125em;
+  flex: none;
+  vertical-align: -0.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The live regions that announce changes sit at the end of the page. Out of the flow's end they
+   made every page 1px taller than a screen that is meant to fit exactly (chat). */
+#bf-live,
+#bf-alert {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+}
+
+.skip-link {
+  position: absolute;
+  inset-inline-start: -999px;
+
+  &:focus {
+    inset-inline-start: var(--bf-space-4);
+    inset-block-start: var(--bf-space-2);
+    z-index: 50;
+    background: var(--bf-color-surface);
+    padding: var(--bf-space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  @view-transition {
+    navigation: none;
+  }
+}

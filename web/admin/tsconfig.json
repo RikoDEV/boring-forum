@@ -1,0 +1,11 @@
+{
+  "extends": "$app/tsconfig",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "strict": false,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["../islands/src/globals.d.ts", "src/**/*.js", "src/**/*.svelte", "src/**/*.ts"]
+}

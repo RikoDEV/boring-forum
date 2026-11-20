@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{#- A member's trust level: where they stand, what is next, and what every level unlocks. -#}
+{% block content %}
+<header class="bf-box bf-page-head bf-trust-head">
+  <h1>{{ layout.t.msg("Your trust level") }}</h1>
+  <p class="small muted">{{ layout.t.msg("Trust levels open features as you take part. They rise by themselves when you meet the requirements.") }}</p>
+</header>
+
+<section class="bf-box bf-box-body bf-trust-now">
+  <div class="bf-trust-badge" data-level="{{ level }}">{{ level }}</div>
+  <div>
+    <h2>{{ name }}</h2>
+    <p class="muted">{{ layout.t.msgf("You are at level {level} of 4.", [("level", level.to_string().as_str())]) }}</p>
+    {% if let Some(n) = note %}<p class="bf-trust-note">{{ n }}</p>{% endif %}
+  </div>
+</section>
+
+{% if let Some((n, next_name)) = next %}
+<section class="bf-box">
+  <div class="bf-box-head"><h2>{{ layout.t.msgf("Next: {name}", [("name", next_name.as_str())]) }}</h2></div>
+  <div class="bf-box-body">
+  {% if progress.is_empty() %}
+  <p class="muted">{{ layout.t.msg("This level has no requirements; you move up at the next check.") }}</p>
+  {% else %}
+  <ul class="bf-trust-reqs">
+    {% for r in progress %}
+    <li class="{% if r.met %}is-met{% endif %}">
+      <div class="bf-trust-req-head"><span>{% if r.met %}{{ layout.icon("circle-check")|safe }}{% else %}{{ layout.icon("clock")|safe }}{% endif %} {{ r.label }}</span><b>{{ r.current }} / {{ r.needed }}</b></div>
+      <progress class="bf-progress" value="{{ r.current }}" max="{{ r.needed }}" aria-label="{{ r.label }}">{{ r.percent }}%</progress>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if !keep.is_empty() %}
+<section class="bf-box">
+  <div class="bf-box-head"><h2>{{ layout.t.msg("Keeping your level") }}</h2></div>
+  <div class="bf-box-body">
+  <p class="small muted">{{ layout.t.msg("This level is kept only while you stay active.") }}</p>
+  {% if at_risk %}<p class="bf-trust-note is-warn">{{ layout.t.msg("You are below the activity needed to keep this level. Post again to keep it.") }}</p>{% endif %}
+  <ul class="bf-trust-reqs">
+    {% for r in keep %}
+    <li class="{% if r.met %}is-met{% endif %}">
+      <div class="bf-trust-req-head"><span>{% if r.met %}{{ layout.icon("circle-check")|safe }}{% else %}{{ layout.icon("clock")|safe }}{% endif %} {{ r.label }}</span><b>{{ r.current }} / {{ r.needed }}</b></div>
+      <progress class="bf-progress" value="{{ r.current }}" max="{{ r.needed }}" aria-label="{{ r.label }}">{{ r.percent }}%</progress>
+    </li>
+    {% endfor %}
+  </ul>
+  </div>
+</section>
+{% endif %}
+
+{% if !limits.is_empty() %}
+<section class="bf-box">
+  <div class="bf-box-head"><h2>{{ layout.t.msg("Limits for new members") }}</h2></div>
+  <div class="bf-box-body">
+  <ul class="bf-trust-list">{% for l in limits %}<li>{{ l }}</li>{% endfor %}</ul>
+  </div>
+</section>
+{% endif %}
+
+<section class="bf-box">
+  <div class="bf-box-head"><h2>{{ layout.t.msg("What each level unlocks") }}</h2></div>
+  <div class="bf-box-body">
+  <ol class="bf-trust-levels">
+    {% for row in levels %}
+    <li class="{% if row.is_current %}is-current{% endif %}">
+      <div class="bf-trust-level-head"><span class="bf-trust-badge is-small" data-level="{{ row.level }}">{{ row.level }}</span><h3>{{ row.name }}</h3>{% if row.is_current %}<span class="tag">{{ layout.t.msg("You are here") }}</span>{% endif %}</div>
+      {% if !row.needs.is_empty() %}<p class="small muted">{{ layout.t.msg("Needs") }}: {% for n in row.needs %}{{ n }}{% if !loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+      {% if row.unlocks.is_empty() %}<p class="small muted">{% if row.level == 0 %}{{ layout.t.msg("Reading, posting and replying, within the limits for new members.") }}{% else %}{{ layout.t.msg("Nothing new is unlocked at this level.") }}{% endif %}</p>
+      {% else %}<ul class="bf-trust-list">{% for u in row.unlocks %}<li>{{ u }}</li>{% endfor %}</ul>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  </div>
+</section>
+{% endblock %}

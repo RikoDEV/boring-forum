@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{#- The shared page shell (http/ui.rs): breadcrumbs, a heading with actions, the page's own HTML,
+    and, for pages with an `area`, its widget areas. -#}
+{% block content %}
+{% if !crumbs.is_empty() %}
+<nav class="crumbs small" aria-label="{{ layout.t.t("app.breadcrumb") }}">{% for (url, label) in crumbs %}<a href="{{ url }}">{{ label }}</a> {{ layout.icon("chevron-right")|safe }} {% endfor %}<span>{{ heading }}</span></nav>
+{% endif %}
+<header class="bf-box bf-page-head bf-app-head">
+  <div>
+    <h1>{{ heading }}</h1>
+    {% if !intro.is_empty() %}<div class="muted bf-page-desc">{{ intro|safe }}</div>{% endif %}
+  </div>
+  {% if !actions.is_empty() %}<div class="bf-head-actions">{{ actions|safe }}</div>{% endif %}
+</header>
+{% if !area.is_empty() %}
+{% if can_edit_layout %}{% include "_layout_edit.html" %}{% endif %}
+{% include "_area_top.html" %}
+{% endif %}
+{% let has_side = !area.is_empty() && !no_side && (editing_layout || !widgets.side.is_empty()) %}
+<div class="bf-app{% if has_side %} bf-grid{% endif %}">
+  {% if has_side %}<div class="bf-grid-main">{% endif %}
+  {% if page_template.is_empty() %}{{ html|safe }}{% else %}{% include "_custom_page.html" %}{% endif %}
+  {% if !area.is_empty() %}{% include "_area_bottom.html" %}{% endif %}
+  {% if has_side %}
+  </div>
+  <aside aria-label="{{ layout.t.t("layout.sidebar") }}" data-area="{{ area }}_side" data-area-label="{{ layout.t.t("layout.sidebar") }}">
+    {{- layout.ad_slot("sidebar")|safe }}
+    {%- for (id, title, html, kind) in widgets.side.iter() %}{% include "_widget.html" %}{% endfor -%}
+  </aside>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+<header class="site-header">
+  <input type="checkbox" id="bf-nav-open" class="bf-nav-check" aria-label="{{ layout.t.t("header.menu") }}">
+  <div class="bf-header-sticky">
+  <div class="bf-header-bar">
+  <div class="wrap header-row">
+    <label for="bf-nav-open" class="bf-icon-btn bf-nav-toggle" aria-hidden="true">{{ layout.icon("menu")|safe }}</label>
+    <a class="brand{% if !layout.brand.logo.is_empty() %} has-logo{% endif %}" href="/">{% if layout.brand.logo.is_empty() %}{{ layout.site_name }}{% else %}<img class="bf-logo" height="40" width="160" src="{{ layout.brand.logo }}" alt="{{ layout.site_name }}">{% if !layout.brand.logo_dark.is_empty() %}<img class="bf-logo bf-logo-dark" height="40" width="160" src="{{ layout.brand.logo_dark }}" alt="{{ layout.site_name }}">{% endif %}{% if !layout.brand.logo_small.is_empty() %}<img class="bf-logo-small" height="40" width="40" src="{{ layout.brand.logo_small }}" alt="{{ layout.site_name }}">{% endif %}{% endif %}</a>
+    <form method="get" action="/search" class="header-search" role="search">{{ layout.icon("search")|safe }}<input type="search" name="q" placeholder="{{ layout.t.t("search.placeholder") }}" aria-label="{{ layout.t.t("nav.search") }}" autocomplete="off"><kbd aria-hidden="true">/</kbd><span data-island="live-search"></span></form>
+    <div class="header-actions">
+    {{ layout.slot("header_icons")|safe }}
+    <span data-island="theme-toggle"></span><span data-island="header-size" hidden></span>
+    {% if let Some(u) = layout.user %}
+    {% if layout.chat_enabled %}<a class="nav-link bf-icon-btn" href="/chat" data-chat-link data-me="{{ u }}" data-staff="{{ layout.moderator }}" data-editor="{{ layout.editor_url }}" aria-label="{{ layout.t.t("nav.chat") }}">{{ layout.icon("message-square")|safe }}<span class="badge" data-island="chat-count" data-props="{&quot;count&quot;:{{ layout.unread_chat }}}"{% if layout.unread_chat == 0 %} hidden{% endif %}>{{ layout.unread_chat }}</span></a>{% endif %}
+    <details class="bf-menu bf-drop" data-drop="/api/v1/me/messages">
+      <summary class="nav-link bf-icon-btn" aria-label="{{ layout.t.t("nav.messages") }}">{{ layout.icon("mail")|safe }}<span class="badge" data-island="messages-count" data-props="{&quot;count&quot;:{{ layout.unread_messages }}}"{% if layout.unread_messages == 0 %} hidden{% endif %}>{{ layout.unread_messages }}</span></summary>
+      <div class="bf-menu-body">
+      <div class="bf-drop-head"><strong>{{ layout.t.t("nav.messages") }}</strong><a class="btn" href="/messages#new-message">{{ layout.icon("pencil")|safe }} {{ layout.t.t("header.new_message") }}</a></div>
+      <ul class="bf-drop-list" data-drop-list></ul>
+      <a class="bf-drop-all" href="/messages">{{ layout.t.t("header.all_messages") }}</a>
+      </div>
+    </details>
+    <details class="bf-menu bf-drop bf-user-menu" data-user-menu data-me="{{ u }}" data-empty="{{ layout.t.t("menu.empty") }}" data-failed="{{ layout.t.t("menu.failed") }}"><summary class="bf-icon-btn" aria-label="{{ u }}: {{ layout.t.t("nav.notifications") }}"><img class="avatar" src="/avatar/{{ u }}.svg" width="28" height="28" alt=""><span class="badge" data-island="notify-count" data-props="{&quot;count&quot;:{{ layout.unread_notifications }}}"{% if layout.unread_notifications == 0 %} hidden{% endif %}>{{ layout.unread_notifications }}</span></summary>
+      <div class="bf-menu-body"><div class="bf-um">
+      <div class="bf-um-panel" id="bf-um-panel" role="tabpanel">
+        <div class="bf-um-items" data-um-items hidden>
+          <ul class="bf-um-list" data-um-list></ul>
+          <div class="bf-um-foot"><a class="btn bf-um-all" data-um-all href="/notifications" aria-label="{{ layout.t.t("menu.see_all") }}" data-tip="{{ layout.t.t("menu.see_all") }}">{{ layout.icon("chevron-down")|safe }}</a><form method="post" action="/notifications/read" data-um-read><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("circle-check")|safe }} {{ layout.t.t("menu.mark_read") }}</button></form></div>
+        </div>
+        <div class="bf-um-profile" data-um-profile>
+          <div class="bf-um-name"><strong>{{ u }}</strong></div>
+          <a href="{{ layout.user_url }}">{{ layout.icon("user")|safe }} {{ layout.t.t("menu.profile") }}</a>
+          <a href="{{ layout.user_url }}?tab=posts">{{ layout.icon("history")|safe }} {{ layout.t.t("menu.activity") }}</a>
+          <a href="{{ layout.user_url }}?tab=bookmarks">{{ layout.icon("bookmark")|safe }} {{ layout.t.t("menu.bookmarks") }}</a>
+          <a href="/settings">{{ layout.icon("settings")|safe }} {{ layout.t.t("menu.settings") }}</a>
+          <a href="/trust">{{ layout.icon("shield")|safe }} {{ layout.t.msg("Trust level") }}</a>
+          {% if layout.referrals %}<a href="/referrals">{{ layout.icon("users")|safe }} {{ layout.t.t("menu.invite") }}</a>{% endif %}
+          {% if layout.fediverse %}<a href="/settings/fediverse">{{ layout.icon("globe")|safe }} {{ layout.t.t("menu.fediverse") }}</a>{% endif %}
+          {% if layout.moderator %}<a href="/modcp">{{ layout.icon("shield")|safe }} {{ layout.t.t("menu.modcp") }}</a>{% endif %}
+          {% if layout.admin %}<a href="/admin/">{{ layout.icon("gauge")|safe }} {{ layout.t.t("menu.admin") }}</a>{% endif %}
+          <form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button>{{ layout.icon("log-out")|safe }} {{ layout.t.t("nav.logout") }}</button></form>
+        </div>
+      </div>
+      <div class="bf-um-tabs" role="tablist" aria-orientation="vertical" aria-label="{{ layout.t.t("menu.tabs") }}">
+        <div class="bf-um-tabs-top">
+          <a class="bf-um-tab" role="tab" id="bf-um-tab-all" data-um-tab="all" data-um-api="/api/v1/me/notifications" aria-controls="bf-um-panel" aria-selected="false" tabindex="-1" href="/notifications" aria-label="{{ layout.t.t("menu.all") }}" data-tip="{{ layout.t.t("menu.all") }}">{{ layout.icon("bell")|safe }}</a>
+          <a class="bf-um-tab" role="tab" id="bf-um-tab-replies" data-um-tab="replies" data-um-api="/api/v1/me/notifications?show=replies" aria-controls="bf-um-panel" aria-selected="false" tabindex="-1" href="/notifications?show=replies" aria-label="{{ layout.t.t("menu.replies") }}" data-tip="{{ layout.t.t("menu.replies") }}">{{ layout.icon("reply")|safe }}</a>
+          <a class="bf-um-tab" role="tab" id="bf-um-tab-mentions" data-um-tab="mentions" data-um-api="/api/v1/me/notifications?show=mentions" aria-controls="bf-um-panel" aria-selected="false" tabindex="-1" href="/notifications?show=mentions" aria-label="{{ layout.t.t("menu.mentions") }}" data-tip="{{ layout.t.t("menu.mentions") }}">{{ layout.icon("user")|safe }}</a>
+          <a class="bf-um-tab" role="tab" id="bf-um-tab-likes" data-um-tab="likes" data-um-api="/api/v1/me/notifications?show=likes" aria-controls="bf-um-panel" aria-selected="false" tabindex="-1" href="/notifications?show=likes" aria-label="{{ layout.t.t("menu.likes") }}" data-tip="{{ layout.t.t("menu.likes") }}">{{ layout.icon("heart")|safe }}</a>
+          <a class="bf-um-tab" role="tab" id="bf-um-tab-messages" data-um-tab="messages" data-um-api="/api/v1/me/messages" aria-controls="bf-um-panel" aria-selected="false" tabindex="-1" href="/messages" aria-label="{{ layout.t.t("nav.messages") }}" data-tip="{{ layout.t.t("nav.messages") }}">{{ layout.icon("mail")|safe }}</a>
+          <a class="bf-um-tab" role="tab" id="bf-um-tab-bookmarks" data-um-tab="bookmarks" data-um-api="/api/v1/me/bookmarks" aria-controls="bf-um-panel" aria-selected="false" tabindex="-1" href="{{ layout.user_url }}?tab=bookmarks" aria-label="{{ layout.t.t("menu.bookmarks") }}" data-tip="{{ layout.t.t("menu.bookmarks") }}">{{ layout.icon("bookmark")|safe }}</a>
+          <a class="bf-um-tab" role="tab" id="bf-um-tab-social" data-um-tab="social" data-um-api="/api/v1/me/notifications?show=social" aria-controls="bf-um-panel" aria-selected="false" tabindex="-1" href="/notifications?show=social" aria-label="{{ layout.t.t("menu.social") }}" data-tip="{{ layout.t.t("menu.social") }}">{{ layout.icon("users")|safe }}</a>
+          <a class="bf-um-tab" role="tab" id="bf-um-tab-staff" data-um-tab="staff" data-um-api="/api/v1/me/notifications?show=staff" aria-controls="bf-um-panel" aria-selected="false" tabindex="-1" href="/notifications?show=staff" aria-label="{{ layout.t.t("menu.staff") }}" data-tip="{{ layout.t.t("menu.staff") }}">{{ layout.icon("shield")|safe }}</a>
+        </div>
+        <div class="bf-um-tabs-bottom">
+          <a class="bf-um-tab" role="tab" id="bf-um-tab-profile" data-um-tab="profile" data-um-api="" aria-controls="bf-um-panel" aria-selected="false" tabindex="-1" href="{{ layout.user_url }}" aria-label="{{ layout.t.t("menu.profile") }}" data-tip="{{ layout.t.t("menu.profile") }}">{{ layout.icon("user")|safe }}</a>
+        </div>
+      </div>
+      </div></div>
+    </details>
+    {% else %}
+    <a class="nav-link btn" href="/login">{{ layout.t.t("nav.login") }}</a>
+    <a class="btn primary" href="/register">{{ layout.t.t("nav.register") }}</a>
+    {% endif %}
+    </div>
+    <span data-island="menus" hidden></span>
+    <span data-island="shortcuts" hidden></span>
+    <span data-island="hovercards" hidden></span>
+    <span data-island="code-copy" hidden></span>
+    <span data-island="local-times" hidden></span>
+    {% if layout.user.is_some() %}<span data-island="composer-resume" data-props="{&quot;editorUrl&quot;:&quot;{{ layout.editor_url }}&quot;}" hidden></span>{% endif %}
+  </div>
+  </div>
+  <div class="bf-nav-row">
+  <div class="wrap">
+    <nav aria-label="{{ layout.t.t("header.main_nav") }}" class="main-nav">
+      {% for (url, label) in layout.nav %}<a href="{{ url }}">{{ label }}</a>
+      {% endfor %}
+      {{ layout.plugin_nav_header()|safe }}
+      {% if layout.moderator %}<a href="/modcp">{{ layout.t.t("nav.mod") }}</a> <a href="/review">{{ layout.t.t("nav.review") }}{% if layout.review_count > 0 %} <span class="badge">{{ layout.review_count }}</span>{% endif %}</a>{% endif %}
+    </nav>
+  </div>
+  </div>
+  </div>
+</header>

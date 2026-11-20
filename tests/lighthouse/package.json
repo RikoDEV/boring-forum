@@ -1,0 +1,11 @@
+{
+  "name": "bf-lighthouse",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lhci": "lhci autorun --config=./lighthouserc.cjs"
+  },
+  "devDependencies": {
+    "@lhci/cli": "^0.16.0"
+  }
+}

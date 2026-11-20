@@ -1,0 +1,34 @@
+/* Polls: the fields of the poll form that belong to the chosen kind of poll (no script: the form
+   itself says which kind is picked), and the row of poll actions under a poll. */
+.bf-poll-fields {
+  & .bf-poll-rating {
+    display: none;
+  }
+
+  &:has(select[name="kind"] option[value="rating"]:checked) {
+    & .bf-poll-rating {
+      display: flex;
+    }
+
+    & .bf-poll-options {
+      display: none;
+    }
+  }
+
+  &:has(select[name="kind"] option:is([value="ranked"], [value="rating"]):checked) .bf-poll-choice {
+    display: none;
+  }
+}
+
+.bf-poll-manage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-3);
+  margin-block-start: var(--bf-space-2);
+}
+
+.poll select[name^="rank_"] {
+  inline-size: auto;
+  min-inline-size: 3.5rem;
+}

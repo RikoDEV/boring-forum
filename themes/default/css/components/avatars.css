@@ -1,0 +1,55 @@
+/* Avatars and the online dot. */
+
+.bf-presence {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  width: fit-content;
+  height: fit-content;
+  vertical-align: middle;
+
+  & > .avatar {
+    display: block;
+  }
+}
+
+.bf-online {
+  position: absolute;
+  z-index: 1;
+  inset-block-end: 2%;
+  inset-inline-end: 2%;
+  width: var(--dot, 8px);
+  height: var(--dot, 8px);
+  border: 2px solid var(--bf-color-surface);
+  border-radius: 50%;
+  background: var(--bf-color-success);
+  box-sizing: content-box;
+  pointer-events: none;
+}
+
+.bf-author {
+  & .bf-presence {
+    display: flex;
+    width: fit-content;
+    margin: 0 auto var(--bf-space-2);
+  }
+
+  & .bf-presence .avatar {
+    margin: 0;
+  }
+}
+
+.bf-avatar-wrap .bf-online {
+  inset-block-end: 4%;
+  inset-inline-end: 4%;
+}
+
+.posters {
+  & .bf-presence {
+    margin-inline-end: -6px;
+  }
+
+  & .bf-presence .avatar {
+    margin: 0;
+  }
+}

@@ -1,0 +1,90 @@
+/* Notices across the page: announcements, cookie consent, impersonation and live updates. */
+
+.cookie-consent {
+  position: fixed;
+  inset-block-end: var(--bf-space-4);
+  inset-inline-start: var(--bf-space-4);
+  z-index: 40;
+  max-width: 28rem;
+  box-shadow: var(--bf-shadow-menu);
+}
+
+.impersonating {
+  padding: var(--bf-space-2) var(--bf-space-4);
+  background: var(--bf-color-warning-soft);
+  color: var(--bf-color-warning);
+  text-align: center;
+}
+
+/* An announcement: a megaphone, the title and text, and a cross in the top corner to dismiss it. */
+.announcement {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-4);
+  padding-inline-end: var(--bf-space-8);
+  border-color: color-mix(in srgb, var(--bf-color-accent) 45%, var(--bf-color-border));
+  background: var(--bf-color-accent-soft);
+}
+
+.announcement-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--bf-color-accent);
+  color: var(--bf-color-accent-text);
+}
+
+.announcement-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.announcement-title {
+  display: block;
+  margin-block-end: var(--bf-space-1);
+}
+
+.announcement .cooked > :last-child {
+  margin-block-end: 0;
+}
+
+.announcement-close {
+  position: absolute;
+  inset-block-start: var(--bf-space-2);
+  inset-inline-end: var(--bf-space-2);
+}
+
+/* The live-update bar. Its dock sits at the end of the page or list and sticks to the bottom
+   of the screen while that is in view; empty, it takes no room and catches no clicks. */
+.bf-live-dock {
+  position: sticky;
+  inset-block-end: var(--bf-space-4);
+  z-index: 30;
+  pointer-events: none;
+}
+
+.live-notice {
+  text-align: center;
+}
+
+.live-notice .btn {
+  pointer-events: auto;
+  box-shadow: var(--bf-shadow-menu);
+}
+
+/* Posts and topic rows that arrived live: an accent edge that fades, so the eye finds them. */
+.is-live-new {
+  animation: bf-live-new 6s ease-out;
+}
+
+@keyframes bf-live-new {
+  from {
+    box-shadow: inset 3px 0 0 var(--bf-color-accent);
+    background-color: color-mix(in srgb, var(--bf-color-accent) 10%, transparent);
+  }
+}

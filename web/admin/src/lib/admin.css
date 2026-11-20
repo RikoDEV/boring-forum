@@ -1,0 +1,3020 @@
+/* Admin panel: the forum's own tokens, with the same boxes, buttons and fields. Pages keep plain
+   markup (h1, h2, tables, form.row), so the look lives here and not in each page. */
+:root {
+  /* Names the page-level styles use. */
+  --bg: var(--bf-color-bg);
+  --surface: var(--bf-color-surface);
+  --surface-2: var(--bf-color-surface-2);
+  --text: var(--bf-color-text);
+  --muted: var(--bf-color-muted);
+  --border: var(--bf-color-border);
+  --border-strong: var(--bf-color-border-strong);
+  --accent: var(--bf-color-accent);
+  --accent-text: var(--bf-color-accent-text);
+  --accent-soft: var(--bf-color-accent-soft);
+  --danger: var(--bf-color-danger);
+  --success: var(--bf-color-success);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font: var(--bf-text-body)/1.5 var(--bf-font-body);
+  background: var(--bf-color-bg);
+  color: var(--bf-color-text);
+}
+:where(.acp-top, .acp-shell) a {
+  color: var(--bf-color-accent);
+  text-decoration: none;
+}
+/* The site's header sits on this page too and keeps its own look: only the panel gets these. */
+:where(.acp-top, .acp-shell) a:hover {
+  color: var(--bf-color-accent-hover);
+  text-decoration: underline;
+}
+:focus-visible {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+/* Text fields show focus with their own accent border, as on the site (fields.css). That rule
+   sits in a cascade layer, and this file is unlayered, so the outline above would win and draw
+   a second ring around it. */
+/* An input inside a box that shows the focus itself is borderless and gets no ring of its own:
+   chip fields (.bf-tags: MultiSelect, tag inputs) and the chat drawer's composer and people
+   picker (site CSS, pages/chat.css, which this unlayered file would otherwise override). */
+:is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]), textarea, select):not(
+    .bf-tags *,
+    .chat-composer *,
+    .chat-people *
+  ):focus-visible {
+  outline: none;
+  border-color: var(--bf-color-accent);
+  box-shadow: inset 0 0 0 1px var(--bf-color-accent);
+}
+:is(.bf-tags, .chat-composer, .chat-people) :is(input, textarea):focus-visible {
+  outline: none;
+}
+code {
+  font-family: var(--bf-font-mono);
+  font-size: var(--bf-text-sm);
+}
+small {
+  font-size: var(--bf-text-sm);
+}
+.bf-icon {
+  width: 1.125em;
+  height: 1.125em;
+  flex: none;
+  vertical-align: -0.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Shell, the same two rows of header as the site */
+.acp-global {
+  display: contents;
+}
+.acp-top {
+  position: sticky;
+  inset-block-start: var(--bf-header-height, 0px);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-3);
+  min-height: 3.5rem;
+  padding-inline: var(--bf-space-4);
+  background: var(--bf-color-header-bg);
+  color: var(--bf-color-header-text);
+  border-block-end: 1px solid var(--bf-color-border);
+}
+.acp-brand {
+  color: inherit;
+  font-size: var(--bf-text-lg);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.acp-brand:hover {
+  color: inherit;
+  text-decoration: none;
+}
+/* The panel's badge is the site's (components/badges.css): a pill, accent unless it says otherwise. */
+.acp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  min-height: 1.25rem;
+  padding-inline: var(--bf-space-2);
+  border-radius: 999px;
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+  font-size: var(--bf-text-xs);
+  font-weight: 600;
+  line-height: 1.25rem;
+  vertical-align: middle;
+}
+.acp-search-host {
+  display: contents;
+}
+.acp-find-list {
+  position: absolute;
+  inset-block-start: calc(100% + var(--bf-space-1));
+  inset-inline: 0;
+  z-index: 40;
+  min-inline-size: min(34rem, 92vw);
+  inset-inline-end: 0;
+  inset-inline-start: auto;
+  max-block-size: min(32rem, 70vh);
+  margin: 0;
+  padding: var(--bf-space-1);
+  overflow-y: auto;
+  list-style: none;
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-lg, 0 8px 24px rgb(0 0 0 / 0.35));
+}
+.acp-find-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border-radius: var(--bf-radius);
+  cursor: pointer;
+}
+.acp-find-list li.is-active {
+  background: var(--bf-color-accent-soft);
+}
+.acp-find-list .acp-find-none {
+  color: var(--bf-color-muted);
+  cursor: default;
+}
+.acp-find-text {
+  display: grid;
+  min-inline-size: 0;
+  flex: 1;
+}
+.acp-find-label {
+  font-weight: 600;
+}
+.acp-find-hint {
+  overflow: hidden;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acp-find-list .acp-pill {
+  flex: none;
+  white-space: nowrap;
+}
+.acp-set.is-found {
+  outline: 2px solid var(--bf-color-accent);
+  outline-offset: 4px;
+  border-radius: var(--bf-radius);
+}
+.acp-menu-btn {
+  display: none;
+}
+.acp-shell {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  align-items: start;
+}
+.acp-nav {
+  position: sticky;
+  inset-block-start: calc(var(--bf-header-height, 0px) + 3.5rem);
+  max-height: calc(100vh - var(--bf-header-height, 0px) - 3.5rem);
+  overflow-y: auto;
+  padding: var(--bf-space-3);
+  font-size: var(--bf-text-list);
+}
+.acp-group {
+  padding: var(--bf-space-3) var(--bf-space-3) var(--bf-space-1);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.acp-nav a {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border-radius: var(--bf-radius-input);
+  color: var(--bf-color-muted);
+}
+.acp-nav a:hover,
+.acp-btnlink:hover {
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-text);
+  text-decoration: none;
+}
+.acp-nav a[aria-current="page"] {
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+  font-weight: 600;
+}
+.acp-main {
+  min-width: 0;
+  max-width: 1240px;
+  padding: var(--bf-space-5);
+}
+@media (max-width: 860px) {
+  .acp-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .acp-menu-btn {
+    display: inline-flex;
+  }
+  .acp-find-list {
+    min-inline-size: 0;
+  }
+  .acp-nav {
+    display: none;
+    position: static;
+    max-height: none;
+    border-block-end: 1px solid var(--bf-color-border);
+  }
+  .acp-nav.is-open {
+    display: block;
+  }
+  .acp-main {
+    padding: var(--bf-space-4);
+  }
+}
+
+/* Page content */
+h1 {
+  margin: 0 0 var(--bf-space-4);
+  font-size: var(--bf-text-xl);
+  font-weight: 650;
+  line-height: 1.25;
+}
+h2 {
+  margin: var(--bf-space-5) 0 var(--bf-space-2);
+  font-size: var(--bf-text-lg);
+  font-weight: 650;
+}
+h3 {
+  margin: var(--bf-space-4) 0 var(--bf-space-2);
+  font-size: var(--bf-text-list);
+  font-weight: 650;
+}
+.muted {
+  color: var(--bf-color-muted);
+}
+.err,
+.ok {
+  display: block;
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border-radius: var(--bf-radius-input);
+  font-size: var(--bf-text-list);
+}
+.err {
+  background: var(--bf-color-danger-soft);
+  color: var(--bf-color-danger);
+}
+.ok {
+  background: var(--bf-color-success-soft);
+  color: var(--bf-color-success);
+}
+td .err,
+td .ok,
+span.err,
+span.ok {
+  display: inline;
+  padding: 0;
+  background: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-block: var(--bf-space-3);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  font-size: var(--bf-text-list);
+}
+th,
+td {
+  padding: var(--bf-space-3) var(--bf-space-4);
+  text-align: start;
+  vertical-align: middle;
+  border-block-start: 1px solid var(--bf-color-border);
+}
+tr:first-child > th,
+tr:first-child > td {
+  border-block-start: 0;
+}
+thead th {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+tbody tr:hover {
+  background: var(--bf-color-surface-2);
+}
+tbody tr:hover :is(select, input:not([type="checkbox"], [type="radio"])) {
+  background-color: var(--bf-color-surface);
+}
+@media (max-width: 860px) {
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+:where(.acp-top, .acp-shell) button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-1);
+  box-sizing: border-box;
+  min-height: var(--bf-control-height);
+  padding: 0 var(--bf-space-3);
+  border: 1px solid var(--bf-color-accent);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-accent);
+  color: var(--bf-color-accent-text);
+  font: inherit;
+  font-size: var(--bf-text-list);
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+  cursor: pointer;
+}
+:where(.acp-top, .acp-shell) button:hover {
+  background: var(--bf-color-accent-hover);
+  border-color: var(--bf-color-accent-hover);
+}
+button.secondary,
+td button {
+  background: var(--bf-color-surface);
+  border-color: var(--bf-color-border-strong);
+  color: var(--bf-color-text);
+}
+button.secondary:hover,
+td button:hover {
+  background: var(--bf-color-surface-2);
+  border-color: var(--bf-color-border-strong);
+}
+:where(.acp-top, .acp-shell) button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* The remove (x) on a chip and the clear button of a multi-select are not panel buttons: the
+   rule above is outside the site's cascade layers, so it would make them blue blocks. */
+.bf-tag-chip button {
+  min-height: 0;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+.bf-tag-chip button:hover {
+  background: none;
+  color: var(--bf-color-text);
+}
+.bf-multi-clear.acp-icon-btn {
+  position: absolute;
+  min-height: 0;
+  padding: 0 var(--bf-space-1);
+  border: 0;
+  background: none;
+  color: var(--bf-color-muted);
+}
+/* Its label is read aloud; a tooltip beside the field's edge would widen the page. */
+.bf-multi-clear.acp-icon-btn::after {
+  display: none;
+}
+.bf-multi-clear.acp-icon-btn:hover {
+  background: none;
+  color: var(--bf-color-text);
+}
+
+.acp-ghost {
+  background: none;
+  border-color: transparent;
+  color: var(--bf-color-muted);
+}
+.acp-ghost:hover {
+  background: var(--bf-color-surface-2);
+  border-color: transparent;
+  color: var(--bf-color-text);
+}
+
+/* Icon-only controls (.acp-icon-btn with an aria-label): the label is the tooltip, drawn by
+   web/islands/src/tooltip.js, which the panel shares with the site. */
+.acp-icon-btn {
+  position: relative;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2);
+  margin-block: var(--bf-space-3);
+}
+form.row {
+  padding: var(--bf-space-3) var(--bf-space-4);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+}
+td.row,
+td .row {
+  margin: 0;
+}
+td form.row {
+  padding: 0;
+  background: none;
+  border: 0;
+}
+section,
+.panel {
+  margin-block-end: var(--bf-space-4);
+}
+main ul:not([class]) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  font-size: var(--bf-text-list);
+}
+main ul:not([class]) > li {
+  padding: var(--bf-space-2) var(--bf-space-4);
+  border-block-start: 1px solid var(--bf-color-border);
+}
+main ul:not([class]) > li:first-child {
+  border-block-start: 0;
+}
+
+/* Boxes for pages with their own layout */
+.acp-box {
+  margin-block-end: var(--bf-space-4);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+}
+.acp-box-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-3) var(--bf-space-4);
+  border-block-end: 1px solid var(--bf-color-border);
+}
+.acp-box-head h2 {
+  margin: 0;
+  font-size: var(--bf-text-list);
+}
+/* Plain text inside a box, under its heading: a sentence or two, or a short list. */
+.acp-box-body {
+  padding: var(--bf-space-3) var(--bf-space-4);
+}
+.acp-box-body > :first-child {
+  margin-block-start: 0;
+}
+.acp-box-body > :last-child {
+  margin-block-end: 0;
+}
+.acp-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--bf-text-list);
+}
+.acp-rows > li {
+  padding: var(--bf-space-3) var(--bf-space-4);
+  border-block-start: 1px solid var(--bf-color-border);
+}
+.acp-rows > li:first-child {
+  border-block-start: 0;
+}
+.acp-empty {
+  margin: 0;
+  padding: var(--bf-space-4);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-list);
+}
+.acp-tiles,
+.acp-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--bf-space-3);
+  margin-block-end: var(--bf-space-4);
+}
+.acp-tile {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--bf-space-3);
+  align-items: center;
+  padding: var(--bf-space-4);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  color: var(--bf-color-text);
+}
+a.acp-tile:hover,
+a.acp-kpi:hover {
+  border-color: var(--bf-color-accent);
+  color: var(--bf-color-text);
+  text-decoration: none;
+}
+.acp-tile .bf-icon {
+  grid-row: span 2;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+}
+.acp-tile b {
+  font-size: var(--bf-text-xl);
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.acp-tile span {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+}
+.acp-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--bf-space-4);
+  align-items: start;
+}
+
+/* Settings list */
+.acp-settings-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+  margin-block-end: var(--bf-space-4);
+}
+.acp-settings-head h1 {
+  margin: 0;
+}
+.acp-settings {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr);
+  gap: var(--bf-space-4);
+  align-items: start;
+  padding-block-end: 4rem;
+}
+.acp-settings-nav {
+  position: sticky;
+  inset-block-start: 4.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.acp-settings-nav button {
+  justify-content: space-between;
+  width: 100%;
+  color: var(--bf-color-text);
+  font-weight: 500;
+  text-align: start;
+}
+.acp-settings-nav button[aria-current] {
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+  font-weight: 600;
+}
+.acp-settings-tab,
+.acp-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+.acp-ranks {
+  display: grid;
+  gap: var(--bf-space-2);
+  justify-items: start;
+  width: 100%;
+  max-width: 36rem;
+}
+.acp-rank-head,
+.acp-rank {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr) auto;
+  gap: var(--bf-space-2);
+  align-items: center;
+  width: 100%;
+}
+.acp-rank-head {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-weight: 600;
+}
+.acp-rank input {
+  width: 100%;
+}
+.acp-ranks p {
+  margin: 0;
+}
+.acp-settings-title {
+  padding: var(--bf-space-4);
+  border-block-end: 1px solid var(--bf-color-border);
+}
+.acp-settings-title h2 {
+  margin: 0;
+}
+.acp-settings-title p {
+  margin: 2px 0 0;
+  font-size: var(--bf-text-sm);
+}
+.acp-set {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 18rem);
+  gap: var(--bf-space-2) var(--bf-space-5);
+  align-items: center;
+}
+.acp-set.is-wide {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* A picture row: preview, Upload and Remove on one line, so the control takes what it needs. */
+.acp-set.is-image {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.acp-set.is-image .acp-image-set {
+  flex-wrap: nowrap;
+}
+.acp-set label {
+  display: block;
+  font-weight: 600;
+}
+.acp-set p,
+.acp-action-row p {
+  margin: 2px 0 0;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+}
+.acp-set-control {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.acp-set.is-wide .acp-set-control {
+  justify-content: flex-start;
+}
+.acp-set-control input:not(.acp-switch),
+.acp-set-control select,
+.acp-set-control textarea {
+  width: 100%;
+}
+.acp-set-control textarea.acp-code,
+.bf-field.acp-code textarea {
+  font-family: var(--bf-font-mono);
+  font-size: var(--bf-text-sm);
+  tab-size: 2;
+  white-space: pre;
+  overflow-x: auto;
+  font-variant-ligatures: none;
+}
+/* A picture setting (Branding): its preview, then Upload and Remove. The Upload "button" is a label
+   around a hidden file input, styled like button.secondary; `.acp-set .acp-upload` outranks
+   `.acp-set label`, which would make it a bold block. */
+.acp-image-set {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--bf-space-2);
+}
+/* A stored secret: the field, and the button that removes it, on one line. */
+.acp-secret-set {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+.acp-secret-set input {
+  flex: 1;
+  min-width: 0;
+}
+.acp-image-preview {
+  display: grid;
+  place-items: center;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-input);
+  background: repeating-conic-gradient(var(--bf-color-surface-2) 0 25%, var(--bf-color-surface) 0 50%) 0 0 / 12px 12px;
+  font-size: var(--bf-text-xs);
+}
+.acp-image-preview.is-wide {
+  width: 8rem;
+  height: 2.5rem;
+}
+.acp-image-preview.is-square {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+.acp-image-preview.is-card {
+  width: 4.75rem;
+  height: 2.5rem;
+}
+.acp-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+:is(.acp-set, .acp-picker) .acp-upload {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--bf-control-height);
+  padding: 0 var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  font-size: var(--bf-text-list);
+  font-weight: 500;
+  cursor: pointer;
+}
+:is(.acp-set, .acp-picker) .acp-upload:hover {
+  background: var(--bf-color-surface-2);
+}
+:is(.acp-set, .acp-picker) .acp-upload:has(input:focus-visible) {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+:is(.acp-set-control, .acp-picker) .acp-upload input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+/* The site's checkbox style (fields.css) also matches these: its border would push the knob off
+   centre and its tick would sit in the middle of the track, so both are redrawn for a switch. */
+input.acp-switch {
+  appearance: none;
+  position: relative;
+  width: 2.5rem;
+  height: 1.375rem;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bf-color-border-strong);
+  cursor: pointer;
+  transform: none;
+  transition: background 0.15s;
+}
+input.acp-switch::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-start: 3px;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--bf-color-surface);
+  transition: transform 0.15s;
+}
+input.acp-switch:checked {
+  background: var(--bf-color-accent);
+}
+input.acp-switch:checked::after {
+  transform: translateX(1.125rem);
+}
+:dir(rtl) input.acp-switch:checked::after {
+  transform: translateX(-1.125rem);
+}
+/* The tick rides on the knob: centred on where the knob ends up when on (3px + 1.125rem + 0.5rem). */
+input.acp-switch::before {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: calc(3px + 0.5rem - 0.3rem);
+  inset-inline-start: calc(3px + 1.625rem - 0.15rem - 1px);
+  width: 0.3rem;
+  height: 0.5rem;
+  margin: 0;
+  border: solid var(--bf-color-accent);
+  border-width: 0 2px 2px 0;
+  transform: scale(0) rotate(45deg);
+  transition: transform 0.15s;
+}
+input.acp-switch:checked::before {
+  transform: scale(1) rotate(45deg);
+}
+.acp-savebar {
+  position: fixed;
+  z-index: 30;
+  inset-block-end: var(--bf-space-4);
+  inset-inline-end: var(--bf-space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-2) var(--bf-space-3);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
+  font-size: var(--bf-text-list);
+}
+.acp-savebar span {
+  margin-inline-end: var(--bf-space-2);
+  font-weight: 600;
+}
+@media (max-width: 860px) {
+  .acp-settings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .acp-settings-nav {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-block-end: var(--bf-space-1);
+  }
+  .acp-settings-nav button {
+    flex: none;
+    width: auto;
+    gap: var(--bf-space-2);
+    white-space: nowrap;
+  }
+  .acp-set {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .acp-set-control {
+    justify-content: flex-start;
+  }
+  .acp-set.is-image {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .acp-set.is-image .acp-image-set {
+    justify-content: flex-start;
+  }
+  .acp-savebar {
+    inset-inline: var(--bf-space-3);
+    justify-content: flex-end;
+  }
+  .acp-savebar span {
+    margin-inline-end: auto;
+  }
+}
+main td button.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bf-color-accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+main td button.link:hover {
+  text-decoration: underline;
+}
+input[type="file"] {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+}
+input[type="file"]::file-selector-button {
+  margin-inline-end: var(--bf-space-2);
+  height: var(--bf-control-height);
+  padding-inline: var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Shared page parts */
+.acp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+  margin-block-end: var(--bf-space-4);
+}
+/* The title and intro take the room the buttons leave, so a long intro wraps beside the buttons
+   instead of pushing them onto a line of their own; on a narrow screen the buttons go below. */
+.acp-head > :first-child {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+.acp-head > :not(:first-child) {
+  flex: none;
+}
+.acp-head h1 {
+  margin: 0;
+}
+/* The buttons of a page whose tabs differ: the row keeps a button's height when a tab has none. */
+.acp-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--bf-space-2);
+  /* Room for two buttons, so the title and intro wrap the same whichever tab shows. */
+  min-width: min(16rem, 100%);
+  min-height: var(--bf-control-height);
+}
+@media (min-width: 640px) {
+  .acp-head-actions {
+    justify-content: flex-end;
+  }
+}
+.acp-head p {
+  margin: var(--bf-space-1) 0 0;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-list);
+}
+.acp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-block-end: var(--bf-space-4);
+  border-block-end: 1px solid var(--bf-color-border);
+}
+.acp-tabs button,
+.acp-tabs a {
+  min-height: 0;
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border: 0;
+  border-block-end: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--bf-color-muted);
+  font-weight: 500;
+}
+.acp-tabs button:hover {
+  background: none;
+  color: var(--bf-color-text);
+}
+.acp-tabs [aria-selected="true"] {
+  border-block-end-color: var(--bf-color-accent);
+  color: var(--bf-color-accent);
+}
+.acp-count {
+  margin-inline-start: var(--bf-space-1);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+}
+.acp-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--bf-space-3);
+  align-items: end;
+  padding: var(--bf-space-4);
+}
+.acp-form label,
+.acp-field {
+  display: grid;
+  gap: var(--bf-space-1);
+  font-weight: 500;
+}
+.acp-form label small,
+.acp-field small {
+  color: var(--bf-color-muted);
+  font-weight: 400;
+}
+.acp-form input:not([type="checkbox"], [type="radio"], [type="file"]),
+.acp-form select,
+.acp-form textarea {
+  width: 100%;
+}
+.acp-form .acp-wide {
+  grid-column: 1 / -1;
+}
+.acp-form label.acp-check {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  min-height: var(--bf-control-height);
+  font-weight: 400;
+}
+/* A switch with its label, inside a form: the label sits beside it, not under it. */
+.acp-form label.acp-group-style {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2) var(--bf-space-3);
+  font-weight: 400;
+}
+.acp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2);
+  grid-column: 1 / -1;
+}
+.acp-actions .acp-end {
+  margin-inline-start: auto;
+}
+.acp-card-list {
+  display: grid;
+  gap: var(--bf-space-3);
+}
+.acp-rowitem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2) var(--bf-space-3);
+}
+.acp-rowitem > .acp-grow {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.acp-pill {
+  white-space: nowrap;
+}
+/* Long unbroken text in a table cell (JSON, URLs, custom code) wraps instead of widening the table. */
+.acp-wrap {
+  overflow-wrap: anywhere;
+}
+.acp-pill.is-danger {
+  background: var(--bf-color-danger-soft);
+  color: var(--bf-color-danger);
+}
+.acp-pill.is-ok {
+  background: var(--bf-color-success-soft);
+  color: var(--bf-color-success);
+}
+.acp-pill.is-warn {
+  background: var(--bf-color-warning-soft);
+  color: var(--bf-color-warning);
+}
+.acp-pill.is-muted {
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-muted);
+}
+.acp-avatar {
+  flex: none;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: var(--bf-color-surface-2);
+}
+td button.acp-link,
+button.acp-link {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bf-color-accent);
+  font-weight: 500;
+  text-align: start;
+  white-space: normal;
+}
+button.acp-link:hover,
+td button.acp-link:hover {
+  background: none;
+  text-decoration: underline;
+}
+button.is-danger,
+td button.is-danger {
+  border-color: var(--bf-color-danger);
+  background: none;
+  color: var(--bf-color-danger);
+}
+button.is-danger:hover,
+td button.is-danger:hover {
+  background: var(--bf-color-danger-soft);
+  border-color: var(--bf-color-danger);
+}
+.acp-pages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-3);
+  margin-block: var(--bf-space-3);
+  font-size: var(--bf-text-list);
+  color: var(--bf-color-muted);
+}
+.acp-split {
+  display: grid;
+  grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
+  gap: var(--bf-space-4);
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .acp-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.acp-box-head > button.is-danger {
+  margin-inline-start: auto;
+}
+/* The forum tree stays in view beside the editor and scrolls inside itself. */
+@media (min-width: 1101px) {
+  /* The cell is as tall as the editor, so the tree has room to stay put while the page moves. */
+  .acp-split > :first-child {
+    align-self: stretch;
+  }
+  .acp-tree-box {
+    position: sticky;
+    inset-block-start: calc(var(--bf-header-height, 0px) + 3.5rem + var(--bf-space-4));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* A thin bar in its own gutter, so it never covers the counts at the right edge. */
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+    scrollbar-color: var(--bf-color-border) transparent;
+  }
+}
+.acp-tree {
+  margin: 0;
+  padding: var(--bf-space-1);
+  list-style: none;
+  font-size: var(--bf-text-list);
+}
+.acp-tree li[draggable="true"] button {
+  cursor: grab;
+}
+.acp-tree li.is-dragging {
+  opacity: 0.45;
+}
+.acp-tree li.is-drop-before > button {
+  box-shadow: inset 0 2px 0 var(--bf-color-accent);
+}
+.acp-tree li.is-drop-after > button {
+  box-shadow: inset 0 -2px 0 var(--bf-color-accent);
+}
+.acp-tree li.is-drop-inside > button {
+  box-shadow: inset 0 0 0 2px var(--bf-color-accent);
+}
+.acp-tree button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--bf-space-2);
+  width: 100%;
+  min-height: 0;
+  padding: var(--bf-space-2);
+  border: 0;
+  border-radius: var(--bf-radius-input);
+  background: none;
+  color: var(--bf-color-text);
+  font-weight: 400;
+  text-align: start;
+  white-space: normal;
+}
+.acp-tree button:hover {
+  background: var(--bf-color-surface-2);
+}
+.acp-tree button.is-category {
+  font-weight: 650;
+}
+.acp-tree button[aria-current="true"] {
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+}
+.acp-tree .acp-grow {
+  flex: 1;
+  min-width: 0;
+}
+/* Tree lines (lib/tree.js): a guide per ancestor level, a line where that ancestor still has
+   siblings below, then the branch into the row (├ or └). They span the row's full height, so
+   the lines join from row to row. */
+.acp-tree button:has(.acp-tree-branch) {
+  gap: 0;
+}
+.acp-tree-guide,
+.acp-tree-branch {
+  position: relative;
+  flex: none;
+  align-self: stretch;
+  width: 1.25rem;
+  margin-block: calc(-1 * var(--bf-space-2));
+}
+.acp-tree-guide.is-line::before,
+.acp-tree-branch::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0.55rem;
+  border-inline-start: 1px solid color-mix(in srgb, var(--bf-color-muted) 55%, transparent);
+}
+.acp-tree-branch.is-last::before {
+  inset-block-end: 50%;
+}
+.acp-tree-branch::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: 0.55rem 0.15rem;
+  border-block-start: 1px solid color-mix(in srgb, var(--bf-color-muted) 55%, transparent);
+}
+.acp-tree-branch + .acp-grow {
+  padding-inline-start: var(--bf-space-1);
+}
+.acp-matrix th:not(:first-child),
+.acp-matrix td:not(:first-child) {
+  text-align: center;
+  padding-inline: var(--bf-space-2);
+}
+/* A wide matrix (a column for each permission) scrolls inside its box instead of widening the page. */
+.acp-matrix-wrap {
+  overflow-x: auto;
+}
+.acp-profile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-4);
+}
+.acp-profile h1 {
+  margin: 0;
+}
+.acp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1);
+  margin-block-start: var(--bf-space-1);
+}
+.acp-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--bf-space-1) var(--bf-space-4);
+  margin: 0;
+  padding: var(--bf-space-4);
+  font-size: var(--bf-text-list);
+}
+.acp-dl dt {
+  color: var(--bf-color-muted);
+}
+.acp-dl dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.acp-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+.acp-action-row > .acp-grow {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+.row label:has(> input:not([type="checkbox"], [type="radio"])),
+.row label:has(> select) {
+  display: inline-grid;
+  gap: 2px;
+  font-weight: 500;
+}
+main > textarea,
+main > section > textarea {
+  width: 100%;
+}
+
+form.row label.acp-end {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  margin-inline-start: auto;
+  color: var(--bf-color-muted);
+  font-weight: 400;
+  white-space: nowrap;
+}
+.acp-swatch input[type="color"] {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 2px;
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-input);
+  background: none;
+  cursor: pointer;
+}
+iframe.acp-preview {
+  display: block;
+  width: 100%;
+  height: 34rem;
+  border: 0;
+  border-block-start: 1px solid var(--bf-color-border);
+}
+
+/* The panel has its own navigation, so the site header's row of forum links stays out of the way. */
+.acp-global .bf-nav-row {
+  display: none;
+}
+
+/* Same centred column as the site, so a theme's content width applies here too. */
+.acp-top {
+  padding-inline: max(var(--bf-space-4), calc((100% - var(--bf-content-width)) / 2 + var(--bf-space-4)));
+}
+.acp-shell {
+  max-width: var(--bf-content-width);
+  margin-inline: auto;
+  padding-inline: var(--bf-space-4);
+}
+.acp-nav {
+  padding-inline: 0;
+}
+.acp-main {
+  max-width: none;
+  padding-inline: var(--bf-space-5) 0;
+}
+@media (max-width: 860px) {
+  .acp-main {
+    padding-inline: 0;
+  }
+}
+
+/* Dashboard */
+.acp-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--bf-space-4);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  color: var(--bf-color-text);
+}
+.acp-kpi span,
+.acp-kpi small {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+}
+.acp-kpi b {
+  font-size: var(--bf-text-xl);
+  font-weight: 650;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.acp-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--bf-space-4);
+}
+.acp-chart {
+  margin: 0;
+  padding: var(--bf-space-4);
+}
+.acp-chart figcaption {
+  display: grid;
+  gap: 2px;
+  margin-block-end: var(--bf-space-3);
+}
+.acp-chart figcaption span {
+  font-size: var(--bf-text-list);
+  font-weight: 650;
+}
+.acp-chart figcaption b {
+  font-size: var(--bf-text-xl);
+  font-weight: 650;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.acp-chart-plot {
+  position: relative;
+  border-block-start: 1px dashed var(--bf-color-border);
+}
+.acp-chart-max {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-end: 0;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+.acp-chart-bars {
+  display: flex;
+  align-items: stretch;
+  height: 9rem;
+  border-block-end: 1px solid var(--bf-color-border-strong);
+}
+.acp-chart-col {
+  display: flex;
+  flex: 1 1 0;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 0;
+  padding-inline: 1px;
+}
+.acp-chart-col:hover,
+.acp-chart-col.is-active {
+  background: var(--bf-color-surface-2);
+}
+.acp-chart-col i {
+  display: block;
+  width: 100%;
+  max-width: 0.75rem;
+  background: var(--bf-color-accent);
+  border-radius: 4px 4px 0 0;
+}
+.acp-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-block-start: var(--bf-space-1);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+}
+.acp-chart-table {
+  margin-block-start: var(--bf-space-2);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+}
+.acp-facts {
+  display: grid;
+  margin: 0;
+}
+.acp-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-3) var(--bf-space-4);
+  border-block-start: 1px solid var(--bf-color-border);
+  font-size: var(--bf-text-list);
+}
+.acp-facts > div:first-child {
+  border-block-start: 0;
+}
+.acp-facts dt {
+  color: var(--bf-color-muted);
+}
+.acp-facts dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.acp-busiest {
+  margin: 0;
+  padding: var(--bf-space-2) var(--bf-space-4) var(--bf-space-4);
+  list-style: none;
+  font-size: var(--bf-text-list);
+}
+.acp-busiest li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--bf-space-3);
+  padding-block-start: var(--bf-space-2);
+}
+.acp-busiest span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acp-busiest b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.acp-busiest i {
+  grid-column: 1 / -1;
+  display: block;
+  height: 6px;
+  min-width: 4px;
+  background: var(--bf-color-accent);
+  border-radius: 0 4px 4px 0;
+}
+
+/* Themes */
+.acp-btnlink {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: var(--bf-control-height);
+  padding: var(--bf-space-1) var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-input);
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  font-weight: 500;
+}
+.acp-themes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--bf-space-4);
+  margin: 0 0 var(--bf-space-4);
+  padding: 0;
+  list-style: none;
+}
+.acp-theme {
+  display: flex;
+  flex-direction: column;
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+}
+.acp-theme.is-off .acp-theme-look {
+  opacity: 0.5;
+}
+:where(.acp-shell) button.acp-theme-look,
+.acp-theme-look {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+  height: 5rem;
+  min-height: 5rem;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-block-end: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius) var(--bf-radius) 0 0;
+  background: var(--bf-color-surface-2);
+}
+:where(.acp-shell) button.acp-theme-look:hover {
+  background: var(--bf-color-surface-2);
+  border-color: var(--bf-color-border);
+}
+.acp-theme-look i {
+  flex: 1;
+}
+.acp-theme-look > span {
+  align-self: center;
+}
+.acp-theme-body {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-3) var(--bf-space-4) 0;
+}
+.acp-theme-body .acp-grow {
+  display: grid;
+  min-width: 0;
+}
+.acp-theme > .acp-actions {
+  margin-block-start: auto;
+  padding: var(--bf-space-3) var(--bf-space-4);
+}
+.acp-more {
+  position: relative;
+  margin-inline-start: auto;
+}
+.acp-more > summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--bf-control-height);
+  height: var(--bf-control-height);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-input);
+  cursor: pointer;
+  list-style: none;
+}
+.acp-more > summary::-webkit-details-marker {
+  display: none;
+}
+.acp-more > div {
+  position: absolute;
+  z-index: 5;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + 4px);
+  display: grid;
+  gap: var(--bf-space-1);
+  min-width: 13rem;
+  padding: var(--bf-space-2);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+}
+.acp-tokens {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(0, 13rem) minmax(0, 13rem);
+  gap: var(--bf-space-3);
+  align-items: center;
+  padding: var(--bf-space-2) var(--bf-space-4);
+  font-size: var(--bf-text-list);
+}
+.acp-tokens .acp-swatch input:not([type="color"]) {
+  min-width: 0;
+  width: 100%;
+}
+.acp-tokens input.is-unset {
+  opacity: 0.35;
+}
+.acp-tokens-head {
+  border-block-end: 1px solid var(--bf-color-border);
+}
+h2.acp-token-group {
+  margin: var(--bf-space-3) 0 0;
+  padding-inline: var(--bf-space-4);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+@media (max-width: 640px) {
+  .acp-tokens {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .acp-tokens-head {
+    display: none;
+  }
+}
+
+/* Widgets: areas laid out like the page they are on */
+.acp-board {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+  gap: var(--bf-space-4);
+  align-items: start;
+}
+/* A picker on its own above the boards, outside a box: no box padding, lined up with the heading. */
+.acp-page-pick {
+  max-width: 24rem;
+  margin-block-end: var(--bf-space-4);
+  padding: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+.acp-area {
+  min-width: 0;
+  padding: var(--bf-space-3);
+  background: var(--bf-color-surface-2);
+  border: 1px dashed var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+}
+.acp-area.is-over {
+  border-color: var(--bf-color-accent);
+  background: var(--bf-color-accent-soft);
+}
+.acp-area.is-top,
+.acp-area.is-bottom {
+  grid-column: 1 / -1;
+}
+.acp-area.is-bottom {
+  order: 3;
+}
+.acp-area > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-2);
+  margin-block-end: var(--bf-space-2);
+}
+.acp-area h2 {
+  margin: 0;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+  font-weight: 650;
+}
+.acp-widgets,
+.acp-kindlist {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.acp-kindlist {
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  margin-block-end: var(--bf-space-3);
+  padding-block-end: var(--bf-space-3);
+  border-block-end: 1px solid var(--bf-color-border);
+}
+:where(.acp-shell) button.acp-kind {
+  justify-content: flex-start;
+  gap: var(--bf-space-3);
+  width: 100%;
+  height: 100%;
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border-color: var(--bf-color-border);
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  font-weight: 400;
+  text-align: start;
+}
+:where(.acp-shell) button.acp-kind:hover {
+  border-color: var(--bf-color-accent);
+  background: var(--bf-color-surface);
+}
+.acp-kind span,
+.acp-widget-row .acp-grow {
+  display: grid;
+  min-width: 0;
+}
+.acp-kind small {
+  color: var(--bf-color-muted);
+}
+.acp-widget {
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-input);
+  cursor: grab;
+}
+.acp-widget.is-dragging {
+  opacity: 0.4;
+}
+.acp-widget-row {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-2) var(--bf-space-3);
+}
+.acp-widget-row > .bf-icon {
+  color: var(--bf-color-muted);
+}
+.acp-widget-tools {
+  display: flex;
+  flex: none;
+  gap: 2px;
+}
+.acp-widget-tools button {
+  height: var(--bf-control-height-sm);
+  padding-inline: var(--bf-space-2);
+}
+.acp-area-empty {
+  padding: var(--bf-space-3);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+  text-align: center;
+}
+@media (max-width: 860px) {
+  .acp-board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Badges */
+.acp-rowitem.is-off .bf-medal {
+  opacity: 0.4;
+}
+/* A group's name as members see it: its icon, and its colour as a tinted pill. */
+.acp-group-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-weight: 600;
+}
+.acp-group-label.is-styled {
+  padding: 1px var(--bf-space-2);
+  border-radius: 999px;
+  color: var(--acp-group-ink, var(--bf-color-text));
+  background: color-mix(in srgb, var(--acp-group-colour) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acp-group-ink, var(--bf-color-text)) 35%, transparent);
+}
+.acp-group-label .bf-icon {
+  width: 1em;
+  height: 1em;
+}
+.acp-group-label img {
+  width: auto;
+  max-width: 6rem;
+  height: 1.25em;
+  object-fit: contain;
+}
+/* A table column of buttons: they line up at the end of the row. */
+:is(td, th).acp-cell-end {
+  text-align: end;
+}
+/* Rows that are put in order by dragging: a handle at the start, a line where the row will land. */
+:is(td, th).acp-grip-col {
+  width: 2rem;
+  padding-inline-end: 0;
+}
+.acp-grip {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--bf-radius-input);
+  color: var(--bf-color-muted);
+  cursor: grab;
+}
+.acp-grip:hover,
+.acp-grip:focus-visible {
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-text);
+}
+tr.is-grabbed {
+  opacity: 0.45;
+}
+tr.is-drop-before > td {
+  box-shadow: inset 0 2px 0 var(--bf-color-accent);
+}
+tr.is-drop-after > td {
+  box-shadow: inset 0 -2px 0 var(--bf-color-accent);
+}
+.acp-group-count {
+  min-width: 6rem;
+  text-align: end;
+}
+/* Profile fields: the type cards in the dialog, rows of switches, the link presets and preview. */
+.acp-kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--bf-space-2);
+}
+.acp-kind {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  cursor: pointer;
+}
+.acp-kind:hover {
+  background: var(--bf-color-surface-2);
+}
+.acp-kind.is-on {
+  border-color: var(--bf-color-accent);
+  background: var(--bf-color-accent-soft);
+}
+.acp-kind:has(input:focus-visible) {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+.acp-kind input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.acp-kind > .bf-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-block-start: 2px;
+  color: var(--bf-color-accent);
+}
+.acp-kind span {
+  display: grid;
+  gap: 2px;
+}
+.acp-kind small {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+}
+.acp-switches {
+  display: grid;
+  gap: var(--bf-space-1);
+}
+/* The icon picker is the site's own: themes/default/css/components/icon-picker.css. */
+.acp-picker-hint {
+  display: block;
+  margin-block-start: var(--bf-space-1);
+  font-size: var(--bf-text-sm);
+}
+.acp-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2);
+  margin-block-end: var(--bf-space-3);
+  font-size: var(--bf-text-sm);
+}
+.acp-picker > .acp-form-flat + .acp-switches,
+.acp-picker > .acp-switches + .acp-form-flat {
+  margin-block-start: var(--bf-space-3);
+}
+.acp-picker > .ok,
+.acp-picker > .err {
+  margin: var(--bf-space-2) 0 0;
+}
+.acp-field-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--bf-space-4);
+}
+.acp-field-preview > div {
+  display: grid;
+  gap: var(--bf-space-2);
+  align-content: start;
+  min-width: 0;
+}
+.acp-field-show {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--bf-space-3);
+  margin: 0;
+  padding: var(--bf-space-3);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-input);
+  font-size: var(--bf-text-list);
+}
+.acp-field-show.is-off {
+  opacity: 0.55;
+}
+.acp-field-show dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-1);
+  color: var(--bf-color-muted);
+}
+.acp-field-show dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.acp-link-like {
+  color: var(--bf-color-accent);
+}
+/* The list: icon, label with what it is, pills, move buttons, edit. */
+.acp-field-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--bf-radius-input);
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-muted);
+}
+.acp-field-about {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acp-field-pills,
+.acp-field-move {
+  display: inline-flex;
+  gap: var(--bf-space-1);
+}
+.acp-field-move button {
+  width: var(--bf-control-height);
+  padding: 0;
+}
+/* The arrows sit at the end of a row, at the edge of the page: a centred tooltip with a long
+   label ("Move Internal note down") would reach past it, and hidden it still makes the page
+   scroll sideways. It lines up with the button's end instead. */
+.acp-field-move .acp-icon-btn::after {
+  inset-inline: auto 0;
+  translate: none;
+}
+.acp-flip {
+  transform: rotate(180deg);
+}
+.acp-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-6) var(--bf-space-4);
+  text-align: center;
+}
+/* The share picture preview under its settings: the saved look, drawn by the server. */
+.acp-og-preview {
+  display: grid;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-4);
+  border-block-start: 1px solid var(--bf-color-border);
+}
+.acp-og-preview img {
+  inline-size: 100%;
+  max-inline-size: 38rem;
+  block-size: auto;
+  aspect-ratio: 1200 / 630;
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-2, 0.5rem);
+  background: var(--bf-color-surface-2, transparent);
+}
+.acp-og-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2) var(--bf-space-4);
+}
+.acp-og-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+.acp-colour-text {
+  max-inline-size: 7.5rem;
+  font-family: var(--bf-font-mono, monospace);
+}
+/* One line of controls in a picker fieldset: the colour swatch, a button, a preview, a switch. */
+.acp-group-style {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2) var(--bf-space-3);
+  min-height: var(--bf-control-height);
+}
+/* A round swatch the size of the icon buttons beside it; the native picker fills it invisibly. */
+.acp-colour-input {
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+  overflow: hidden;
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.acp-colour-input input[type="color"] {
+  position: absolute;
+  inset: -0.5rem;
+  width: calc(100% + 1rem);
+  height: calc(100% + 1rem);
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+}
+/* No colour yet: an empty dashed circle, not the picker's default blue. */
+.acp-colour-input.is-empty {
+  border-style: dashed;
+}
+.acp-colour-input.is-empty input[type="color"] {
+  opacity: 0;
+}
+.acp-colour-input:has(input:focus-visible) {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+.acp-picker {
+  margin: 0;
+  padding: 0 var(--bf-space-4) var(--bf-space-4);
+  border: 0;
+  min-width: 0;
+}
+/* Without a legend, the first row's floating labels need the room the legend gave them. */
+.acp-picker.is-plain {
+  padding-block-start: var(--bf-space-3);
+}
+/* A group inside a form lines up with the fields beside it: the form already has the side padding. */
+.acp-form .acp-picker {
+  padding-inline: 0;
+}
+.acp-picker legend {
+  padding: 0 0 var(--bf-space-2);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+  font-weight: 600;
+}
+.acp-form-flat {
+  padding: 0;
+}
+.acp-colors,
+.acp-sp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+}
+.acp-color {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.acp-color input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.acp-color.is-on {
+  outline: 2px solid var(--bf-color-accent);
+  outline-offset: 2px;
+}
+.acp-color:has(input:focus-visible) {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+
+/* Dialogs are the site's .bf-dialog (lib/Dialog.svelte, lib/sudo.js). A panel editor's body holds
+   .acp-form grids and .acp-picker fieldsets that bring their own padding. */
+.acp-dialog-body {
+  display: block;
+  padding: 0;
+}
+/* Navigation: the header as visitors see it, and the list of its links. */
+.acp-nav-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-1) var(--bf-space-4);
+  padding: var(--bf-space-3) var(--bf-space-4);
+  font-size: var(--bf-text-list);
+  font-weight: 600;
+}
+.acp-nav-preview .is-off {
+  color: var(--bf-color-muted);
+  text-decoration: line-through;
+}
+.acp-nav-row.is-off .acp-grow {
+  opacity: 0.6;
+}
+
+/* One action of an automation rule: its type and remove button, then the fields it needs. */
+.acp-action {
+  margin-block-end: var(--bf-space-3);
+  padding: var(--bf-space-3);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+}
+.acp-action-head {
+  display: flex;
+  align-items: end;
+  gap: var(--bf-space-2);
+}
+.acp-action-head > .bf-field {
+  flex: 1;
+}
+.acp-action > .acp-form {
+  margin-block-start: var(--bf-space-3);
+}
+.acp-dialog-body > .err {
+  margin: 0 var(--bf-space-4) var(--bf-space-4);
+}
+.bf-dialog .bf-dialog-actions .is-danger.bf-dialog-aside {
+  margin-inline-end: auto;
+}
+.acp-dialog-x {
+  flex: none;
+  min-height: 2rem;
+  padding: 0 var(--bf-space-2);
+}
+
+/* Members: the avatar stays beside the name and address in a narrow column. */
+td > .acp-rowitem {
+  flex-wrap: nowrap;
+  padding: 0;
+}
+td > .acp-rowitem > .acp-grow {
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* A link inside a sentence has nothing but its colour to tell it from the words around it
+   (WCAG 1.4.1): underlined, as the site does with .bf-inline-link. */
+.acp-shell p a:not(.btn, [class*="acp-"]) {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* A link that looks like a secondary button, with an icon; on a phone only the icon shows. */
+a.acp-linkbtn,
+.acp-profile-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-2);
+  box-sizing: border-box;
+  min-height: var(--bf-control-height);
+  padding: 0 var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  font-size: var(--bf-text-list);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.acp-linkbtn:hover {
+  background: var(--bf-color-surface-2);
+  text-decoration: none;
+}
+.acp-profile .acp-profile-actions {
+  grid-column: auto;
+  margin-inline-start: auto;
+}
+@media (max-width: 639px) {
+  .acp-profile .acp-profile-actions {
+    flex: 1 0 100%;
+    margin-inline-start: 0;
+    justify-content: space-between;
+  }
+  .acp-profile-actions .acp-lbl {
+    display: none;
+  }
+  a.acp-linkbtn,
+  .acp-profile-actions button {
+    flex: 1;
+    padding: 0;
+  }
+}
+/* What a member still needs for the next level: one cell per requirement, a bar under each. */
+.acp-trust p {
+  margin: 0 0 var(--bf-space-2);
+}
+.acp-trust-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--bf-space-3);
+  margin: 0 0 var(--bf-space-3);
+  padding: 0;
+  list-style: none;
+}
+.acp-trust-list > li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--bf-space-1) var(--bf-space-3);
+  align-items: baseline;
+  padding: var(--bf-space-3);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  font-size: var(--bf-text-list);
+}
+.acp-trust-list > li.is-met b {
+  color: var(--bf-color-success, var(--bf-color-accent));
+}
+.acp-trust-list progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 0.5rem;
+}
+@media (max-width: 639px) {
+  .acp-trust-list {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--bf-space-2);
+  }
+  .acp-trust-list > li {
+    padding: var(--bf-space-2) var(--bf-space-3);
+  }
+}
+
+/* Phones: the tiles sit three or so to a row instead of one under another. */
+@media (max-width: 639px) {
+  .acp-tiles {
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    gap: var(--bf-space-2);
+  }
+  .acp-tile {
+    padding: var(--bf-space-3);
+  }
+}
+
+/* Progress and meter bars, drawn by the panel instead of the browser (the same look as the site's
+   trust page): a rounded track and a rounded fill. */
+.acp-shell :is(progress, meter) {
+  appearance: none;
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 6rem;
+  block-size: 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bf-color-border);
+  color: var(--bf-color-accent);
+  overflow: hidden;
+}
+.acp-shell progress::-webkit-progress-bar,
+.acp-shell meter::-webkit-meter-bar {
+  background: var(--bf-color-border);
+  border: 0;
+  border-radius: 999px;
+}
+.acp-shell progress::-webkit-progress-value,
+.acp-shell meter::-webkit-meter-optimum-value,
+.acp-shell meter::-webkit-meter-suboptimum-value,
+.acp-shell meter::-webkit-meter-even-less-good-value {
+  border-radius: 999px;
+  background: var(--bf-color-accent);
+}
+.acp-shell progress::-moz-progress-bar,
+.acp-shell meter::-moz-meter-bar {
+  border-radius: 999px;
+  background: var(--bf-color-accent);
+}
+.acp-trust-list > li.is-met progress::-webkit-progress-value {
+  background: var(--bf-color-success, var(--bf-color-accent));
+}
+.acp-trust-list > li.is-met progress::-moz-progress-bar {
+  background: var(--bf-color-success, var(--bf-color-accent));
+}
+.acp-rowitem > :is(progress, meter) {
+  flex: 0 1 12rem;
+  inline-size: auto;
+}
+
+/* A picker under the bold label of an action row. */
+.acp-action-row .acp-pick {
+  margin-block-start: var(--bf-space-2);
+}
+
+/* Phones: a tab bar is one row that scrolls sideways, not several rows of wrapped tabs. */
+@media (max-width: 639px) {
+  .acp-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .acp-tabs > button {
+    flex: none;
+  }
+}
+
+/* The line under a dialog's fields (for example how many members a filter reaches). */
+.acp-dialog-body > p.acp-reach {
+  margin: 0;
+  padding: var(--bf-space-3) var(--bf-space-4) var(--bf-space-4);
+}
+
+/* The post editor inside a panel form (MarkdownField): as wide as the form. */
+.acp-md textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* The site's icon buttons (the post editor's toolbar) keep the site's look in the panel: the
+   panel's own button rule above is outside the cascade layers and would make them blue blocks. */
+.acp-shell button.bf-icon-btn {
+  min-height: 0;
+  height: var(--bf-control-height);
+  min-width: var(--bf-control-height);
+  padding-inline: var(--bf-space-2);
+  border: 0;
+  background: none;
+  color: var(--bf-color-muted);
+  font-weight: inherit;
+}
+.acp-shell button.bf-icon-btn:hover {
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-text);
+}
+.acp-shell .composer-toolbar button.bf-icon-btn {
+  min-width: 2rem;
+  height: 2rem;
+  padding-inline: var(--bf-space-1);
+}
+.acp-shell .composer-toolbar button.bf-icon-btn[aria-pressed="true"] {
+  background: var(--bf-color-accent-soft);
+  color: var(--bf-color-accent);
+}
+
+/* Forced colours: the switch's track and knob are backgrounds, which the palette flattens. */
+@media (forced-colors: active) {
+  input.acp-switch {
+    forced-color-adjust: none;
+    background: Field;
+    outline: 1px solid FieldText;
+  }
+
+  input.acp-switch::after {
+    background: FieldText;
+  }
+
+  input.acp-switch:checked {
+    background: Highlight;
+    outline-color: Highlight;
+  }
+
+  input.acp-switch::before {
+    border-color: Highlight;
+  }
+
+  input.acp-switch:checked::after {
+    background: HighlightText;
+  }
+}
+
+/* Forced colours, the rest of the panel: edges for boxes and pills, and a mark for the current
+   page, tab and period that does not depend on a background. */
+@media (forced-colors: active) {
+  .acp-box,
+  .acp-kpi,
+  .acp-pill,
+  .acp-icon-btn,
+  dialog.acp-modal {
+    border: 1px solid CanvasText;
+  }
+
+  .acp-nav a[aria-current="page"],
+  .acp-settings-nav button[aria-current],
+  .acp-tabs [aria-selected="true"],
+  .acp-range button[aria-pressed="true"],
+  .acp-find-list li.is-active {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  .acp-pill.is-danger {
+    border-style: double;
+    border-width: 3px;
+  }
+
+  .acp-pill.is-warn {
+    border-style: dashed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acp-shell *,
+  .acp-shell *::before,
+  .acp-shell *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Dashboard period switch */
+.acp-range {
+  display: flex;
+  gap: var(--bf-space-1);
+}
+.acp-range button {
+  min-height: 0;
+  padding: var(--bf-space-1) var(--bf-space-3);
+}
+.acp-range button[aria-pressed="true"] {
+  border-color: var(--bf-color-accent);
+  color: var(--bf-color-accent);
+}
+@media (forced-colors: active) {
+  .acp-range button[aria-pressed="true"] {
+    color: HighlightText;
+    border-color: Highlight;
+  }
+}
+@media (max-width: 40rem) {
+  .acp-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--bf-space-2);
+  }
+  .acp-kpi {
+    padding: var(--bf-space-3);
+  }
+}
+
+/* Dashboard cards: growth cards with a trend, then the ones that ask for a look */
+@media (min-width: 64rem) {
+  .acp-kpis {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+.acp-kpis-watch {
+  margin-block-start: calc(-1 * var(--bf-space-1));
+}
+.acp-kpi {
+  position: relative;
+  overflow: hidden;
+}
+.acp-kpi.is-warn {
+  border-color: var(--bf-color-warning, #d97706);
+}
+.acp-kpi.is-warn b {
+  color: var(--bf-color-warning, #d97706);
+}
+.acp-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 1.75rem;
+  margin-block-start: var(--bf-space-2);
+}
+.acp-spark i {
+  flex: 1 1 0;
+  min-width: 1px;
+  background: var(--bf-color-accent);
+  border-radius: 1px 1px 0 0;
+  opacity: 0.55;
+}
+.acp-spark {
+  align-self: stretch;
+  width: 100%;
+  margin-block-start: auto;
+  padding-block-start: var(--bf-space-2);
+  box-sizing: content-box;
+}
+@media (max-width: 40rem) {
+  .acp-kpis .acp-kpi:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+.acp-spark i {
+  min-height: 1px;
+}
+
+/* Dashboard: boxes of different heights flow into two columns without holes; a chart left alone
+   in the last row takes the whole row. */
+.acp-masonry {
+  column-count: 2;
+  column-gap: var(--bf-space-4);
+}
+.acp-masonry > .acp-box {
+  break-inside: avoid;
+  margin-block-end: var(--bf-space-4);
+}
+@media (max-width: 48rem) {
+  .acp-masonry {
+    column-count: 1;
+  }
+}
+.acp-charts > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+@media (min-width: 48rem) {
+  .acp-charts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Site traffic */
+.acp-traffic {
+  --traffic-h: 14rem;
+  grid-column: 1 / -1;
+  margin-block-end: var(--bf-space-4);
+}
+.acp-eyebrow {
+  margin: 0;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.acp-traffic-body {
+  display: grid;
+  gap: var(--bf-space-4);
+  padding: var(--bf-space-2) var(--bf-space-4) var(--bf-space-4);
+}
+.acp-traffic-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--bf-space-4);
+}
+.acp-traffic-headline {
+  margin: 0;
+  font-size: var(--bf-text-lg, 1.15rem);
+  font-weight: 600;
+}
+.acp-traffic-headline .is-up {
+  color: var(--bf-color-success);
+}
+.acp-traffic-headline .is-down {
+  color: var(--bf-color-danger);
+}
+.acp-traffic-rates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2) var(--bf-space-5, 1.5rem);
+  margin: 0;
+}
+.acp-traffic-rates div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+.acp-traffic-rates dd {
+  margin: 0;
+  font-size: var(--bf-text-xl);
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.acp-traffic-rates dt {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-sm);
+}
+.acp-traffic-plot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--bf-space-2);
+}
+.acp-traffic-y {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: calc(var(--traffic-h) + 1em);
+  margin-block: -0.5em 0;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  line-height: 1;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.acp-traffic-grid {
+  position: relative;
+  min-width: 0;
+}
+.acp-traffic-lines {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  height: var(--traffic-h);
+  pointer-events: none;
+}
+.acp-traffic-lines i {
+  display: block;
+  border-block-start: 1px solid var(--bf-color-border);
+}
+.acp-traffic-bars {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  height: var(--traffic-h);
+}
+.acp-traffic-col {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-width: 0;
+  padding-inline: 2px;
+}
+.acp-traffic-col.is-active {
+  background: var(--bf-color-surface-2);
+}
+.acp-traffic-col b {
+  display: block;
+  min-height: 1px;
+}
+.acp-traffic-col b.is-member {
+  background: var(--bf-color-accent);
+}
+.acp-traffic-col b.is-anonymous {
+  background: color-mix(in srgb, var(--bf-color-accent) 45%, transparent);
+}
+.acp-traffic-col b.is-crawler {
+  background: color-mix(in srgb, var(--bf-color-muted) 55%, transparent);
+}
+.acp-traffic-col b:first-child {
+  border-radius: 3px 3px 0 0;
+}
+.acp-traffic-tip {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 100%;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  min-width: 9rem;
+  padding: var(--bf-space-2) var(--bf-space-3);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
+  font-size: var(--bf-text-sm);
+  pointer-events: none;
+}
+.acp-traffic-tip.is-end {
+  inset-inline-start: auto;
+  inset-inline-end: 100%;
+}
+.acp-traffic-x {
+  display: flex;
+  height: 3.2rem;
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+}
+.acp-traffic-x span {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-block-start: var(--bf-space-2);
+  white-space: nowrap;
+  transform: rotate(-45deg);
+  transform-origin: 100% 0;
+  text-align: end;
+  direction: ltr;
+}
+.acp-traffic-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--bf-space-2);
+}
+.acp-traffic-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  min-height: 0;
+  padding: var(--bf-space-1) var(--bf-space-3);
+  border-color: transparent;
+  background: none;
+  font-size: var(--bf-text-sm);
+}
+.acp-traffic-legend button i {
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 2px solid var(--bf-color-accent);
+  border-radius: 3px;
+}
+.acp-traffic-legend button.is-anonymous i {
+  border-color: color-mix(in srgb, var(--bf-color-accent) 60%, transparent);
+}
+.acp-traffic-legend button.is-crawler i {
+  border-color: var(--bf-color-muted);
+}
+.acp-traffic-legend button[aria-pressed="true"].is-member i {
+  background: var(--bf-color-accent);
+}
+.acp-traffic-legend button[aria-pressed="true"].is-anonymous i {
+  background: color-mix(in srgb, var(--bf-color-accent) 45%, transparent);
+}
+.acp-traffic-legend button[aria-pressed="true"].is-crawler i {
+  background: color-mix(in srgb, var(--bf-color-muted) 55%, transparent);
+}
+.acp-traffic-legend button[aria-pressed="false"] {
+  color: var(--bf-color-muted);
+}
+.acp-traffic-lists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--bf-space-4) var(--bf-space-6, 2rem);
+}
+.acp-traffic-lists h3 {
+  margin: 0 0 var(--bf-space-2);
+  font-size: var(--bf-text-list);
+}
+.acp-traffic-lists ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.acp-traffic-lists li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+  padding-block: var(--bf-space-1);
+  font-size: var(--bf-text-list);
+}
+.acp-traffic-lists li > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acp-traffic-lists li b {
+  flex: none;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.acp-traffic-lists li small {
+  color: var(--bf-color-muted);
+  font-weight: 400;
+}
+.acp-traffic-lists abbr {
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  text-decoration: none;
+}
+@media (max-width: 40rem) {
+  .acp-traffic-body {
+    padding-inline: var(--bf-space-3);
+  }
+  .acp-traffic-rates {
+    gap: var(--bf-space-2) var(--bf-space-4);
+  }
+}
+.acp-traffic-x,
+.acp-traffic-plot {
+  overflow-x: clip;
+}
+.acp-traffic-plot {
+  padding-inline-end: 0.9rem;
+}
+.acp-traffic-x span {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Colour schemes */
+.acp-scheme-look {
+  flex-direction: column;
+}
+.acp-scheme-look > span {
+  display: flex;
+  flex: 1;
+  align-self: stretch;
+}
+.acp-scheme-edit {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 1fr);
+  gap: var(--bf-space-4);
+  align-items: start;
+}
+@media (max-width: 64rem) {
+  .acp-scheme-edit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.acp-scheme-edit .acp-tokens {
+  grid-template-columns: minmax(7rem, 1fr) minmax(0, 11rem) minmax(0, 11rem);
+}
+@media (max-width: 640px) {
+  .acp-scheme-edit .acp-tokens {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.acp-tokens input.is-bad {
+  border-color: var(--bf-color-danger);
+}
+.acp-scheme-previews {
+  position: sticky;
+  inset-block-start: var(--bf-space-4);
+  display: grid;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-3);
+}
+/* The preview sets its own design tokens (in the script), so it shows a scheme whatever the panel uses. */
+.acp-scheme-preview {
+  overflow: hidden;
+  color: var(--bf-color-text);
+  background: var(--bf-color-bg);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  font-size: var(--bf-text-list);
+}
+.acp-sp-head {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--bf-space-2) var(--bf-space-3);
+  color: var(--bf-color-header-text);
+  background: var(--bf-color-header-bg);
+  border-block-end: 1px solid var(--bf-color-border);
+}
+.acp-sp-head span {
+  color: var(--bf-color-muted);
+}
+.acp-sp-page {
+  display: grid;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-3);
+}
+.acp-sp-card {
+  display: grid;
+  gap: var(--bf-space-1);
+  padding: var(--bf-space-3);
+  background: var(--bf-color-surface);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+}
+.acp-sp-card a {
+  color: var(--bf-color-accent);
+  font-weight: 600;
+}
+.acp-sp-card p {
+  margin: 0;
+}
+.acp-sp-card small {
+  color: var(--bf-color-muted);
+}
+.acp-sp-actions {
+  display: flex;
+  gap: var(--bf-space-2);
+  padding-block-start: var(--bf-space-2);
+}
+.acp-sp-btn {
+  padding: var(--bf-space-1) var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-input);
+}
+.acp-sp-btn.is-primary {
+  color: var(--bf-color-accent-text);
+  background: var(--bf-color-accent);
+  border-color: var(--bf-color-accent);
+}
+.acp-sp-chips span {
+  padding: 0 var(--bf-space-2);
+  border-radius: 999px;
+  font-size: var(--bf-text-sm);
+}
+.acp-sp-chips .is-ok {
+  color: var(--bf-color-success);
+  background: var(--bf-color-success-soft);
+}
+.acp-sp-chips .is-warn {
+  color: var(--bf-color-warning);
+  background: var(--bf-color-warning-soft);
+}
+.acp-sp-chips .is-bad {
+  color: var(--bf-color-danger);
+  background: var(--bf-color-danger-soft);
+}
+.acp-sp-chips .is-soft {
+  color: var(--bf-color-accent);
+  background: var(--bf-color-accent-soft);
+}
+.acp-swatch-mode {
+  display: none;
+  min-width: 2.75rem;
+  color: var(--bf-color-muted);
+}
+@media (max-width: 640px) {
+  .acp-scheme-edit .acp-swatch-mode {
+    display: inline;
+  }
+}
+
+/* Theme cards show the theme as it looks: a light and a dark miniature side by side. */
+.acp-theme-look.has-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bf-space-2);
+  height: auto;
+  min-height: 0;
+  padding: var(--bf-space-2);
+  align-items: stretch;
+}
+.acp-scheme-preview.is-compact {
+  font-size: var(--bf-text-xs);
+  text-align: start;
+}
+.acp-scheme-preview.is-compact .acp-sp-head {
+  padding: 2px var(--bf-space-2);
+}
+.acp-scheme-preview.is-compact .acp-sp-page {
+  gap: var(--bf-space-1);
+  padding: var(--bf-space-2);
+}
+.acp-scheme-preview.is-compact .acp-sp-card {
+  padding: var(--bf-space-2);
+}
+.acp-scheme-preview.is-compact .acp-sp-actions {
+  padding-block-start: var(--bf-space-1);
+}
+.acp-scheme-preview.is-compact .acp-sp-btn {
+  padding: 0 var(--bf-space-2);
+}
+.acp-scheme-preview.is-compact .acp-sp-chips span {
+  padding: 0 6px;
+  font-size: 0.6875rem;
+}
+.acp-scheme-previews.is-row {
+  position: static;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+.acp-pad {
+  padding-inline: var(--bf-space-4);
+}
+.acp-scheme-preview.is-compact {
+  min-width: 0;
+}
+.acp-scheme-preview.is-compact .acp-sp-card p,
+.acp-scheme-preview.is-compact .acp-sp-btn:not(.is-primary),
+.acp-scheme-preview.is-compact .acp-sp-chips .is-soft {
+  display: none;
+}
+.acp-scheme-preview.is-compact .acp-sp-card a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acp-theme-look.has-preview {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.acp-scheme-preview.is-compact .acp-sp-chips .is-bad {
+  display: none;
+}
+.acp-scheme-preview.is-compact .acp-sp-chips {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.acp-scheme-preview.is-compact .acp-sp-head b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acp-more > summary {
+  overflow: hidden;
+}
+
+/* The picker's list is a popover placed from the field (MultiSelect.svelte): in the top layer it
+   is never clipped by a dialog or a scrolling box. */
+.bf-multi .bf-tags-list[popover] {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  color: var(--bf-color-text);
+}
+
+/* A search or filter field above a list or table: as wide as the list, with no form padding. */
+.acp-filter {
+  margin-block: var(--bf-space-3) var(--bf-space-4);
+}
+.acp-filter .bf-field {
+  display: block;
+  width: 100%;
+}
+
+/* A long text in the Site text list (an email body) keeps its line breaks, cut after a few lines. */
+.acp-text-preview {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: pre-line;
+}
+
+/* A catalog key is one long word: it wraps, so a narrow screen does not scroll sideways. */
+.acp-text-key {
+  overflow-wrap: anywhere;
+}

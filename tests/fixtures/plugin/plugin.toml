@@ -1,0 +1,13 @@
+id = "test-plugin"
+name = "Test Plugin"
+version = "1.0.0"
+api = "^1.0"
+kind = "wasm"
+capabilities = ["kv", "api_route"]
+hooks = ["post.before_create", "post.created", "api.request"]
+
+[server]
+module = "server.wat"
+
+[client]
+entry = "client/index.js"

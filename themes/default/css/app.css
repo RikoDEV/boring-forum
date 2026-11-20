@@ -1,0 +1,56 @@
+/* Main stylesheet, linked from every page after the critical one. All of it is in the app
+   layer, in this order: components, then layout that restyles components in context, then
+   pages, then rendered post content. Within the layer, later files win at equal specificity. */
+
+/* Components */
+@import url("components/panels.css") layer(app);
+@import url("components/text.css") layer(app);
+@import url("components/buttons.css") layer(app);
+@import url("components/badges.css") layer(app);
+@import url("components/menus.css") layer(app);
+@import url("components/disclosure.css") layer(app);
+@import url("components/fields.css") layer(app);
+@import url("components/lists.css") layer(app);
+@import url("components/modal.css") layer(app);
+@import url("components/pager.css") layer(app);
+@import url("components/toasts.css") layer(app);
+@import url("components/notices.css") layer(app);
+@import url("components/hovercard.css") layer(app);
+@import url("components/icon-picker.css") layer(app);
+@import url("components/tooltip.css") layer(app);
+@import url("components/lightbox.css") layer(app);
+@import url("components/avatars.css") layer(app);
+@import url("components/ai.css") layer(app);
+@import url("components/progress.css") layer(app);
+@import url("components/poll-form.css") layer(app);
+@import url("components/reactions.css") layer(app);
+
+/* Layout */
+@import url("layout/header.css") layer(app);
+@import url("layout/page-head.css") layer(app);
+@import url("layout/footer.css") layer(app);
+
+/* Pages */
+@import url("pages/forum-index.css") layer(app);
+@import url("pages/custom-page.css") layer(app);
+@import url("pages/topic-list.css") layer(app);
+@import url("pages/topic.css") layer(app);
+@import url("pages/composer.css") layer(app);
+@import url("pages/profile.css") layer(app);
+@import url("pages/settings.css") layer(app);
+@import url("pages/translate.css") layer(app);
+@import url("pages/history.css") layer(app);
+@import url("pages/moderation.css") layer(app);
+@import url("pages/messages.css") layer(app);
+@import url("pages/chat.css") layer(app);
+@import url("pages/search.css") layer(app);
+@import url("pages/directory.css") layer(app);
+@import url("pages/home.css") layer(app);
+@import url("pages/auth.css") layer(app);
+@import url("pages/dsa.css") layer(app);
+@import url("pages/clubs.css") layer(app);
+@import url("pages/trust.css") layer(app);
+@import url("pages/calendar.css") layer(app);
+
+/* Content */
+@import url("content/cooked.css") layer(app);

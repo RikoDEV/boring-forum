@@ -1,0 +1,210 @@
+name: Quality
+
+# Test runner, coverage, docs, unused dependencies, migrations and (weekly) mutation testing.
+# Formatting, clippy and the plain `cargo test` run live in ci.yml; security scans in security.yml.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1" # Mondays, for the mutation job
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # Minimum line coverage of crates/bf-core (permissions, auth, sessions). Measured 90.6% with
+  # `cargo llvm-cov nextest -p bf-core` on 2026-11-09; the gate leaves a margin of about 2.5 points
+  # so a new untested helper does not fail it, but a deleted test does. Raise it as coverage grows.
+  BF_CORE_MIN_LINE_COVERAGE: "88"
+
+jobs:
+  web:
+    # The server embeds the built islands, so every job that compiles bf-server needs them.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with: { package_json_file: web/package.json, version: 11 }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+        working-directory: web
+      - run: pnpm --filter @bf/islands build && pnpm --filter @bf/admin build
+        working-directory: web
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with: { name: islands-quality, path: web/islands/dist }
+
+  nextest:
+    needs: web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: islands-quality, path: web/islands/dist }
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with: { tool: nextest }
+      - run: cargo nextest run --locked --workspace --profile ci
+      # nextest does not run doctests.
+      - run: cargo test --locked --workspace --doc
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with: { name: nextest-junit, path: target/nextest/ci/junit.xml, if-no-files-found: ignore }
+
+  coverage:
+    # bf-core only: it holds permissions and auth, and builds without the front end.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1", components: llvm-tools-preview }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with: { tool: "nextest,cargo-llvm-cov" }
+      - name: Measure
+        run: |
+          cargo llvm-cov nextest --locked -p bf-core --lcov --output-path lcov.info
+          cargo llvm-cov report --summary-only | tee coverage-summary.txt
+      - name: Minimum line coverage
+        run: |
+          cargo llvm-cov report --json --summary-only --output-path cov.json
+          python3 -c '
+          import json, os
+          pct = json.load(open("cov.json"))["data"][0]["totals"]["lines"]["percent"]
+          need = float(os.environ["BF_CORE_MIN_LINE_COVERAGE"])
+          print("bf-core line coverage %.2f%% (minimum %s%%)" % (pct, need))
+          raise SystemExit(0 if pct >= need else 1)
+          '
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: coverage-bf-core
+          path: |
+            lcov.info
+            coverage-summary.txt
+          if-no-files-found: ignore
+
+  docs:
+    if: github.event_name != 'schedule'
+    needs: web
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: "-D warnings"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: islands-quality, path: web/islands/dist }
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - run: cargo doc --no-deps --workspace --locked
+
+  machete:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with: { tool: cargo-machete }
+      # Fails on a dependency no source file mentions. A false positive goes in
+      # [package.metadata.cargo-machete] ignored = [...] in that crate, with a comment.
+      - run: cargo machete
+
+  # No crate declares [features] today, so `cargo hack check --each-feature` has nothing to
+  # check. Add the job when the first feature appears.
+
+  migrations:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env: { POSTGRES_USER: forum, POSTGRES_PASSWORD: forum, POSTGRES_DB: forum }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U forum" --health-interval 2s --health-retries 30
+    env:
+      BF_DATABASE_URL: postgres://forum:forum@localhost:5432/forum
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 0 }
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      # The ignored tests of bf-db apply every file in crates/bf-db/migrations to the empty
+      # database above.
+      - run: cargo test --locked -p bf-db -- --ignored --test-threads=1
+      # CONTRIBUTING.md: never edit an applied migration. A pull request may only add files.
+      - name: Applied migrations are unchanged
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          changed=$(git diff --name-status "origin/$BASE_REF"...HEAD -- crates/bf-db/migrations | grep -v '^A' || true)
+          if [ -n "$changed" ]; then
+            echo "Applied migrations must not change:"
+            echo "$changed"
+            exit 1
+          fi
+
+  i18n:
+    # Catalog and call-site checks: every word a person reads is translated (CLAUDE.md).
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: python3 scripts/i18n.py check
+      - run: python3 scripts/test_i18n.py
+
+  env-docs:
+    # Every BF_* variable the server reads is in docs/ and .env.example.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: sh scripts/check-env-docs.sh
+
+  backup-drill:
+    # Weekly: backs up a real, migrated database, changes it, restores the backup and compares
+    # every table's rows (bf-server's backup test).
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env: { POSTGRES_USER: forum, POSTGRES_PASSWORD: forum, POSTGRES_DB: forum }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U forum" --health-interval 2s --health-retries 30
+    env:
+      BF_DATABASE_URL: postgres://forum:forum@localhost:5432/forum
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - run: cargo test --locked -p bf-server --lib a_backup_restores_to_the_same_rows -- --ignored
+
+  mutants:
+    # Weekly and non-blocking: surviving mutants are a to-do list for tests, not a failed build.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with: { tool: "nextest,cargo-mutants" }
+      - run: cargo mutants -p bf-core --file crates/bf-core/src/perms.rs --file crates/bf-core/src/auth.rs --test-tool nextest
+        continue-on-error: true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with: { name: mutants, path: mutants.out, if-no-files-found: ignore }

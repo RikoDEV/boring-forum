@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{#- Staff: posts deleted lately, with their text, to restore. -#}
+{% block content %}
+<div class="head-row">
+  <h1>{{ layout.t.t("deleted.title") }}</h1>
+  <div class="bf-head-actions">
+    <a class="btn" href="/review">{{ layout.icon("list-checks")|safe }} <span class="bf-btn-label">{{ layout.t.t("modcp.queue") }}</span></a>
+  </div>
+</div>
+{% for d in items %}
+<article class="bf-box bf-review">
+  <header class="bf-review-head">
+    <img class="avatar" src="/avatar/{{ d.author }}.svg" width="40" height="40" alt="" loading="lazy">
+    <div class="bf-review-who">
+      <div><strong>{{ layout.user_link(d.author)|safe }}</strong> <span class="muted">{{ layout.t.t("topic.in") }}</span> <a href="{{ d.post_url }}">{{ d.title }}</a></div>
+      <div class="muted small">{{ layout.t.t("deleted.by") }} {% if d.deleted_by == "unknown" %}{{ layout.t.t("deleted.unknown") }}{% else %}{{ layout.user_link(d.deleted_by)|safe }}{% endif %} · {{ d.when }}</div>
+    </div>
+    <form method="post" action="/post/{{ d.post_id }}/restore" class="bf-feed-end">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <button class="btn">{{ layout.icon("history")|safe }} <span class="bf-btn-label">{{ layout.t.t("deleted.restore") }}</span></button>
+    </form>
+  </header>
+  <div class="bf-review-body"><p class="bf-deleted-text bf-prewrap">{{ d.excerpt }}</p></div>
+</article>
+{% else %}
+<p class="panel muted">{{ layout.t.t("deleted.none") }}</p>
+{% endfor %}
+{% endblock %}

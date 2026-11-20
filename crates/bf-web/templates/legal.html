@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{#- A legal document (terms, privacy, guidelines), with "I accept" when it is waiting for that. -#}
+{% block content %}
+<article class="panel block">
+  <h1>{{ title }}</h1>
+  {% if !updated.is_empty() %}<p class="small muted">{{ layout.t.f("legal.version", [("version", version.to_string().as_str())]) }} {{ updated }}</p>{% endif %}
+  <div class="cooked">{{ html|safe }}</div>
+  {% if !accept.is_empty() %}
+  <form method="post" action="/legal/accept" class="bf-terms-accept">
+    <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+    <input type="hidden" name="next" value="/">
+    <input type="hidden" name="docs" value="{% for id in accept %}{{ id }}{% if !loop.last %},{% endif %}{% endfor %}">
+    <button class="btn primary">{{ layout.t.t("legal.accept") }}</button>
+  </form>
+  {% endif %}
+</article>
+{% endblock %}

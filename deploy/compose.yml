@@ -1,0 +1,57 @@
+# Local development: `docker compose -f deploy/compose.yml up -d db`, then
+# `cargo run -p bf-server` with BF_DATABASE_URL from .env.example.
+# `up` without a service name also builds and runs the server image.
+services:
+  db:
+    # Pinned by digest (recorded 2026-11-16); the tag is for humans. Update with
+    # `docker buildx imagetools inspect postgres:18-alpine`.
+    image: postgres:18-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
+    environment:
+      POSTGRES_USER: forum
+      POSTGRES_PASSWORD: forum
+      POSTGRES_DB: forum
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forum"]
+      interval: 2s
+      retries: 30
+
+  server:
+    build: { context: .., dockerfile: deploy/docker/Dockerfile }
+    environment:
+      BF_DATABASE_URL: postgres://forum:forum@db:5432/forum
+      BF_ADMIN_TOKEN: ${BF_ADMIN_TOKEN:-}
+      # Used in mail links, canonical URLs and as the passkey relying party.
+      BF_BASE_URL: ${BF_BASE_URL:-http://127.0.0.1:8080}
+      # Encryption at rest for TOTP and webhook secrets. `boring-forum secret-key`
+      # prints one; without it those columns are stored in plain text.
+      BF_SECRET_KEY: ${BF_SECRET_KEY:-}
+    ports: ["127.0.0.1:8080:8080"]
+    # The image is `scratch` and runs as 65534, and the root filesystem is read-only, so
+    # the only writable paths are the uploads and backups volumes and a small tmpfs. A compromised process
+    # cannot drop a binary next to its own.
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes:
+      - uploads:/data/uploads
+      - backups:/data/backups
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    # Longer than BF_DRAIN_SECS (default 5) plus the time in-flight requests may take.
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "/boring-forum", "healthcheck"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  uploads:
+  backups:

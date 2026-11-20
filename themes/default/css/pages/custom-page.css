@@ -1,0 +1,27 @@
+/* Custom pages built from blocks: the columns of the two- and three-column layouts. */
+
+.bf-page-cols {
+  display: grid;
+  gap: var(--bf-space-4);
+  align-items: start;
+
+  &.is-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &.is-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Each column keeps its place, empty or not; its blocks stack with the page's usual spacing. */
+  & > [data-area] {
+    min-width: 0;
+  }
+
+  @media (width < 820px) {
+    &.is-2,
+    &.is-3 {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}

@@ -1,0 +1,86 @@
+/* Menus: <details> elements, so they open without JavaScript; the menus island adds
+   outside-click and Escape. */
+
+.bf-menu {
+  position: relative;
+  display: inline-block;
+
+  & > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+}
+
+.bf-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A closed <details> hides its content with `content-visibility: hidden`, which also contains its
+   layout: the absolutely placed panel is then positioned against that tiny box instead of the
+   header, and on phones it reaches past the screen and makes every page scroll sideways. Closed,
+   it takes no space at all. */
+.bf-menu:not([open]) > .bf-menu-body {
+  display: none;
+}
+
+.bf-menu-body {
+  position: absolute;
+  z-index: 30;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + var(--bf-space-1));
+  min-width: 13rem;
+  max-width: min(22rem, 90vw);
+  padding: var(--bf-space-1);
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius);
+  box-shadow: var(--bf-shadow-menu);
+  font-size: var(--bf-text-list);
+}
+
+.bf-menu-body > a,
+.bf-menu-body > button,
+.bf-menu-body > form > button,
+.bf-menu-body > .report > summary,
+.bf-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  width: 100%;
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border: 0;
+  border-radius: var(--bf-radius-input);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.bf-menu-body {
+  & > a:hover,
+  & > button:hover,
+  & > form > button:hover,
+  & > .report > summary:hover {
+    background: var(--bf-color-surface-2);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  & > .report {
+    display: block;
+  }
+
+  & > .report form {
+    display: grid;
+    padding: var(--bf-space-2) var(--bf-space-3);
+    gap: var(--bf-space-2);
+  }
+}
+
+.bf-menu-sep {
+  height: 1px;
+  margin: var(--bf-space-1);
+  background: var(--bf-color-border);
+}

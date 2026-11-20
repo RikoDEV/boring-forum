@@ -1,0 +1,13 @@
+# cargo-nextest profiles. `cargo nextest run` uses `default`; CI uses `--profile ci`.
+[profile.default]
+retries = 0
+fail-fast = false
+
+[profile.ci]
+retries = 0
+fail-fast = false
+failure-output = "immediate-final"
+
+[profile.ci.junit]
+# target/nextest/ci/junit.xml, uploaded as an artifact by the quality workflow.
+path = "junit.xml"

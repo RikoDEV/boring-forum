@@ -1,0 +1,209 @@
+{#- One post of a topic, or a small-action line ("closed the topic") in its place. -#}
+{% if let Some(gap) = p.time_gap %}<div class="bf-time-gap"><span>{{ gap }}</span></div>{% endif %}
+{% if let Some(note) = p.author_note %}
+<p class="action-entry"><time class="muted" datetime="{{ p.created_iso }}">{{ p.created }}</time> <span><a href="{{ p.author_url }}">{{ p.author }}</a> {{ note }}</span></p>
+{% endif %}
+{% if let Some(a) = p.action %}
+<p class="action-entry" id="post-{{ p.number }}"><time class="muted" datetime="{{ p.created_iso }}">{{ p.created }}</time> <span><a href="{{ p.author_url }}">{{ p.author }}</a> {{ a }}{% if let Some(d) = p.action_detail %} <em>{{ d }}</em>{% endif %}</span></p>
+{% else %}
+<article class="panel post bf-post" id="post-{{ p.number }}" data-post="{{ p.id }}"{% if p.wiki %} data-wiki{% endif %}>
+  {% if p.ignored %}<details class="bf-disclosure is-small"><summary>{{ layout.t.f("post.ignored", [("name", p.author.as_str())]) }}</summary>{% endif %}
+
+  {#- The author column (classic style). #}
+  <aside class="bf-author">
+    <span class="bf-author-name">
+      {%- if let Some(x) = layout.partial("post_author", [("author", p.author.as_str()), ("url", p.author_url.as_str())]) %}{{ x|safe }}{% else %}<a href="{{ p.author_url }}">{{ p.author }}</a>{% endif -%}
+    </span>
+    <span class="bf-presence"><img class="avatar" src="/avatar/{{ p.author }}.svg" width="96" height="96" alt="" loading="lazy">{%- if let Some((n, name)) = p.author_trust %}<span class="bf-lvl" data-tip="{{ layout.t.msgf("Trust level {n}: {name}", [("n", n.to_string().as_str()), ("name", name.as_str())]) }}">{{ n }}</span>{% endif -%}</span>
+    {% if !p.author_group.is_empty() %}
+    <div class="bf-author-group"{% if let Some(c) = p.author_group_colour %} data-group-colour="{{ c }}"{% endif %}>
+      {%- if let Some(src) = p.author_group_image %}<img class="bf-group-image" src="{{ src }}" alt="" width="20" height="20" loading="lazy">{% else if let Some(i) = p.author_group_icon %}{{ layout.icon(i)|safe }}{% endif %}{{ p.author_group -}}
+    </div>
+    {% endif %}
+    {%- if let Some((name, tier, colour)) = p.author_rank %}<div class="bf-author-rank" data-tip="{{ layout.t.msg("Reputation rank") }}">{{ layout.medal(tier.as_str(), "star", colour, 0)|safe }}<span>{{ name }}</span></div>{% endif %}
+    <div class="bf-author-facts">
+      {%- if p.author_posts > 0 %}<div>{{ layout.icon("message-square")|safe }} {{ layout.t.n("count.posts", p.author_posts) }}</div>{% endif %}
+      {%- if p.author_reputation != 0 %}<div data-tip="{{ layout.t.t("post.reputation") }}">{{ layout.t.n("count.reputation", p.author_reputation) }}</div>{% endif %}
+    </div>
+  </aside>
+
+  <div class="bf-post-main">
+    <header class="post-head small">
+      <span class="bf-post-compact"><span class="bf-presence"><img class="avatar" src="/avatar/{{ p.author }}.svg" width="32" height="32" alt="" loading="lazy">{%- if let Some((n, name)) = p.author_trust %}<span class="bf-lvl is-small" data-tip="{{ layout.t.msgf("Trust level {n}: {name}", [("n", n.to_string().as_str()), ("name", name.as_str())]) }}">{{ n }}</span>{% endif -%}</span> <a href="{{ p.author_url }}"><strong>{{ p.author }}</strong></a>
+        {%- if !p.author_group.is_empty() %} <span class="bf-post-group muted"{% if let Some(c) = p.author_group_colour %} data-group-colour="{{ c }}"{% endif %}>
+          {%- if let Some(src) = p.author_group_image %}<img class="bf-group-image" src="{{ src }}" alt="" width="20" height="20" loading="lazy">{% else if let Some(i) = p.author_group_icon %}{{ layout.icon(i)|safe }}{% endif %}{{ p.author_group }}</span>
+        {%- endif -%}
+        {%- if let Some((name, tier, colour)) = p.author_rank %} <span class="bf-rank" data-tip="{{ layout.t.msg("Reputation rank") }}">{{ layout.medal(tier.as_str(), "star", colour, 0)|safe }}{{ name }}</span>{% endif -%}
+      </span>
+      <a class="muted bf-post-when" href="#post-{{ p.number }}"><span class="bf-posted-word">{{ layout.t.t("post.posted") }} </span><time datetime="{{ p.created_iso }}">{{ p.created }}</time></a>
+      {%- if p.edited %} <a class="muted" href="/post/{{ p.id }}/history">{{ layout.t.t("post.edited") }}</a>{% endif %}
+      {%- if p.wiki %} <span class="bf-badge">{{ layout.icon("pencil")|safe }} {{ layout.t.t("post.wiki") }}</span>{% endif %}
+      {%- if can_moderate && p.number > 1 %} <input type="checkbox" form="split-form" name="post" value="{{ p.id }}" aria-label="{{ layout.t.f("post.select_split", [("n", p.number.to_string().as_str())]) }}"><button type="button" class="link small bf-select-below" data-select-below data-tip="{{ layout.t.t("post.select_below_title") }}">{{ layout.t.t("post.select_below") }}</button>{% endif -%}
+      <span class="bf-post-end">
+        {%- if p.author_is_op %}<span class="bf-group-pill bf-op-pill" data-tip="{{ layout.t.t("post.topic_author_title") }}">{{ layout.t.t("post.topic_author") }}</span>{% endif %}
+        {%- if p.author_special %}<span class="bf-group-pill"{% if let Some(c) = p.author_group_colour %} data-group-colour="{{ c }}"{% endif %}>
+          {%- if let Some(src) = p.author_group_image %}<img class="bf-group-image" src="{{ src }}" alt="" width="20" height="20" loading="lazy">{% else if let Some(i) = p.author_group_icon %}{{ layout.icon(i)|safe }}{% endif %}{{ p.author_group }}</span>
+        {%- endif -%}
+        <a class="muted bf-post-number" href="/p/{{ p.id }}" data-tip="{{ layout.t.t("post.link") }}">#{{ p.number }}</a>
+      </span>
+    </header>
+
+    {% if let Some((n, who)) = p.reply_to %}
+    <p class="small muted reply-to">{{ layout.icon("corner-down-right")|safe }} {{ layout.t.t("post.in_reply_to") }} <a href="/t/x/{{ id }}/{{ n }}" data-context="{{ n }}" data-topic="{{ id }}">{{ who }} #{{ n }}</a></p>
+    {% endif %}
+    {% if let Some(reason) = p.hidden_reason %}<p class="small error">{{ layout.t.t("post.hidden") }}{% if !reason.is_empty() %}: {{ reason }}{% endif %}</p>{% endif %}
+    <div class="cooked">{{ p.cooked|safe }}</div>
+    {#- Staff only, and only sent to staff: the post's author cannot see or remove them. #}
+    {% if !p.staff_notes.is_empty() %}
+    <aside class="bf-staff-notes" aria-label="{{ layout.t.msg("Staff notes") }}">
+      {% for n in p.staff_notes %}
+      <div class="bf-staff-note">
+        <div class="bf-staff-note-head">
+          <span class="bf-badge is-warn">{{ layout.icon("shield")|safe }} {{ layout.t.msg("Staff note") }}</span>
+          <span class="small muted">{{ layout.user_link(n.author)|safe }} · {{ n.when }}</span>
+          <form method="post" action="/post/{{ p.id }}/note/{{ n.id }}/delete"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="bf-icon-btn" aria-label="{{ layout.t.msg("Delete staff note") }}">{{ layout.icon("trash-2")|safe }}</button></form>
+        </div>
+        <p class="bf-staff-note-body">{{ n.body }}</p>
+      </div>
+      {% endfor %}
+    </aside>
+    {% endif %}
+    {{ layout.slot("post_after_content")|safe }}
+    {% if let Some(sig) = p.signature %}<div class="cooked small muted signature">{{ sig|safe }}</div>{% endif %}
+
+    {{ layout.slot("post_footer")|safe }}
+    {% if layout.user.is_some() || !p.reaction_pills.is_empty() %}
+    <footer class="post-actions small">
+      {% if !p.reaction_pills.is_empty() %}
+      <button type="button" class="bf-react-pills" data-reactions="{{ p.id }}" aria-haspopup="dialog" data-tip="{{ layout.t.t("post.who_reacted") }}">
+        {%- for (icon, n, mine) in p.reaction_pills %}<span class="bf-react-pill{% if *mine %} is-mine{% endif %}">{{ icon }} {{ n }}</span>{% endfor -%}
+      </button>
+      {% endif %}
+
+      {#- Q&A topics: the answer's score, with up and down votes. #}
+      {% if p.show_votes %}
+      <span class="bf-answer-votes" aria-label="{{ layout.t.t("post.score") }}">
+        {%- if p.can_vote %}
+        <form method="post" action="/post/{{ p.id }}/vote" class="inline">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          <input type="hidden" name="value" value="{% if p.my_vote == 1 %}0{% else %}1{% endif %}">
+          <button class="link{% if p.my_vote == 1 %} liked{% endif %}" aria-pressed="{{ p.my_vote == 1 }}" aria-label="{{ layout.t.t("post.useful") }}" data-tip="{{ layout.t.t("post.useful") }}">▲</button>
+        </form>
+        {%- endif -%}
+        <strong>{{ p.vote_score }}</strong>
+        {%- if p.can_vote %}
+        <form method="post" action="/post/{{ p.id }}/vote" class="inline">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          <input type="hidden" name="value" value="{% if p.my_vote == -1 %}0{% else %}-1{% endif %}">
+          <button class="link{% if p.my_vote == -1 %} liked{% endif %}" aria-pressed="{{ p.my_vote == -1 }}" aria-label="{{ layout.t.t("post.not_useful") }}" data-tip="{{ layout.t.t("post.not_useful") }}">▼</button>
+        </form>
+        {%- endif -%}
+      </span>
+      {% endif %}
+      <span class="bf-actions-gap"></span>
+
+      {% if p.can_like %}
+      <div class="bf-react">
+        <form method="post" action="/post/{{ p.id }}/like">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          <button class="link bf-react-main{% if p.liked %} liked{% endif %}" aria-pressed="{{ p.liked }}" aria-label="{{ layout.t.t("post.like") }}" data-tip="{{ layout.t.t("post.like") }}">{{ layout.icon("heart")|safe }}</button>
+        </form>
+        {% if layout.reactions().len() > 1 %}
+        <div class="bf-react-pop" role="group" aria-label="{{ layout.t.t("post.react") }}">
+          {%- for (rid, rname, ricon) in layout.reactions() %}
+          <form method="post" action="/post/{{ p.id }}/react">
+            <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+            <input type="hidden" name="reaction" value="{% if p.my_reaction == rid %}0{% else %}{{ rid }}{% endif %}">
+            <button data-reaction="{{ rid }}" data-tip="{{ rname }}" aria-label="{{ rname }}" aria-pressed="{{ p.my_reaction == rid }}">{{ ricon }}</button>
+          </form>
+          {%- endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if layout.user.is_some() %}
+      {% if let Some((count, first)) = p.replies %}<a href="/t/x/{{ id }}/{{ first }}">{{ layout.t.n("count.replies", count) }}</a>{% endif %}
+      {% if can_reply %}
+      <a href="#body" data-quote="{{ p.id }}">{{ layout.icon("quote")|safe }} {{ layout.t.t("post.quote") }}</a>
+      <a href="#body" data-reply="{{ p.number }}">{{ layout.icon("reply")|safe }} {{ layout.t.t("post.reply") }}</a>
+      {% endif %}
+
+      {#- The post's menu: share, edit, moderation, reminders and reports. #}
+      <details class="bf-menu">
+        <summary class="bf-icon-btn" aria-label="{{ layout.t.t("post.more") }}">{{ layout.icon("ellipsis")|safe }}</summary>
+        <div class="bf-menu-body">
+          <a href="/p/{{ p.id }}" class="share">{{ layout.icon("link")|safe }} {{ layout.t.t("post.share") }}</a>
+          {% if layout.user.is_some() %}
+          <form method="post" action="/post/{{ p.id }}/bookmark"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button aria-pressed="{{ p.bookmarked }}">{{ layout.icon("bookmark")|safe }} {% if p.bookmarked %}{{ layout.t.msg("Remove bookmark") }}{% else %}{{ layout.t.t("post.bookmark") }}{% endif %}</button></form>
+          {% endif %}
+          {% if layout.ai_translate && layout.user.is_some() %}
+          <button type="button" data-ai-translate="{{ p.id }}">{{ layout.icon("languages")|safe }} {{ layout.t.msg("Translate with AI") }}</button>
+          {% endif %}
+          {% if p.can_edit %}
+          <button type="button" data-edit-post="{{ p.id }}">{{ layout.icon("pencil")|safe }} {{ layout.t.t("common.edit") }}</button>
+          {% if layout.translations %}<a href="/translate/post/{{ p.id }}">{{ layout.icon("globe")|safe }} {{ layout.t.t("post.translate") }}</a>{% endif %}
+          <form method="post" action="/post/{{ p.id }}/delete"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button>{{ layout.icon("trash-2")|safe }} {{ layout.t.t("common.delete") }}</button></form>
+          {% endif %}
+          {% if can_solve && p.number > 1 %}
+          <form method="post" action="/post/{{ p.id }}/solve"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button>{{ layout.icon("circle-check")|safe }} {% if solved == Some(*p.number) %}{{ layout.t.t("post.unmark_answer") }}{% else %}{{ layout.t.t("post.mark_answer") }}{% endif %}</button></form>
+          {% endif %}
+          {% if can_moderate %}
+          <form method="post" action="/post/{{ p.id }}/hide">
+            <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+            {% if p.hidden_reason.is_some() %}
+            <input type="hidden" name="hidden" value="0"><button>{{ layout.icon("eye")|safe }} {{ layout.t.t("post.unhide") }}</button>
+            {% else %}
+            <input type="hidden" name="hidden" value="1"><input type="hidden" name="reason" value="{{ layout.t.t("post.hidden_by_moderator") }}"><button>{{ layout.icon("eye")|safe }} {{ layout.t.t("post.hide") }}</button>
+            {% endif %}
+          </form>
+          <details class="report">
+            <summary class="link">{{ layout.icon("shield")|safe }} {{ layout.t.msg("Add a staff note") }}</summary>
+            <form method="post" action="/post/{{ p.id }}/note">
+              <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+              <label class="bf-field"><textarea name="body" rows="3" maxlength="2000" placeholder=" " required></textarea><span class="bf-field-label">{{ layout.t.msg("Only staff see it, not the author") }}</span></label>
+              <button class="btn">{{ layout.t.msg("Save note") }}</button>
+            </form>
+          </details>
+          <form method="post" action="/post/{{ p.id }}/wiki"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button>{{ layout.icon("wrench")|safe }} {% if p.wiki %}{{ layout.t.t("post.stop_wiki") }}{% else %}{{ layout.t.t("post.make_wiki") }}{% endif %}</button></form>
+          {% endif %}
+          <div class="bf-menu-sep"></div>
+          <details class="report">
+            <summary class="link">{{ layout.icon("clock")|safe }} {{ layout.t.t("post.remind") }}</summary>
+            <form method="post" action="/post/{{ p.id }}/remind">
+              <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+              <label class="bf-field">
+                <select name="after">
+                  <option value="1h">{{ layout.t.t("post.remind_hour") }}</option>
+                  <option value="1d">{{ layout.t.t("post.remind_day") }}</option>
+                  <option value="1w">{{ layout.t.t("post.remind_week") }}</option>
+                  <option value="1m">{{ layout.t.t("post.remind_month") }}</option>
+                </select>
+                <span class="bf-field-label">{{ layout.t.t("post.remind_when") }}</span>
+              </label>
+              <button class="btn">{{ layout.t.t("post.remind_set") }}</button>
+            </form>
+          </details>
+          <details class="report">
+            <summary class="link">{{ layout.icon("flag")|safe }} {{ layout.t.t("post.report") }}</summary>
+            <form method="post" action="/post/{{ p.id }}/report" class="small">
+              <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+              <label class="bf-field">
+                <select name="reason">
+                  {%- for (rkey, rlabel, rnote) in layout.report_reasons() %}<option value="{{ rkey }}"{% if rnote %} data-needs-note{% endif %}>{{ rlabel }}{% if rnote %} {{ layout.t.t("post.report_explain") }}{% endif %}</option>{% endfor -%}
+                </select>
+                <span class="bf-field-label">{{ layout.t.t("post.report_reason") }}</span>
+              </label>
+              <label class="bf-field"><textarea name="note" rows="2" placeholder=" "></textarea><span class="bf-field-label">{{ layout.t.t("post.report_details") }}</span></label>
+              <button class="btn">{{ layout.t.t("post.report_send") }}</button>
+            </form>
+          </details>
+        </div>
+      </details>
+      {% endif %}
+    </footer>
+    {% endif %}
+  </div>
+  {% if p.ignored %}</details>{% endif %}
+</article>
+{% endif %}
