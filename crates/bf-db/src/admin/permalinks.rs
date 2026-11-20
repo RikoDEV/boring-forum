@@ -27,9 +27,13 @@ macro_rules! cols {
 
 /// The permalinks whose address or target contains `search`, by address.
 pub async fn list(pool: &PgPool, search: &str, limit: i64) -> Result<Vec<Permalink>, Error> {
-    sqlx::query_as(concat!("SELECT ", cols!(), " FROM permalinks
+    sqlx::query_as(concat!(
+        "SELECT ",
+        cols!(),
+        " FROM permalinks
          WHERE $1 = '' OR url ILIKE '%' || $1 || '%' OR target ILIKE '%' || $1 || '%' OR target_id::text = $1
-         ORDER BY lower(url) LIMIT $2"))
+         ORDER BY lower(url) LIMIT $2"
+    ))
     .bind(search)
     .bind(limit)
     .fetch_all(pool)
@@ -43,14 +47,27 @@ pub async fn count(pool: &PgPool) -> Result<i64, Error> {
 /// The permalink for one of these addresses (already normalised), the longest first: an address
 /// with its query string beats the same one without.
 pub async fn find(pool: &PgPool, urls: &[String]) -> Result<Option<Permalink>, Error> {
-    sqlx::query_as(concat!("SELECT ", cols!(), " FROM permalinks WHERE lower(url) = ANY($1) ORDER BY length(url) DESC LIMIT 1"))
+    sqlx::query_as(concat!(
+        "SELECT ",
+        cols!(),
+        " FROM permalinks WHERE lower(url) = ANY($1) ORDER BY length(url) DESC LIMIT 1"
+    ))
     .bind(urls.iter().map(|u| u.to_lowercase()).collect::<Vec<_>>())
     .fetch_optional(pool)
     .await
 }
 
-pub async fn insert(pool: &PgPool, url: &str, kind: &str, target_id: Option<i64>, target: Option<&str>) -> Result<Permalink, Error> {
-    sqlx::query_as(concat!("INSERT INTO permalinks (url, kind, target_id, target) VALUES ($1, $2, $3, $4) RETURNING ", cols!()))
+pub async fn insert(
+    pool: &PgPool,
+    url: &str,
+    kind: &str,
+    target_id: Option<i64>,
+    target: Option<&str>,
+) -> Result<Permalink, Error> {
+    sqlx::query_as(concat!(
+        "INSERT INTO permalinks (url, kind, target_id, target) VALUES ($1, $2, $3, $4) RETURNING ",
+        cols!()
+    ))
     .bind(url)
     .bind(kind)
     .bind(target_id)
@@ -59,7 +76,14 @@ pub async fn insert(pool: &PgPool, url: &str, kind: &str, target_id: Option<i64>
     .await
 }
 
-pub async fn update(pool: &PgPool, id: i64, url: &str, kind: &str, target_id: Option<i64>, target: Option<&str>) -> Result<bool, Error> {
+pub async fn update(
+    pool: &PgPool,
+    id: i64,
+    url: &str,
+    kind: &str,
+    target_id: Option<i64>,
+    target: Option<&str>,
+) -> Result<bool, Error> {
     Ok(sqlx::query("UPDATE permalinks SET url = $2, kind = $3, target_id = $4, target = $5 WHERE id = $1")
         .bind(id)
         .bind(url)
@@ -75,11 +99,13 @@ pub async fn update(pool: &PgPool, id: i64, url: &str, kind: &str, target_id: Op
 crate::sql::delete_by_id!(delete, "permalinks");
 
 pub async fn url_taken(pool: &PgPool, url: &str, except: Option<i64>) -> Result<bool, Error> {
-    sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM permalinks WHERE lower(url) = lower($1) AND ($2::bigint IS NULL OR id <> $2))")
-        .bind(url)
-        .bind(except)
-        .fetch_one(pool)
-        .await
+    sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM permalinks WHERE lower(url) = lower($1) AND ($2::bigint IS NULL OR id <> $2))",
+    )
+    .bind(url)
+    .bind(except)
+    .fetch_one(pool)
+    .await
 }
 
 /// (id, slug, title) of the topics among `ids` that exist.
@@ -115,5 +141,8 @@ pub async fn tag_slug(pool: &PgPool, name: &str) -> Result<Option<String>, Error
 
 /// A member's name as written on their account, if there is one.
 pub async fn member_name(pool: &PgPool, name: &str) -> Result<Option<String>, Error> {
-    sqlx::query_scalar("SELECT username FROM users WHERE username_lower = lower($1)").bind(name).fetch_optional(pool).await
+    sqlx::query_scalar("SELECT username FROM users WHERE username_lower = lower($1)")
+        .bind(name)
+        .fetch_optional(pool)
+        .await
 }

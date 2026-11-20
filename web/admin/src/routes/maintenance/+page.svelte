@@ -133,7 +133,12 @@
 </Box>
 
 {#if dialogKind === "export"}
-  <EditDialog title={tr("Export changed settings")} onclose={close} onsubmit={(e) => (e.preventDefault(), close())} save={tr("Close")}>
+  <EditDialog
+    title={tr("Export changed settings")}
+    onclose={close}
+    onsubmit={(e) => (e.preventDefault(), close())}
+    save={tr("Close")}
+  >
     <div class="acp-form">
       <Field label={tr("Changed settings")} rows="10" wide readonly value={exported} />
     </div>

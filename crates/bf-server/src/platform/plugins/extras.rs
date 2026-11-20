@@ -122,7 +122,9 @@ pub(super) struct Extras {
 
 /// A non-empty key of lowercase letters, digits, dashes and the `more` characters.
 pub(super) fn plain(k: &str, max: usize, more: &[char]) -> bool {
-    !k.is_empty() && k.len() <= max && k.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || more.contains(&c))
+    !k.is_empty()
+        && k.len() <= max
+        && k.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || more.contains(&c))
 }
 
 /// `style.css`, `assets/logo.png`: letters, digits and `._-/`, no way out of the folder.
@@ -189,7 +191,12 @@ pub(super) fn read(
     let mut x = Extras::default();
     let under = |dir: &str| -> Vec<String> {
         let start = format!("{prefix}{dir}/");
-        names.iter().filter_map(|n| n.strip_prefix(&start)).filter(|n| !n.is_empty() && !n.ends_with('/')).map(|n| format!("{dir}/{n}")).collect()
+        names
+            .iter()
+            .filter_map(|n| n.strip_prefix(&start))
+            .filter(|n| !n.is_empty() && !n.ends_with('/'))
+            .map(|n| format!("{dir}/{n}"))
+            .collect()
     };
     // Translations: flat objects of key → text.
     let files = under("locales");
@@ -260,7 +267,9 @@ pub(super) fn read(
             callback: r.callback.clone(),
         };
         bf_cook::check_extension(&rule).map_err(|e| format!("[[cook_rules]] {}: {e}", r.open))?;
-        x.cook.push(json!({ "open": r.open, "close": r.close, "html": r.html, "block": r.block, "callback": r.callback }));
+        x.cook.push(
+            json!({ "open": r.open, "close": r.close, "html": r.html, "block": r.block, "callback": r.callback }),
+        );
     }
     for (kind, list) in [("post", post_actions), ("composer", composer_buttons)] {
         if list.len() > MAX_ACTIONS {
@@ -268,7 +277,11 @@ pub(super) fn read(
         }
         for a in list {
             let label = english(&a.label, a.label_key.as_deref(), &x.locales);
-            if !plain(&a.key, 40, &[]) || label.is_empty() || label.chars().count() > 40 || !matches!(a.result.as_str(), "toast" | "insert" | "panel") {
+            if !plain(&a.key, 40, &[])
+                || label.is_empty()
+                || label.chars().count() > 40
+                || !matches!(a.result.as_str(), "toast" | "insert" | "panel")
+            {
                 return Err(format!("Bad button {}.", a.key));
             }
             if !a.icon.is_empty() && !plain(&a.icon, 40, &[]) {
@@ -296,7 +309,9 @@ fn read_declared(m: &super::package::Manifest, x: &mut Extras) -> Result<(), Str
             return Err(format!("Emoji {} is declared twice.", e.key));
         }
         let label: String = if e.label.is_empty() { e.key.clone() } else { e.label.chars().take(60).collect() };
-        x.emoji.push(json!({ "key": e.key, "label": label, "file": e.file, "set": e.set.chars().take(40).collect::<String>() }));
+        x.emoji.push(
+            json!({ "key": e.key, "label": label, "file": e.file, "set": e.set.chars().take(40).collect::<String>() }),
+        );
     }
     if m.widgets.len() > 20 || m.admin_pages.len() > 20 {
         return Err(en("Too many widgets or admin pages.").into());
@@ -351,7 +366,18 @@ impl Extras {
         if self.is_empty() {
             return Vec::new();
         }
-        serde_json::to_vec(&json!([self.locales, self.css, self.assets, self.cook, self.actions, self.dynamic, self.emoji, self.widgets, self.pages])).unwrap_or_default()
+        serde_json::to_vec(&json!([
+            self.locales,
+            self.css,
+            self.assets,
+            self.cook,
+            self.actions,
+            self.dynamic,
+            self.emoji,
+            self.widgets,
+            self.pages
+        ]))
+        .unwrap_or_default()
     }
 
     pub(super) fn store(&self, doc: &mut Value) {
@@ -371,7 +397,8 @@ fn blank(v: &Value) -> bool {
 /// puts it where the cooker left a placeholder. A plugin that fails or says nothing leaves the
 /// text as it was written. At most `MAX_CALLBACKS` per post.
 pub(crate) async fn finish_callbacks(state: &crate::state::AppState, cooked: &mut bf_cook::Cooked) {
-    for (i, (rule, text)) in std::mem::take(&mut cooked.callbacks).into_iter().enumerate().take(bf_cook::MAX_CALLBACKS) {
+    for (i, (rule, text)) in std::mem::take(&mut cooked.callbacks).into_iter().enumerate().take(bf_cook::MAX_CALLBACKS)
+    {
         let marker = format!("{}{i}{}", bf_cook::PLACEHOLDER_OPEN, bf_cook::PLACEHOLDER_CLOSE);
         let (plugin, name) = rule.split_once(':').unwrap_or(("", &rule));
         let owner = super::listening("cook.rule").into_iter().find(|p| p.id == plugin);
@@ -382,7 +409,7 @@ pub(crate) async fn finish_callbacks(state: &crate::state::AppState, cooked: &mu
         let html = answer
             .as_ref()
             .and_then(|a| a.get("html").and_then(Value::as_str))
-            .map_or_else(|| text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;"), |h| bf_cook::sanitize(h));
+            .map_or_else(|| text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;"), bf_cook::sanitize);
         cooked.html = cooked.html.replacen(&marker, &html, 1);
     }
     // Placeholders beyond the cap, or left by a failure: drop them.
@@ -393,6 +420,7 @@ pub(crate) async fn finish_callbacks(state: &crate::state::AppState, cooked: &mu
 #[derive(Default)]
 pub(super) struct Activation {
     pub(super) css: Vec<String>,
+    #[expect(clippy::type_complexity, reason = "plugin -> path -> (media type, bytes), used only here")]
     pub(super) assets: HashMap<String, HashMap<String, (String, Arc<Vec<u8>>)>>,
     pub(super) translations: HashMap<String, HashMap<String, String>>,
     pub(super) dynamic: HashSet<String>,
@@ -444,6 +472,7 @@ pub(super) async fn check_settings(
 }
 
 /// The widget kinds enabled plugins declare: (plugin, key, fields).
+#[expect(clippy::type_complexity, reason = "a private table of (plugin, key, fields)")]
 static WIDGETS: std::sync::LazyLock<std::sync::RwLock<Vec<(String, String, Vec<Value>)>>> =
     std::sync::LazyLock::new(Default::default);
 
@@ -471,7 +500,8 @@ pub(crate) fn check_widget_config(mut config: Value) -> Result<Value, bf_core::A
 }
 
 /// Where each plugin's files are served: its `<id>.<hash>` folder.
-static DIRS: std::sync::LazyLock<std::sync::RwLock<HashMap<String, String>>> = std::sync::LazyLock::new(Default::default);
+static DIRS: std::sync::LazyLock<std::sync::RwLock<HashMap<String, String>>> =
+    std::sync::LazyLock::new(Default::default);
 
 pub(super) fn dir_of(plugin: &str) -> Option<String> {
     DIRS.read().unwrap_or_else(std::sync::PoisonError::into_inner).get(plugin).cloned()
@@ -533,12 +563,22 @@ impl Activation {
         let mut files: Vec<(String, String, Vec<u8>)> = Vec::new();
         for (path, text) in schema.get("x-css").and_then(Value::as_object).into_iter().flatten() {
             let text = text.as_str().unwrap_or_default();
-            files.push((path.clone(), "text/css; charset=utf-8".into(), format!("@layer plugin {{
+            files.push((
+                path.clone(),
+                "text/css; charset=utf-8".into(),
+                format!(
+                    "@layer plugin {{
 {text}
-}}").into_bytes()));
+}}"
+                )
+                .into_bytes(),
+            ));
         }
         for (path, a) in schema.get("x-assets").and_then(Value::as_object).into_iter().flatten() {
-            let bytes = a.get("b64").and_then(Value::as_str).and_then(|b| base64::engine::general_purpose::STANDARD.decode(b).ok());
+            let bytes = a
+                .get("b64")
+                .and_then(Value::as_str)
+                .and_then(|b| base64::engine::general_purpose::STANDARD.decode(b).ok());
             if let (Some(bytes), Some(mime)) = (bytes, a.get("type").and_then(Value::as_str)) {
                 files.push((path.clone(), mime.to_owned(), bytes));
             }
@@ -560,14 +600,18 @@ impl Activation {
             self.assets.insert(dir, files.into_iter().map(|(p, m, b)| (p, (m, Arc::new(b)))).collect());
         }
         if listens("slot.render") {
-            let slots = schema.get("x-dynamic").and_then(Value::as_array).into_iter().flatten().filter_map(Value::as_str);
-            self.dynamic.extend(slots.filter(|s| bf_web::theme::SLOTS.contains(s) || *s == bf_web::theme::CARD_SLOT).map(str::to_owned));
+            let slots =
+                schema.get("x-dynamic").and_then(Value::as_array).into_iter().flatten().filter_map(Value::as_str);
+            self.dynamic.extend(
+                slots.filter(|s| bf_web::theme::SLOTS.contains(s) || *s == bf_web::theme::CARD_SLOT).map(str::to_owned),
+            );
         }
         // Links with a visibility rule; the plain ones are added by `reload` itself.
         // Links with an icon, a menu or an order are drawn by the layout (`PluginNav`); the rest of
         // those with a visibility rule go in `nav_items`.
         for raw in schema.get("x-nav").and_then(Value::as_array).into_iter().flatten() {
-            let Some(item) = bf_core::nav::parse(&Value::Array(vec![raw.clone()]).to_string()).into_iter().next() else {
+            let Some(item) = bf_core::nav::parse(&Value::Array(vec![raw.clone()]).to_string()).into_iter().next()
+            else {
                 continue;
             };
             if item.key.is_some() {
@@ -588,7 +632,11 @@ impl Activation {
         }
         for w in schema.get("x-widgets").and_then(Value::as_array).into_iter().flatten() {
             let fields = w.get("fields").and_then(Value::as_array).cloned().unwrap_or_default();
-            self.widgets.push((id.to_owned(), w.get("key").and_then(Value::as_str).unwrap_or_default().to_owned(), fields));
+            self.widgets.push((
+                id.to_owned(),
+                w.get("key").and_then(Value::as_str).unwrap_or_default().to_owned(),
+                fields,
+            ));
         }
         for e in schema.get("x-emoji").and_then(Value::as_array).into_iter().flatten() {
             let text = |k: &str| e.get(k).and_then(Value::as_str).unwrap_or_default().to_owned();

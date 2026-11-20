@@ -208,10 +208,8 @@ fn begin(state: &AppState, c: &Configured, link_for: Option<i64>) -> Result<(Str
     let s = oauth::start(&c.provider, &c.client_id, &redirect_uri(state, c.provider.key));
     let link_for = link_for.map(|id| id.to_string()).unwrap_or_default();
     // SameSite=Lax is required: the provider sends the browser back with a top-level GET.
-    let cookie = format!(
-        "{COOKIE}={}.{}.{link_for}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600",
-        s.state, s.verifier
-    );
+    let cookie =
+        format!("{COOKIE}={}.{}.{link_for}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600", s.state, s.verifier);
     Ok((s.url, HeaderValue::from_str(&cookie).map_err(AppError::internal)?))
 }
 
@@ -424,7 +422,7 @@ pub(crate) async fn sign_in_external(
 ) -> Result<Response, AppError> {
     let pool = state.db()?;
     if let Some(user) = security::identity_user(pool, provider, &ext.subject).await.db()? {
-        let res = crate::auth::mfa::finish_password_login(pool, user, &v).await?;
+        let res = crate::auth::mfa::finish_password_login(pool, user, v).await?;
         return Ok(crate::auth::mfa::logged_in(state, user, provider, res));
     }
     let email = ext
@@ -467,7 +465,8 @@ pub(crate) async fn sign_in_external(
             }
             // The same caps as password registration: a sign-up farm must not skip them by
             // using a provider.
-            crate::http::ratelimit::REGISTER_BY_IP.enforce(&format!("register:{}", crate::http::ratelimit::ip_key(v.ip)))?;
+            crate::http::ratelimit::REGISTER_BY_IP
+                .enforce(&format!("register:{}", crate::http::ratelimit::ip_key(v.ip)))?;
             if let Some(msg) = crate::auth::register::ip_cap_problem(state, pool, v.ip, &v.t()).await? {
                 return Err(AppError::Validation(msg));
             }
@@ -514,7 +513,7 @@ pub(crate) async fn sign_in_external(
         }
     };
     security::link_identity(pool, provider, &ext.subject, user_id, Some(&email)).await.db()?;
-    let mut res = crate::auth::mfa::finish_password_login(pool, user_id, &v).await?;
+    let mut res = crate::auth::mfa::finish_password_login(pool, user_id, v).await?;
     if registered {
         // New members land on the getting-started page, and find it again in their notifications.
         let welcome = serde_json::json!({ "name": state.settings().str("site_name"), "url": "/welcome" });

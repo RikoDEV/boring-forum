@@ -47,7 +47,10 @@ pub(crate) fn find(key: &str) -> Reason {
 pub(crate) async fn load(state: &AppState) -> Result<(), AppError> {
     let rows = db::reasons(state.db()?).await.db()?;
     bf_web::theme::set_report_reasons(
-        rows.iter().filter(|r| r.enabled).map(|r| (r.key.clone(), r.label.clone(), r.needs_note || r.message_user)).collect(),
+        rows.iter()
+            .filter(|r| r.enabled)
+            .map(|r| (r.key.clone(), r.label.clone(), r.needs_note || r.message_user))
+            .collect(),
     );
     *REASONS.write().unwrap_or_else(std::sync::PoisonError::into_inner) = Arc::new(rows);
     state.microcache.clear();
@@ -74,7 +77,14 @@ fn check(r: &Reason) -> Result<(), AppError> {
 }
 
 /// Report-reason changes go to the audit log with the reason before and after.
-async fn audit_reason(state: &AppState, who: Option<i64>, what: &str, key: &str, before: Option<&Reason>, after: Option<&Reason>) {
+async fn audit_reason(
+    state: &AppState,
+    who: Option<i64>,
+    what: &str,
+    key: &str,
+    before: Option<&Reason>,
+    after: Option<&Reason>,
+) {
     let snap = |r: Option<&Reason>| r.map(|r| serde_json::to_value(r).unwrap_or_default());
     crate::moderation::audit(
         state,
@@ -101,7 +111,8 @@ async fn save(
     check(&r)?;
     let before = all().iter().find(|x| x.key == r.key).cloned();
     db::save(state.db()?, &r).await.db()?;
-    audit_reason(&state, who, if before.is_some() { "update" } else { "create" }, &r.key, before.as_ref(), Some(&r)).await;
+    audit_reason(&state, who, if before.is_some() { "update" } else { "create" }, &r.key, before.as_ref(), Some(&r))
+        .await;
     load(&state).await?;
     Ok(StatusCode::CREATED.into_response())
 }
@@ -118,7 +129,8 @@ async fn update(
     check(&r)?;
     let before = all().iter().find(|x| x.key == r.key).cloned();
     db::save(state.db()?, &r).await.db()?;
-    audit_reason(&state, who, if before.is_some() { "update" } else { "create" }, &r.key, before.as_ref(), Some(&r)).await;
+    audit_reason(&state, who, if before.is_some() { "update" } else { "create" }, &r.key, before.as_ref(), Some(&r))
+        .await;
     load(&state).await?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }

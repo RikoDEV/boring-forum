@@ -187,7 +187,8 @@ pub async fn search(
     limit: i64,
     offset: i64,
 ) -> Result<Vec<SearchHit>, Error> {
-    let req = SearchRequest { text: q, nodes, filter: f, sort: Sort::Relevance, group: false, limit, offset, facets: false };
+    let req =
+        SearchRequest { text: q, nodes, filter: f, sort: Sort::Relevance, group: false, limit, offset, facets: false };
     Ok(search_full(pool, &req).await?.hits)
 }
 
@@ -339,7 +340,9 @@ enum Matcher<'a> {
 /// `FROM posts … WHERE …` with every filter, shared by the hits and the facets.
 fn push_base(qb: &mut QueryBuilder<Postgres>, req: &SearchRequest<'_>, m: Matcher<'_>) {
     let f = req.filter;
-    qb.push(" FROM posts p JOIN items i ON i.id = p.item_id LEFT JOIN users u ON u.id = p.author_id CROSS JOIN (SELECT ");
+    qb.push(
+        " FROM posts p JOIN items i ON i.id = p.item_id LEFT JOIN users u ON u.id = p.author_id CROSS JOIN (SELECT ",
+    );
     match m {
         Matcher::Ts(t) => {
             qb.push("to_tsquery('bf_search', ").push_bind(t.to_owned()).push(") AS query");
@@ -396,7 +399,9 @@ fn push_base(qb: &mut QueryBuilder<Postgres>, req: &SearchRequest<'_>, m: Matche
         qb.push(" AND p.author_id = ").push_bind(u);
     }
     if let Some(u) = f.bookmarks_of {
-        qb.push(" AND EXISTS (SELECT 1 FROM bookmarks b WHERE b.post_id = p.id AND b.user_id = ").push_bind(u).push(")");
+        qb.push(" AND EXISTS (SELECT 1 FROM bookmarks b WHERE b.post_id = p.id AND b.user_id = ")
+            .push_bind(u)
+            .push(")");
     }
     if let Some(t) = f.topic {
         qb.push(" AND i.id = ").push_bind(t);
@@ -448,7 +453,9 @@ fn push_rank(qb: &mut QueryBuilder<Postgres>, m: Matcher<'_>) {
             );
         }
         Matcher::Trgm(t) => {
-            qb.push("word_similarity(bf_unaccent(lower(").push_bind(t.to_owned()).push(")), bf_unaccent(lower(i.title)))::float8");
+            qb.push("word_similarity(bf_unaccent(lower(")
+                .push_bind(t.to_owned())
+                .push(")), bf_unaccent(lower(i.title)))::float8");
         }
         Matcher::All => {
             qb.push("0::float8");
@@ -636,11 +643,7 @@ pub async fn search_full(pool: &PgPool, req: &SearchRequest<'_>) -> Result<Searc
         v
     };
     let tsq = build_tsquery(text, &synonyms);
-    let matcher = if text.is_empty() {
-        Some(Matcher::All)
-    } else {
-        tsq.as_deref().map(Matcher::Ts)
-    };
+    let matcher = if text.is_empty() { Some(Matcher::All) } else { tsq.as_deref().map(Matcher::Ts) };
     let mut used = matcher;
     if let Some(m) = matcher {
         out.hits = run_hits(pool, req, m).await?;
@@ -695,8 +698,15 @@ pub async fn search_full(pool: &PgPool, req: &SearchRequest<'_>) -> Result<Searc
 }
 
 /// The tail of [`search_full`] for results found by corrected words.
-async fn finish(pool: &PgPool, req: &SearchRequest<'_>, mut out: SearchOutcome, tsq: Option<String>) -> Result<SearchOutcome, Error> {
-    if req.facets && let Some(t) = tsq.as_deref() {
+async fn finish(
+    pool: &PgPool,
+    req: &SearchRequest<'_>,
+    mut out: SearchOutcome,
+    tsq: Option<String>,
+) -> Result<SearchOutcome, Error> {
+    if req.facets
+        && let Some(t) = tsq.as_deref()
+    {
         out.facets = run_facets(pool, req, Matcher::Ts(t)).await?;
     }
     if req.offset == 0 {
@@ -779,10 +789,7 @@ mod tests {
     fn synonyms_widen_a_word() {
         let mut s = none();
         s.insert("pc".into(), vec!["computer".into(), "desk top".into()]);
-        assert_eq!(
-            build_tsquery("pc fix", &s).as_deref(),
-            Some("('pc' | 'computer' | ('desk' <-> 'top')) & 'fix':*")
-        );
+        assert_eq!(build_tsquery("pc fix", &s).as_deref(), Some("('pc' | 'computer' | ('desk' <-> 'top')) & 'fix':*"));
         // A word shorter than three letters is never a prefix, with or without synonyms: it would
         // match far too much.
         assert_eq!(build_tsquery("fix pc", &s).as_deref(), Some("'fix' & ('pc' | 'computer' | ('desk' <-> 'top'))"));

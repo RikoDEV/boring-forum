@@ -107,7 +107,8 @@ pub async fn sync_tags(pool: &PgPool, declared: &[TagRow], active_plugins: &[Str
 /// other tag on it alone. Returns false when the topic does not exist.
 pub async fn set_topic_tags(pool: &PgPool, plugin: &str, topic: i64, keys: &[String]) -> Result<bool, Error> {
     let mut tx = pool.begin().await?;
-    let there: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM items WHERE id = $1)").bind(topic).fetch_one(&mut *tx).await?;
+    let there: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM items WHERE id = $1)").bind(topic).fetch_one(&mut *tx).await?;
     if !there {
         return Ok(false);
     }
@@ -270,12 +271,15 @@ pub async fn create_dynamic_node(
         .fetch_optional(&mut *tx)
         .await?;
     let Some(parent) = parent else { return Ok(None) };
-    let made: i64 =
-        sqlx::query_scalar("SELECT count(*) FROM nodes WHERE plugin = $1 AND plugin_key LIKE 'dyn:%'").bind(plugin).fetch_one(&mut *tx).await?;
+    let made: i64 = sqlx::query_scalar("SELECT count(*) FROM nodes WHERE plugin = $1 AND plugin_key LIKE 'dyn:%'")
+        .bind(plugin)
+        .fetch_one(&mut *tx)
+        .await?;
     if made >= MAX_DYNAMIC_NODES {
         return Ok(None);
     }
-    let serial: i64 = sqlx::query_scalar("SELECT nextval(pg_get_serial_sequence('nodes', 'id'))").fetch_one(&mut *tx).await?;
+    let serial: i64 =
+        sqlx::query_scalar("SELECT nextval(pg_get_serial_sequence('nodes', 'id'))").fetch_one(&mut *tx).await?;
     let key = format!("dyn:{serial}");
     let n = NodeRow {
         plugin: plugin.to_owned(),
@@ -300,13 +304,18 @@ pub async fn purge_plugin(pool: &PgPool, plugin: &str) -> Result<(), Error> {
         .await?;
     // Children before parents: a few passes cover any depth a plugin can declare.
     for _ in 0..6 {
-        sqlx::query("DELETE FROM nodes WHERE plugin = $1 AND NOT EXISTS (SELECT 1 FROM nodes c WHERE c.parent_id = nodes.id)")
-            .bind(plugin)
-            .execute(&mut *tx)
-            .await?;
+        sqlx::query(
+            "DELETE FROM nodes WHERE plugin = $1 AND NOT EXISTS (SELECT 1 FROM nodes c WHERE c.parent_id = nodes.id)",
+        )
+        .bind(plugin)
+        .execute(&mut *tx)
+        .await?;
     }
     // What is left holds a forum that stayed: it stays too, as the administrators' own.
-    sqlx::query("UPDATE nodes SET plugin = NULL, plugin_key = NULL WHERE plugin = $1").bind(plugin).execute(&mut *tx).await?;
+    sqlx::query("UPDATE nodes SET plugin = NULL, plugin_key = NULL WHERE plugin = $1")
+        .bind(plugin)
+        .execute(&mut *tx)
+        .await?;
     sqlx::query("DELETE FROM site_settings WHERE starts_with(key, $1)")
         .bind(format!("plugin:{plugin}:"))
         .execute(&mut *tx)
@@ -315,7 +324,13 @@ pub async fn purge_plugin(pool: &PgPool, plugin: &str) -> Result<(), Error> {
 }
 
 /// Metadata: JSON per (plugin, key, topic or post).
-pub async fn meta_get(pool: &PgPool, plugin: &str, target: &str, id: i64, key: Option<&str>) -> Result<serde_json::Value, Error> {
+pub async fn meta_get(
+    pool: &PgPool,
+    plugin: &str,
+    target: &str,
+    id: i64,
+    key: Option<&str>,
+) -> Result<serde_json::Value, Error> {
     let rows: Vec<(String, serde_json::Value)> = sqlx::query_as(
         "SELECT key, value FROM plugin_meta WHERE plugin = $1 AND target = $2 AND target_id = $3 AND ($4::text IS NULL OR key = $4)",
     )
@@ -343,10 +358,11 @@ pub async fn meta_set(
         _ => "posts",
     };
     // `table` is one of two constants.
-    let there: bool = sqlx::query_scalar(sqlx::AssertSqlSafe(format!("SELECT EXISTS (SELECT 1 FROM {table} WHERE id = $1)")))
-        .bind(id)
-        .fetch_one(pool)
-        .await?;
+    let there: bool =
+        sqlx::query_scalar(sqlx::AssertSqlSafe(format!("SELECT EXISTS (SELECT 1 FROM {table} WHERE id = $1)")))
+            .bind(id)
+            .fetch_one(pool)
+            .await?;
     if !there {
         return Ok(false);
     }
@@ -467,10 +483,12 @@ pub async fn file_count(pool: &PgPool, plugin: &str) -> Result<i64, Error> {
 
 /// Edits a post the plugin's own account wrote: (topic id, post number) of the post.
 pub async fn own_post(pool: &PgPool, bot: i64, topic: i64, number: i32) -> Result<Option<i64>, Error> {
-    sqlx::query_scalar("SELECT id FROM posts WHERE item_id = $1 AND post_number = $2 AND author_id = $3 AND deleted_at IS NULL")
-        .bind(topic)
-        .bind(number)
-        .bind(bot)
-        .fetch_optional(pool)
-        .await
+    sqlx::query_scalar(
+        "SELECT id FROM posts WHERE item_id = $1 AND post_number = $2 AND author_id = $3 AND deleted_at IS NULL",
+    )
+    .bind(topic)
+    .bind(number)
+    .bind(bot)
+    .fetch_optional(pool)
+    .await
 }

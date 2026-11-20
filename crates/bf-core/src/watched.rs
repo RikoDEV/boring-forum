@@ -149,7 +149,13 @@ mod tests {
         let r = [rule(Action::Censor, "ass", None)];
         assert_eq!(
             apply(&r, "a class ASS."),
-            Outcome::Allow { text: "a class ■■■.".into(), needs_approval: false, tags: vec![], flag: false, silence: false }
+            Outcome::Allow {
+                text: "a class ■■■.".into(),
+                needs_approval: false,
+                tags: vec![],
+                flag: false,
+                silence: false
+            }
         );
     }
 
@@ -165,7 +171,13 @@ mod tests {
         let r = [rule(Action::Replace, "teh", Some("the")), rule(Action::RequireApproval, "casino", None)];
         assert_eq!(
             apply(&r, "teh best casino"),
-            Outcome::Allow { text: "the best casino".into(), needs_approval: true, tags: vec![], flag: false, silence: false }
+            Outcome::Allow {
+                text: "the best casino".into(),
+                needs_approval: true,
+                tags: vec![],
+                flag: false,
+                silence: false
+            }
         );
     }
 
@@ -176,7 +188,13 @@ mod tests {
         let c = [rule(Action::Censor, "casino", None)];
         assert_eq!(
             apply(&c, "'casino' don't"),
-            Outcome::Allow { text: "'■■■■■■' don't".into(), needs_approval: false, tags: vec![], flag: false, silence: false }
+            Outcome::Allow {
+                text: "'■■■■■■' don't".into(),
+                needs_approval: false,
+                tags: vec![],
+                flag: false,
+                silence: false
+            }
         );
     }
 
@@ -191,7 +209,13 @@ mod tests {
         let r = [rule(Action::Censor, "zażółć", None)];
         assert_eq!(
             apply(&r, "— Zażółć gęślą"),
-            Outcome::Allow { text: "— ■■■■■■ gęślą".into(), needs_approval: false, tags: vec![], flag: false, silence: false }
+            Outcome::Allow {
+                text: "— ■■■■■■ gęślą".into(),
+                needs_approval: false,
+                tags: vec![],
+                flag: false,
+                silence: false
+            }
         );
     }
 

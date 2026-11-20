@@ -24,7 +24,10 @@ use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 
 pub fn router() -> Router<AppState> {
-    Router::new().route("/og.png", get(picture_png)).route("/og.jpg", get(picture_jpg)).route("/api/v1/admin/og-preview", get(preview))
+    Router::new()
+        .route("/og.png", get(picture_png))
+        .route("/og.jpg", get(picture_jpg))
+        .route("/api/v1/admin/og-preview", get(preview))
 }
 
 const W: f32 = 1200.0;
@@ -151,7 +154,9 @@ fn clean(s: &str) -> String {
 
 /// Whether text reads right to left: its first letter with a direction is Arabic or Hebrew.
 fn is_rtl(s: &str) -> bool {
-    s.chars().find(|c| c.is_alphabetic()).is_some_and(|c| matches!(u32::from(c), 0x0590..=0x08FF | 0xFB1D..=0xFDFF | 0xFE70..=0xFEFF))
+    s.chars()
+        .find(|c| c.is_alphabetic())
+        .is_some_and(|c| matches!(u32::from(c), 0x0590..=0x08FF | 0xFB1D..=0xFDFF | 0xFE70..=0xFEFF))
 }
 
 /// How wide the text is when drawn in the fonts, by laying it out as a one-line picture.
@@ -162,7 +167,10 @@ fn measure(text: &str, size: f32, bold: bool) -> f32 {
         esc(text)
     );
     let estimate = text.chars().count() as f32 * size * 0.6;
-    usvg::Tree::from_str(&svg, &options()).ok().and_then(|t| t.root().abs_bounding_box()).map_or(estimate, |r| r.width())
+    usvg::Tree::from_str(&svg, &options())
+        .ok()
+        .and_then(|t| t.root().abs_bounding_box())
+        .map_or(estimate, |r| r.width())
 }
 
 /// Breaks text into lines no wider than `width`, at most `max` of them; the last is cut with an
@@ -251,12 +259,21 @@ fn svg(c: &Card) -> String {
     let dark_bg = poster || luminance(&s.background) < 0.5;
 
     // Where text starts and which way it runs.
-    let (x, anchor) = if centered { (W / 2.0, "middle") } else if rtl { (W - MARGIN, "end") } else { (MARGIN, "start") };
+    let (x, anchor) = if centered {
+        (W / 2.0, "middle")
+    } else if rtl {
+        (W - MARGIN, "end")
+    } else {
+        (MARGIN, "start")
+    };
     let dir = if rtl { " direction=\"rtl\" unicode-bidi=\"embed\"" } else { "" };
     let width = W - 2.0 * MARGIN - if centered { 0.0 } else { 16.0 };
 
     let mut o = String::with_capacity(8 * 1024);
-    let _ = write!(o, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"{W}\" height=\"{H}\" viewBox=\"0 0 {W} {H}\">");
+    let _ = write!(
+        o,
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"{W}\" height=\"{H}\" viewBox=\"0 0 {W} {H}\">"
+    );
     // Background.
     if s.background_end.is_empty() {
         let _ = write!(o, "<rect width=\"{W}\" height=\"{H}\" fill=\"{}\"/>", s.background);
@@ -268,10 +285,21 @@ fn svg(c: &Card) -> String {
         );
     }
     if let Some(bg) = c.background.as_ref().filter(|_| poster) {
-        let _ = write!(o, "<image x=\"0\" y=\"0\" width=\"{W}\" height=\"{H}\" preserveAspectRatio=\"xMidYMid slice\" xlink:href=\"{}\"/>", bg.data_url);
-        let _ = write!(o, "<rect width=\"{W}\" height=\"{H}\" fill=\"#000000\" fill-opacity=\"{:.2}\"/>", f32::from(s.overlay) / 100.0);
+        let _ = write!(
+            o,
+            "<image x=\"0\" y=\"0\" width=\"{W}\" height=\"{H}\" preserveAspectRatio=\"xMidYMid slice\" xlink:href=\"{}\"/>",
+            bg.data_url
+        );
+        let _ = write!(
+            o,
+            "<rect width=\"{W}\" height=\"{H}\" fill=\"#000000\" fill-opacity=\"{:.2}\"/>",
+            f32::from(s.overlay) / 100.0
+        );
         // Text sits low on a poster: a darker foot keeps it readable on any picture.
-        let _ = write!(o, "<defs><linearGradient id=\"f\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0.2\" stop-color=\"#000\" stop-opacity=\"0\"/><stop offset=\"1\" stop-color=\"#000\" stop-opacity=\"0.8\"/></linearGradient></defs><rect width=\"{W}\" height=\"{H}\" fill=\"url(#f)\"/>");
+        let _ = write!(
+            o,
+            "<defs><linearGradient id=\"f\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0.2\" stop-color=\"#000\" stop-opacity=\"0\"/><stop offset=\"1\" stop-color=\"#000\" stop-opacity=\"0.8\"/></linearGradient></defs><rect width=\"{W}\" height=\"{H}\" fill=\"url(#f)\"/>"
+        );
     }
     // The stripe: on the reading side.
     if !centered {
@@ -299,18 +327,33 @@ fn svg(c: &Card) -> String {
     let gap = if logo.is_some() && show_name { 18.0 } else { 0.0 };
     let total = logo_w + gap + name_w;
     let row_y = 60.0;
-    let mut cursor = if centered { (W - total) / 2.0 } else if rtl { W - MARGIN - total } else { MARGIN };
+    let mut cursor = if centered {
+        (W - total) / 2.0
+    } else if rtl {
+        W - MARGIN - total
+    } else {
+        MARGIN
+    };
     if let Some(l) = logo {
-        let _ = write!(o, "<image x=\"{cursor:.1}\" y=\"{row_y}\" width=\"{logo_w:.1}\" height=\"{logo_h}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\"/>", l.data_url);
+        let _ = write!(
+            o,
+            "<image x=\"{cursor:.1}\" y=\"{row_y}\" width=\"{logo_w:.1}\" height=\"{logo_h}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\"/>",
+            l.data_url
+        );
         cursor += logo_w + gap;
     }
     if show_name {
         let base = row_y + (row_h.max(name_size) + name_size * 0.7) / 2.0 - if logo.is_some() { 4.0 } else { 0.0 };
-        let _ = write!(o, "<text x=\"{cursor:.1}\" y=\"{base:.1}\" font-family=\"{FAMILY}\" font-size=\"{name_size:.1}\" font-weight=\"700\" fill=\"{text}\" fill-opacity=\"0.92\"{dir}>{}</text>", esc(&name));
+        let _ = write!(
+            o,
+            "<text x=\"{cursor:.1}\" y=\"{base:.1}\" font-family=\"{FAMILY}\" font-size=\"{name_size:.1}\" font-weight=\"700\" fill=\"{text}\" fill-opacity=\"0.92\"{dir}>{}</text>",
+            esc(&name)
+        );
     }
 
     // The title block: the largest size at which it fits.
-    let (title, description) = if title.is_empty() && description.is_empty() { (name.clone(), String::new()) } else { (title, description) };
+    let (title, description) =
+        if title.is_empty() && description.is_empty() { (name.clone(), String::new()) } else { (title, description) };
     let max_title_lines = if description.is_empty() { 4 } else { 3 };
     let label = clean(&c.kind_label);
     let has_chip = s.kind_label && !label.is_empty();
@@ -325,7 +368,8 @@ fn svg(c: &Card) -> String {
         let size = 72.0 * scale * step;
         let lines = wrap(&title, size, true, width, max_title_lines);
         let desc_size = (32.0 * scale).min(size * 0.55).max(20.0);
-        let desc_lines = if description.is_empty() { (Vec::new(), false) } else { wrap(&description, desc_size, false, width, 2) };
+        let desc_lines =
+            if description.is_empty() { (Vec::new(), false) } else { wrap(&description, desc_size, false, width, 2) };
         let gap_td = if desc_lines.0.is_empty() { 0.0 } else { 24.0 };
         let block_h = lines.0.len() as f32 * size * 1.18 + gap_td + desc_lines.0.len() as f32 * desc_size * 1.35;
         let fits = !lines.1 && block_h <= room;
@@ -337,12 +381,22 @@ fn svg(c: &Card) -> String {
     let (size, lines, desc_size, desc_lines, gap_td, block_h) = chosen.unwrap_or_default();
     let line_h = size * 1.18;
     let full = block_h + if has_chip { chip_h + chip_gap } else { 0.0 };
-    let top = if s.template == "poster" { (bottom_limit - full).max(top_limit) } else { (top_limit + (bottom_limit - top_limit - full) / 2.0).max(top_limit) };
+    let top = if s.template == "poster" {
+        (bottom_limit - full).max(top_limit)
+    } else {
+        (top_limit + (bottom_limit - top_limit - full) / 2.0).max(top_limit)
+    };
     let mut y = top;
     if has_chip {
         let chip_size = 24.0;
         let chip_w = measure(&label, chip_size, true) + 40.0;
-        let chip_x = if centered { (W - chip_w) / 2.0 } else if rtl { W - MARGIN - chip_w } else { MARGIN };
+        let chip_x = if centered {
+            (W - chip_w) / 2.0
+        } else if rtl {
+            W - MARGIN - chip_w
+        } else {
+            MARGIN
+        };
         let _ = write!(
             o,
             "<rect x=\"{chip_x:.1}\" y=\"{y:.1}\" width=\"{chip_w:.1}\" height=\"{chip_h}\" rx=\"{}\" fill=\"{accent}\"/><text x=\"{:.1}\" y=\"{:.1}\" text-anchor=\"middle\" font-family=\"{FAMILY}\" font-size=\"{chip_size}\" font-weight=\"700\" fill=\"{}\"{dir}>{}</text>",
@@ -356,13 +410,22 @@ fn svg(c: &Card) -> String {
     }
     for line in &lines.0 {
         y += line_h;
-        let _ = write!(o, "<text x=\"{x}\" y=\"{:.1}\" text-anchor=\"{anchor}\" font-family=\"{FAMILY}\" font-size=\"{size:.1}\" font-weight=\"700\" fill=\"{text}\"{dir}>{}</text>", y - line_h * 0.22, esc(line));
+        let _ = write!(
+            o,
+            "<text x=\"{x}\" y=\"{:.1}\" text-anchor=\"{anchor}\" font-family=\"{FAMILY}\" font-size=\"{size:.1}\" font-weight=\"700\" fill=\"{text}\"{dir}>{}</text>",
+            y - line_h * 0.22,
+            esc(line)
+        );
     }
     if !desc_lines.0.is_empty() {
         y += gap_td - line_h * 0.22 + 4.0;
         for line in &desc_lines.0 {
             y += desc_size * 1.35;
-            let _ = write!(o, "<text x=\"{x}\" y=\"{y:.1}\" text-anchor=\"{anchor}\" font-family=\"{FAMILY}\" font-size=\"{desc_size:.1}\" fill=\"{text}\" fill-opacity=\"0.78\"{dir}>{}</text>", esc(line));
+            let _ = write!(
+                o,
+                "<text x=\"{x}\" y=\"{y:.1}\" text-anchor=\"{anchor}\" font-family=\"{FAMILY}\" font-size=\"{desc_size:.1}\" fill=\"{text}\" fill-opacity=\"0.78\"{dir}>{}</text>",
+                esc(line)
+            );
         }
     }
     // The foot: the address, or the text the site chose.
@@ -390,7 +453,7 @@ fn draw(c: &Card) -> Option<Vec<u8>> {
         return pixmap.encode_png().ok();
     }
     // The background is opaque, so the pixels are final as they are: only the alpha byte goes.
-    let rgb: Vec<u8> = pixmap.data().chunks_exact(4).flat_map(|p| [p[0], p[1], p[2]]).collect();
+    let rgb: Vec<u8> = pixmap.data().as_chunks::<4>().0.iter().flat_map(|p| [p[0], p[1], p[2]]).collect();
     let mut out = std::io::Cursor::new(Vec::new());
     image::codecs::jpeg::JpegEncoder::new_with_quality(&mut out, 86)
         .encode(&rgb, pixmap.width(), pixmap.height(), image::ExtendedColorType::Rgb8)
@@ -416,10 +479,22 @@ fn logo_path(state: &AppState, style: &Style) -> String {
     let s = state.settings();
     let dark = style.template == "poster" || luminance(&style.background) < 0.5;
     let (main, alt) = (s.str("logo_url"), s.str("logo_dark_url"));
-    if dark && !alt.is_empty() { alt.to_owned() } else if !main.is_empty() { main.to_owned() } else { alt.to_owned() }
+    if dark && !alt.is_empty() {
+        alt.to_owned()
+    } else if !main.is_empty() {
+        main.to_owned()
+    } else {
+        alt.to_owned()
+    }
 }
 
-async fn build(state: &AppState, style: &Style, kind: &str, title: String, description: String) -> Result<axum::body::Bytes, AppError> {
+async fn build(
+    state: &AppState,
+    style: &Style,
+    kind: &str,
+    title: String,
+    description: String,
+) -> Result<axum::body::Bytes, AppError> {
     let s = state.settings();
     let wants_background = style.template == "poster" && !style.background_image.is_empty();
     let card = Card {
@@ -429,7 +504,11 @@ async fn build(state: &AppState, style: &Style, kind: &str, title: String, descr
         description,
         site_name: s.str("site_name").to_owned(),
         footer: if style.footer.is_empty() {
-            state.config.base_url.split_once("://").map_or_else(String::new, |(_, h)| h.trim_end_matches('/').to_owned())
+            state
+                .config
+                .base_url
+                .split_once("://")
+                .map_or_else(String::new, |(_, h)| h.trim_end_matches('/').to_owned())
         } else {
             style.footer.clone()
         },
@@ -470,7 +549,11 @@ async fn picture_jpg(state: State<AppState>, q: Query<HashMap<String, String>>) 
 
 /// `/og.png` or `/og.jpg` `?k=<kind>&t=<title>&d=<description>&v=<look>&s=<signature>`. The file
 /// type must be the one the current look draws, so the address says what it returns.
-async fn picture(State(state): State<AppState>, Query(q): Query<HashMap<String, String>>, ext: &str) -> Result<Response, AppError> {
+async fn picture(
+    State(state): State<AppState>,
+    Query(q): Query<HashMap<String, String>>,
+    ext: &str,
+) -> Result<Response, AppError> {
     let get = |k: &str| q.get(k).map_or("", String::as_str);
     let (kind, title, description) = (get("k"), get("t"), get("d"));
     if !bf_core::og::verify(kind, title, description, get("s")) {
@@ -491,7 +574,12 @@ async fn picture(State(state): State<AppState>, Query(q): Query<HashMap<String, 
 }
 
 /// A sample in the saved look, for the admin panel; works while the pictures are switched off.
-async fn preview(State(state): State<AppState>, v: crate::http::viewer::Viewer, headers: HeaderMap, Query(q): Query<HashMap<String, String>>) -> Result<Response, AppError> {
+async fn preview(
+    State(state): State<AppState>,
+    v: crate::http::viewer::Viewer,
+    headers: HeaderMap,
+    Query(q): Query<HashMap<String, String>>,
+) -> Result<Response, AppError> {
     crate::admin::api::admin(&state, &v, &headers, false)?;
     let mut style = Style::from_settings(&state.settings());
     style.enabled = true;
@@ -552,9 +640,21 @@ mod tests {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/og-samples");
         std::fs::create_dir_all(&dir).unwrap();
         let samples = [
-            ("classic", "How do I set up a share picture that looks good everywhere on the internet?", "A short summary of the page appears here, under the title, the way people see it in a chat or a feed."),
-            ("centered", "Zażółć gęślą jaźń: jak ustawić obrazek do udostępniania?", "Krótki opis strony pojawia się pod tytułem."),
-            ("poster", "كيف أضبط صورة المشاركة بحيث تظهر بشكل جيد في كل مكان على الإنترنت؟", "ملخص قصير للصفحة يظهر هنا تحت العنوان."),
+            (
+                "classic",
+                "How do I set up a share picture that looks good everywhere on the internet?",
+                "A short summary of the page appears here, under the title, the way people see it in a chat or a feed.",
+            ),
+            (
+                "centered",
+                "Zażółć gęślą jaźń: jak ustawić obrazek do udostępniania?",
+                "Krótki opis strony pojawia się pod tytułem.",
+            ),
+            (
+                "poster",
+                "كيف أضبط صورة المشاركة بحيث تظهر بشكل جيد في كل مكان على الإنترنت؟",
+                "ملخص قصير للصفحة يظهر هنا تحت العنوان.",
+            ),
             ("classic", "Short", ""),
         ];
         for (i, (template, title, description)) in samples.iter().enumerate() {

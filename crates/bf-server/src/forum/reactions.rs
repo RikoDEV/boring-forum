@@ -40,9 +40,7 @@ async fn check_reaction_limits(
                 return Err(AppError::Validation("It is too late to change this reaction.".into()));
             }
         }
-        None if adding
-            && reactions::reactions_today(pool, user_id).await.db()? >= s.int("reactions_per_day") =>
-        {
+        None if adding && reactions::reactions_today(pool, user_id).await.db()? >= s.int("reactions_per_day") => {
             return Err(AppError::Validation("You have used all your reactions for today.".into()));
         }
         None => {}
@@ -76,10 +74,11 @@ async fn like(
     // A like is a reaction: the same daily limit and change window apply.
     let adding = reactions::reacted_at(pool, id, user.id.get()).await.db()?.is_none();
     check_reaction_limits(&state, pool, id, user.id.get(), adding).await?;
-    let (liked, count) = reactions::toggle_like_capped(pool, id, user.id.get(), Some(state.settings().int("reactions_per_day")))
-        .await
-        .db()?
-        .ok_or_else(|| AppError::Validation("You have used all your reactions for today.".into()))?;
+    let (liked, count) =
+        reactions::toggle_like_capped(pool, id, user.id.get(), Some(state.settings().int("reactions_per_day")))
+            .await
+            .db()?
+            .ok_or_else(|| AppError::Validation("You have used all your reactions for today.".into()))?;
     crate::federation::reaction_changed(&state, id, user.id.get(), liked).await;
     crate::platform::webhooks::fire(
         &state,
@@ -111,10 +110,8 @@ async fn like(
 /// `{"pills": [{"icon", "count", "mine"}], "mine": <the member's reaction id, or null>}`.
 async fn standing(pool: &sqlx::PgPool, post: i64, user: i64) -> Result<serde_json::Value, AppError> {
     let (counts, mine) = reactions::summary(pool, post, user).await.db()?;
-    let pills: Vec<serde_json::Value> = counts
-        .into_iter()
-        .map(|(id, icon, n)| json!({ "icon": icon, "count": n, "mine": Some(id) == mine }))
-        .collect();
+    let pills: Vec<serde_json::Value> =
+        counts.into_iter().map(|(id, icon, n)| json!({ "icon": icon, "count": n, "mine": Some(id) == mine })).collect();
     Ok(json!({ "pills": pills, "mine": mine }))
 }
 
@@ -280,10 +277,14 @@ async fn delete_reaction(
         ReactionDelete::Deleted => {}
         ReactionDelete::NotFound => return Err(AppError::NotFound),
         ReactionDelete::IsLike => {
-            return Err(AppError::Validation("The like button is built on this reaction. Switch it off instead.".into()));
+            return Err(AppError::Validation(
+                "The like button is built on this reaction. Switch it off instead.".into(),
+            ));
         }
         ReactionDelete::FromPlugin => {
-            return Err(AppError::Validation("A plugin's reactions belong to the plugin: remove the plugin to remove them.".into()));
+            return Err(AppError::Validation(
+                "A plugin's reactions belong to the plugin: remove the plugin to remove them.".into(),
+            ));
         }
     }
     load_reactions(&state).await?;

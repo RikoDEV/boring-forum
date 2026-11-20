@@ -2,7 +2,7 @@
 
 use crate::forum::topics::ensure_post_visible;
 use crate::forum::topics::readable_topic;
-use crate::http::render::{ago, DbResult};
+use crate::http::render::{DbResult, ago};
 use crate::http::viewer::{CsrfForm, Viewer};
 use crate::state::AppState;
 use axum::extract::{Path, State};

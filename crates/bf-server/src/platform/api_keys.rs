@@ -30,8 +30,7 @@ fn check_write(v: &Viewer, headers: &HeaderMap) -> Result<(), AppError> {
     responses((status = 200, body = Object, description = "id, username, scope and the resource and plugin scopes of the key"), (status = 403, body = bf_core::error::Problem)))]
 pub async fn me(State(state): State<AppState>, v: Viewer) -> Result<Response, AppError> {
     let u = v.require_user()?;
-    let mut answer =
-        json!({ "id": u.id, "username": u.username, "scope": v.api_scope, "scopes": v.plugin_scopes });
+    let mut answer = json!({ "id": u.id, "username": u.username, "scope": v.api_scope, "scopes": v.plugin_scopes });
     crate::platform::plugins::add_plugin_fields(&state, "user", u.id.get(), &mut answer).await;
     Ok(Json(answer).into_response())
 }
@@ -151,8 +150,7 @@ pub async fn create_key(
     }
     let mut extra: Vec<String> = b.resources.clone();
     if !b.plugin_scopes.is_empty() {
-        let held =
-            bf_db::platform::registry_content::existing_scopes(state.db()?, &b.plugin_scopes).await.db()?;
+        let held = bf_db::platform::registry_content::existing_scopes(state.db()?, &b.plugin_scopes).await.db()?;
         if held.len() != b.plugin_scopes.len() {
             return Err(AppError::Validation("Unknown plugin scope.".into()));
         }

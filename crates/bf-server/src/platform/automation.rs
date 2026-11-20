@@ -162,12 +162,10 @@ async fn bot_reply(state: &AppState, e: &PostEvent<'_>, text: &str) -> Result<()
         pending: false,
     };
     let number = bf_db::forum::posts::create_reply(pool, e.topic_id, e.node_id, &post).await.db()?;
-    let slug: String = sqlx::query_scalar("SELECT slug FROM items WHERE id = $1")
-        .bind(e.topic_id)
-        .fetch_one(pool)
-        .await
-        .db()?;
-    crate::forum::posting::after_system_post(state, bot_id, &bot_name, e.title, &slug, e.topic_id, e.node_id, number).await;
+    let slug: String =
+        sqlx::query_scalar("SELECT slug FROM items WHERE id = $1").bind(e.topic_id).fetch_one(pool).await.db()?;
+    crate::forum::posting::after_system_post(state, bot_id, &bot_name, e.title, &slug, e.topic_id, e.node_id, number)
+        .await;
     Ok(())
 }
 
@@ -239,12 +237,13 @@ async fn run_actions(state: &AppState, rule: &Rule, e: Option<&PostEvent<'_>>) -
             }
             ("flag", Some(e)) => {
                 if let Some(bot) = crate::ai::actor(state).await {
-                    let post: Option<i64> = sqlx::query_scalar("SELECT id FROM posts WHERE item_id = $1 AND post_number = $2")
-                        .bind(e.topic_id)
-                        .bind(e.number)
-                        .fetch_optional(pool)
-                        .await
-                        .db()?;
+                    let post: Option<i64> =
+                        sqlx::query_scalar("SELECT id FROM posts WHERE item_id = $1 AND post_number = $2")
+                            .bind(e.topic_id)
+                            .bind(e.number)
+                            .fetch_optional(pool)
+                            .await
+                            .db()?;
                     if let Some(post) = bf_db::forum::posts::post_ref(pool, post.unwrap_or(0)).await.db()? {
                         let reason = if s("reason") == "spam" { "spam" } else { "inappropriate" };
                         let note = format!("Automation: {}", s("text").chars().take(200).collect::<String>());
@@ -294,8 +293,7 @@ async fn run_actions(state: &AppState, rule: &Rule, e: Option<&PostEvent<'_>>) -
                     pending: false,
                 };
                 let slug = slugify(&new_title);
-                let item =
-                    bf_db::forum::posts::create_topic(pool, forum, &new_title, &slug, &post).await.db()?;
+                let item = bf_db::forum::posts::create_topic(pool, forum, &new_title, &slug, &post).await.db()?;
                 crate::forum::posting::after_system_post(state, bot_id, &bot_name, &new_title, &slug, item, forum, 1)
                     .await;
             }

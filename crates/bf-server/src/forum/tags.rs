@@ -5,9 +5,9 @@ use crate::forum::index::topic_line;
 use crate::forum::posting::apply_tags;
 use crate::forum::posting::clean_tag;
 use crate::forum::topics::readable_topic;
-use crate::http::render::{DbResult, layout};
 use crate::http::render::page;
 use crate::http::render::unread_count;
+use crate::http::render::{DbResult, layout};
 use crate::http::viewer::Viewer;
 use crate::state::AppState;
 use axum::extract::{Path, State};
@@ -114,7 +114,8 @@ async fn edit_tags(
     let (t, tree, perms) = readable_topic(&state, &v, id).await?;
     let moderator = perms.has(Perms::MODERATE);
     let archived_forum = tree.node(t.node_id).is_some_and(|n| n.kind == "archive");
-    if !moderator && (t.author_id != Some(user.id.get()) || t.locked || t.archived || archived_forum || v.actor.silenced)
+    if !moderator
+        && (t.author_id != Some(user.id.get()) || t.locked || t.archived || archived_forum || v.actor.silenced)
     {
         return Err(AppError::Forbidden);
     }
@@ -141,9 +142,7 @@ async fn tag_page(
     let readable = tree.readable(&v.actor);
     let name = tags::tag_by_slug(pool, &slug, &readable).await.db()?.ok_or(AppError::NotFound)?;
     let uid = v.user.as_ref().map(|u| u.id);
-    let topics = tags::tag_topics(pool, &slug, &readable, uid.map(bf_core::ids::UserId::get), 50)
-        .await
-        .db()?;
+    let topics = tags::tag_topics(pool, &slug, &readable, uid.map(bf_core::ids::UserId::get), 50).await.db()?;
     let heading = v.t().f("stream.tag", &[("name", name.as_str())]);
     let (mut l, set) = layout(&state, &v, Some(&heading));
     l.feed = Some(format!("/tag/{slug}/feed.rss"));

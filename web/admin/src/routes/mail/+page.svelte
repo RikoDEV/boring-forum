@@ -60,7 +60,9 @@
     <div class="acp-box-head"><h2>{tr("Email texts")}</h2></div>
     <div class="acp-box-body">
       <p>
-        {tr("Each email's subject and body is a text in Site text, translated into every language there, like the rest of the site.")}
+        {tr(
+          "Each email's subject and body is a text in Site text, translated into every language there, like the rest of the site.",
+        )}
       </p>
       <div class="acp-actions">
         <a class="btn" href="{resolve('/text')}?q=mail.">{tr("Edit email texts")}</a>

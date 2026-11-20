@@ -45,11 +45,11 @@ async fn solve(
     let already = t.solved_post_number == Some(p.post_number);
     answers::set_solved(pool, t.id, (!already).then_some(p.post_number)).await.db()?;
     let url = crate::forum::topics::post_url(&state, t.id, &t.slug, p.post_number);
-    if let (false, Some(author)) = (already, p.author_id.filter(|a| *a != user.id)) {
-        if !crate::community::notifications::can_read(&state, pool, t.node_id, vec![author]).await.is_empty() {
-            let data = json!({ "by": user.username, "title": t.title, "url": url });
-            crate::community::notifications::send(&state, user.id.get(), &[author], "solved", &data).await;
-        }
+    if let (false, Some(author)) = (already, p.author_id.filter(|a| *a != user.id))
+        && !crate::community::notifications::can_read(&state, pool, t.node_id, vec![author]).await.is_empty()
+    {
+        let data = json!({ "by": user.username, "title": t.title, "url": url });
+        crate::community::notifications::send(&state, user.id.get(), &[author], "solved", &data).await;
     }
     state.microcache.clear();
     Ok(Redirect::to(&url).into_response())

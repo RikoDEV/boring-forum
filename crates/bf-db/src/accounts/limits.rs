@@ -1,8 +1,8 @@
 //! Per-group posting and upload limits.
 
+use crate::admin::audit::{Entry, record};
 use bf_core::ids::{GroupId, UserId};
 pub use sqlx::Error;
-use crate::admin::audit::{Entry, record};
 use sqlx::PgPool;
 
 /// Group limits: the most generous value among the member's groups wins, and any group that sets

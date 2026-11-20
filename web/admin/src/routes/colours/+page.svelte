@@ -18,7 +18,7 @@
   let selected = $state(null);
   let savedCopy = $state("");
   let adding = $state(false);
-  let fresh = $state({ name: "", copy_from: 0 });
+  const fresh = $state({ name: "", copy_from: 0 });
   const status = new Status();
 
   // The labels are written here (not taken from the server) so they are translated.
@@ -70,7 +70,14 @@
   }
   load();
 
-  const edit = (s) => ({ id: s.id, slug: s.slug, name: s.name, selectable: s.selectable, light: { ...s.light }, dark: { ...s.dark } });
+  const edit = (s) => ({
+    id: s.id,
+    slug: s.slug,
+    name: s.name,
+    selectable: s.selectable,
+    light: { ...s.light },
+    dark: { ...s.dark },
+  });
   const snapshot = (s) => JSON.stringify([s.name, s.selectable, s.light, s.dark]);
   const dirty = $derived(!!selected && snapshot(selected) !== savedCopy);
   function open(s) {
@@ -115,9 +122,11 @@
   }
   // The site's default for light mode and for dark mode can be different schemes.
   const isDefault = (s) => s.slug === defaultLight || s.slug === defaultDark;
-  const setDefault = (s, light, dark) => put("/color-schemes/default", { id: s.id, light, dark }).then(load, status.fail);
+  const setDefault = (s, light, dark) =>
+    put("/color-schemes/default", { id: s.id, light, dark }).then(load, status.fail);
   async function remove(s) {
-    if (!confirm(tr("Delete the colour scheme {name}? Members who chose it get the default.", { name: s.name }))) return;
+    if (!confirm(tr("Delete the colour scheme {name}? Members who chose it get the default.", { name: s.name })))
+      return;
     try {
       await del(`/color-schemes/${s.id}`);
       if (selected?.id === s.id) selected = null;
@@ -127,14 +136,22 @@
     }
   }
 
-  const strip = (m) => ["header_background", "background", "surface", "text", "accent", "danger"].map((k) => m?.[k]).filter(Boolean);
+  const strip = (m) =>
+    ["header_background", "background", "surface", "text", "accent", "danger"].map((k) => m?.[k]).filter(Boolean);
 
   // Text on a colour: the mode's palette gives the pairs that fall short of WCAG AA (4.5:1).
   const low = (map, mode) =>
     PAIRS.flatMap(([fg, bg]) => {
       const r = contrast(map?.[fg], map?.[bg]);
       return r !== null && r < 4.5
-        ? [tr("{mode}: {a} on {b} is {n}:1; aim for at least 4.5:1.", { mode, a: LABEL[fg], b: LABEL[bg], n: r.toFixed(1) })]
+        ? [
+            tr("{mode}: {a} on {b} is {n}:1; aim for at least 4.5:1.", {
+              mode,
+              a: LABEL[fg],
+              b: LABEL[bg],
+              n: r.toFixed(1),
+            }),
+          ]
         : [];
     });
   const warnings = $derived(selected ? [...low(selected.light, tr("Light")), ...low(selected.dark, tr("Dark"))] : []);
@@ -151,19 +168,38 @@
   </PageHead>
   {#if status.error && !adding}<p class="err" role="alert">{status.error}</p>{/if}
   {#if adding}
-    <EditDialog title={tr("New colour scheme")} onclose={() => (adding = false)} onsubmit={add} {status} save={tr("Create")}>
+    <EditDialog
+      title={tr("New colour scheme")}
+      onclose={() => (adding = false)}
+      onsubmit={add}
+      {status}
+      save={tr("Create")}
+    >
       <div class="acp-form">
         <Field label={tr("Name")} bind:value={fresh.name} maxlength="40" required wide />
-        <Field label={tr("Start from")} bind:value={fresh.copy_from} options={schemes.map((s) => [s.id, s.name])} wide />
+        <Field
+          label={tr("Start from")}
+          bind:value={fresh.copy_from}
+          options={schemes.map((s) => [s.id, s.name])}
+          wide
+        />
       </div>
     </EditDialog>
   {/if}
   <ul class="acp-themes" aria-label={tr("Colour schemes")}>
     {#each schemes as s (s.id)}
       <li class="acp-theme">
-        <button class="acp-theme-look acp-scheme-look" onclick={() => open(s)} aria-label={tr("Edit {name}", { name: s.name })}>
-          <span>{#each strip(s.light) as c}<i style:background={c}></i>{/each}</span>
-          <span>{#each strip(s.dark) as c}<i style:background={c}></i>{/each}</span>
+        <button
+          class="acp-theme-look acp-scheme-look"
+          onclick={() => open(s)}
+          aria-label={tr("Edit {name}", { name: s.name })}
+        >
+          <span
+            >{#each strip(s.light) as c}<i style:background={c}></i>{/each}</span
+          >
+          <span
+            >{#each strip(s.dark) as c}<i style:background={c}></i>{/each}</span
+          >
         </button>
         <div class="acp-theme-body">
           <div class="acp-grow"><strong>{s.name}</strong></div>
@@ -176,8 +212,9 @@
         </div>
         <div class="acp-actions">
           <button class="secondary" onclick={() => open(s)}>{tr("Edit")}</button>
-          {#if s.slug !== defaultLight || s.slug !== defaultDark}<button class="secondary" onclick={() => setDefault(s, true, true)}
-              >{tr("Make default")}</button
+          {#if s.slug !== defaultLight || s.slug !== defaultDark}<button
+              class="secondary"
+              onclick={() => setDefault(s, true, true)}>{tr("Make default")}</button
             >{/if}
           {#if !isDefault(s)}
             <details class="acp-more">
@@ -224,13 +261,15 @@
         wide
         checked={selected.slug === defaultLight}
         disabled={selected.slug === defaultLight}
-        onchange={() => setDefault(selected, true, false)}>{tr("Its light palette is the site's default in light mode")}</Switch
+        onchange={() => setDefault(selected, true, false)}
+        >{tr("Its light palette is the site's default in light mode")}</Switch
       >
       <Switch
         wide
         checked={selected.slug === defaultDark}
         disabled={selected.slug === defaultDark}
-        onchange={() => setDefault(selected, false, true)}>{tr("Its dark palette is the site's default in dark mode")}</Switch
+        onchange={() => setDefault(selected, false, true)}
+        >{tr("Its dark palette is the site's default in dark mode")}</Switch
       >
     </div>
   </section>

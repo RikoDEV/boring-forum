@@ -91,7 +91,9 @@ fn segments(path: &str) -> Result<Vec<Seg>, String> {
                 && part != ".."
                 && part.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '-' | '_' | '.'));
             if !ok {
-                return Err(format!("Bad segment in route {path}: use lowercase letters, digits, dashes, dots and {{param}}."));
+                return Err(format!(
+                    "Bad segment in route {path}: use lowercase letters, digits, dashes, dots and {{param}}."
+                ));
             }
             out.push(Seg::Lit(part.to_owned()));
         }
@@ -100,7 +102,11 @@ fn segments(path: &str) -> Result<Vec<Seg>, String> {
 }
 
 /// Checks `[[routes]]` when the package is read. `permissions` are the plugin's own `[[permissions]]` keys.
-pub(super) fn validate_routes(routes: &[RouteDecl], capabilities: &[String], permissions: &[String]) -> Result<(), String> {
+pub(super) fn validate_routes(
+    routes: &[RouteDecl],
+    capabilities: &[String],
+    permissions: &[String],
+) -> Result<(), String> {
     if routes.is_empty() {
         return Ok(());
     }
@@ -226,7 +232,10 @@ async fn held_permissions(state: &AppState, plugin: &str, v: &Viewer) -> Vec<Str
     let (Some(pool), Some(_)) = (state.pool.as_ref(), v.user.as_ref()) else { return vec![] };
     let Ok(all) = bf_db::platform::registry_groups::permissions_of(pool, plugin).await else { return vec![] };
     let mine: Vec<i64> = v.actor.groups.iter().map(|g| g.get()).collect();
-    all.into_iter().filter(|(.., groups)| v.actor.is_admin || groups.iter().any(|g| mine.contains(g))).map(|(k, ..)| k).collect()
+    all.into_iter()
+        .filter(|(.., groups)| v.actor.is_admin || groups.iter().any(|g| mine.contains(g)))
+        .map(|(k, ..)| k)
+        .collect()
 }
 
 fn pairs(raw: &[u8], cap: usize) -> Map<String, Value> {
@@ -355,7 +364,10 @@ async fn serve(
 }
 
 fn text(out: &Value, key: &str, max: usize) -> Option<String> {
-    out.get(key).and_then(Value::as_str).map(|s| s.chars().take(max).collect::<String>()).filter(|s| !s.trim().is_empty())
+    out.get(key)
+        .and_then(Value::as_str)
+        .map(|s| s.chars().take(max).collect::<String>())
+        .filter(|s| !s.trim().is_empty())
 }
 
 /// An address on this site, or an `https` one, for a picture.
@@ -367,7 +379,15 @@ fn picture(state: &AppState, raw: &str) -> Option<String> {
     }
 }
 
-fn page(state: &AppState, v: &Viewer, id: &str, rest: &str, out: &Value, head: bool, gated: bool) -> Result<Response, AppError> {
+fn page(
+    state: &AppState,
+    v: &Viewer,
+    id: &str,
+    rest: &str,
+    out: &Value,
+    head: bool,
+    gated: bool,
+) -> Result<Response, AppError> {
     if let Some(to) = out.get("redirect").and_then(Value::as_str) {
         if !local_path(to) {
             return Err(AppError::internal("plugin redirected off the site"));
@@ -424,14 +444,29 @@ fn page(state: &AppState, v: &Viewer, id: &str, rest: &str, out: &Value, head: b
         crumbs,
         canonical: Some(canonical),
         description: text(out, "description", 300),
-        feed: out.get("feed").and_then(Value::as_str).filter(|f| local_path(f) && f.ends_with(".rss")).map(str::to_owned),
+        feed: out
+            .get("feed")
+            .and_then(Value::as_str)
+            .filter(|f| local_path(f) && f.ends_with(".rss"))
+            .map(str::to_owned),
         noindex,
         json_ld,
-        og_type: og.get("type").and_then(Value::as_str).filter(|t| matches!(*t, "article" | "website" | "profile")).unwrap_or_default().to_owned(),
+        og_type: og
+            .get("type")
+            .and_then(Value::as_str)
+            .filter(|t| matches!(*t, "article" | "website" | "profile"))
+            .unwrap_or_default()
+            .to_owned(),
         og_image: og.get("image").and_then(Value::as_str).and_then(|i| picture(state, i)),
         ..Shell::default()
     };
-    let mut res = finish(state, v, ctx, shell, panel(&format!("<div class=\"bf-app\" data-plugin=\"{}\">{html}</div>", bf_core::html::esc(id))));
+    let mut res = finish(
+        state,
+        v,
+        ctx,
+        shell,
+        panel(&format!("<div class=\"bf-app\" data-plugin=\"{}\">{html}</div>", bf_core::html::esc(id))),
+    );
     *res.status_mut() = status;
     if head {
         *res.body_mut() = axum::body::Body::empty();
@@ -470,11 +505,17 @@ fn feed(state: &AppState, id: &str, rest: &str, format: FeedFormat, out: &Value)
                 .collect()
         })
         .unwrap_or_default();
-    let stem = rest.strip_suffix(".rss").or_else(|| rest.strip_suffix(".atom")).or_else(|| rest.strip_suffix(".json")).unwrap_or(rest);
+    let stem = rest
+        .strip_suffix(".rss")
+        .or_else(|| rest.strip_suffix(".atom"))
+        .or_else(|| rest.strip_suffix(".json"))
+        .unwrap_or(rest);
     let self_link = |ext: &str| format!("{base}/app/{id}/{stem}.{ext}");
     let (kind, body) = match format {
         FeedFormat::Rss => ("application/rss+xml; charset=utf-8", bf_seo::rss(&title, &link, &description, &items)),
-        FeedFormat::Atom => ("application/atom+xml; charset=utf-8", bf_seo::atom(&title, &link, &self_link("atom"), &site, &items)),
+        FeedFormat::Atom => {
+            ("application/atom+xml; charset=utf-8", bf_seo::atom(&title, &link, &self_link("atom"), &site, &items))
+        }
         FeedFormat::Json => (
             "application/feed+json; charset=utf-8",
             bf_seo::json_feed(&title, &link, &self_link("json"), &description, &items).to_string(),
@@ -511,14 +552,19 @@ mod tests {
             route("home", "", &["GET"]),
         ];
         assert!(validate_routes(&routes, &caps(), &[]).is_ok());
-        let Hit::Found { route, params, .. } = match_route(&routes, "entries/hello-world", "GET") else { panic!("no match") };
+        let Hit::Found { route, params, .. } = match_route(&routes, "entries/hello-world", "GET") else {
+            panic!("no match")
+        };
         assert_eq!((route.key.as_str(), params["slug"].as_str()), ("entry", Some("hello-world")));
         let Hit::Found { route, .. } = match_route(&routes, "entries/new", "POST") else { panic!("no match") };
         assert_eq!(route.key, "new", "a literal beats a parameter");
         assert!(matches!(match_route(&routes, "", "GET"), Hit::Found { .. }));
         assert!(matches!(match_route(&routes, "entries/x/y", "GET"), Hit::None));
         assert!(matches!(match_route(&routes, "entries/hello", "POST"), Hit::Method(_)));
-        assert!(matches!(match_route(&routes, "entries/hello/", "GET"), Hit::Found { .. }), "one trailing slash is fine");
+        assert!(
+            matches!(match_route(&routes, "entries/hello/", "GET"), Hit::Found { .. }),
+            "one trailing slash is fine"
+        );
     }
 
     #[test]

@@ -1,8 +1,8 @@
 //! Staff tools: IP lookups, member history, saved moderator actions, topic flags.
 
+use crate::admin::audit::{Entry, record};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 type Error = sqlx::Error;
@@ -212,7 +212,8 @@ pub async fn set_topic_flag(pool: &PgPool, item: i64, column: &'static str, on: 
 }
 
 pub async fn log_action(pool: &PgPool, actor: i64, item: i64, name: &str) -> Result<(), Error> {
-    record(pool, Entry::new("topic.action").by(actor).on(item.to_string()).details(serde_json::json!({ "name": name }))).await
+    record(pool, Entry::new("topic.action").by(actor).on(item.to_string()).details(serde_json::json!({ "name": name })))
+        .await
 }
 
 /// Accounts seen on an address, for staff.
@@ -251,7 +252,14 @@ pub async fn mark_impersonation(pool: &PgPool, digest: &str, admin: i64, target:
         .bind(digest)
         .execute(pool)
         .await?;
-    record(pool, Entry::new("user.impersonate").by(admin).on(format!("user:{target}")).details(serde_json::json!({ "impersonated_by": admin }))).await
+    record(
+        pool,
+        Entry::new("user.impersonate")
+            .by(admin)
+            .on(format!("user:{target}"))
+            .details(serde_json::json!({ "impersonated_by": admin })),
+    )
+    .await
 }
 
 // ---- Moderator panel overview ----

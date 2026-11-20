@@ -82,8 +82,7 @@ async fn create_webhook(
 
 async fn list_webhooks(State(state): State<AppState>, v: Viewer, headers: HeaderMap) -> Result<Response, AppError> {
     admin(&state, &v, &headers, false)?;
-    Ok(Json(json!({ "webhooks": api::webhooks(state.db()?).await.db()?, "events": EVENTS }))
-        .into_response())
+    Ok(Json(json!({ "webhooks": api::webhooks(state.db()?).await.db()?, "events": EVENTS })).into_response())
 }
 
 async fn delete_webhook(
@@ -116,7 +115,9 @@ pub struct TestResult {
 }
 
 async fn audit(pool: &sqlx::PgPool, actor: Option<i64>, action: &str, target: String) -> Result<(), AppError> {
-    bf_db::admin::audit::record(pool, bf_db::admin::audit::Entry::new(action).by(actor.unwrap_or(0)).on(target)).await.db()
+    bf_db::admin::audit::record(pool, bf_db::admin::audit::Entry::new(action).by(actor.unwrap_or(0)).on(target))
+        .await
+        .db()
 }
 
 /// Sends one signed `webhook.test` delivery to the address now and says how the receiver answered.
@@ -203,18 +204,9 @@ pub(crate) async fn moderated(
 }
 
 /// An action only plugins hear about (no webhook, no federation): logins, chat, messages, votes.
+#[expect(clippy::needless_pass_by_value, reason = "callers build the payload in place with json!")]
 pub(crate) fn fire(state: &AppState, hook: &str, payload: serde_json::Value) {
     crate::platform::plugins::dispatch(state, hook, &payload);
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn every_webhook_event_is_a_plugin_hook() {
-        for e in super::EVENTS {
-            assert!(crate::platform::plugins::HOOKS.contains(&e), "{e} is not in HOOKS");
-        }
-    }
 }
 
 /// One attempt. Resolves the host itself and pins the checked address for the request, so
@@ -292,4 +284,14 @@ pub fn spawn_webhooks(state: AppState) {
             }
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn every_webhook_event_is_a_plugin_hook() {
+        for e in super::EVENTS {
+            assert!(crate::platform::plugins::HOOKS.contains(&e), "{e} is not in HOOKS");
+        }
+    }
 }

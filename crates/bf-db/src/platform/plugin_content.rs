@@ -23,13 +23,14 @@ pub const MAX_DOCS_PER_PLUGIN: i64 = 50_000;
 /// Adds or replaces a document. False when the plugin is at its limit and this one is new.
 pub async fn index_doc(pool: &PgPool, d: &SearchDoc<'_>) -> Result<bool, Error> {
     let mut tx = pool.begin().await?;
-    let there: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM plugin_search_docs WHERE plugin = $1 AND type = $2 AND ref = $3)")
-            .bind(d.plugin)
-            .bind(d.kind)
-            .bind(d.reference)
-            .fetch_one(&mut *tx)
-            .await?;
+    let there: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM plugin_search_docs WHERE plugin = $1 AND type = $2 AND ref = $3)",
+    )
+    .bind(d.plugin)
+    .bind(d.kind)
+    .bind(d.reference)
+    .fetch_one(&mut *tx)
+    .await?;
     if !there {
         let n: i64 = sqlx::query_scalar("SELECT count(*) FROM plugin_search_docs WHERE plugin = $1")
             .bind(d.plugin)
@@ -188,7 +189,12 @@ pub async fn pending(pool: &PgPool, limit: i64) -> Result<Vec<ReviewItem>, Error
 
 /// Closes one pending entry; returns (plugin, type, ref) so the plugin can be told, or `None`
 /// if it was already decided.
-pub async fn decide(pool: &PgPool, id: i64, approve: bool, moderator: i64) -> Result<Option<(String, String, String)>, Error> {
+pub async fn decide(
+    pool: &PgPool,
+    id: i64,
+    approve: bool,
+    moderator: i64,
+) -> Result<Option<(String, String, String)>, Error> {
     sqlx::query_as(
         "UPDATE plugin_review_items SET status = CASE WHEN $2 THEN 'approved' ELSE 'rejected' END,
                 decided_by = $3, decided_at = now()
@@ -203,27 +209,37 @@ pub async fn decide(pool: &PgPool, id: i64, approve: bool, moderator: i64) -> Re
 
 /// A plugin withdraws its own pending entry (the author deleted it).
 pub async fn withdraw(pool: &PgPool, plugin: &str, kind: &str, reference: &str) -> Result<bool, Error> {
-    Ok(sqlx::query("DELETE FROM plugin_review_items WHERE plugin = $1 AND type = $2 AND ref = $3 AND status = 'pending'")
-        .bind(plugin)
-        .bind(kind)
-        .bind(reference)
-        .execute(pool)
-        .await?
-        .rows_affected()
+    Ok(sqlx::query(
+        "DELETE FROM plugin_review_items WHERE plugin = $1 AND type = $2 AND ref = $3 AND status = 'pending'",
+    )
+    .bind(plugin)
+    .bind(kind)
+    .bind(reference)
+    .execute(pool)
+    .await?
+    .rows_affected()
         > 0)
 }
 
 /// Size and type of a stored file, without its bytes.
 pub async fn file_head(pool: &PgPool, plugin: &str, path: &str) -> Result<Option<(String, i64, DateTime<Utc>)>, Error> {
-    sqlx::query_as("SELECT content_type, octet_length(data)::bigint, created_at FROM plugin_files WHERE plugin = $1 AND path = $2")
-        .bind(plugin)
-        .bind(path)
-        .fetch_optional(pool)
-        .await
+    sqlx::query_as(
+        "SELECT content_type, octet_length(data)::bigint, created_at FROM plugin_files WHERE plugin = $1 AND path = $2",
+    )
+    .bind(plugin)
+    .bind(path)
+    .fetch_optional(pool)
+    .await
 }
 
 /// `len` bytes of a stored file from `start` (0-based), without loading the rest.
-pub async fn file_slice(pool: &PgPool, plugin: &str, path: &str, start: i64, len: i64) -> Result<Option<Vec<u8>>, Error> {
+pub async fn file_slice(
+    pool: &PgPool,
+    plugin: &str,
+    path: &str,
+    start: i64,
+    len: i64,
+) -> Result<Option<Vec<u8>>, Error> {
     sqlx::query_scalar(
         "SELECT substring(data FROM ($3::int + 1) FOR $4::int) FROM plugin_files WHERE plugin = $1 AND path = $2",
     )
@@ -237,7 +253,13 @@ pub async fn file_slice(pool: &PgPool, plugin: &str, path: &str, start: i64, len
 
 /// Appends to a stored file in the database, without reading it back. Creates it if new.
 /// Returns the new size.
-pub async fn file_append(pool: &PgPool, plugin: &str, path: &str, content_type: &str, data: &[u8]) -> Result<i64, Error> {
+pub async fn file_append(
+    pool: &PgPool,
+    plugin: &str,
+    path: &str,
+    content_type: &str,
+    data: &[u8],
+) -> Result<i64, Error> {
     sqlx::query_scalar(
         "INSERT INTO plugin_files (plugin, path, content_type, data, size) VALUES ($1, $2, $3, $4, octet_length($4))
          ON CONFLICT (plugin, path) DO UPDATE SET data = plugin_files.data || EXCLUDED.data,
@@ -267,7 +289,12 @@ pub async fn topic_owned(pool: &PgPool, plugin: &str, bot: i64, topic: i64) -> R
 }
 
 /// Locks or unlists an owned topic (`None` leaves a flag as it is).
-pub async fn set_topic_flags(pool: &PgPool, topic: i64, locked: Option<bool>, listed: Option<bool>) -> Result<(), Error> {
+pub async fn set_topic_flags(
+    pool: &PgPool,
+    topic: i64,
+    locked: Option<bool>,
+    listed: Option<bool>,
+) -> Result<(), Error> {
     sqlx::query("UPDATE items SET locked = COALESCE($2, locked), listed = COALESCE($3, listed) WHERE id = $1")
         .bind(topic)
         .bind(locked)

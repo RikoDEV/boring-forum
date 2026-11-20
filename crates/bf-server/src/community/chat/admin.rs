@@ -1,7 +1,7 @@
 //! Administration of channels and of flagged messages.
 
 use crate::admin::api::admin;
-use crate::http::render::{db_err, DbResult};
+use crate::http::render::{DbResult, db_err};
 use crate::http::viewer::Viewer;
 use crate::state::AppState;
 use axum::Json;
@@ -94,17 +94,9 @@ pub(super) async fn update_channel(
 ) -> Result<Response, AppError> {
     admin(&state, &v, &headers, true)?;
     check_channel(&b)?;
-    if !chat::update_channel(
-        state.db()?,
-        id,
-        b.name.trim(),
-        b.description.trim(),
-        &b.access,
-        &b.group_ids,
-        b.archived,
-    )
-    .await
-    .map_err(bad_node)?
+    if !chat::update_channel(state.db()?, id, b.name.trim(), b.description.trim(), &b.access, &b.group_ids, b.archived)
+        .await
+        .map_err(bad_node)?
     {
         return Err(AppError::NotFound);
     }

@@ -1,9 +1,9 @@
 //! Built-in chat and the rules that send forum activity to outside chat services.
 
+use crate::admin::audit::{Entry, record};
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 pub use sqlx::Error;
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 #[derive(Debug, Clone, Serialize, FromRow)]
@@ -344,10 +344,13 @@ pub async fn messages(
     pinned: bool,
 ) -> Result<Vec<Message>, Error> {
     // Only a fixed column list or select prefix (a constant) is interpolated; every value is bound.
-    sqlx::query_as(concat!(message_select!(), " WHERE m.channel_id = $1 AND ($2::bigint IS NULL OR m.id < $2)
+    sqlx::query_as(concat!(
+        message_select!(),
+        " WHERE m.channel_id = $1 AND ($2::bigint IS NULL OR m.id < $2)
            AND ($3::text IS NULL OR (m.deleted_at IS NULL AND m.raw ILIKE '%' || $3 || '%' ESCAPE '\\'))
            AND (NOT $4 OR (m.pinned AND m.deleted_at IS NULL))
-         ORDER BY m.id DESC LIMIT 50"))
+         ORDER BY m.id DESC LIMIT 50"
+    ))
     .bind(channel)
     .bind(before)
     .bind(search.map(|s| s.replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_")))
@@ -508,7 +511,11 @@ pub async fn decide_flags(pool: &PgPool, id: i64, keep: bool, by: i64) -> Result
             .await?;
     }
     sqlx::query("DELETE FROM chat_flags WHERE message_id = $1").bind(id).execute(&mut *tx).await?;
-    record(&mut *tx, Entry::new(if keep { "chat.flag.keep" } else { "chat.flag.remove" }).by(by).on(format!("chat_message:{id}"))).await?;
+    record(
+        &mut *tx,
+        Entry::new(if keep { "chat.flag.keep" } else { "chat.flag.remove" }).by(by).on(format!("chat_message:{id}")),
+    )
+    .await?;
     tx.commit().await?;
     Ok(true)
 }

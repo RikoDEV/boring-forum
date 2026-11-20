@@ -48,9 +48,8 @@ pub(super) async fn member_channel(
         crate::moderation::held::hold(&state, user.id.get(), "chat_channel", None, payload).await?;
         return Ok(crate::moderation::held::held_json());
     }
-    let id = chat::create_channel(state.db()?, &name.text, &description.text, "invite", &[], user.id.get())
-        .await
-        .db()?;
+    let id =
+        chat::create_channel(state.db()?, &name.text, &description.text, "invite", &[], user.id.get()).await.db()?;
     Ok((StatusCode::CREATED, Json(json!({ "id": id }))).into_response())
 }
 

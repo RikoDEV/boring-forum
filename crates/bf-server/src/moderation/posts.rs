@@ -3,7 +3,7 @@
 use crate::forum::posting::editable_post;
 use crate::forum::topics::ensure_post_visible;
 use crate::forum::topics::readable_topic;
-use crate::http::render::{ago, DbResult};
+use crate::http::render::{DbResult, ago};
 use crate::http::render::{layout, page};
 use crate::http::viewer::CsrfForm;
 use crate::http::viewer::Viewer;
@@ -82,8 +82,14 @@ pub(crate) async fn report(
             let link = format!("{}{}#post-{}", state.config.base_url, topic_path(t.id, &t.slug), p.post_number);
             let subject: String = format!("About your post in \"{}\"", t.title).chars().take(150).collect();
             let body = format!("{note}\n\n{link}");
-            crate::community::messages::deliver_new(&state, (user.id.get(), &user.username), &subject, &body, &[author])
-                .await?;
+            crate::community::messages::deliver_new(
+                &state,
+                (user.id.get(), &user.username),
+                &subject,
+                &body,
+                &[author],
+            )
+            .await?;
         }
         return Ok(Redirect::to(&format!("{}#post-{}", topic_path(t.id, &t.slug), p.post_number)).into_response());
     }
@@ -99,11 +105,8 @@ pub(crate) async fn report(
     crate::community::notifications::tell_reviewers(&state, p.node_id, user.id.get()).await;
     // Enough independent reports hide the post until a moderator looks.
     if f64::from(score) >= state.settings().int("flag_hide_score") as f64 {
-        let state_now: String = sqlx::query_scalar("SELECT state FROM posts WHERE id = $1")
-            .bind(p.id)
-            .fetch_one(pool)
-            .await
-            .db()?;
+        let state_now: String =
+            sqlx::query_scalar("SELECT state FROM posts WHERE id = $1").bind(p.id).fetch_one(pool).await.db()?;
         if state_now == "visible" && p.post_number > 1 {
             posts::set_hidden(pool, p.id, true, Some("Hidden after reports from the community"), user.id.get())
                 .await
@@ -111,7 +114,12 @@ pub(crate) async fn report(
             crate::moderation::topics::refresh(&state);
             if let Some(author) = p.author_id {
                 if reason == "spam" {
-                    crate::moderation::spam::spam_hidden(&state, author, "Reports from the community hid a post of theirs as spam.").await;
+                    crate::moderation::spam::spam_hidden(
+                        &state,
+                        author,
+                        "Reports from the community hid a post of theirs as spam.",
+                    )
+                    .await;
                 }
                 let data =
                     json!({ "title": t.title, "url": format!("{}#post-{}", topic_path(t.id, &t.slug), p.post_number) });
@@ -338,17 +346,14 @@ async fn revert(
     let (p, t) = editable_post(&state, &v, id).await?;
     let user = v.require_user()?;
     let pool = state.db()?;
-    if !is_staff(&v)
-        && bf_db::moderation::topics::revisions(pool, id).await.db()?.iter().any(|r| r.n == n && r.hidden)
+    if !is_staff(&v) && bf_db::moderation::topics::revisions(pool, id).await.db()?.iter().any(|r| r.n == n && r.hidden)
     {
         return Err(AppError::Forbidden);
     }
     let raw = bf_db::moderation::topics::revision_raw(pool, id, n).await.db()?.ok_or(AppError::NotFound)?;
     let cooked = crate::platform::plugins::cook(&state, &raw).await;
     let reason = format!("Reverted to the text before edit {n}");
-    posts::edit_post(pool, id, user.id.get(), &raw, &cooked.html, bf_cook::COOK_VERSION, Some(&reason))
-        .await
-        .db()?;
+    posts::edit_post(pool, id, user.id.get(), &raw, &cooked.html, bf_cook::COOK_VERSION, Some(&reason)).await.db()?;
     crate::platform::webhooks::emit(
         &state,
         "post.edited",

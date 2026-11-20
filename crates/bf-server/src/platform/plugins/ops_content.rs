@@ -150,7 +150,12 @@ async fn content_edit(state: &AppState, plugin: &str, req: &Value) -> Result<Val
             return Err(en("The plugin can only change topics it owns.").into());
         }
         if let Some(title) = title {
-            sqlx::query("UPDATE items SET title = $2 WHERE id = $1").bind(topic).bind(title).execute(pool).await.map_err(failed)?;
+            sqlx::query("UPDATE items SET title = $2 WHERE id = $1")
+                .bind(topic)
+                .bind(title)
+                .execute(pool)
+                .await
+                .map_err(failed)?;
         }
         pc::set_topic_flags(pool, topic, locked, listed).await.map_err(failed)?;
     }
@@ -187,7 +192,12 @@ const FILE_TYPES: [&str; 22] = [
 
 /// Types the browser shows in place; every other stored file is offered as a download.
 fn shown_inline(ty: &str) -> bool {
-    ty.starts_with("image/") || ty.starts_with("audio/") || ty.starts_with("video/") || ty.starts_with("text/") || ty == "application/pdf" || ty == "application/json"
+    ty.starts_with("image/")
+        || ty.starts_with("audio/")
+        || ty.starts_with("video/")
+        || ty.starts_with("text/")
+        || ty == "application/pdf"
+        || ty == "application/json"
 }
 
 fn good_path(p: &str) -> bool {
@@ -221,13 +231,16 @@ async fn file_put(state: &AppState, plugin: &str, req: &Value) -> Result<Value, 
     let path = req.get("path").and_then(Value::as_str).unwrap_or_default();
     let ty = req.get("content_type").and_then(Value::as_str).unwrap_or_default();
     if !good_path(path) || !FILE_TYPES.contains(&ty) {
-        return Err(en("Use a lowercase path of letters, digits, dots, dashes and slashes, and an allowed content type.").into());
+        return Err(en(
+            "Use a lowercase path of letters, digits, dots, dashes and slashes, and an allowed content type.",
+        )
+        .into());
     }
     let data = match (req.get("text").and_then(Value::as_str), req.get("base64").and_then(Value::as_str)) {
         (Some(t), _) => t.as_bytes().to_vec(),
-        (None, Some(b)) => {
-            base64::engine::general_purpose::STANDARD.decode(b).map_err(|_| en("The base64 is not valid.").to_owned())?
-        }
+        (None, Some(b)) => base64::engine::general_purpose::STANDARD
+            .decode(b)
+            .map_err(|_| en("The base64 is not valid.").to_owned())?,
         (None, None) => return Err(en("Send text or base64.").into()),
     };
     let append = req.get("append").and_then(Value::as_bool).unwrap_or(false);
@@ -261,7 +274,10 @@ pub(super) async fn file_fetch(state: &AppState, plugin: &str, hosts: &[String],
     let path = req.get("path").and_then(Value::as_str).unwrap_or_default();
     let ty = req.get("content_type").and_then(Value::as_str).unwrap_or_default();
     if !good_path(path) || !FILE_TYPES.contains(&ty) {
-        return Err(en("Use a lowercase path of letters, digits, dots, dashes and slashes, and an allowed content type.").into());
+        return Err(en(
+            "Use a lowercase path of letters, digits, dots, dashes and slashes, and an allowed content type.",
+        )
+        .into());
     }
     if !allow(plugin, "http", 60, state.settings().int("plugin_http_per_minute"), 1) {
         return Err(en("This plugin has made too many requests in the last minute.").into());
@@ -286,13 +302,14 @@ pub(super) async fn file_fetch(state: &AppState, plugin: &str, hosts: &[String],
 async fn file_get(state: &AppState, plugin: &str, req: &Value) -> Result<Value, String> {
     let pool = pool(state).map_err(failed)?;
     let path = req.get("path").and_then(Value::as_str).unwrap_or_default();
-    let (ty, data) =
-        rc::file_get(pool, plugin, path).await.map_err(failed)?.ok_or(en("No such file."))?;
+    let (ty, data) = rc::file_get(pool, plugin, path).await.map_err(failed)?.ok_or(en("No such file."))?;
     // The answer must fit what a module can read back in one call.
     if data.len() > 48 * 1024 {
         return Err(en("The file is too large to read in one call; link to its address instead.").into());
     }
-    Ok(json!({ "content_type": ty, "base64": base64::engine::general_purpose::STANDARD.encode(&data), "size": data.len() }))
+    Ok(
+        json!({ "content_type": ty, "base64": base64::engine::general_purpose::STANDARD.encode(&data), "size": data.len() }),
+    )
 }
 
 async fn file_delete(state: &AppState, plugin: &str, req: &Value) -> Result<Value, String> {
@@ -374,7 +391,8 @@ pub(super) async fn serve_file(
         return Err(AppError::NotFound);
     }
     let pool = state.db()?;
-    let (ty, size, stored) = pc::file_head(pool, &id, &path).await.map_err(AppError::internal)?.ok_or(AppError::NotFound)?;
+    let (ty, size, stored) =
+        pc::file_head(pool, &id, &path).await.map_err(AppError::internal)?.ok_or(AppError::NotFound)?;
     let etag = format!("\"{size}-{}\"", stored.timestamp());
     let mut res_headers = vec![
         (header::CONTENT_TYPE, ty.clone()),
@@ -389,13 +407,18 @@ pub(super) async fn serve_file(
         let name = path.rsplit('/').next().unwrap_or("file");
         res_headers.push((header::CONTENT_DISPOSITION, format!("attachment; filename=\"{name}\"")));
     }
-    if headers.get(header::IF_NONE_MATCH).and_then(|h| h.to_str().ok()).is_some_and(|m| m.split(',').any(|t| t.trim() == etag)) {
+    if headers
+        .get(header::IF_NONE_MATCH)
+        .and_then(|h| h.to_str().ok())
+        .is_some_and(|m| m.split(',').any(|t| t.trim() == etag))
+    {
         return Ok((StatusCode::NOT_MODIFIED, header_map(&res_headers)).into_response());
     }
     let wanted = headers.get(header::RANGE).and_then(|h| h.to_str().ok());
     match byte_range(wanted, size) {
         Err(()) => {
-            Ok((StatusCode::RANGE_NOT_SATISFIABLE, [(header::CONTENT_RANGE, format!("bytes */{size}"))]).into_response())
+            Ok((StatusCode::RANGE_NOT_SATISFIABLE, [(header::CONTENT_RANGE, format!("bytes */{size}"))])
+                .into_response())
         }
         Ok(Some((first, last))) => {
             let data = pc::file_slice(pool, &id, &path, first, last - first + 1)
@@ -406,7 +429,8 @@ pub(super) async fn serve_file(
             Ok((StatusCode::PARTIAL_CONTENT, header_map(&res_headers), data).into_response())
         }
         Ok(None) => {
-            let (_, data) = rc::file_get(pool, &id, &path).await.map_err(AppError::internal)?.ok_or(AppError::NotFound)?;
+            let (_, data) =
+                rc::file_get(pool, &id, &path).await.map_err(AppError::internal)?.ok_or(AppError::NotFound)?;
             Ok((header_map(&res_headers), data).into_response())
         }
     }

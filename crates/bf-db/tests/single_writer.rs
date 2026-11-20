@@ -45,7 +45,8 @@ fn each_table_has_its_one_writer() {
     assert!(!files.is_empty(), "no source files found under {}", crates.display());
     let mut stray: Vec<String> = Vec::new();
     for file in files {
-        let relative = file.strip_prefix(crates).unwrap_or(&file).to_string_lossy().replace(std::path::MAIN_SEPARATOR, "/");
+        let relative =
+            file.strip_prefix(crates).unwrap_or(&file).to_string_lossy().replace(std::path::MAIN_SEPARATOR, "/");
         let text = std::fs::read_to_string(&file).unwrap_or_default().to_ascii_lowercase();
         for (table, allowed) in WRITERS {
             if allowed.contains(&relative.as_str()) {
@@ -53,9 +54,9 @@ fn each_table_has_its_one_writer() {
             }
             // The table name must end the word: `users` is not `users_extra`.
             let needle = format!("insert into {table}");
-            let hit = text.match_indices(&needle).any(|(at, _)| {
-                !text[at + needle.len()..].starts_with(|c: char| c.is_ascii_alphanumeric() || c == '_')
-            });
+            let hit = text
+                .match_indices(&needle)
+                .any(|(at, _)| !text[at + needle.len()..].starts_with(|c: char| c.is_ascii_alphanumeric() || c == '_'));
             if hit {
                 stray.push(format!("{relative} writes {table}"));
             }

@@ -24,11 +24,20 @@ jobs:
         with: { persist-credentials: false }
 
       - name: Clone the wiki
+        id: clone
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" wiki
+        run: |
+          # GitHub creates the wiki's git repository when its first page is saved. Until then there
+          # is nothing to clone: say so and skip, rather than failing every push.
+          if git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" wiki; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::The wiki is not set up yet. Enable it in Settings, create any page once by hand, then re-run this workflow."
+          fi
 
       - name: Copy docs and rewrite links
+        if: steps.clone.outputs.ready == 'true'
         env:
           BLOB: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}
         run: |
@@ -43,6 +52,7 @@ jobs:
             -e 's#\]\(([A-Za-z0-9_/-]+)\.md(\#[^)]*)?\)#](\1\2)#g' {} +
 
       - name: Push
+        if: steps.clone.outputs.ready == 'true'
         working-directory: wiki
         run: |
           git add -A

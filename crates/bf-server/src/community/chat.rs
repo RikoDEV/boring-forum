@@ -17,9 +17,7 @@ mod messages;
 mod rules;
 mod send;
 
-use self::admin::{
-    add_channel, admin_channels, admin_flags, bad_node, decide_flag, delete_channel, update_channel,
-};
+use self::admin::{add_channel, admin_channels, admin_flags, bad_node, decide_flag, delete_channel, update_channel};
 use self::channels::{chat_channel_page, chat_page, list_channels, me, messages, open_dm};
 use self::invite_only::{add_member, list_members, member_channel, remove_member};
 use self::membership::{join, leave, mute, read};
@@ -77,8 +75,7 @@ pub(crate) async fn viewable(state: &AppState, v: &Viewer, id: i64) -> Result<ch
         ("dm", _) | (_, "invite") => chat::is_member(pool, id, user.id.get()).await.db()?,
         (_, "groups") => {
             // Current groups decide: having joined once is no pass after the rules change.
-            v.actor.is_admin
-                || chat::group_allowed(pool, id, &bf_core::ids::raw(&v.actor.groups)).await.db()?
+            v.actor.is_admin || chat::group_allowed(pool, id, &bf_core::ids::raw(&v.actor.groups)).await.db()?
         }
         _ => true,
     };

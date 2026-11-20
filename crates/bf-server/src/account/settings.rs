@@ -19,8 +19,8 @@ mod privacy;
 mod profile;
 
 use self::account_security::{
-    backup_codes, change_email, change_password, change_username, confirm_email, confirm_email_page, disable_2fa, enable_2fa,
-    resend_verification, revoke, revoke_others,
+    backup_codes, change_email, change_password, change_username, confirm_email, confirm_email_page, disable_2fa,
+    enable_2fa, resend_verification, revoke, revoke_others,
 };
 use self::interface::{save_interface, set_language};
 use self::notification_prefs::{save_notifications, set_dnd, set_quiet};

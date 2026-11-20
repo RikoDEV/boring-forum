@@ -1,7 +1,7 @@
 //! Forum administration: node settings, permissions, moderators, prefixes and rules.
 
-pub use sqlx::Error;
 use crate::admin::audit::{Entry, record};
+pub use sqlx::Error;
 use sqlx::PgPool;
 
 #[derive(Debug, Default)]
@@ -76,7 +76,14 @@ pub async fn update_node(pool: &PgPool, id: i64, c: &NodeChange, actor: i64) -> 
     if n == 0 {
         return Ok(false);
     }
-    record(&mut *tx, Entry::new("node.update").by(actor).on(format!("node:{id}")).details(serde_json::json!({ "title": c.title, "position": c.position, "parent_id": c.parent_id }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("node.update")
+            .by(actor)
+            .on(format!("node:{id}"))
+            .details(serde_json::json!({ "title": c.title, "position": c.position, "parent_id": c.parent_id })),
+    )
+    .await?;
     tx.commit().await?;
     Ok(true)
 }
@@ -131,7 +138,14 @@ pub async fn reorder_nodes(pool: &PgPool, parent: Option<i64>, ids: &[i64], acto
     .bind(ids)
     .execute(&mut *tx)
     .await?;
-    record(&mut *tx, Entry::new("node.reorder").by(actor).on(parent.map_or_else(|| "node:top".to_owned(), |p| format!("node:{p}"))).details(serde_json::json!(ids))).await?;
+    record(
+        &mut *tx,
+        Entry::new("node.reorder")
+            .by(actor)
+            .on(parent.map_or_else(|| "node:top".to_owned(), |p| format!("node:{p}")))
+            .details(serde_json::json!(ids)),
+    )
+    .await?;
     tx.commit().await
 }
 
@@ -152,8 +166,10 @@ pub enum NodeDelete {
 /// refused while anything is inside it, so no topic is ever lost.
 pub async fn delete_node(pool: &PgPool, id: i64, actor: i64) -> Result<NodeDelete, Error> {
     let mut tx = pool.begin().await?;
-    let row: Option<(String, String)> =
-        sqlx::query_as("SELECT title, kind FROM nodes WHERE id = $1 FOR UPDATE").bind(id).fetch_optional(&mut *tx).await?;
+    let row: Option<(String, String)> = sqlx::query_as("SELECT title, kind FROM nodes WHERE id = $1 FOR UPDATE")
+        .bind(id)
+        .fetch_optional(&mut *tx)
+        .await?;
     let Some((title, kind)) = row else { return Ok(NodeDelete::NotFound) };
     let has = |sql: &'static str| sqlx::query_scalar::<_, bool>(sql).bind(id);
     if has("SELECT EXISTS (SELECT 1 FROM nodes WHERE parent_id = $1)").fetch_one(&mut *tx).await? {
@@ -166,7 +182,14 @@ pub async fn delete_node(pool: &PgPool, id: i64, actor: i64) -> Result<NodeDelet
         return Ok(NodeDelete::HasContent);
     }
     sqlx::query("DELETE FROM nodes WHERE id = $1").bind(id).execute(&mut *tx).await?;
-    record(&mut *tx, Entry::new("node.delete").by(actor).on(format!("node:{id}")).details(serde_json::json!({ "title": title, "kind": kind }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("node.delete")
+            .by(actor)
+            .on(format!("node:{id}"))
+            .details(serde_json::json!({ "title": title, "kind": kind })),
+    )
+    .await?;
     tx.commit().await?;
     Ok(NodeDelete::Deleted)
 }
@@ -186,7 +209,11 @@ pub async fn set_node_permissions(pool: &PgPool, node: i64, grants: &[(i64, i32)
     .bind(&bits)
     .execute(&mut *tx)
     .await?;
-    record(&mut *tx, Entry::new("node.permissions").by(actor).on(format!("node:{node}")).details(serde_json::json!(grants))).await?;
+    record(
+        &mut *tx,
+        Entry::new("node.permissions").by(actor).on(format!("node:{node}")).details(serde_json::json!(grants)),
+    )
+    .await?;
     tx.commit().await
 }
 
@@ -210,7 +237,11 @@ pub async fn set_node_moderators(pool: &PgPool, node: i64, user_ids: &[i64], act
     .bind(user_ids)
     .execute(&mut *tx)
     .await?;
-    record(&mut *tx, Entry::new("node.moderators").by(actor).on(format!("node:{node}")).details(serde_json::json!(user_ids))).await?;
+    record(
+        &mut *tx,
+        Entry::new("node.moderators").by(actor).on(format!("node:{node}")).details(serde_json::json!(user_ids)),
+    )
+    .await?;
     tx.commit().await
 }
 
@@ -275,6 +306,13 @@ pub async fn copy_permissions(pool: &PgPool, to: i64, from: i64, actor: i64) -> 
         .bind(from)
         .execute(&mut *tx)
         .await?;
-    record(&mut *tx, Entry::new("node.permissions_copy").by(actor).on(format!("node:{to}")).details(serde_json::json!({ "from": from }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("node.permissions_copy")
+            .by(actor)
+            .on(format!("node:{to}"))
+            .details(serde_json::json!({ "from": from })),
+    )
+    .await?;
     tx.commit().await
 }

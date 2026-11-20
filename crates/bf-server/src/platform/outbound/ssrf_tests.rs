@@ -10,10 +10,28 @@ fn ip(s: &str) -> IpAddr {
 #[test]
 fn ipv4_ranges_that_reach_our_own_network_are_forbidden() {
     for bad in [
-        "127.0.0.1", "127.255.255.254", "10.0.0.1", "10.255.255.255", "172.16.0.1", "172.31.255.255",
-        "192.168.0.1", "169.254.169.254", "169.254.0.1", "0.0.0.0", "255.255.255.255", "100.64.0.1",
-        "100.127.255.255", "198.18.0.1", "198.19.255.255", "192.0.0.8", "192.0.2.1", "198.51.100.1",
-        "203.0.113.1", "224.0.0.1", "239.255.255.250", "240.0.0.1",
+        "127.0.0.1",
+        "127.255.255.254",
+        "10.0.0.1",
+        "10.255.255.255",
+        "172.16.0.1",
+        "172.31.255.255",
+        "192.168.0.1",
+        "169.254.169.254",
+        "169.254.0.1",
+        "0.0.0.0",
+        "255.255.255.255",
+        "100.64.0.1",
+        "100.127.255.255",
+        "198.18.0.1",
+        "198.19.255.255",
+        "192.0.0.8",
+        "192.0.2.1",
+        "198.51.100.1",
+        "203.0.113.1",
+        "224.0.0.1",
+        "239.255.255.250",
+        "240.0.0.1",
     ] {
         assert!(forbidden_ip(ip(bad)), "{bad} must be refused");
     }
@@ -21,7 +39,16 @@ fn ipv4_ranges_that_reach_our_own_network_are_forbidden() {
 
 #[test]
 fn ipv4_range_edges_stay_public() {
-    for ok in ["172.15.255.255", "172.32.0.1", "100.63.255.255", "100.128.0.1", "198.17.255.255", "198.20.0.1", "8.8.8.8", "1.1.1.1"] {
+    for ok in [
+        "172.15.255.255",
+        "172.32.0.1",
+        "100.63.255.255",
+        "100.128.0.1",
+        "198.17.255.255",
+        "198.20.0.1",
+        "8.8.8.8",
+        "1.1.1.1",
+    ] {
         assert!(!forbidden_ip(ip(ok)), "{ok} is public");
     }
 }
@@ -38,12 +65,23 @@ fn ipv6_ranges_that_reach_our_own_network_are_forbidden() {
 #[test]
 fn ipv6_forms_that_carry_an_ipv4_are_judged_by_it() {
     // IPv4-mapped, any spelling.
-    for bad in ["::ffff:127.0.0.1", "::ffff:7f00:1", "::ffff:169.254.169.254", "::ffff:192.168.1.1", "0:0:0:0:0:ffff:a00:1"] {
+    for bad in
+        ["::ffff:127.0.0.1", "::ffff:7f00:1", "::ffff:169.254.169.254", "::ffff:192.168.1.1", "0:0:0:0:0:ffff:a00:1"]
+    {
         assert!(forbidden_ip(ip(bad)), "{bad}");
     }
     assert!(!forbidden_ip(ip("::ffff:8.8.8.8")));
     // IPv4-compatible (deprecated), NAT64 and 6to4.
-    for bad in ["::127.0.0.1", "::10.1.2.3", "::169.254.169.254", "64:ff9b::a00:1", "64:ff9b::a9fe:a9fe", "2002:a00:1::", "2002:c0a8:101::", "2002:a9fe:a9fe::"] {
+    for bad in [
+        "::127.0.0.1",
+        "::10.1.2.3",
+        "::169.254.169.254",
+        "64:ff9b::a00:1",
+        "64:ff9b::a9fe:a9fe",
+        "2002:a00:1::",
+        "2002:c0a8:101::",
+        "2002:a9fe:a9fe::",
+    ] {
         assert!(forbidden_ip(ip(bad)), "{bad}");
     }
     assert!(!forbidden_ip(ip("2002:808:808::")));
@@ -70,9 +108,18 @@ fn every_mapped_private_address_is_refused_like_its_ipv4_form() {
 #[test]
 fn urls_with_credentials_odd_schemes_or_no_host_are_refused() {
     for bad in [
-        "file:///etc/passwd", "ftp://example.com/x", "gopher://example.com/", "javascript:alert(1)", "data:text/plain,hi",
-        "https://user@example.com/", "https://user:pw@example.com/", "https://:pw@example.com/",
-        "https://", "not a url", "", "//example.com/x",
+        "file:///etc/passwd",
+        "ftp://example.com/x",
+        "gopher://example.com/",
+        "javascript:alert(1)",
+        "data:text/plain,hi",
+        "https://user@example.com/",
+        "https://user:pw@example.com/",
+        "https://:pw@example.com/",
+        "https://",
+        "not a url",
+        "",
+        "//example.com/x",
     ] {
         assert!(valid_url(bad).is_none(), "{bad:?} must be refused");
     }
@@ -96,7 +143,14 @@ fn plain_http_is_refused_unless_loopback_is_allowed() {
 fn hosts_spelled_as_numbers_parse_to_addresses_the_guard_refuses() {
     // The url crate normalises decimal, octal and hex hosts to dotted form; the resolved
     // address is what the delivery code checks, so these must end up forbidden.
-    for raw in ["https://2130706433/", "https://0x7f.0.0.1/", "https://0177.0.0.1/", "https://127.1/", "https://[::ffff:127.0.0.1]/", "https://[::1]/"] {
+    for raw in [
+        "https://2130706433/",
+        "https://0x7f.0.0.1/",
+        "https://0177.0.0.1/",
+        "https://127.1/",
+        "https://[::ffff:127.0.0.1]/",
+        "https://[::1]/",
+    ] {
         let u = valid_url(raw).unwrap_or_else(|| panic!("{raw} parses"));
         let host = u.host().unwrap();
         let addr = match host {
@@ -112,7 +166,8 @@ fn hosts_spelled_as_numbers_parse_to_addresses_the_guard_refuses() {
 fn a_name_that_resolves_to_a_mix_picks_only_a_public_address() {
     // DNS-rebinding style answer: the delivery code takes the first allowed address, so
     // filtering must skip every internal one and never return them.
-    let answers: Vec<IpAddr> = ["127.0.0.1", "10.0.0.5", "::ffff:169.254.169.254", "93.184.216.34"].iter().map(|s| ip(s)).collect();
+    let answers: Vec<IpAddr> =
+        ["127.0.0.1", "10.0.0.5", "::ffff:169.254.169.254", "93.184.216.34"].iter().map(|s| ip(s)).collect();
     let picked = answers.iter().find(|a| !forbidden_ip(**a));
     assert_eq!(picked, Some(&ip("93.184.216.34")));
     let all_internal: Vec<IpAddr> = ["127.0.0.1", "::1", "192.168.0.1"].iter().map(|s| ip(s)).collect();

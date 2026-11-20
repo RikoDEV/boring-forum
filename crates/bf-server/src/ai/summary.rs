@@ -122,8 +122,7 @@ async fn ask(
          Do not invent anything and do not add a preamble. {DATA_RULE}",
         if partial { " and what is new" } else { "" }
     );
-    let prompt =
-        format!("<posts>\nThread title: {}\n\n{}\n</posts>", fenced(title), transcript(posts, 1500, 28_000));
+    let prompt = format!("<posts>\nThread title: {}\n\n{}\n</posts>", fenced(title), transcript(posts, 1500, 28_000));
     let done = client::chat(state, Chat::new(feature, &system, prompt).by(user).max(700)).await?;
     Ok(done.text)
 }

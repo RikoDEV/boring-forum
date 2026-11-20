@@ -158,9 +158,17 @@ pub async fn security_headers(State(state): State<AppState>, req: Request, next:
         let analytics = bf_web::security::Analytics::from_settings(&s);
         let custom = bf_web::custom_code::from_settings(&s);
         let custom = Some(&*custom).filter(|c| !safe_mode && !c.is_empty());
-        let gifs = s.bool("gifs_enabled").then(|| s.str("gif_provider")).filter(|_| !s.str("gif_api_key").trim().is_empty());
+        let gifs =
+            s.bool("gifs_enabled").then(|| s.str("gif_provider")).filter(|_| !s.str("gif_api_key").trim().is_empty());
         let imgproxy = crate::forum::imgproxy::Config::from_settings(&s, &state.config.base_url).map(|c| c.origin());
-        bf_web::security::content_security_policy(provider, s.str("csp_image_hosts"), &analytics, custom, gifs, imgproxy.as_deref())
+        bf_web::security::content_security_policy(
+            provider,
+            s.str("csp_image_hosts"),
+            &analytics,
+            custom,
+            gifs,
+            imgproxy.as_deref(),
+        )
     };
     if let Some(origin) = form_origin {
         csp = csp.replacen("form-action 'self'", &format!("form-action 'self' {origin}"), 1);
@@ -389,22 +397,25 @@ pub async fn impersonation_trail(State(state): State<AppState>, v: Viewer, req: 
     let Some(admin) = v.impersonator() else { return next.run(req).await };
     let (method, path) = (req.method().clone(), req.uri().path().to_owned());
     let res = next.run(req).await;
-    if !matches!(method, Method::GET | Method::HEAD | Method::OPTIONS) {
-        if let (Some(pool), Some(user)) = (&state.pool, &v.user) {
-            let details = serde_json::json!({
-                "impersonated_by": admin,
-                "method": method.as_str(),
-                "path": path,
-                "status": res.status().as_u16(),
-            });
-            let logged = bf_db::admin::audit::record(
-                pool,
-                bf_db::admin::audit::Entry::new("impersonated.request").by(admin).on(format!("user:{}", user.id)).details(details),
-            )
-            .await;
-            if let Err(e) = logged {
-                tracing::warn!(error = %e, "impersonation audit failed");
-            }
+    if !matches!(method, Method::GET | Method::HEAD | Method::OPTIONS)
+        && let (Some(pool), Some(user)) = (&state.pool, &v.user)
+    {
+        let details = serde_json::json!({
+            "impersonated_by": admin,
+            "method": method.as_str(),
+            "path": path,
+            "status": res.status().as_u16(),
+        });
+        let logged = bf_db::admin::audit::record(
+            pool,
+            bf_db::admin::audit::Entry::new("impersonated.request")
+                .by(admin)
+                .on(format!("user:{}", user.id))
+                .details(details),
+        )
+        .await;
+        if let Err(e) = logged {
+            tracing::warn!(error = %e, "impersonation audit failed");
         }
     }
     res
@@ -449,18 +460,9 @@ pub async fn login_gate(State(state): State<AppState>, v: Viewer, req: Request, 
 
 /// Paths that answer machines, not browsers: their errors stay problem+json.
 fn machine_path(path: &str) -> bool {
-    [
-        "/api/",
-        "/ap/",
-        "/.well-known/",
-        "/nodeinfo/",
-        "/oembed",
-        "/newsletter/",
-        "/uploads/",
-        "/assets/",
-    ]
-    .iter()
-    .any(|p| path.starts_with(p))
+    ["/api/", "/ap/", "/.well-known/", "/nodeinfo/", "/oembed", "/newsletter/", "/uploads/", "/assets/"]
+        .iter()
+        .any(|p| path.starts_with(p))
         || matches!(path, "/healthz" | "/livez" | "/readyz" | "/metrics")
 }
 

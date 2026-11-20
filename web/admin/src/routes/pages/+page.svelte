@@ -10,7 +10,15 @@
   let pages = $state([]);
   let draft = $state(null);
   const status = new Status();
-  const blank = () => ({ id: 0, title: "", slug: "", template: "single", visibility: "public", published: false, path: "" });
+  const blank = () => ({
+    id: 0,
+    title: "",
+    slug: "",
+    template: "single",
+    visibility: "public",
+    published: false,
+    path: "",
+  });
   const VIS = { public: tr("Everyone"), members: tr("Members"), staff: tr("Staff") };
   // A page starts empty: its layout says which areas it has, and blocks go into them.
   const LAYOUTS = [
@@ -55,7 +63,9 @@
 </script>
 
 <PageHead title={tr("Pages")} status={draft ? null : status}>
-  {#snippet intro()}{tr("Pages you build from blocks. Pick a layout, then arrange blocks with \"Edit layout\" on the page. Add one to the header from")}
+  {#snippet intro()}{tr(
+      'Pages you build from blocks. Pick a layout, then arrange blocks with "Edit layout" on the page. Add one to the header from',
+    )}
     <a href="../navigation/">{tr("Navigation")}</a>
     {tr("using its address.")}{/snippet}
   <button onclick={() => (draft = blank())}>{tr("New page")}</button>
@@ -71,12 +81,22 @@
   >
     <div class="acp-form">
       <Field label={tr("Title")} bind:value={draft.title} required maxlength="150" wide />
-      <Field label={`${tr("Address (made from the title if empty)")}: ${tr("about-us")}`} bind:value={draft.slug} wide />
-      <Field label={`${tr("Own address, instead of /page/… (optional)")}: ${tr("/about")}`} bind:value={draft.path} wide />
+      <Field
+        label={`${tr("Address (made from the title if empty)")}: ${tr("about-us")}`}
+        bind:value={draft.slug}
+        wide
+      />
+      <Field
+        label={`${tr("Own address, instead of /page/… (optional)")}: ${tr("/about")}`}
+        bind:value={draft.path}
+        wide
+      />
       <Field label={tr("Visible to")} bind:value={draft.visibility}
         >{#each Object.entries(VIS) as [k, v]}<option value={k}>{v}</option>{/each}</Field
       >
-      <div class="acp-wide"><Section switches><Switch label={tr("Published")} bind:checked={draft.published} /></Section></div>
+      <div class="acp-wide">
+        <Section switches><Switch label={tr("Published")} bind:checked={draft.published} /></Section>
+      </div>
       <div class="acp-wide">
         <Section
           legend={tr("Layout")}

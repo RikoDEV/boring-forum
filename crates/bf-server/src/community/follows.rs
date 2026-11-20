@@ -1,6 +1,6 @@
 //! Following members, topics and forums, and ignoring members.
 
-use crate::http::render::{ago, DbResult};
+use crate::http::render::{DbResult, ago};
 use crate::http::ui::simple_page;
 use crate::http::viewer::{CsrfForm, Viewer};
 use crate::state::AppState;
@@ -107,8 +107,7 @@ async fn follow_user(
         return Err(AppError::Validation("You cannot follow yourself.".into()));
     }
     let pool = state.db()?;
-    let target =
-        bf_db::accounts::users::user_by_id(pool, id.into()).await.db()?.ok_or(AppError::NotFound)?;
+    let target = bf_db::accounts::users::user_by_id(pool, id.into()).await.db()?.ok_or(AppError::NotFound)?;
     let on = follows::toggle_follow_user(pool, user.id.get(), id).await.db()?;
     crate::platform::webhooks::fire(
         &state,

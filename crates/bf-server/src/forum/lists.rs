@@ -114,8 +114,7 @@ async fn top(State(state): State<AppState>, v: Viewer, Query(q): Query<TopQuery>
     let tree = state.forum.get(pool).await?;
     let ids = topics::top_ids(pool, &tree.readable(&v.actor), period, 50).await.db()?;
     let uid = v.user.as_ref().map(|u| u.id);
-    let topics =
-        bf_db::forum::topics::topics_by_ids(pool, &ids, uid.map(bf_core::ids::UserId::get)).await.db()?;
+    let topics = bf_db::forum::topics::topics_by_ids(pool, &ids, uid.map(bf_core::ids::UserId::get)).await.db()?;
     let t = v.t();
     let heading = t.t("stream.top");
     let (mut l, set) = layout(&state, &v, Some(&heading));

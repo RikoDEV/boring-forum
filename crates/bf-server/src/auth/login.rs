@@ -229,15 +229,10 @@ async fn login(State(state): State<AppState>, v: Viewer, Form(f): Form<AuthForm>
         Some(u) => crate::auth::mfa::device_remembered(pool, u.id, &v).await?,
         None => false,
     };
-    if let Some(until) = bf_db::accounts::security::login_blocked_until_for(
-        pool,
-        user.as_ref().map(|u| u.id),
-        &typed,
-        v.ip,
-        remembered,
-    )
-    .await
-    .db()?
+    if let Some(until) =
+        bf_db::accounts::security::login_blocked_until_for(pool, user.as_ref().map(|u| u.id), &typed, v.ip, remembered)
+            .await
+            .db()?
     {
         let msg = v.t().msgf(
             "Too many failed attempts. Try again after {time} UTC, or reset your password.",

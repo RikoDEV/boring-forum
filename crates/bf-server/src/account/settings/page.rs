@@ -32,6 +32,10 @@ pub(super) async fn settings_page(
 /// the secret just submitted to `/settings/2fa/enable` and rejected for a bad code — reused
 /// instead of generating (and showing) a different one, so a mistyped code doesn't silently
 /// invalidate what the member already scanned.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "the optional pieces of one page render; most callers pass None for most of them"
+)]
 pub(super) async fn settings_page_ex(
     state: &AppState,
     v: &Viewer,

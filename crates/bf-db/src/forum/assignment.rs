@@ -7,7 +7,8 @@ type Error = sqlx::Error;
 
 pub async fn set_assignee(pool: &PgPool, item: i64, user: Option<i64>, actor: i64) -> Result<(), Error> {
     sqlx::query("UPDATE items SET assigned_to = $2 WHERE id = $1").bind(item).bind(user).execute(pool).await?;
-    record(pool, Entry::new("topic.assign").by(actor).on(item.to_string()).details(serde_json::json!({ "to": user }))).await
+    record(pool, Entry::new("topic.assign").by(actor).on(item.to_string()).details(serde_json::json!({ "to": user })))
+        .await
 }
 
 /// Topics assigned to a member, in forums the viewer can moderate: (id, slug, title).

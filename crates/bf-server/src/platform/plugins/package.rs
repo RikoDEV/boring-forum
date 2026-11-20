@@ -299,14 +299,18 @@ pub(super) fn validate_manifest(m: &Manifest) -> Result<(), String> {
         return Err(en("A plugin that declares tables must ask for the tables capability.").into());
     }
     plugins::validate_tables(&m.id, &m.tables)?;
-    if let Some(x) = m
-        .panels
-        .iter()
-        .find(|x| !PANEL_AREAS.contains(&x.area.as_str()) || !extras::plain(&x.key, 40, &[]) || (x.label.trim().is_empty() && x.label_key.is_none()))
-    {
+    if let Some(x) = m.panels.iter().find(|x| {
+        !PANEL_AREAS.contains(&x.area.as_str())
+            || !extras::plain(&x.key, 40, &[])
+            || (x.label.trim().is_empty() && x.label_key.is_none())
+    }) {
         return Err(format!("Bad panel {}.", x.key));
     }
-    if let Some(s) = m.dynamic_slots.iter().find(|s| !bf_web::theme::SLOTS.contains(&s.as_str()) && s.as_str() != bf_web::theme::CARD_SLOT) {
+    if let Some(s) = m
+        .dynamic_slots
+        .iter()
+        .find(|s| !bf_web::theme::SLOTS.contains(&s.as_str()) && s.as_str() != bf_web::theme::CARD_SLOT)
+    {
         return Err(format!("Unknown slot {s}."));
     }
     if !m.dynamic_slots.is_empty() && !m.hooks.iter().any(|h| h == "slot.render") {
@@ -396,8 +400,12 @@ capabilities = [\"http:\"]"
         assert!(manifest("api = \"^1.0\"\nhooks = [\"nope\"]").is_err());
         let caps = |c: &str| manifest(&format!("api = \"^1.0\"\ncapabilities = [\"{c}\"]"));
         assert!(caps("connect:https://api.example.com").is_ok() && caps("connect:wss://live.example.com:8443").is_ok());
-        for bad in ["connect:http://api.example.com", "connect:https://api.example.com/x", "connect:*", "connect:https://*.example.com"]
-        {
+        for bad in [
+            "connect:http://api.example.com",
+            "connect:https://api.example.com/x",
+            "connect:*",
+            "connect:https://*.example.com",
+        ] {
             assert!(caps(bad).is_err(), "{bad}");
         }
         assert!(

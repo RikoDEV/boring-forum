@@ -184,9 +184,12 @@ pub(super) async fn mail_to_list(
     let data = json!({ "by": author.username, "title": title, "url": url, "topic_id": topic_id });
     let by_locale = bf_db::community::notifications::recipients_by_locale(pool, &ids).await.unwrap_or_default();
     for (locale, group) in by_locale {
-        let t = bf_core::i18n::T::new(locale.as_deref().unwrap_or(bf_core::i18n::site_language(state.settings().str("default_locale"))));
+        let t = bf_core::i18n::T::new(
+            locale.as_deref().unwrap_or(bf_core::i18n::site_language(state.settings().str("default_locale"))),
+        );
         let vars = [("site", site.as_str()), ("title", title)];
-        let subject = if number == 1 { t.msgf("[{site}] {title}", &vars) } else { t.msgf("Re: [{site}] {title}", &vars) };
+        let subject =
+            if number == 1 { t.msgf("[{site}] {title}", &vars) } else { t.msgf("Re: [{site}] {title}", &vars) };
         let wrote = t.msgf("{author} wrote:", &[("author", author.username.as_str())]);
         let read = t.msgf("Read it on the site: {link}\nReply to this email to answer in the topic.", &[("link", abs)]);
         let body = format!("{wrote}\n\n{raw}\n\n-- \n{read}\n");
@@ -271,15 +274,19 @@ async fn announce(
         let base = &state.config.base_url;
         // Each watcher reads the email in their own language; an administrator's text for this
         // mail replaces the built-in one.
-        let by_locale = bf_db::community::notifications::recipients_by_locale(pool, &watchers).await.unwrap_or_default();
+        let by_locale =
+            bf_db::community::notifications::recipients_by_locale(pool, &watchers).await.unwrap_or_default();
         let mut app = Vec::new();
         for (locale, ids) in by_locale {
-            let locale = locale.unwrap_or_else(|| bf_core::i18n::site_language(state.settings().str("default_locale")).to_owned());
+            let locale = locale
+                .unwrap_or_else(|| bf_core::i18n::site_language(state.settings().str("default_locale")).to_owned());
             let t = bf_core::i18n::T::new(&locale);
             let vars = [("site", site.as_str()), ("by", by), ("title", title), ("link", abs.as_str())];
             let (subject, body) = crate::admin::mail_templates::render(&t, "notification", &vars);
-            match bf_db::community::notifications::deliver(pool, base, author_id, &ids, "reply", &data, &subject, &body, delay)
-                .await
+            match bf_db::community::notifications::deliver(
+                pool, base, author_id, &ids, "reply", &data, &subject, &body, delay,
+            )
+            .await
             {
                 Ok(fresh) => app.extend(fresh),
                 Err(e) => tracing::error!(error = %e, "notification delivery failed"),

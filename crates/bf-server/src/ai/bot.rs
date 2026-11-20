@@ -18,7 +18,8 @@ pub(crate) fn mentioned<'a>(raw: &str, personas: &'a [Persona]) -> Vec<&'a Perso
         let hit = lower.match_indices(&tag).any(|(at, _)| {
             let before = lower[..at].chars().next_back();
             let after = lower[at + tag.len()..].chars().next();
-            before.is_none_or(|c| !(c.is_alphanumeric() || c == '_')) && after.is_none_or(|c| !(c.is_alphanumeric() || c == '_' || c == '-'))
+            before.is_none_or(|c| !(c.is_alphanumeric() || c == '_'))
+                && after.is_none_or(|c| !(c.is_alphanumeric() || c == '_' || c == '-'))
         });
         if hit && !out.iter().any(|o| o.id == p.id) {
             out.push(p);
@@ -72,7 +73,8 @@ async fn answer(state: &AppState, persona: &Persona, post: &NewPost) -> Result<(
     let recent: Vec<_> = thread.iter().rev().take(30).rev().cloned().collect();
     // What the forum already knows about the question, from public forums only.
     let mut known = String::new();
-    if persona.use_search && client::embeddings_configured(state) && state.settings().bool("ai_related_topics_enabled") {
+    if persona.use_search && client::embeddings_configured(state) && state.settings().bool("ai_related_topics_enabled")
+    {
         let guest = bf_core::perms::Actor { groups: vec![1.into()], ..Default::default() };
         let question = format!("{}\n{}", post.title, post.raw);
         if let Ok(hits) = embeddings::by_meaning_for(state, &guest, Some(post.author_id), &question, 4, 0.5).await {
@@ -84,7 +86,13 @@ async fn answer(state: &AppState, persona: &Persona, post: &NewPost) -> Result<(
                 Err(_) => vec![],
             };
             for c in cards.into_iter().filter(|c| open.contains(&c.3)) {
-                known.push_str(&format!("- {} ({}{}): {}\n", fenced(&c.2), state.config.base_url, bf_core::slug::topic_path(c.0, &c.1), fenced(&c.6.replace('\n', " "))));
+                known.push_str(&format!(
+                    "- {} ({}{}): {}\n",
+                    fenced(&c.2),
+                    state.config.base_url,
+                    bf_core::slug::topic_path(c.0, &c.1),
+                    fenced(&c.6.replace('\n', " "))
+                ));
             }
         }
     }
@@ -128,7 +136,17 @@ async fn answer(state: &AppState, persona: &Persona, post: &NewPost) -> Result<(
     let number = posts::create_reply(pool, post.topic_id, post.node_id, &new).await.map_err(AppError::internal)?;
     let _ = posts::set_reply_to(pool, post.topic_id, number, post.number).await;
     if !held {
-        crate::forum::posting::after_system_post(state, bot_id, &bot_name, &post.title, &slug, post.topic_id, post.node_id, number).await;
+        crate::forum::posting::after_system_post(
+            state,
+            bot_id,
+            &bot_name,
+            &post.title,
+            &slug,
+            post.topic_id,
+            post.node_id,
+            number,
+        )
+        .await;
     }
     state.forum.invalidate();
     Ok(())

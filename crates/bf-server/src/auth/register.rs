@@ -350,7 +350,9 @@ async fn register_problem(
     // A provider is chosen but cannot run (no secret, no site key): registration stays closed
     // and says so in the log, instead of opening to bots without anyone noticing.
     if captcha_config(state).is_none() && !state.settings().str("captcha_provider").is_empty() {
-        tracing::error!("captcha_provider is set but not usable (BF_CAPTCHA_SECRET or the site key is missing); registration refused");
+        tracing::error!(
+            "captcha_provider is set but not usable (BF_CAPTCHA_SECRET or the site key is missing); registration refused"
+        );
         return Ok(Some(t.msg("Sign-ups are not available right now. Please try again later.")));
     }
     if let Some(msg) = ip_cap_problem(state, pool, ip, &t).await? {

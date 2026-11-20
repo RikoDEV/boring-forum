@@ -161,9 +161,7 @@ pub(crate) async fn check_can_deliver(state: &AppState, id: i64, user: i64) -> R
     }
     let allowed = match (c.kind.as_str(), c.access.as_str()) {
         ("dm", _) | (_, "invite") => chat::is_member(pool, id, user).await.db()?,
-        (_, "groups") => {
-            u.is_admin || chat::group_allowed(pool, id, &bf_core::ids::raw(&u.groups)).await.db()?
-        }
+        (_, "groups") => u.is_admin || chat::group_allowed(pool, id, &bf_core::ids::raw(&u.groups)).await.db()?,
         _ => true,
     };
     if allowed { Ok(()) } else { Err(AppError::Forbidden) }

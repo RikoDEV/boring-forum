@@ -1,10 +1,10 @@
 //! Sending notifications: preferences, the reader's language, read permissions and live updates
 //! in one call, so a new kind only has to say who and what.
 
-use crate::http::render::{ago, DbResult};
 use crate::http::render::layout;
 use crate::http::render::page;
 use crate::http::render::unread_count;
+use crate::http::render::{DbResult, ago};
 use crate::http::viewer::CsrfForm;
 use crate::http::viewer::Viewer;
 use crate::state::AppState;
@@ -56,7 +56,8 @@ pub(crate) async fn send(state: &AppState, from: i64, to: &[i64], kind: &str, da
         quoted["title"] = json!(format!("\"{title}\""));
     }
     for (locale, ids) in by_locale {
-        let t = T::new(locale.as_deref().unwrap_or(bf_core::i18n::site_language(state.settings().str("default_locale"))));
+        let t =
+            T::new(locale.as_deref().unwrap_or(bf_core::i18n::site_language(state.settings().str("default_locale"))));
         let line = bf_core::notifications::text(&t, kind, &quoted);
         let subject = format!("{line} - {site}");
         let body = t.msgf(
@@ -178,11 +179,11 @@ async fn drop_unreadable_mail(state: &AppState) {
             return;
         }
     };
-    let mut by_node: std::collections::BTreeMap<i64, Vec<i64>> = Default::default();
+    let mut by_node: std::collections::BTreeMap<i64, Vec<i64>> = std::collections::BTreeMap::default();
     for (_, user, _, node) in &held {
         by_node.entry(*node).or_default().push(*user);
     }
-    let mut readable: std::collections::HashSet<(i64, i64)> = Default::default();
+    let mut readable: std::collections::HashSet<(i64, i64)> = std::collections::HashSet::default();
     for (node, users) in by_node {
         for user in can_read(state, pool, node, users).await {
             readable.insert((node, user));
@@ -250,12 +251,11 @@ fn without_code(text: &str) -> String {
             out.push_str(&rest[..i]);
             let after = &rest[i..];
             let n = after.chars().take_while(|c| *c == '`').count();
-            match after[n..].find(&after[..n]) {
-                Some(j) => rest = &after[n + j + n..],
-                None => {
-                    out.push_str(&after[..n]);
-                    rest = &after[n..];
-                }
+            if let Some(j) = after[n..].find(&after[..n]) {
+                rest = &after[n + j + n..];
+            } else {
+                out.push_str(&after[..n]);
+                rest = &after[n..];
             }
         }
         out.push_str(rest);
@@ -392,7 +392,20 @@ pub(crate) async fn tell_reviewers(state: &AppState, node: i64, from: i64) {
 
 /// Tells the people going to an event, or its organiser, that something changed. `kind` is
 /// `event_changed`, `event_cancelled` or `event_rsvp`.
-pub(crate) async fn event_news(state: &AppState, from: i64, to: &[i64], kind: &str, topic: i64, slug: &str, title: &str, by: &str) {
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one call site per kind of event change; a struct would only rename the arguments"
+)]
+pub(crate) async fn event_news(
+    state: &AppState,
+    from: i64,
+    to: &[i64],
+    kind: &str,
+    topic: i64,
+    slug: &str,
+    title: &str,
+    by: &str,
+) {
     let mut data = json!({ "title": title, "by": by, "url": topic_path(topic, slug) });
     if kind == "event_rsvp" {
         // Several answers to one event fold into one unread notification.
@@ -426,7 +439,8 @@ pub(crate) async fn run_tick(state: &AppState) {
                 let ids = can_read(state, pool, node, ids).await;
                 // Each member reads the start in their own time zone.
                 let local = bf_db::community::events::local_times(pool, &ids, starts_at).await.unwrap_or_default();
-                let mut groups: std::collections::BTreeMap<(String, String), Vec<i64>> = Default::default();
+                let mut groups: std::collections::BTreeMap<(String, String), Vec<i64>> =
+                    std::collections::BTreeMap::default();
                 for (id, text, zone) in local {
                     groups.entry((text, zone)).or_default().push(id);
                 }
@@ -571,10 +585,8 @@ async fn open_notification(
     Path(id): Path<i64>,
 ) -> Result<Response, AppError> {
     let user = v.require_user()?;
-    let url = bf_db::community::notifications::open(state.db()?, user.id.get(), id)
-        .await
-        .db()?
-        .ok_or(AppError::NotFound)?;
+    let url =
+        bf_db::community::notifications::open(state.db()?, user.id.get(), id).await.db()?.ok_or(AppError::NotFound)?;
     // Only local paths are followed, so stored data cannot redirect off-site. A backslash or a
     // control character is refused too: browsers treat `/\host` as protocol-relative.
     let local = |u: &String| {
@@ -600,8 +612,7 @@ async fn unsubscribe_form(
     v: Viewer,
     Path(token): Path<String>,
 ) -> Result<Response, AppError> {
-    let (_, kind) =
-        bf_db::platform::mail::token_target(state.db()?, &token).await.db()?.ok_or(AppError::NotFound)?;
+    let (_, kind) = bf_db::platform::mail::token_target(state.db()?, &token).await.db()?.ok_or(AppError::NotFound)?;
     let (mut l, set) = layout(&state, &v, Some(&v.t().msg("Unsubscribe")));
     l.noindex = true;
     let body = FormPage {
@@ -648,8 +659,7 @@ async fn mute_topic_form(
 
 async fn mute_topic(State(state): State<AppState>, v: Viewer, Path(token): Path<String>) -> Result<Response, AppError> {
     let pool = state.db()?;
-    let (user, item) =
-        bf_db::forum::topics::token_topic(pool, &token).await.db()?.ok_or(AppError::NotFound)?;
+    let (user, item) = bf_db::forum::topics::token_topic(pool, &token).await.db()?.ok_or(AppError::NotFound)?;
     bf_db::community::follows::set_follow(pool, user, "item", item, bf_db::community::follows::Level::Mute)
         .await
         .db()?;
@@ -675,8 +685,7 @@ async fn unsubscribe(
     Path(token): Path<String>,
 ) -> Result<Response, AppError> {
     let pool = state.db()?;
-    let (user_id, kind) =
-        bf_db::platform::mail::token_target(pool, &token).await.db()?.ok_or(AppError::NotFound)?;
+    let (user_id, kind) = bf_db::platform::mail::token_target(pool, &token).await.db()?.ok_or(AppError::NotFound)?;
     bf_db::platform::mail::unsubscribe(pool, user_id, &kind).await.db()?;
     let t = v.t();
     Ok(done_page(&t, &t.msg("Unsubscribed"), &t.msg("You are unsubscribed from these emails.")))
@@ -691,10 +700,7 @@ mod tests {
         assert_eq!(quoted_names("[quote=Ann]hi[/quote] [quote=\"bob, post:3\"]x[/quote]"), ["ann", "bob"]);
         assert_eq!(quoted_names("[quote]anon[/quote]"), Vec::<String>::new());
         assert_eq!(quoted_names("> hi\n>\n> — @Ann, [post #2](/t/x/1#post-2)\n\nyes"), ["ann"]);
-        assert_eq!(
-            quoted_names("```\n> — @ann, x\n```\n`[quote=bob]`\n[code][quote=cy][/code]"),
-            Vec::<String>::new()
-        );
+        assert_eq!(quoted_names("```\n> — @ann, x\n```\n`[quote=bob]`\n[code][quote=cy][/code]"), Vec::<String>::new());
     }
 
     #[test]

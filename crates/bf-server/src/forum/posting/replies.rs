@@ -62,13 +62,9 @@ pub(super) async fn reply(
         t.node_id,
         &[&f.body],
         None,
-        posts::approved_post_count(
-            state.db()?,
-            user.id.get(),
-            state.settings().int("approve_first_posts"),
-        )
-        .await
-        .db()?,
+        posts::approved_post_count(state.db()?, user.id.get(), state.settings().int("approve_first_posts"))
+            .await
+            .db()?,
     )
     .map_err(AppError::Validation)?;
     super::rules::check_duplicate_post(&state, user, &checked.texts[0]).await?;

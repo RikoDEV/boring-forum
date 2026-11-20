@@ -30,5 +30,15 @@ fn int(key: &'static str, default: i64, min: i64, max: i64, description: &'stati
 
 /// Every built-in setting, gathered from the per-area files.
 pub(super) fn builtin() -> Vec<SettingDef> {
-    [basics::defs(), chat::defs(), policy::defs(), security::defs(), share::defs(), integrations::defs(), ai::defs(), spam::defs()].concat()
+    [
+        basics::defs(),
+        chat::defs(),
+        policy::defs(),
+        security::defs(),
+        share::defs(),
+        integrations::defs(),
+        ai::defs(),
+        spam::defs(),
+    ]
+    .concat()
 }

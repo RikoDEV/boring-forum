@@ -1,7 +1,7 @@
 //! Topic summaries, and the preview card shown over topic links.
 
 use crate::forum::topics::readable_topic;
-use crate::http::render::{ago, DbResult, layout, page};
+use crate::http::render::{DbResult, ago, layout, page};
 use crate::http::viewer::Viewer;
 use crate::state::AppState;
 use axum::extract::{Path, State};

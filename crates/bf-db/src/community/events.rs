@@ -115,10 +115,14 @@ pub async fn event(pool: &PgPool, item: i64) -> Result<Option<Event>, Error> {
 /// Coming events in forums the viewer can read, with their topics: (event, topic slug, title).
 pub async fn events(pool: &PgPool, nodes: &[i64]) -> Result<Vec<(Event, String, String)>, Error> {
     // Only the constant EVENT_COLS is interpolated; every value is bound.
-    let rows: Vec<EventWithTopic> = sqlx::query_as(concat!("SELECT ", event_cols!(), ", i.slug, i.title FROM topic_events e JOIN items i ON i.id = e.item_id
+    let rows: Vec<EventWithTopic> = sqlx::query_as(concat!(
+        "SELECT ",
+        event_cols!(),
+        ", i.slug, i.title FROM topic_events e JOIN items i ON i.id = e.item_id
          WHERE e.on_date >= CURRENT_DATE - 1 AND coalesce(e.ends_at, e.starts_at + interval '1 day') >= now()
            AND i.state = 'visible' AND i.listed AND i.node_id = ANY($1)
-         ORDER BY e.starts_at, i.id LIMIT 200"))
+         ORDER BY e.starts_at, i.id LIMIT 200"
+    ))
     .bind(nodes)
     .fetch_all(pool)
     .await?;
@@ -134,9 +138,13 @@ pub async fn events_between(
     to: NaiveDate,
 ) -> Result<Vec<(Event, String, String)>, Error> {
     // Only the constant EVENT_COLS is interpolated; every value is bound.
-    let rows: Vec<EventWithTopic> = sqlx::query_as(concat!("SELECT ", event_cols!(), ", i.slug, i.title FROM topic_events e JOIN items i ON i.id = e.item_id
+    let rows: Vec<EventWithTopic> = sqlx::query_as(concat!(
+        "SELECT ",
+        event_cols!(),
+        ", i.slug, i.title FROM topic_events e JOIN items i ON i.id = e.item_id
          WHERE e.on_date BETWEEN $2 AND $3 AND i.state = 'visible' AND i.listed AND i.node_id = ANY($1)
-         ORDER BY e.starts_at, i.id LIMIT 500"))
+         ORDER BY e.starts_at, i.id LIMIT 500"
+    ))
     .bind(nodes)
     .bind(from)
     .bind(to)

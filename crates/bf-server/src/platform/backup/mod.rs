@@ -316,7 +316,8 @@ pub async fn create(pool: &PgPool, dir: &Path, uploads: Option<&Path>, trigger: 
     let final_path = dir.join(&name);
     let partial = dir.join(format!("{name}.partial"));
     let packed = {
-        let (work, partial, manifest, uploads) = (work.clone(), partial.clone(), manifest.clone(), uploads.map(Path::to_path_buf));
+        let (work, partial, manifest, uploads) =
+            (work.clone(), partial.clone(), manifest.clone(), uploads.map(Path::to_path_buf));
         tokio::task::spawn_blocking(move || pack(&work, &partial, &manifest, uploads.as_deref()))
             .await
             .map_err(|e| BackupError(e.to_string()))?
@@ -487,7 +488,9 @@ pub async fn restore(pool: &PgPool, archive: &Path, uploads_to: &Path) -> Result
         phase("uploads");
         private_dir(uploads_to)?;
         let (from, to) = (work.join("uploads"), uploads_to.to_path_buf());
-        tokio::task::spawn_blocking(move || place_uploads(&from, &to)).await.map_err(|e| BackupError(e.to_string()))??;
+        tokio::task::spawn_blocking(move || place_uploads(&from, &to))
+            .await
+            .map_err(|e| BackupError(e.to_string()))??;
     }
     Ok(manifest)
 }
@@ -537,7 +540,10 @@ mod tests {
             .execute(&pool).await.expect("user");
         sqlx::query("INSERT INTO uploads (id, sha256, storage_key, filename, mime, size, user_id) OVERRIDING SYSTEM VALUE VALUES (900001, 'aa', 'bt/aa', 'a.png', 'image/png', 1, 900001) ON CONFLICT DO NOTHING")
             .execute(&pool).await.expect("upload");
-        sqlx::query("UPDATE users SET avatar_upload_id = 900001 WHERE id = 900001").execute(&pool).await.expect("avatar");
+        sqlx::query("UPDATE users SET avatar_upload_id = 900001 WHERE id = 900001")
+            .execute(&pool)
+            .await
+            .expect("avatar");
         let before = fingerprint(&pool).await;
         assert!(before.iter().map(|t| t.1).sum::<i64>() > 100, "the seeded rows are there");
 
@@ -546,7 +552,10 @@ mod tests {
         assert_eq!(list(&root).len(), 1);
 
         // Change things after the backup.
-        sqlx::query("UPDATE site_settings SET value = '\"after\"' WHERE key = 'backup_test'").execute(&pool).await.expect("update");
+        sqlx::query("UPDATE site_settings SET value = '\"after\"' WHERE key = 'backup_test'")
+            .execute(&pool)
+            .await
+            .expect("update");
         sqlx::query("DELETE FROM report_reasons").execute(&pool).await.expect("delete");
         sqlx::query("DELETE FROM badges").execute(&pool).await.expect("delete");
         fs::remove_file(uploads.join("ab").join("abcdef.bin")).expect("remove");
@@ -562,9 +571,15 @@ mod tests {
         // A restore that fails leaves the database as it was.
         let mut broken = made.clone();
         broken.manifest.tables.push(TableEntry { name: "no_such_table".into(), columns: vec!["x".into()], rows: 0 });
-        sqlx::query("UPDATE site_settings SET value = '\"kept\"' WHERE key = 'backup_test'").execute(&pool).await.expect("update");
+        sqlx::query("UPDATE site_settings SET value = '\"kept\"' WHERE key = 'backup_test'")
+            .execute(&pool)
+            .await
+            .expect("update");
         let kept = fingerprint(&pool).await;
-        let file = TableFile { table: Table { name: "site_settings".into(), columns: vec!["no_such_column".into()] }, path: root.join("none") };
+        let file = TableFile {
+            table: Table { name: "site_settings".into(), columns: vec!["no_such_column".into()] },
+            path: root.join("none"),
+        };
         assert!(db::restore(&pool, &[file], &[]).await.is_err());
         assert_eq!(fingerprint(&pool).await, kept, "a failed restore changes nothing");
 

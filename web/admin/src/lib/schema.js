@@ -19,9 +19,20 @@ function field(key, v) {
       ? { value: o, label: v.enum_labels?.[o] ?? o, label_key: v.enum_label_keys?.[o] ?? null }
       : { value: o.value, label: o.label ?? o.value, label_key: o.label_key ?? null },
   );
-  const format = { uri: "url", url: "url", email: "email", date: "date", color: "text", textarea: "textarea" }[v.format];
+  const format = { uri: "url", url: "url", email: "email", date: "date", color: "text", textarea: "textarea" }[
+    v.format
+  ];
   const declared = v.type ?? "text";
-  const type = options.length ? "select" : (KINDS[declared] ?? (declared === "string" || declared === "text" ? (format ?? "text") : (["url", "email", "date"].includes(declared) ? declared : declared === "color" ? "text" : null)));
+  const type = options.length
+    ? "select"
+    : (KINDS[declared] ??
+      (declared === "string" || declared === "text"
+        ? (format ?? "text")
+        : ["url", "email", "date"].includes(declared)
+          ? declared
+          : declared === "color"
+            ? "text"
+            : null));
   if (!type) return null;
   return {
     key,
@@ -49,6 +60,8 @@ export function fieldsFromSettings(schema) {
 /** Saved values with each field's default under them. */
 export function withDefaults(fields, saved) {
   const out = { ...(saved ?? {}) };
-  for (const f of fields) if (out[f.key] === undefined) out[f.key] = f.default ?? (f.type === "switch" ? false : f.type === "number" ? "" : "");
+  for (const f of fields)
+    if (out[f.key] === undefined)
+      out[f.key] = f.default ?? (f.type === "switch" ? false : f.type === "number" ? "" : "");
   return out;
 }

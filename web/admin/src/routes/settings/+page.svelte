@@ -187,10 +187,10 @@
       hint,
       items: /** @type {string[]} */ (keys).map((k) => byKey.get(k)).filter((s) => s && !hidden(s)),
     })),
-    ...[
+    .../** @type {[string, string, string, string[]][]} */ ([
       ["other", tr("Other"), tr("Settings without a group yet"), others],
       ["plugins", tr("From plugins"), tr("Settings that installed plugins ask for"), fromPlugins],
-    ]
+    ])
       .filter((g) => g[3].length)
       .map(([id, title, hint, keys]) => ({ id, title, hint, items: keys.map((k) => byKey.get(k)) })),
   ]);
@@ -421,7 +421,14 @@
                         aria-label={humanize(s.key)}
                       /></label
                     >
-                    <input id={s.key} type="text" class="acp-colour-text" maxlength="7" spellcheck="false" bind:value={s.draft} />
+                    <input
+                      id={s.key}
+                      type="text"
+                      class="acp-colour-text"
+                      maxlength="7"
+                      spellcheck="false"
+                      bind:value={s.draft}
+                    />
                     {#if s.key === "og_background_colour_end" && s.draft}<button
                         type="button"
                         class="secondary"
@@ -468,11 +475,7 @@
                       type="password"
                       autocomplete="off"
                       spellcheck="false"
-                      placeholder={s.clear
-                        ? tr("Removed when you save")
-                        : s.set
-                          ? tr("Saved; type to replace")
-                          : ""}
+                      placeholder={s.clear ? tr("Removed when you save") : s.set ? tr("Saved; type to replace") : ""}
                       bind:value={s.draft}
                     />
                     {#if s.set && !s.clear}<button

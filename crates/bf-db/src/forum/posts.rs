@@ -1,7 +1,7 @@
 //! Posts: creation, edits, states, counts and the cooked HTML cache.
 
-use chrono::{DateTime, Utc};
 use crate::admin::audit::{Entry, record};
+use chrono::{DateTime, Utc};
 use sqlx::{FromRow, PgPool, Postgres, Transaction};
 
 type Error = sqlx::Error;
@@ -81,9 +81,12 @@ pub async fn topic_posts(
     viewer: Option<i64>,
 ) -> Result<Vec<PostRow>, Error> {
     // Only the constant POST_SELECT is interpolated; every value is bound.
-    sqlx::query_as(concat!(post_select!(), "
+    sqlx::query_as(concat!(
+        post_select!(),
+        "
          WHERE p.item_id = $1 AND p.post_number >= $2 AND p.post_number < $2 + $3 AND (p.state = 'visible' OR $4)
-         ORDER BY p.post_number LIMIT $3"))
+         ORDER BY p.post_number LIMIT $3"
+    ))
     .bind(item_id)
     .bind(from_number)
     .bind(limit)
@@ -103,12 +106,15 @@ pub async fn topic_posts_ranked(
     viewer: Option<i64>,
 ) -> Result<Vec<PostRow>, Error> {
     // Only the constant POST_SELECT is interpolated; every value is bound.
-    sqlx::query_as(concat!(post_select!(), "
+    sqlx::query_as(concat!(
+        post_select!(),
+        "
          WHERE p.item_id = $1 AND $2 = 0 AND p.action IS NULL AND (p.state = 'visible' OR $4)
          ORDER BY CASE WHEN p.post_number = 1 THEN 0
                        WHEN p.post_number = (SELECT solved_post_number FROM items WHERE id = $1) THEN 1 ELSE 2 END,
                   p.vote_score DESC, p.post_number
-         LIMIT $3"))
+         LIMIT $3"
+    ))
     .bind(item_id)
     .bind(0i32)
     .bind(limit)
@@ -207,9 +213,9 @@ pub(crate) async fn insert_post(
         "SELECT greatest(coalesce(max(post_number), 0), (SELECT highest_post_number FROM items WHERE id = $1)) + 1
          FROM posts WHERE item_id = $1",
     )
-        .bind(item_id)
-        .fetch_one(&mut **tx)
-        .await?;
+    .bind(item_id)
+    .fetch_one(&mut **tx)
+    .await?;
     let id: i64 = sqlx::query_scalar(
         "INSERT INTO posts (item_id, author_id, post_number, raw, cooked, cooked_version, ip, state)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
@@ -326,7 +332,14 @@ async fn reply_in_tx(
             .bind(real)
             .execute(&mut *tx)
             .await?;
-        record(&mut *tx, Entry::new("post.anonymous").by(real).on(item_id.to_string()).details(serde_json::json!({ "number": number }))).await?;
+        record(
+            &mut *tx,
+            Entry::new("post.anonymous")
+                .by(real)
+                .on(item_id.to_string())
+                .details(serde_json::json!({ "number": number })),
+        )
+        .await?;
     }
     if post.pending {
         tx.commit().await?;
@@ -444,7 +457,14 @@ pub async fn set_hidden(pool: &PgPool, post_id: i64, hidden: bool, reason: Optio
         .bind(if hidden { reason } else { None })
         .execute(&mut *tx)
         .await?;
-    record(&mut *tx, Entry::new(if hidden { "post.hide" } else { "post.unhide" }).by(by).on(format!("post:{post_id}")).details(serde_json::json!({ "reason": reason }))).await?;
+    record(
+        &mut *tx,
+        Entry::new(if hidden { "post.hide" } else { "post.unhide" })
+            .by(by)
+            .on(format!("post:{post_id}"))
+            .details(serde_json::json!({ "reason": reason })),
+    )
+    .await?;
     tx.commit().await
 }
 

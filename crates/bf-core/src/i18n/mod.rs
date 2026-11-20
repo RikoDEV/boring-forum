@@ -474,7 +474,8 @@ struct KeyTable {
 
 #[expect(clippy::panic, reason = "the file is embedded and checked by tests")]
 static KEY_TABLE: LazyLock<KeyTable> = LazyLock::new(|| {
-    let v: Value = serde_json::from_str(include_str!("../../locales/keys.json")).unwrap_or_else(|e| panic!("keys.json: {e}"));
+    let v: Value =
+        serde_json::from_str(include_str!("../../locales/keys.json")).unwrap_or_else(|e| panic!("keys.json: {e}"));
     let strings = |v: &Value| -> HashMap<String, String> {
         v.as_object()
             .map(|o| o.iter().filter_map(|(k, x)| x.as_str().map(|x| (k.clone(), x.to_owned()))).collect())
@@ -808,7 +809,8 @@ mod tests {
         let en = T::new("en");
         let text = en.t("msg.hi_name_confirm_email_as_the_new_address_for_your");
         assert!(text.contains("Hi {name},") && text.contains("{email}") && text.contains("{link}"), "{text}");
-        let filled = en.f("msg.hi_name_confirm_email_as_the_new_address_for_your", &[("name", "Ann"), ("email", "a@b.c")]);
+        let filled =
+            en.f("msg.hi_name_confirm_email_as_the_new_address_for_your", &[("name", "Ann"), ("email", "a@b.c")]);
         assert!(filled.contains("Hi Ann,") && filled.contains("a@b.c") && filled.contains("{link}"), "{filled}");
         assert_eq!(en.msgf("Not found {x}", &[("x", "1")]), "Not found 1");
     }

@@ -125,19 +125,17 @@ pub(crate) async fn guest_hit(
         .iter()
         .filter_map(|v| v.to_str().ok())
         .any(|c| c.split(';').any(|kv| kv.trim_start().starts_with("__Host-bf_session")));
-    if req.method() == axum::http::Method::GET && !signed_in && state.settings().bool("recently_browsing") {
-        if let Some(visitors) = page_key(req.uri().path()).and_then(|k| state.browsing.get(&k)) {
-            let peer = req
-                .extensions()
-                .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
-                .map(|c| crate::http::ratelimit::client_ip(c.0.ip(), req.headers()));
-            let agent = req.headers().get(header::USER_AGENT).and_then(|h| h.to_str().ok()).unwrap_or("");
-            visitors.lock().unwrap_or_else(std::sync::PoisonError::into_inner).note_anonymous(
-                agent,
-                peer,
-                Instant::now(),
-            );
-        }
+    if req.method() == axum::http::Method::GET
+        && !signed_in
+        && state.settings().bool("recently_browsing")
+        && let Some(visitors) = page_key(req.uri().path()).and_then(|k| state.browsing.get(&k))
+    {
+        let peer = req
+            .extensions()
+            .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+            .map(|c| crate::http::ratelimit::client_ip(c.0.ip(), req.headers()));
+        let agent = req.headers().get(header::USER_AGENT).and_then(|h| h.to_str().ok()).unwrap_or("");
+        visitors.lock().unwrap_or_else(std::sync::PoisonError::into_inner).note_anonymous(agent, peer, Instant::now());
     }
     next.run(req).await
 }

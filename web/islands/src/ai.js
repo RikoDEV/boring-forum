@@ -23,7 +23,10 @@ async function ask(url, body = {}) {
 function paragraphs(text) {
   const box = el("div", { class: "bf-ai-text" });
   let list = null;
-  for (const line of text.split("\n").map((l) => l.trim()).filter(Boolean)) {
+  for (const line of text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)) {
     if (/^[-*•]\s+/.test(line)) {
       list ??= box.appendChild(el("ul"));
       list.append(el("li", {}, line.replace(/^[-*•]\s+/, "")));
@@ -54,7 +57,11 @@ function summaryPanel(panel, id, hasUnread, member, button) {
         if (button) button.hidden = false;
       });
       head.append(title, close);
-      const foot = el("p", { class: "muted small" }, tr("Made by AI from the posts. It can be wrong; the posts have the details."));
+      const foot = el(
+        "p",
+        { class: "muted small" },
+        tr("Made by AI from the posts. It can be wrong; the posts have the details."),
+      );
       const more = [];
       if (!since && member && r.stale) {
         const b = el("button", { type: "button", class: "btn" }, tr("Update the summary"));
@@ -131,7 +138,10 @@ export function aiTopic(_t, { id, summary, member, related: wantRelated, transla
       b.setAttribute("aria-busy", "true");
       try {
         const r = await ask(`/api/v1/posts/${b.dataset.aiTranslate}/ai-translate`);
-        showTranslation(b.closest("article, .bf-post, [id^='post-']") ?? document, r.cooked);
+        showTranslation(
+          /** @type {Element} */ (b.closest("article, .bf-post, [id^='post-']") ?? document.body),
+          r.cooked,
+        );
         b.closest("details")?.removeAttribute("open");
       } catch (err) {
         toast(err.message, true);

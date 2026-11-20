@@ -52,7 +52,7 @@ jobs:
       - run: cargo clippy --locked --all-targets -- -D warnings
       - run: cargo test --locked
       - name: Migrations apply cleanly
-        run: cargo test -p bf-db -- --ignored
+        run: cargo test --locked -p bf-db --test '*' -- --ignored --test-threads=1
       - name: Least-privilege roles (deploy/postgres/roles.sql)
         # The app role must be able to serve the schema but not change it, and the migration
         # role must be enough to apply it again.

@@ -5,7 +5,20 @@
 // The page's inline loader calls mount(name, el) for each [data-island] element; props
 // come from data-props JSON. Returning false hands the element to members.js.
 import { groupColours } from "./ink.js";
-import { announce, csrf, formParams, jsonHeaders, icon, toast, tn, tr, when, fullDate, timeText, LOCALE } from "./dom.js";
+import {
+  announce,
+  csrf,
+  formParams,
+  jsonHeaders,
+  icon,
+  toast,
+  tn,
+  tr,
+  when,
+  fullDate,
+  timeText,
+  LOCALE,
+} from "./dom.js";
 // The one modal dialog; importing it also opens the server-rendered ones (`data-dialog`).
 import { dialog } from "./dialog.js";
 // The hover bubble for [data-tip] and icon buttons (one element in the top layer).
@@ -56,7 +69,9 @@ function themeToggle(target) {
     if (theme === "system") delete document.documentElement.dataset.theme;
     else document.documentElement.dataset.theme = theme;
     // The browser's own chrome (canvas, scrollbars, form controls) follows the meta tag too.
-    document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", theme === "system" ? "light dark" : theme);
+    document
+      .querySelector('meta[name="color-scheme"]')
+      ?.setAttribute("content", theme === "system" ? "light dark" : theme);
     groupColours(); // backgrounds changed: text colours are measured again
     paint();
   });
@@ -294,8 +309,7 @@ async function fileCards() {
   const rows = await res.json();
   for (const a of links) {
     const r = rows.find((x) => x.key === key(a));
-    if (r)
-      a.append(el("small", { class: "muted" }, ` · ${tn("count.downloads", r.downloads)}`));
+    if (r) a.append(el("small", { class: "muted" }, ` · ${tn("count.downloads", r.downloads)}`));
   }
 }
 
@@ -790,7 +804,11 @@ function headerTitle() {
   const title = el("div", { class: "bf-header-title", hidden: "" });
   if (path.length) {
     title.append(
-      el("a", { class: "bf-ht-forum", href: path.at(-1).getAttribute("href") }, path.map((a) => a.textContent.trim()).join(" › ")),
+      el(
+        "a",
+        { class: "bf-ht-forum", href: path.at(-1).getAttribute("href") },
+        path.map((a) => a.textContent.trim()).join(" › "),
+      ),
     );
   }
   const name = el("button", { type: "button", class: "bf-ht-title", title: text }, text);
@@ -930,7 +948,10 @@ function postSelection() {
     });
     paint();
   });
-  for (const [btn, on] of [[all, true], [clear, false]])
+  for (const [btn, on] of [
+    [all, true],
+    [clear, false],
+  ])
     btn.addEventListener("click", () => {
       for (const b of boxes()) b.checked = on;
       paint();
@@ -1165,7 +1186,12 @@ const islands = {
   "live-list": (t, p) => liveUpdates().then((m) => m.liveList(t, { ...p, onAppend })),
   "live-search": lazy(() => import("./search.js"), "liveSearch"),
   "ai-topic": lazy(() => import("./ai.js"), "aiTopic"),
-  "ai-similar": () => import("./ai.js").then((m) => document.getElementById("title") && m.similarTopics(document.getElementById("title"))),
+  "ai-similar": () =>
+    import("./ai.js").then(
+      (m) =>
+        document.getElementById("title") &&
+        m.similarTopics(/** @type {HTMLInputElement} */ (document.getElementById("title"))),
+    ),
   shortcuts: lazy(() => import("./shortcuts.js"), "shortcuts"),
   "notify-count": notifyCount,
   "messages-count": messagesCount,
@@ -1289,7 +1315,7 @@ document.addEventListener("submit", async (e) => {
   }
   const { votes, voted, left, limit } = await res.json();
   // The topic page's vote box and the sticky header's copy of it, or the one pill in a list.
-  const own = form.closest("[data-vote-group]");
+  const own = /** @type {HTMLElement | null} */ (form.closest("[data-vote-group]"));
   const groups = own?.dataset.topic
     ? [...document.querySelectorAll(`[data-vote-group][data-topic="${CSS.escape(own.dataset.topic)}"]`)]
     : [own ?? form];
@@ -1416,7 +1442,7 @@ function fillPluginSlots(root = document) {
   for (const holder of root.querySelectorAll("[data-plugin-slot]:not([data-filled])")) {
     holder.dataset.filled = "1";
     const q = new URLSearchParams({ page: location.pathname });
-    const post = holder.closest("[data-post]")?.dataset.post;
+    const post = /** @type {HTMLElement | null} */ (holder.closest("[data-post]"))?.dataset.post;
     if (post) q.set("post", post);
     fetch(`/plugin-slot/${encodeURIComponent(holder.dataset.pluginSlot)}?${q}`)
       .then((r) => (r.ok ? r.text() : ""))

@@ -1,9 +1,9 @@
 //! Legal documents and acceptances, likes and "top" lists.
 
+use crate::admin::audit::{Entry, record};
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 pub use sqlx::Error;
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 /// Documents a member must accept (guidelines are informational).
@@ -47,7 +47,14 @@ pub async fn publish(pool: &PgPool, kind: &str, md: &str, html: &str, actor: i64
     .bind(html)
     .fetch_one(&mut *tx)
     .await?;
-    record(&mut *tx, Entry::new("legal.publish").by(actor).on(format!("legal:{kind}")).details(serde_json::json!({ "version": version }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("legal.publish")
+            .by(actor)
+            .on(format!("legal:{kind}"))
+            .details(serde_json::json!({ "version": version })),
+    )
+    .await?;
     tx.commit().await?;
     Ok(version)
 }

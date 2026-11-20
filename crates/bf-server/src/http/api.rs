@@ -36,11 +36,8 @@ fn caller(req: &Request) -> Option<String> {
 /// Whether the request comes from a signed-in member, a valid API key or the bootstrap admin token.
 async fn authenticated(state: &AppState, parts: &mut axum::http::request::Parts) -> bool {
     use axum::extract::FromRequestParts;
-    let bearer = parts
-        .headers
-        .get(header::AUTHORIZATION)
-        .and_then(|v| v.to_str().ok())
-        .and_then(|h| h.strip_prefix("Bearer "));
+    let bearer =
+        parts.headers.get(header::AUTHORIZATION).and_then(|v| v.to_str().ok()).and_then(|h| h.strip_prefix("Bearer "));
     if let (Some(given), Some(expected)) = (bearer, state.config.admin_token.as_deref())
         && bf_core::auth::constant_eq(given.as_bytes(), expected.as_bytes())
     {
@@ -119,7 +116,13 @@ async fn idempotent(state: AppState, req: Request, next: Next) -> Response {
     let status = res.status();
     // Server errors and transient refusals (rate limit, auth, timeout) must not be replayed.
     if status.is_server_error()
-        || matches!(status, StatusCode::TOO_MANY_REQUESTS | StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN | StatusCode::REQUEST_TIMEOUT)
+        || matches!(
+            status,
+            StatusCode::TOO_MANY_REQUESTS
+                | StatusCode::UNAUTHORIZED
+                | StatusCode::FORBIDDEN
+                | StatusCode::REQUEST_TIMEOUT
+        )
     {
         guard.armed = false;
         if let Err(e) = idempotency::release(&pool, &digest).await {

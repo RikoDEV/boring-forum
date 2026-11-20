@@ -2,7 +2,7 @@
 //! A conversation someone is not part of answers 404, so its existence is not revealed.
 
 use crate::http::i18n::{tr, trh};
-use crate::http::render::{ago, DbResult, layout, page};
+use crate::http::render::{DbResult, ago, layout, page};
 use crate::http::ui::hidden_csrf;
 use crate::http::ui::simple_page;
 use crate::http::ui::{Shell, begin, finish, panel};
@@ -168,8 +168,7 @@ async fn recipients(state: &AppState, sender: i64, names: &str) -> Result<Vec<i6
         if !crate::federation::enabled(state) || !state.settings().bool("federation_dms") {
             return Err(refused());
         }
-        let known =
-            bf_db::accounts::users::user_ids_by_names(pool, std::slice::from_ref(name)).await.db()?;
+        let known = bf_db::accounts::users::user_ids_by_names(pool, std::slice::from_ref(name)).await.db()?;
         let id = if let Some(id) = known.first() {
             id.get()
         } else {
@@ -189,11 +188,9 @@ async fn recipients(state: &AppState, sender: i64, names: &str) -> Result<Vec<i6
         }
         // Anyone can reach staff. A group's inbox is for its own members and administrators,
         // or a single message could reach every member of a large group.
-        let admin =
-            bf_db::accounts::users::user_by_id(pool, sender.into()).await.db()?.is_some_and(|u| u.is_admin);
+        let admin = bf_db::accounts::users::user_by_id(pool, sender.into()).await.db()?.is_some_and(|u| u.is_admin);
         // Everyone in the group counts here, not just those within the participant cap.
-        let is_member =
-            bf_db::community::groups::group_members(pool, &g[1..], i64::MAX).await.db()?.contains(&sender);
+        let is_member = bf_db::community::groups::group_members(pool, &g[1..], i64::MAX).await.db()?.contains(&sender);
         if g != "@staff" && !admin && !is_member {
             return Err(refused());
         }
@@ -251,7 +248,7 @@ fn added_last_hour(user: i64, adding: usize) -> i64 {
     }
     let times = map.entry(user).or_default();
     times.retain(|t| now.duration_since(*t) < hour);
-    times.extend(std::iter::repeat(now).take(adding));
+    times.extend(std::iter::repeat_n(now, adding));
     let n = times.len() as i64;
     if n == 0 {
         map.remove(&user);
@@ -269,7 +266,8 @@ async fn check_sender(state: &AppState, v: &Viewer, names: &str) -> Result<Sende
     let pool = state.db()?;
     let s = state.settings();
     // Writing to the moderators' inbox is always open; other members need some standing first.
-    let only_staff = names.split(',').map(str::trim).filter(|n| !n.is_empty()).all(|n| n.eq_ignore_ascii_case("@staff"));
+    let only_staff =
+        names.split(',').map(str::trim).filter(|n| !n.is_empty()).all(|n| n.eq_ignore_ascii_case("@staff"));
     if !is_staff(v) && !only_staff && i64::from(user.trust_level) < s.int("pm_min_trust_level") {
         return Err(crate::community::trust::level_refusal(
             state,
@@ -360,7 +358,8 @@ async fn deliver_new_capped(
 ) -> Result<i64, AppError> {
     let cooked = bf_cook::cook(body);
     let cap = per_hour.map(|n| (n, added_last_hour(from.0, 0)));
-    let Some(id) = messages::create_capped(state.db()?, from.0, subject, body, &cooked.html, to, cap).await.db()? else {
+    let Some(id) = messages::create_capped(state.db()?, from.0, subject, body, &cooked.html, to, cap).await.db()?
+    else {
         return Err(AppError::Validation("You have started too many conversations. Try again later.".into()));
     };
     tell(state, from, id, subject, to).await;
@@ -466,13 +465,8 @@ pub(crate) async fn deliver_reply(state: &AppState, id: i64, from: (i64, &str), 
     messages::reply(pool, id, from.0, body, &cooked.html).await.db()?;
     // Anyone with the conversation open sees the reply without reloading.
     state.hub.publish(&format!("conversation:{id}"), "message", json!({ "by": from.1 }));
-    let others: Vec<i64> = messages::participants(pool, id)
-        .await
-        .db()?
-        .into_iter()
-        .map(|p| p.user_id)
-        .filter(|u| *u != from.0)
-        .collect();
+    let others: Vec<i64> =
+        messages::participants(pool, id).await.db()?.into_iter().map(|p| p.user_id).filter(|u| *u != from.0).collect();
     tell(state, from, id, &head.subject, &others).await;
     crate::federation::extended::outbound_dm(state, id, from.0).await;
     crate::platform::webhooks::fire(
@@ -536,8 +530,7 @@ async fn remove(
 ) -> Result<Response, AppError> {
     managed_head(&state, &v, id, &f.csrf).await?;
     let pool = state.db()?;
-    let ids =
-        bf_db::accounts::users::user_ids_by_names(pool, &[f.username.trim().to_lowercase()]).await.db()?;
+    let ids = bf_db::accounts::users::user_ids_by_names(pool, &[f.username.trim().to_lowercase()]).await.db()?;
     for person in ids.into_iter().filter(|p| Some(*p) != v.user.as_ref().map(|u| u.id)) {
         messages::remove_participant(pool, id, person.get()).await.db()?;
     }

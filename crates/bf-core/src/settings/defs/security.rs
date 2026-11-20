@@ -56,7 +56,9 @@ pub(super) fn defs() -> Vec<SettingDef> {
                 "indexnow_enabled",
                 Bool,
                 false,
-                en("IndexNow: tell search engines about new public topics right away (sends their addresses to api.indexnow.org; needs an https address)"),
+                en(
+                    "IndexNow: tell search engines about new public topics right away (sends their addresses to api.indexnow.org; needs an https address)",
+                ),
             )
         },
         SettingDef {

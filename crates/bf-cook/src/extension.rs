@@ -73,9 +73,8 @@ pub fn check(rule: &Rule) -> Result<(), &'static str> {
     }
     match &rule.callback {
         Some(name) if name.is_empty() || name.len() > 40 => Err("A callback needs a name of up to 40 characters."),
-        Some(_) => Ok(()),
         None if rule.html.len() > MAX_TEMPLATE || rule.html.is_empty() => Err("A template must be 1 to 2048 bytes."),
-        None => Ok(()),
+        _ => Ok(()),
     }
 }
 

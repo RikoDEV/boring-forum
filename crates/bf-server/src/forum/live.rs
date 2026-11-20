@@ -105,7 +105,8 @@ async fn live(
     Query(q): Query<LiveQuery>,
 ) -> Result<Response, AppError> {
     let too_many = || AppError::RateLimited { retry_after_secs: 30 };
-    let mut slots = vec![Slot::take(format!("ip:{}", crate::http::ratelimit::ip_key(v.ip)), PER_IP).ok_or_else(too_many)?];
+    let mut slots =
+        vec![Slot::take(format!("ip:{}", crate::http::ratelimit::ip_key(v.ip)), PER_IP).ok_or_else(too_many)?];
     if let Some(u) = &v.user {
         slots.push(Slot::take(format!("user:{}", u.id), PER_USER).ok_or_else(too_many)?);
     }
@@ -176,38 +177,40 @@ async fn live(
             // The slots are kept for as long as this future (and so the stream) lives.
             let _slots = slots;
             let check = async move {
-            if !need_checks {
-                std::future::pending::<()>().await;
-            }
-            let mut v2 = v2;
-            loop {
-                tokio::time::sleep(CHECK_EVERY).await;
-                // Their groups and session as they are now, not as they were on connecting.
-                let Some(now) = current(&state2, &v2).await else { return };
-                v2 = now;
-                if activity && let Ok(list) = visible_forums(&state2, &v2.actor, all_forums, &named_forums).await {
-                    *forums.write().unwrap_or_else(std::sync::PoisonError::into_inner) = list;
+                if !need_checks {
+                    std::future::pending::<()>().await;
                 }
-                for c in &watched {
-                    let Some((kind, id)) = c.split_once(':') else { continue };
-                    let Ok(id) = id.parse::<i64>() else { continue };
-                    let refused = |r: Result<_, AppError>| matches!(r, Err(AppError::NotFound | AppError::Forbidden));
-                    let allowed = match kind {
-                        "chat" => !refused(crate::community::chat::viewable(&state2, &v2, id).await.map(|_| ())),
-                        "item" => !refused(readable_topic(&state2, &v2, id).await.map(|_| ())),
-                        "conversation" => match (pool(&state2), v2.user.as_ref()) {
-                            (Ok(p), Some(u)) => {
-                                !matches!(bf_db::community::messages::participant_of(p, id, u.id.get()).await, Ok(None))
-                            }
-                            _ => false,
-                        },
-                        _ => true,
-                    };
-                    if !allowed {
-                        return;
+                let mut v2 = v2;
+                loop {
+                    tokio::time::sleep(CHECK_EVERY).await;
+                    // Their groups and session as they are now, not as they were on connecting.
+                    let Some(now) = current(&state2, &v2).await else { return };
+                    v2 = now;
+                    if activity && let Ok(list) = visible_forums(&state2, &v2.actor, all_forums, &named_forums).await {
+                        *forums.write().unwrap_or_else(std::sync::PoisonError::into_inner) = list;
+                    }
+                    for c in &watched {
+                        let Some((kind, id)) = c.split_once(':') else { continue };
+                        let Ok(id) = id.parse::<i64>() else { continue };
+                        let refused =
+                            |r: Result<_, AppError>| matches!(r, Err(AppError::NotFound | AppError::Forbidden));
+                        let allowed = match kind {
+                            "chat" => !refused(crate::community::chat::viewable(&state2, &v2, id).await.map(|_| ())),
+                            "item" => !refused(readable_topic(&state2, &v2, id).await.map(|_| ())),
+                            "conversation" => match (pool(&state2), v2.user.as_ref()) {
+                                (Ok(p), Some(u)) => !matches!(
+                                    bf_db::community::messages::participant_of(p, id, u.id.get()).await,
+                                    Ok(None)
+                                ),
+                                _ => false,
+                            },
+                            _ => true,
+                        };
+                        if !allowed {
+                            return;
+                        }
                     }
                 }
-            }
             };
             let _ = tokio::time::timeout(MAX_LIFE, check).await;
         };

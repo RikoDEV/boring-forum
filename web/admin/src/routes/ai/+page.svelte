@@ -1,5 +1,6 @@
 <script>
   import { resolve } from "$app/paths";
+  import { SvelteMap } from "svelte/reactivity";
   import { tr, locale } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
   import Box from "#lib/Box.svelte";
@@ -50,7 +51,10 @@
   const feature = (f) => FEATURES[f] ?? f;
   const load = () => get("/ai").then((r) => (overview = r), status.fail);
   const loadPersonas = () => get("/ai/personas").then((r) => (personas = r), status.fail);
-  get("/groups").then((g) => (groups = g), () => {});
+  get("/groups").then(
+    (g) => (groups = g),
+    () => {},
+  );
   load();
   loadPersonas();
 
@@ -69,7 +73,7 @@
     return out;
   });
   const byFeature = $derived.by(() => {
-    const m = new Map();
+    const m = new SvelteMap();
     for (const u of overview?.usage ?? []) {
       const row = m.get(u.feature) ?? { feature: u.feature, requests: 0, failures: 0, tokens: 0 };
       row.requests += u.requests;
@@ -106,7 +110,8 @@
     }
   }
   async function reindex() {
-    if (!confirm(tr("Throw away every topic's index? They are made again in the background, which uses the provider."))) return;
+    if (!confirm(tr("Throw away every topic's index? They are made again in the background, which uses the provider.")))
+      return;
     status.clear();
     post("/ai/embeddings/reset").then(load, status.fail);
   }
@@ -177,9 +182,16 @@
           <div class="acp-grow">
             <strong>{tr("It works")}</strong>
             <br /><small class="muted"
-              >{tr("{model} answered “{answer}” in {ms} ms.", { model: tested.model, answer: tested.answer, ms: tested.ms })}
+              >{tr("{model} answered “{answer}” in {ms} ms.", {
+                model: tested.model,
+                answer: tested.answer,
+                ms: tested.ms,
+              })}
               {#if tested.embedding_dims}
-                {tr("Embeddings: {dims} numbers per topic, {ms} ms.", { dims: tested.embedding_dims, ms: tested.embedding_ms })}
+                {tr("Embeddings: {dims} numbers per topic, {ms} ms.", {
+                  dims: tested.embedding_dims,
+                  ms: tested.embedding_ms,
+                })}
               {/if}</small
             >
           </div>
@@ -193,11 +205,15 @@
     {#if byFeature.length}
       <table>
         <thead
-          ><tr><th>{tr("What for")}</th><th>{tr("Requests")}</th><th>{tr("Failed")}</th><th>{tr("Tokens")}</th></tr></thead
+          ><tr><th>{tr("What for")}</th><th>{tr("Requests")}</th><th>{tr("Failed")}</th><th>{tr("Tokens")}</th></tr
+          ></thead
         >
         <tbody>
           {#each byFeature as f (f.feature)}
-            <tr><td>{feature(f.feature)}</td><td>{num(f.requests)}</td><td>{num(f.failures)}</td><td>{num(f.tokens)}</td></tr>
+            <tr
+              ><td>{feature(f.feature)}</td><td>{num(f.requests)}</td><td>{num(f.failures)}</td><td>{num(f.tokens)}</td
+              ></tr
+            >
           {/each}
         </tbody>
       </table>
@@ -226,7 +242,10 @@
     {#if overview.mood.length}
       <div class="acp-box-body">
         <p>
-          {tr("{positive} positive, {neutral} neutral and {negative} negative in 14 days; {toxic} looked abusive and {spam} looked like spam.", moodTotals)}
+          {tr(
+            "{positive} positive, {neutral} neutral and {negative} negative in 14 days; {toxic} looked abusive and {spam} looked like spam.",
+            moodTotals,
+          )}
         </p>
         {#if overview.emotions.length}
           <p class="muted">
@@ -246,7 +265,9 @@
         <tbody>
           {#each overview.mood as m (m.day)}
             <tr
-              ><td>{m.day}</td><td>{m.positive}</td><td>{m.neutral}</td><td>{m.negative}</td><td>{m.toxic}</td><td>{m.spam}</td></tr
+              ><td>{m.day}</td><td>{m.positive}</td><td>{m.neutral}</td><td>{m.negative}</td><td>{m.toxic}</td><td
+                >{m.spam}</td
+              ></tr
             >
           {/each}
         </tbody>
@@ -263,7 +284,12 @@
           <li class="acp-rowitem">
             <div class="acp-grow">
               <a href="/p/{f.post}">{f.title}</a>
-              <br /><small class="muted"><UserLink name={f.author} /> · {tr("spam {spam}, abuse {toxicity}", { spam: f.spam, toxicity: f.toxicity })}</small>
+              <br /><small class="muted"
+                ><UserLink name={f.author} /> · {tr("spam {spam}, abuse {toxicity}", {
+                  spam: f.spam,
+                  toxicity: f.toxicity,
+                })}</small
+              >
             </div>
           </li>
         {/each}
@@ -278,11 +304,19 @@
           <strong>{tr("Topics indexed")}</strong>
           <br /><small class="muted"
             >{overview.embeddings_configured
-              ? tr("{done} of {all}. New topics are added every few minutes.", { done: num(overview.embedded), all: num(overview.topics) })
+              ? tr("{done} of {all}. New topics are added every few minutes.", {
+                  done: num(overview.embedded),
+                  all: num(overview.topics),
+                })
               : tr("Fill in an embedding model in the settings to use related topics and search by meaning.")}</small
           >
         </div>
-        {#if overview.topics > 0}<meter min="0" max={overview.topics} value={overview.embedded} aria-label={tr("Topics indexed")}></meter>{/if}
+        {#if overview.topics > 0}<meter
+            min="0"
+            max={overview.topics}
+            value={overview.embedded}
+            aria-label={tr("Topics indexed")}
+          ></meter>{/if}
         <button class="secondary" disabled={!overview.embedded} onclick={reindex}>{tr("Start again")}</button>
       </li>
     </ul>
@@ -331,7 +365,10 @@
     </fieldset>
     <fieldset class="acp-picker">
       <legend>{tr("Behaviour")}</legend>
-      <Switch label={tr("Looks up what the forum already says (needs an embedding model)")} bind:checked={draft.use_search} />
+      <Switch
+        label={tr("Looks up what the forum already says (needs an embedding model)")}
+        bind:checked={draft.use_search}
+      />
       <Switch label={tr("On")} bind:checked={draft.enabled} />
     </fieldset>
   </EditDialog>
@@ -359,6 +396,8 @@
       {/each}
     </ul>
   {:else}
-    <p class="acp-empty">{tr("No personas yet. Turn on “Personas answer when mentioned” in the settings, then add one.")}</p>
+    <p class="acp-empty">
+      {tr("No personas yet. Turn on “Personas answer when mentioned” in the settings, then add one.")}
+    </p>
   {/if}
 </div>

@@ -1,10 +1,10 @@
 //! The review queue: reports, pending posts and pending accounts.
 
+use crate::admin::audit::{Entry, record};
 use crate::forum::posts::PostRef;
 use crate::forum::posts::set_post_state;
 use chrono::{DateTime, Utc};
 pub use sqlx::Error;
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 #[derive(Debug, Clone, FromRow)]
@@ -105,7 +105,14 @@ pub async fn resolve_review(pool: &PgPool, id: i64, decision: Decision, moderato
         .bind(report_status)
         .execute(&mut *tx)
         .await?;
-    record(&mut *tx, Entry::new(format!("review.{status}")).by(moderator).on(format!("post:{post_id}")).details(serde_json::json!({ "kind": kind }))).await?;
+    record(
+        &mut *tx,
+        Entry::new(format!("review.{status}"))
+            .by(moderator)
+            .on(format!("post:{post_id}"))
+            .details(serde_json::json!({ "kind": kind })),
+    )
+    .await?;
     tx.commit().await
 }
 
@@ -205,7 +212,14 @@ pub async fn reject_user(pool: &PgPool, user_id: i64, ban_email: bool, actor: i6
     if ban_email && !email.trim().is_empty() {
         crate::moderation::bans::add(pool, "email", email.trim(), Some("Rejected at sign-up"), Some(actor)).await?;
     }
-    record(pool, Entry::new("user.reject").by(actor).on(format!("user:{user_id}")).details(serde_json::json!({ "ban_email": ban_email }))).await?;
+    record(
+        pool,
+        Entry::new("user.reject")
+            .by(actor)
+            .on(format!("user:{user_id}"))
+            .details(serde_json::json!({ "ban_email": ban_email })),
+    )
+    .await?;
     Ok(crate::moderation::tools::delete_user(pool, user_id, true, actor).await? == Some(true))
 }
 

@@ -120,9 +120,7 @@ async fn vote_topic(
         return Err(AppError::Validation("This topic is closed, so it takes no more votes.".into()));
     }
     let limit = vote_limit(&state, user);
-    let Some(votes) =
-        bf_db::forum::topics::vote_topic(state.db()?, id, user.id.get(), on, limit).await.db()?
-    else {
+    let Some(votes) = bf_db::forum::topics::vote_topic(state.db()?, id, user.id.get(), on, limit).await.db()? else {
         return Err(AppError::invalid(
             "You have used all {limit} of your votes. Take one back from another idea, or wait until one closes.",
             &[("limit", &limit)],

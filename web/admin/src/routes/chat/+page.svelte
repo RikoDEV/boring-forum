@@ -88,7 +88,13 @@
     >{/if}
 </PageHead>
 {#if dialog === "channel"}
-  <EditDialog title={tr("New channel")} onclose={() => (dialog = null)} onsubmit={addChannel} {status} save={tr("Add channel")}>
+  <EditDialog
+    title={tr("New channel")}
+    onclose={() => (dialog = null)}
+    onsubmit={addChannel}
+    {status}
+    save={tr("Add channel")}
+  >
     <div class="acp-form">
       <Field label={tr("Name")} bind:value={channel.name} required />
       <Field label={tr("Description")} bind:value={channel.description} />
@@ -108,7 +114,13 @@
     </div>
   </EditDialog>
 {:else if dialog === "rule"}
-  <EditDialog title={tr("New integration")} onclose={() => (dialog = null)} onsubmit={addRule} {status} save={tr("Add rule")}>
+  <EditDialog
+    title={tr("New integration")}
+    onclose={() => (dialog = null)}
+    onsubmit={addRule}
+    {status}
+    save={tr("Add rule")}
+  >
     <div class="acp-form">
       <Field label={tr("Service")} bind:value={rule.provider}
         >{#each providers as p}<option>{p}</option>{/each}</Field

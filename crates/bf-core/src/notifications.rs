@@ -140,10 +140,9 @@ pub fn all() -> Vec<&'static Kind> {
 }
 
 pub fn find(key: &str) -> Option<&'static Kind> {
-    KINDS
-        .iter()
-        .find(|k| k.key == key)
-        .or_else(|| EXTRA.read().unwrap_or_else(std::sync::PoisonError::into_inner).iter().copied().find(|k| k.key == key))
+    KINDS.iter().find(|k| k.key == key).or_else(|| {
+        EXTRA.read().unwrap_or_else(std::sync::PoisonError::into_inner).iter().copied().find(|k| k.key == key)
+    })
 }
 
 /// What a member gets until they choose otherwise.

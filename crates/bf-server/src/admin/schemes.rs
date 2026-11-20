@@ -123,7 +123,8 @@ async fn create(
     }
     let made = schemes::insert(pool, &slug, &name, &from.light, &from.dark).await.db()?;
     let details = json!({ "slug": slug, "name": name, "copy_from": from.id });
-    crate::admin::api::audit_log(pool, who, "color_scheme.create", &format!("color_scheme:{}", made.id), details).await?;
+    crate::admin::api::audit_log(pool, who, "color_scheme.create", &format!("color_scheme:{}", made.id), details)
+        .await?;
     changed(&state).await?;
     Ok((StatusCode::CREATED, Json(made)).into_response())
 }

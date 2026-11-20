@@ -6,7 +6,7 @@
   import { del, post, when } from "#lib/api.js";
   import UserLink from "#lib/UserLink.svelte";
 
-  /** @type {{ id: number, u: any, ov: any, refresh: (msg: string) => any }} */
+  /** @type {{ id: number, ov: any, refresh: (msg: string) => any }} */
   let { id, ov, refresh } = $props();
   const status = new Status();
   let armed = $state("");
@@ -62,8 +62,11 @@
                 <button
                   class="is-danger"
                   onclick={() =>
-                    run(() => post(`/users/${id}/ban`, { kind: "ip", value: row.ip }), tr("Address banned"), `ip-${row.ip}`)}
-                  >{armed === `ip-${row.ip}` ? tr("Click again") : tr("Ban")}</button
+                    run(
+                      () => post(`/users/${id}/ban`, { kind: "ip", value: row.ip }),
+                      tr("Address banned"),
+                      `ip-${row.ip}`,
+                    )}>{armed === `ip-${row.ip}` ? tr("Click again") : tr("Ban")}</button
                 >
               {/if}
             </li>
@@ -148,7 +151,9 @@
             <li class="acp-rowitem">
               <div class="acp-grow">
                 <small class="acp-wrap">{agent(s.user_agent)}</small>
-                <br /><small class="muted">{s.ip ?? "—"}{s.country ? ` · ${s.country}` : ""} · {when(s.last_used_at)}</small>
+                <br /><small class="muted"
+                  >{s.ip ?? "—"}{s.country ? ` · ${s.country}` : ""} · {when(s.last_used_at)}</small
+                >
               </div>
             </li>
           {/each}

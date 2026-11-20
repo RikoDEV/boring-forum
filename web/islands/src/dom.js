@@ -1,6 +1,6 @@
 // Small DOM helpers shared by the guest islands.
 
-import KEYS from "./keys.json";
+import KEYS from "./keys.json" with { type: "json" };
 
 /**
  * @typedef {string | {v?: string, num?: boolean, sel?: string, cases?: Record<string, Message>, def?: string}} MessagePart
@@ -79,7 +79,7 @@ const rules = (locale) => {
  * @param {string} [locale]
  * @returns {string}
  */
-function fmt(message, vars, locale) {
+export function fmt(message, vars, locale) {
   if (typeof message === "string") return message;
   if (!Array.isArray(message)) return "";
   let out = "";

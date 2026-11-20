@@ -147,9 +147,7 @@ pub(crate) async fn edit(
         return Err(AppError::Validation("Please give a reason for this edit.".into()));
     }
     if in_grace {
-        posts::replace_post_text(state.db()?, id, &filtered, &cooked.html, bf_cook::COOK_VERSION)
-            .await
-            .db()?;
+        posts::replace_post_text(state.db()?, id, &filtered, &cooked.html, bf_cook::COOK_VERSION).await.db()?;
     } else {
         // The base is compared again under the row lock: two saves from one base cannot both win.
         let saved = posts::edit_post_if(
@@ -237,9 +235,12 @@ pub(crate) async fn delete(
     let user = v.require_user()?;
     let pool = state.db()?;
     posts::soft_delete_post(pool, id, user.id.get()).await.db()?;
-    bf_db::admin::audit::record(pool, bf_db::admin::audit::Entry::new("post.delete").by(user.id.get()).on(format!("post:{id}")))
-        .await
-        .db()?;
+    bf_db::admin::audit::record(
+        pool,
+        bf_db::admin::audit::Entry::new("post.delete").by(user.id.get()).on(format!("post:{id}")),
+    )
+    .await
+    .db()?;
     state.microcache.clear();
     // Open copies of the topic fetch the post again, and so drop it.
     state.hub.publish(&format!("item:{}", t.id), "edit", json!({ "post_number": p.post_number }));

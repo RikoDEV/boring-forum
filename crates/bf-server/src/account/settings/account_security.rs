@@ -184,7 +184,14 @@ pub(super) async fn enable_2fa(
         sessions::revoke_other_sessions(pool, user.id, current).await.db()?;
         crate::http::middleware::forget_sessions_of(&state, user.id.get());
     }
-    crate::admin::api::audit_log(pool, Some(user.id.get()), "account.2fa_on", &format!("user:{}", user.id), serde_json::json!({})).await?;
+    crate::admin::api::audit_log(
+        pool,
+        Some(user.id.get()),
+        "account.2fa_on",
+        &format!("user:{}", user.id),
+        serde_json::json!({}),
+    )
+    .await?;
     let page = settings_page(&state, &v, false, Some(v.t().msg("Two-factor authentication is on.")), None).await;
     rotated(&state, &v, page).await
 }
@@ -223,7 +230,14 @@ pub(super) async fn disable_2fa(
         sessions::revoke_other_sessions(pool, user.id, current).await.db()?;
         crate::http::middleware::forget_sessions_of(&state, user.id.get());
     }
-    crate::admin::api::audit_log(pool, Some(user.id.get()), "account.2fa_off", &format!("user:{}", user.id), serde_json::json!({})).await?;
+    crate::admin::api::audit_log(
+        pool,
+        Some(user.id.get()),
+        "account.2fa_off",
+        &format!("user:{}", user.id),
+        serde_json::json!({}),
+    )
+    .await?;
     security_notice(&state, v.t(), &user.email, &user.username, &v.t().msg("Two-factor authentication was turned off"))
         .await;
     let page = settings_page(&state, &v, false, Some(v.t().msg("Two-factor authentication is off.")), None).await;
@@ -397,11 +411,8 @@ pub(super) async fn confirm_email(
     if owner.is_some_and(|o| !v.user.as_ref().is_some_and(|u| u.id == o)) {
         return Ok(sign_in_to_confirm(&state, &v));
     }
-    let used = if owner.is_some() {
-        security::consume_email_token(pool, &digest, "email_change").await.db()?
-    } else {
-        None
-    };
+    let used =
+        if owner.is_some() { security::consume_email_token(pool, &digest, "email_change").await.db()? } else { None };
     let (heading, message, status) = match used {
         Some((user_id, Some(email))) => {
             let old = security::account(pool, user_id.into()).await.db()?;

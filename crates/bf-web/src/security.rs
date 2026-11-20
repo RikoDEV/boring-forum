@@ -74,7 +74,10 @@ pub fn gif_provider(name: &str) -> Option<&'static str> {
 /// A provider's API origin and the hosts it serves pictures from, for the policy.
 fn gif_hosts(provider: &str) -> Option<(&'static str, &'static str)> {
     match provider {
-        "klipy" => Some(("https://api.klipy.com", "https://static.klipy.com https://static1.klipy.com https://static2.klipy.com")),
+        "klipy" => Some((
+            "https://api.klipy.com",
+            "https://static.klipy.com https://static1.klipy.com https://static2.klipy.com",
+        )),
         "giphy" => Some(("https://api.giphy.com", "https://*.giphy.com")),
         _ => None,
     }
@@ -199,11 +202,12 @@ pub fn content_security_policy(
     // The GIF picker asks its provider's API from the browser; the pictures load from the provider's hosts.
     let mut images = image_sources(image_hosts);
     // Pictures from other sites arrive through imgproxy: with pictures limited to listed hosts, it is one.
-    if let Some(origin) = imgproxy.filter(|o| o.starts_with("http") && o.bytes().all(|b| b.is_ascii_graphic() && !matches!(b, b';' | b',' | b'\'' | b'"'))) {
-        if images != "https:" {
-            images.push(' ');
-            images.push_str(origin);
-        }
+    if let Some(origin) = imgproxy.filter(|o| {
+        o.starts_with("http") && o.bytes().all(|b| b.is_ascii_graphic() && !matches!(b, b';' | b',' | b'\'' | b'"'))
+    }) && images != "https:"
+    {
+        images.push(' ');
+        images.push_str(origin);
     }
     if let Some((api, media)) = gifs.and_then(gif_hosts) {
         connect.push(' ');
@@ -291,9 +295,17 @@ mod tests {
 
     #[test]
     fn imgproxy_is_a_picture_source_only_when_pictures_are_limited() {
-        let policy = |hosts: &str, origin: Option<&str>| content_security_policy("", hosts, &Analytics::default(), None, None, origin);
-        assert!(!policy("", Some("https://img.example.com")).contains("img.example.com"), "every https host is already allowed");
-        assert!(policy("https://cdn.example", Some("https://img.example.com")).contains("https://cdn.example https://img.example.com"));
+        let policy = |hosts: &str, origin: Option<&str>| {
+            content_security_policy("", hosts, &Analytics::default(), None, None, origin)
+        };
+        assert!(
+            !policy("", Some("https://img.example.com")).contains("img.example.com"),
+            "every https host is already allowed"
+        );
+        assert!(
+            policy("https://cdn.example", Some("https://img.example.com"))
+                .contains("https://cdn.example https://img.example.com")
+        );
         assert!(policy("https://cdn.example", Some("https://i.example; script-src *")).contains("script-src 'self'"));
         assert!(!policy("https://cdn.example", Some("https://i.example; script-src *")).contains("i.example"));
     }

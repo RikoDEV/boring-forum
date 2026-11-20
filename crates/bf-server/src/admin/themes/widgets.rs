@@ -184,8 +184,14 @@ pub(super) async fn add_widget(
     };
     let id = themes::add_widget(state.db()?, &w).await.db()?;
     // The block's own content (its HTML or Markdown) is in `config`.
-    audit(&state, who, "widget.add", id, json!({ "area": w.area, "kind": w.kind, "title": w.title, "config": w.config }))
-        .await?;
+    audit(
+        &state,
+        who,
+        "widget.add",
+        id,
+        json!({ "area": w.area, "kind": w.kind, "title": w.title, "config": w.config }),
+    )
+    .await?;
     changed(&state);
     Ok((StatusCode::CREATED, Json(json!({ "id": id }))).into_response())
 }

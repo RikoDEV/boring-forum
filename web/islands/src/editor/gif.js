@@ -119,7 +119,12 @@ const PROVIDERS = {
 };
 
 /** Alt text for the picture: the title, with nothing that could end the markdown early. */
-const altText = (title) => title.replace(/[[\]()\n\r]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80) || "GIF";
+const altText = (title) =>
+  title
+    .replace(/[[\]()\n\r]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80) || "GIF";
 
 /**
  * Opens the picker. `onPick` gets the markdown for the chosen GIF.
@@ -224,7 +229,12 @@ export function openGifPicker(cfg, onPick) {
       busy = false;
     }
     // A short first page may not fill the dialog: keep going while the end is in view.
-    if (more && !mine.signal.aborted && sentinel.getBoundingClientRect().top < scroller.getBoundingClientRect().bottom + 200) load();
+    if (
+      more &&
+      !mine.signal.aborted &&
+      sentinel.getBoundingClientRect().top < scroller.getBoundingClientRect().bottom + 200
+    )
+      load();
   }
 
   function restart() {
@@ -253,7 +263,10 @@ export function openGifPicker(cfg, onPick) {
     busy = false;
     load();
   });
-  new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && load(), { root: scroller, rootMargin: "300px" }).observe(sentinel);
+  new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && load(), {
+    root: scroller,
+    rootMargin: "300px",
+  }).observe(sentinel);
   close.addEventListener("click", () => box.close());
   box.addEventListener("click", (e) => {
     if (e.target === box) box.close();

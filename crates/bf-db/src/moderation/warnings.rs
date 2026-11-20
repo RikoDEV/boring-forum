@@ -1,8 +1,8 @@
 //! Warnings and warning points.
 
+use crate::admin::audit::{Entry, record};
 use crate::community::promotion::Thresholds;
 use chrono::{DateTime, Utc};
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 type Error = sqlx::Error;
@@ -57,7 +57,14 @@ pub async fn warn(
             .await?;
         }
     }
-    record(&mut *tx, Entry::new("user.warn").by(moderator).on(format!("user:{user}")).details(serde_json::json!({ "points": points, "total": total }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("user.warn")
+            .by(moderator)
+            .on(format!("user:{user}"))
+            .details(serde_json::json!({ "points": points, "total": total })),
+    )
+    .await?;
     tx.commit().await?;
     Ok(total)
 }

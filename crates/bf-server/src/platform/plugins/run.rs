@@ -16,7 +16,14 @@ use super::{
 fn visitor_driven(hook: &str) -> bool {
     matches!(
         hook,
-        "api.request" | "panel.render" | "login.begin" | "login.callback" | "slot.render" | "onebox.resolve" | "action.run" | "page.request"
+        "api.request"
+            | "panel.render"
+            | "login.begin"
+            | "login.callback"
+            | "slot.render"
+            | "onebox.resolve"
+            | "action.run"
+            | "page.request"
     )
 }
 

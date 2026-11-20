@@ -174,10 +174,9 @@ pub(crate) async fn audit_log(
 /// The audit log is append-only and outlives accounts, so personal values go into it masked:
 /// `a***@example.com`.
 pub(crate) fn mask_email(email: &str) -> String {
-    email.split_once('@').map_or_else(
-        || "***".to_owned(),
-        |(a, d)| format!("{}***@{d}", a.chars().next().unwrap_or('*')),
-    )
+    email
+        .split_once('@')
+        .map_or_else(|| "***".to_owned(), |(a, d)| format!("{}***@{d}", a.chars().next().unwrap_or('*')))
 }
 
 /// `203.0.113.x` / `2001:db8:x`: enough to tell a range apart, not a person.

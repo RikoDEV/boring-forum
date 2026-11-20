@@ -39,7 +39,11 @@ fn domains(text: &str) -> Vec<String> {
         .filter(|t| !t.is_empty())
         .filter_map(|t| {
             let t = t.trim_start_matches("*.");
-            let host = if t.contains("://") { url::Url::parse(t).ok()?.host_str()?.to_owned() } else { t.split(['/', '?', '#', ':']).next()?.to_owned() };
+            let host = if t.contains("://") {
+                url::Url::parse(t).ok()?.host_str()?.to_owned()
+            } else {
+                t.split(['/', '?', '#', ':']).next()?.to_owned()
+            };
             let host = host.to_ascii_lowercase();
             let host = host.trim_start_matches("www.").trim_end_matches('.').to_owned();
             (host.contains('.') || host == "localhost").then_some(host)
@@ -50,7 +54,7 @@ fn domains(text: &str) -> Vec<String> {
 fn host_of(link: &str) -> Option<String> {
     let full = if let Some(rest) = link.strip_prefix("//") { format!("https://{rest}") } else { link.to_owned() };
     let url = url::Url::parse(&full).ok()?;
-    matches!(url.scheme(), "http" | "https").then(|| url.host_str().map(|h| h.to_ascii_lowercase()))?
+    matches!(url.scheme(), "http" | "https").then(|| url.host_str().map(str::to_ascii_lowercase))?
 }
 
 impl Policy {
@@ -63,7 +67,10 @@ impl Policy {
             },
             exempt_level: s.int("nofollow_exempt_trust_level"),
             domains: domains(s.str("nofollow_exempt_domains")),
-            own_host: url::Url::parse(site_url).ok().and_then(|u| u.host_str().map(str::to_ascii_lowercase)).unwrap_or_default(),
+            own_host: url::Url::parse(site_url)
+                .ok()
+                .and_then(|u| u.host_str().map(str::to_ascii_lowercase))
+                .unwrap_or_default(),
         }
     }
 
@@ -73,7 +80,8 @@ impl Policy {
     }
 
     fn is_own(&self, host: &str) -> bool {
-        !self.own_host.is_empty() && (host == self.own_host || host.trim_start_matches("www.") == self.own_host.trim_start_matches("www."))
+        !self.own_host.is_empty()
+            && (host == self.own_host || host.trim_start_matches("www.") == self.own_host.trim_start_matches("www."))
     }
 
     /// Whether this link, in a post by an author of this trust level, is followed.
@@ -157,7 +165,10 @@ mod tests {
     fn none_follows_every_web_link_and_all_keeps_the_listed_sites_apart() {
         assert_eq!(followed(&policy(Mode::None, 5, ""), None).len(), 6);
         // Listed sites: the domain and its subdomains, not a name that merely ends the same.
-        assert_eq!(followed(&policy(Mode::All, 5, "https://www.good.example/, other.test"), None), vec![">good<", ">sub<"]);
+        assert_eq!(
+            followed(&policy(Mode::All, 5, "https://www.good.example/, other.test"), None),
+            vec![">good<", ">sub<"]
+        );
         assert_eq!(followed(&policy(Mode::All, 5, "*.GOOD.example"), None), vec![">good<", ">sub<"]);
     }
 
@@ -173,6 +184,9 @@ mod tests {
 
     #[test]
     fn domains_are_read_from_a_loose_list() {
-        assert_eq!(domains("a.example, https://B.example/x\n*.c.example www.d.example nonsense"), vec!["a.example", "b.example", "c.example", "d.example"]);
+        assert_eq!(
+            domains("a.example, https://B.example/x\n*.c.example www.d.example nonsense"),
+            vec!["a.example", "b.example", "c.example", "d.example"]
+        );
     }
 }

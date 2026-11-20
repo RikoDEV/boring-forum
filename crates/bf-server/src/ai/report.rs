@@ -14,9 +14,13 @@ pub(crate) async fn write(state: &AppState, instructions: &str, days: i32) -> Re
     let pool = state.pool.as_ref().ok_or(AppError::NotFound)?;
     let tree = state.forum.get(pool).await?;
     let public = tree.readable(&bf_core::perms::Actor { groups: vec![1.into()], ..Default::default() });
-    let nodes: Vec<i64> =
-        if state.settings().bool("ai_public_only") { public.clone() } else { tree.nodes.iter().map(|n| n.id).collect() };
-    let ((topics, posts, members), busiest) = bf_db::ai::activity(pool, days, &nodes).await.map_err(AppError::internal)?;
+    let nodes: Vec<i64> = if state.settings().bool("ai_public_only") {
+        public.clone()
+    } else {
+        tree.nodes.iter().map(|n| n.id).collect()
+    };
+    let ((topics, posts, members), busiest) =
+        bf_db::ai::activity(pool, days, &nodes).await.map_err(AppError::internal)?;
     let busiest: Vec<_> = busiest.into_iter().filter(|b| public.contains(&b.3)).collect();
     let moods = bf_db::ai::mood_report(pool, days, 85, 80).await.map_err(AppError::internal)?;
     let sum = |f: fn(&bf_db::ai::MoodRow) -> i64| moods.iter().map(f).sum::<i64>();
@@ -29,8 +33,17 @@ pub(crate) async fn write(state: &AppState, instructions: &str, days: i32) -> Re
         sum(|m| m.toxic)
     );
     for (id, title, fresh, _) in &busiest {
-        let slug: String = sqlx::query_scalar("SELECT slug FROM items WHERE id = $1").bind(id).fetch_one(pool).await.map_err(AppError::internal)?;
-        facts.push_str(&format!("- {} ({fresh}) {}{}\n", super::fenced(title), state.config.base_url, topic_path(*id, &slug)));
+        let slug: String = sqlx::query_scalar("SELECT slug FROM items WHERE id = $1")
+            .bind(id)
+            .fetch_one(pool)
+            .await
+            .map_err(AppError::internal)?;
+        facts.push_str(&format!(
+            "- {} ({fresh}) {}{}\n",
+            super::fenced(title),
+            state.config.base_url,
+            topic_path(*id, &slug)
+        ));
     }
     let lang = language_name(bf_core::i18n::site_language(state.settings().str("default_locale")));
     let system = format!(

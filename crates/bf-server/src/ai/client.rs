@@ -27,7 +27,15 @@ pub struct Chat<'a> {
 
 impl<'a> Chat<'a> {
     pub fn new(feature: &'static str, system: &'a str, prompt: String) -> Self {
-        Self { feature, user: None, system, messages: vec![("user", prompt)], max_tokens: 600, model: None, temperature: 0.2 }
+        Self {
+            feature,
+            user: None,
+            system,
+            messages: vec![("user", prompt)],
+            max_tokens: 600,
+            model: None,
+            temperature: 0.2,
+        }
     }
     pub fn by(mut self, user: i64) -> Self {
         self.user = Some(user);
@@ -48,7 +56,8 @@ pub struct Completion {
 /// `ai_api_style` set to `mock`. It answers from the prompt alone and never touches the network,
 /// so the AI features can be exercised without an account or a key.
 pub fn is_mock(state: &AppState) -> bool {
-    std::env::var("BF_AI_PROVIDER").is_ok_and(|v| v.eq_ignore_ascii_case("mock")) || state.settings().str("ai_api_style") == "mock"
+    std::env::var("BF_AI_PROVIDER").is_ok_and(|v| v.eq_ignore_ascii_case("mock"))
+        || state.settings().str("ai_api_style") == "mock"
 }
 
 /// Whether the AI features can run: switched on, with an address to call (or the mock provider).
@@ -158,7 +167,10 @@ fn key(state: &AppState, env: &str, setting: &str) -> String {
 /// A base address that is http(s), without credentials or a trailing slash.
 fn base(raw: &str) -> Option<String> {
     let u = url::Url::parse(raw.trim()).ok()?;
-    let ok = matches!(u.scheme(), "http" | "https") && u.host_str().is_some() && u.username().is_empty() && u.password().is_none();
+    let ok = matches!(u.scheme(), "http" | "https")
+        && u.host_str().is_some()
+        && u.username().is_empty()
+        && u.password().is_none();
     ok.then(|| u.as_str().trim_end_matches('/').to_owned())
 }
 
@@ -186,7 +198,8 @@ pub async fn check_quota(state: &AppState, user: Option<i64>) -> Result<(), AppE
 
 async fn record(state: &AppState, c: &Chat<'_>, model: &str, usage: (i32, i32), error: Option<&str>) {
     if let Some(pool) = &state.pool
-        && let Err(e) = bf_db::ai::log_usage(pool, c.feature, model, c.user, usage.0, usage.1, error.is_none(), error).await
+        && let Err(e) =
+            bf_db::ai::log_usage(pool, c.feature, model, c.user, usage.0, usage.1, error.is_none(), error).await
     {
         tracing::warn!(error = %e, "AI usage could not be logged");
     }
@@ -264,11 +277,20 @@ pub async fn chat(state: &AppState, c: Chat<'_>) -> Result<Completion, AppError>
             .as_array()
             .map(|parts| parts.iter().filter_map(|p| p["text"].as_str()).collect::<Vec<_>>().join(""))
             .unwrap_or_default();
-        (text, (value["usage"]["input_tokens"].as_i64().unwrap_or(0), value["usage"]["output_tokens"].as_i64().unwrap_or(0)))
+        (
+            text,
+            (
+                value["usage"]["input_tokens"].as_i64().unwrap_or(0),
+                value["usage"]["output_tokens"].as_i64().unwrap_or(0),
+            ),
+        )
     } else {
         (
             value.pointer("/choices/0/message/content").and_then(Value::as_str).unwrap_or_default().to_owned(),
-            (value["usage"]["prompt_tokens"].as_i64().unwrap_or(0), value["usage"]["completion_tokens"].as_i64().unwrap_or(0)),
+            (
+                value["usage"]["prompt_tokens"].as_i64().unwrap_or(0),
+                value["usage"]["completion_tokens"].as_i64().unwrap_or(0),
+            ),
         )
     };
     let usage = (usage.0 as i32, usage.1 as i32);
@@ -281,7 +303,12 @@ pub async fn chat(state: &AppState, c: Chat<'_>) -> Result<Completion, AppError>
 }
 
 /// Vectors for some texts, each scaled to length 1 so that a dot product is the cosine.
-pub async fn embed(state: &AppState, feature: &'static str, user: Option<i64>, inputs: &[String]) -> Result<Vec<Vec<f32>>, AppError> {
+pub async fn embed(
+    state: &AppState,
+    feature: &'static str,
+    user: Option<i64>,
+    inputs: &[String],
+) -> Result<Vec<Vec<f32>>, AppError> {
     if !embeddings_configured(state) {
         return Err(unavailable());
     }
@@ -306,7 +333,10 @@ pub async fn embed(state: &AppState, feature: &'static str, user: Option<i64>, i
     let own = s.str("ai_embedding_base_url").trim();
     let Some(root) = base(if own.is_empty() { s.str("ai_base_url") } else { own }) else { return Err(unavailable()) };
     let client = client_for(state, &root).await?;
-    let api_key = if own.is_empty() && std::env::var("BF_AI_EMBEDDING_API_KEY").is_err() && s.str("ai_embedding_api_key").is_empty() {
+    let api_key = if own.is_empty()
+        && std::env::var("BF_AI_EMBEDDING_API_KEY").is_err()
+        && s.str("ai_embedding_api_key").is_empty()
+    {
         key(state, "BF_AI_API_KEY", "ai_api_key")
     } else {
         key(state, "BF_AI_EMBEDDING_API_KEY", "ai_embedding_api_key")
@@ -343,7 +373,10 @@ pub async fn embed(state: &AppState, feature: &'static str, user: Option<i64>, i
             return Err(unavailable());
         };
         for item in data {
-            let mut v: Vec<f32> = item["embedding"].as_array().map(|a| a.iter().filter_map(serde_json::Value::as_f64).map(|x| x as f32).collect()).unwrap_or_default();
+            let mut v: Vec<f32> = item["embedding"]
+                .as_array()
+                .map(|a| a.iter().filter_map(serde_json::Value::as_f64).map(|x| x as f32).collect())
+                .unwrap_or_default();
             let norm = v.iter().map(|x| x * x).sum::<f32>().sqrt();
             if v.is_empty() || norm == 0.0 {
                 record(state, &c, &model, (0, 0), Some("empty vector")).await;

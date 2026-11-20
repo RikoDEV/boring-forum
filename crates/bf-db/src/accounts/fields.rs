@@ -288,7 +288,12 @@ pub async fn answer_counts(pool: &PgPool) -> Result<Vec<(i64, i64)>, Error> {
 }
 
 pub async fn delete_field(pool: &PgPool, id: i64) -> Result<bool, Error> {
-    Ok(sqlx::query("DELETE FROM profile_fields WHERE id = $1 AND plugin IS NULL").bind(id).execute(pool).await?.rows_affected() > 0)
+    Ok(sqlx::query("DELETE FROM profile_fields WHERE id = $1 AND plugin IS NULL")
+        .bind(id)
+        .execute(pool)
+        .await?
+        .rows_affected()
+        > 0)
 }
 
 pub async fn values(pool: &PgPool, user_id: UserId) -> Result<Vec<(i64, String)>, Error> {

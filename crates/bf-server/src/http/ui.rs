@@ -210,11 +210,9 @@ impl PageQuery {
 /// (`None` or the stored stand-in "deleted") is the translated words "deleted member", unlinked.
 pub(crate) fn user_link(name: Option<&str>) -> String {
     match name.filter(|n| !n.is_empty() && *n != "deleted") {
-        Some(n) => format!(
-            "<a class=\"bf-user-link\" href=\"{}\">{}</a>",
-            esc(&bf_core::slug::profile_path(0, n)),
-            esc(n)
-        ),
+        Some(n) => {
+            format!("<a class=\"bf-user-link\" href=\"{}\">{}</a>", esc(&bf_core::slug::profile_path(0, n)), esc(n))
+        }
         None => crate::http::i18n::trh("deleted member"),
     }
 }

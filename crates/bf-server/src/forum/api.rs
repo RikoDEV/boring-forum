@@ -215,16 +215,10 @@ pub async fn topic_detail(
 ) -> Result<Response, AppError> {
     let (t, _, perms) = readable_topic(&state, &v, id).await?;
     let viewer = v.user.as_ref().map(|u| u.id.get());
-    let rows = posts::topic_posts(
-        state.db()?,
-        id,
-        q.from.max(1),
-        q.count.clamp(1, 50),
-        perms.has(Perms::MODERATE),
-        viewer,
-    )
-    .await
-    .db()?;
+    let rows =
+        posts::topic_posts(state.db()?, id, q.from.max(1), q.count.clamp(1, 50), perms.has(Perms::MODERATE), viewer)
+            .await
+            .db()?;
     let mut out = serde_json::to_value(TopicDetail {
         id: t.id,
         url: topic_path(t.id, &t.slug),
@@ -298,7 +292,11 @@ pub struct UserJson {
 /// A member's public profile, with the same visibility rules as their page.
 #[utoipa::path(get, path = "/api/v1/users/{name}", tag = "users", params(("name" = String, Path)),
     responses((status = 200, body = UserJson), (status = 403, body = bf_core::error::Problem), (status = 404, body = bf_core::error::Problem)))]
-pub async fn user_profile(State(state): State<AppState>, v: Viewer, Path(name): Path<String>) -> Result<Response, AppError> {
+pub async fn user_profile(
+    State(state): State<AppState>,
+    v: Viewer,
+    Path(name): Path<String>,
+) -> Result<Response, AppError> {
     let pool = state.db()?;
     let id = users::user_id_by_name(pool, &name).await.db()?.ok_or(AppError::NotFound)?;
     let p = users::profile(pool, id).await.db()?.ok_or(AppError::NotFound)?;

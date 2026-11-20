@@ -86,10 +86,11 @@ pub async fn bulk_add_group(pool: &PgPool, min_posts: i32, max_posts: Option<i32
 /// Adds a group to the members a plugin's filter chose. Staff are left alone.
 pub async fn add_group_to(pool: &PgPool, users: &[i64], group: i64) -> Result<u64, Error> {
     let mut tx = pool.begin().await?;
-    let ids: Vec<i64> = sqlx::query_scalar("SELECT u.id FROM users u WHERE u.id = ANY($1) AND u.primary_group_id NOT IN (3, 4)")
-        .bind(users)
-        .fetch_all(&mut *tx)
-        .await?;
+    let ids: Vec<i64> =
+        sqlx::query_scalar("SELECT u.id FROM users u WHERE u.id = ANY($1) AND u.primary_group_id NOT IN (3, 4)")
+            .bind(users)
+            .fetch_all(&mut *tx)
+            .await?;
     let added = add_members(&mut tx, &ids, group, Grant::Automatic).await?;
     tx.commit().await?;
     Ok(added.len() as u64)

@@ -27,7 +27,13 @@
       {:else if f.type === "textarea"}
         <Field label={text(f)} bind:value={values[f.key]} rows={f.rows || 4} wide />
       {:else if f.type === "number"}
-        <Field label={text(f)} type="number" min={f.min ?? undefined} max={f.max ?? undefined} bind:value={values[f.key]} />
+        <Field
+          label={text(f)}
+          type="number"
+          min={f.min ?? undefined}
+          max={f.max ?? undefined}
+          bind:value={values[f.key]}
+        />
       {:else}
         <Field label={text(f)} type={f.type} bind:value={values[f.key]} />
       {/if}

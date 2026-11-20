@@ -180,7 +180,8 @@ async fn modcp(State(state): State<AppState>, v: Viewer, Query(q): Query<ModCpQu
         },
         back: format!(
             "/modcp?tab={tab}&find={}&page={page_n}",
-            url::form_urlencoded::byte_serialize(q.find.trim().chars().take(40).collect::<String>().as_bytes()).collect::<String>()
+            url::form_urlencoded::byte_serialize(q.find.trim().chars().take(40).collect::<String>().as_bytes())
+                .collect::<String>()
         ),
         bans: vec![],
         admin: v.actor.is_admin,

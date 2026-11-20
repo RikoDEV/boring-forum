@@ -21,7 +21,8 @@ const SWIPE = 50;
 const GENERIC = /^(image|img|picture|photo|screenshot|obraz|obrazek|zdj[ęe]cie|zrzut ekranu|صورة)[\s_-]*\d*$/i;
 
 /** A caption worth showing: not empty, not just the file's name, not a stand-in word. */
-const caption = (alt = "") => (/\.(jpe?g|png|gif|webp|avif)$/i.test(alt.trim()) || GENERIC.test(alt.trim()) ? "" : alt.trim());
+const caption = (alt = "") =>
+  /\.(jpe?g|png|gif|webp|avif)$/i.test(alt.trim()) || GENERIC.test(alt.trim()) ? "" : alt.trim();
 
 function build() {
   const dialog = /** @type {HTMLDialogElement} */ (el("dialog", { class: "lb", "aria-label": tr("Image viewer") }));
@@ -37,7 +38,14 @@ function build() {
     return b;
   };
   const link = (label, glyph) => {
-    const a = el("a", { class: "lb-btn", "aria-label": label, "data-tip": label, "data-tip-side": "below", target: "_blank", rel: "noopener" });
+    const a = el("a", {
+      class: "lb-btn",
+      "aria-label": label,
+      "data-tip": label,
+      "data-tip-side": "below",
+      target: "_blank",
+      rel: "noopener",
+    });
     a.append(icon(glyph));
     return a;
   };
@@ -94,7 +102,11 @@ function build() {
       strip.replaceChildren();
       strip.hidden = items.length < 2;
       items.forEach((it, i) => {
-        const t = el("button", { type: "button", class: "lb-thumb", "aria-label": tr("Image {n} of {total}", { n: i + 1, total: items.length }) });
+        const t = el("button", {
+          type: "button",
+          class: "lb-thumb",
+          "aria-label": tr("Image {n} of {total}", { n: i + 1, total: items.length }),
+        });
         const pic = el("img", { src: it.thumb || it.src, alt: "", loading: "lazy", draggable: "false" });
         t.append(pic);
         t.addEventListener("click", () => show(items, i));

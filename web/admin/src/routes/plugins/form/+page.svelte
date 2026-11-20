@@ -38,7 +38,7 @@
 </script>
 
 <PageHead
-  title={spec ? localized(locales, spec.label_key, spec.label) : plugin?.name ?? tr("Plugins")}
+  title={spec ? localized(locales, spec.label_key, spec.label) : (plugin?.name ?? tr("Plugins"))}
   {status}
   intro={spec?.intro ? localized(locales, spec.intro_key, spec.intro) : ""}
 />

@@ -2,10 +2,10 @@
 
 use crate::forum::index::topic_line;
 use crate::forum::tree::guest;
-use crate::http::render::{ago, DbResult};
 use crate::http::render::layout;
 use crate::http::render::page;
 use crate::http::render::unread_count;
+use crate::http::render::{DbResult, ago};
 use crate::http::viewer::Viewer;
 use crate::state::AppState;
 use axum::extract::State;
@@ -73,9 +73,7 @@ pub(super) async fn render_topic(
     }
     let viewer_id = v.user.as_ref().map(|u| u.id);
     let mut rows = if qa {
-        posts::topic_posts_ranked(pool, id, 500, moderator, viewer_id.map(bf_core::ids::UserId::get))
-            .await
-            .db()?
+        posts::topic_posts_ranked(pool, id, 500, moderator, viewer_id.map(bf_core::ids::UserId::get)).await.db()?
     } else {
         posts::topic_posts(pool, id, from, per_page + 1, moderator, viewer_id.map(bf_core::ids::UserId::get))
             .await
@@ -186,7 +184,11 @@ pub(super) async fn render_topic(
         highest: t.highest_post_number,
         solved: t.solved_post_number,
         poll_html,
-        poll_form: if moderator || (uid.is_some() && uid == t.author_id.map(Into::into)) { crate::community::polls::poll_fields(v.t(), None) } else { String::new() },
+        poll_form: if moderator || (uid.is_some() && uid == t.author_id.map(Into::into)) {
+            crate::community::polls::poll_fields(v.t(), None)
+        } else {
+            String::new()
+        },
         event_html,
         qa,
         ideas: mode == "ideas",
@@ -221,7 +223,7 @@ pub(super) async fn render_topic(
         } else {
             let total = (i64::from(t.highest_post_number).max(1) - 1) / per_page + 1;
             // First, last and the pages next to the current one, with a gap where some are left out.
-            bf_web::pages::page_window(total, page_n, &page_url)
+            bf_web::pages::page_window(total, page_n, page_url)
         },
         can_reply: perms.has(Perms::REPLY) && ((!t.locked && !t.archived) || moderator),
         can_post_anonymously: state.settings().bool("anonymous_posting"),
@@ -320,7 +322,8 @@ async fn side_panels(
                 groups: v.actor.groups.iter().map(|g| g.0).collect(),
                 trust_level: u.trust_level,
             });
-            crate::community::polls::poll_html(state, id, voter.as_ref(), csrf, t.locked, moderator, manage, v.t()).await?
+            crate::community::polls::poll_html(state, id, voter.as_ref(), csrf, t.locked, moderator, manage, v.t())
+                .await?
         }
         None => String::new(),
     };
@@ -472,12 +475,8 @@ pub(super) async fn post_views(
     let show_levels = state.settings().bool("show_trust_levels");
     let rank_spec = state.settings().str("rank_names").to_owned();
     let post_ids: Vec<i64> = rows.iter().map(|p| p.id).collect();
-    let timeline: std::collections::HashMap<i64, Times> = posts::post_timeline(pool, &post_ids)
-        .await
-        .db()?
-        .into_iter()
-        .map(|(id, a, b)| (id, (a, b)))
-        .collect();
+    let timeline: std::collections::HashMap<i64, Times> =
+        posts::post_timeline(pool, &post_ids).await.db()?.into_iter().map(|(id, a, b)| (id, (a, b))).collect();
     // Staff see the notes on these posts; nobody else is sent them or asked for them.
     let mut notes: std::collections::HashMap<i64, Vec<bf_web::pages::StaffNote>> = std::collections::HashMap::new();
     if moderator {

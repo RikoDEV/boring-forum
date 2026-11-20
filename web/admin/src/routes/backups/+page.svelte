@@ -20,7 +20,7 @@
   let directory = $state("");
   let loaded = $state(false);
   /** The settings this page edits, as the server holds them. */
-  let cfg = $state({ backup_enabled: false, backup_interval_hours: 24, backup_keep: 7, backup_uploads: true });
+  const cfg = $state({ backup_enabled: false, backup_interval_hours: 24, backup_keep: 7, backup_uploads: true });
   /** The backup the restore dialog is open for, and what was typed to confirm it. */
   let restoring = $state(null);
   let confirmText = $state("");
@@ -94,7 +94,10 @@
       status.msg = tr("Saved.");
     } catch (e) {
       status.fail(e);
-      get("/settings").then((all) => all.forEach((s) => s.key in cfg && (cfg[s.key] = s.value)), () => {});
+      get("/settings").then(
+        (all) => all.forEach((s) => s.key in cfg && (cfg[s.key] = s.value)),
+        () => {},
+      );
     }
   }
 
@@ -162,7 +165,9 @@
 </PageHead>
 
 {#if running}
-  <p role="status" class="muted">{KIND[activity.running]}{PHASE[activity.phase] ? `: ${PHASE[activity.phase]}` : "…"}</p>
+  <p role="status" class="muted">
+    {KIND[activity.running]}{PHASE[activity.phase] ? `: ${PHASE[activity.phase]}` : "…"}
+  </p>
 {:else if activity.last_error}
   <p class="err" role="alert">{activity.last_error}</p>
 {/if}
@@ -218,8 +223,16 @@
           </div>
           <div class="acp-actions">
             <button class="secondary" onclick={() => download(b)}>{tr("Email me a download link")}</button>
-            <button class="secondary" onclick={() => askRestore(b)} disabled={running || !b.restorable}>{tr("Restore")}</button>
-            <IconButton icon="trash-2" label={tr("Delete {name}", { name: b.name })} danger onclick={() => remove(b)} disabled={running} />
+            <button class="secondary" onclick={() => askRestore(b)} disabled={running || !b.restorable}
+              >{tr("Restore")}</button
+            >
+            <IconButton
+              icon="trash-2"
+              label={tr("Delete {name}", { name: b.name })}
+              danger
+              onclick={() => remove(b)}
+              disabled={running}
+            />
           </div>
         </li>
       {/each}

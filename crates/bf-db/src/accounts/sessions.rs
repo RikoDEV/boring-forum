@@ -2,10 +2,10 @@
 
 use crate::accounts::users::USER_COLS;
 use crate::accounts::users::User;
+use crate::admin::audit::{Entry, record};
 use bf_core::ids::UserId;
 use chrono::{DateTime, Utc};
 pub use sqlx::Error;
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 use std::net::IpAddr;
 

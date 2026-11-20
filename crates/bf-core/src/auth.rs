@@ -25,7 +25,11 @@ pub fn hash_password(password: &str) -> String {
 /// (PBKDF2-HMAC-SHA256) and `ips3$<salt>$<hex>` (`md5(md5(salt) . md5(password))`: Invision 3, and MyBB's
 /// `password` and `salt` columns, which are the same scheme).
 pub fn is_legacy_hash(hash: &str) -> bool {
-    hash.starts_with("$2") || hash.starts_with("$H$") || hash.starts_with("$P$") || hash.starts_with("discourse$") || hash.starts_with("ips3$")
+    hash.starts_with("$2")
+        || hash.starts_with("$H$")
+        || hash.starts_with("$P$")
+        || hash.starts_with("discourse$")
+        || hash.starts_with("ips3$")
 }
 
 pub fn verify_password(password: &str, phc: &str) -> bool {
@@ -230,9 +234,8 @@ pub fn validate_username(name: &str) -> Result<String, &'static str> {
 pub fn is_reserved_skeleton(skeleton: &str) -> bool {
     static EXACT: std::sync::LazyLock<Vec<String>> =
         std::sync::LazyLock::new(|| RESERVED.iter().map(|n| username_skeleton(n)).collect());
-    static PREFIXES: std::sync::LazyLock<Vec<String>> = std::sync::LazyLock::new(|| {
-        ["plugin-", "deleted-", "forum."].iter().map(|n| username_skeleton(n)).collect()
-    });
+    static PREFIXES: std::sync::LazyLock<Vec<String>> =
+        std::sync::LazyLock::new(|| ["plugin-", "deleted-", "forum."].iter().map(|n| username_skeleton(n)).collect());
     EXACT.iter().any(|e| e == skeleton) || PREFIXES.iter().any(|p| skeleton.starts_with(p.as_str()))
 }
 
@@ -284,7 +287,9 @@ pub fn normalize_email(raw: &str) -> Option<String> {
             && !l.ends_with('-')
             && l.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
     };
-    if labels.len() < 2 || !labels.iter().all(label_ok) || labels.last().is_some_and(|t| t.chars().all(|c| c.is_ascii_digit()))
+    if labels.len() < 2
+        || !labels.iter().all(label_ok)
+        || labels.last().is_some_and(|t| t.chars().all(|c| c.is_ascii_digit()))
     {
         return None;
     }

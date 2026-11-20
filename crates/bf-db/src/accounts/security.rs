@@ -1,8 +1,8 @@
 //! Account security queries: email tokens, the mail outbox, passwords, sessions and TOTP.
 
+use crate::admin::audit::{Entry, record};
 use bf_core::ids::UserId;
 use chrono::{DateTime, Utc};
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 type Error = sqlx::Error;
@@ -501,16 +501,13 @@ macro_rules! pk_cols {
 
 pub async fn passkeys(pool: &PgPool, user_id: UserId) -> Result<Vec<PasskeyRow>, Error> {
     sqlx::query_as(concat!("SELECT ", pk_cols!(), " FROM passkeys WHERE user_id = $1 ORDER BY created_at"))
-    .bind(user_id)
-    .fetch_all(pool)
-    .await
+        .bind(user_id)
+        .fetch_all(pool)
+        .await
 }
 
 pub async fn passkey(pool: &PgPool, id: &[u8]) -> Result<Option<PasskeyRow>, Error> {
-    sqlx::query_as(concat!("SELECT ", pk_cols!(), " FROM passkeys WHERE id = $1"))
-        .bind(id)
-        .fetch_optional(pool)
-        .await
+    sqlx::query_as(concat!("SELECT ", pk_cols!(), " FROM passkeys WHERE id = $1")).bind(id).fetch_optional(pool).await
 }
 
 pub async fn add_passkey(

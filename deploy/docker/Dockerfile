@@ -36,7 +36,8 @@ RUN mkdir -p /data/uploads /data/backups && chown -R 65534:65534 /data
 # deploy/importer/import.sh). Not the default target: it carries throwaway Postgres and MariaDB
 # servers to restore a forum's backup into, Node for the exporters, and the forum binary.
 FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS importer
-RUN apk add --no-cache bash tar gzip su-exec postgresql mariadb mariadb-client ca-certificates     && mkdir -p /opt/importers && cd /opt/importers && npm install --no-audit --no-fund pg mysql2
+RUN apk add --no-cache bash tar gzip su-exec postgresql mariadb mariadb-client ca-certificates \
+    && mkdir -p /opt/importers && cd /opt/importers && npm install --no-audit --no-fund pg mysql2
 COPY tools/importers/*.mjs /opt/importers/
 COPY deploy/importer/import.sh /usr/local/bin/import-forum
 COPY --from=server /boring-forum /boring-forum

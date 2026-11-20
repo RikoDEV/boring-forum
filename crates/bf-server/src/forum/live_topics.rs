@@ -3,7 +3,6 @@
 //! vote for them; hosts answer in replies and mark questions answered. Changes reach open pages
 //! through the topic's live channel, which the topic page already listens to.
 
-use bf_core::html::esc;
 use crate::http::i18n::{trf, trh};
 use crate::http::render::DbResult;
 use crate::http::ui::hidden_csrf;
@@ -15,6 +14,7 @@ use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::{get, post};
 use axum::{Form, Router};
 use bf_core::AppError;
+use bf_core::html::esc;
 use bf_core::i18n::en;
 use bf_core::perms::Perms;
 use bf_core::slug::topic_path;
@@ -97,8 +97,7 @@ pub(crate) async fn live_html(
     } else {
         (trf("Ended {when}", &[("when", &when(s.ends_at))]), "ended")
     };
-    let hosts: Vec<String> =
-        s.host_names.iter().map(|(_, n)| user_link(Some(n))).collect();
+    let hosts: Vec<String> = s.host_names.iter().map(|(_, n)| user_link(Some(n))).collect();
     let questions = db::questions(pool, item, me.map(bf_core::ids::UserId::get), decides).await.db()?;
     let mut html = format!(
         "<section class=\"bf-box bf-live bf-live-{class}\" id=\"live\"><div class=\"bf-box-head\"><h2>{tr1}</h2><span class=\"small\"><strong>{status}</strong> · {}</span></div><ol class=\"bf-live-questions\">",
@@ -244,17 +243,12 @@ async fn save(
         .filter(|n| !n.is_empty())
         .take(10)
         .collect();
-    let mut hosts = if names.is_empty() {
-        vec![]
-    } else {
-        bf_db::accounts::users::user_ids_by_names(pool, &names).await.db()?
-    };
+    let mut hosts =
+        if names.is_empty() { vec![] } else { bf_db::accounts::users::user_ids_by_names(pool, &names).await.db()? };
     if hosts.is_empty() {
         hosts.push((author.unwrap_or(user.id.get())).into());
     }
-    db::save(pool, id, starts, ends, &bf_core::ids::raw(&hosts), f.moderated == "1", user.id.get())
-        .await
-        .db()?;
+    db::save(pool, id, starts, ends, &bf_core::ids::raw(&hosts), f.moderated == "1", user.id.get()).await.db()?;
     state.hub.publish(&format!("item:{id}"), "state", json!({ "action": "live" }));
     state.microcache.clear();
     Ok(Redirect::to(&format!("{}#live", topic_path(id, &slug))).into_response())

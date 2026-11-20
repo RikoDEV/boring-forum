@@ -1,7 +1,7 @@
 //! The mail outbox, bounces, bulk mail and unsubscribe tokens.
 
-use chrono::{DateTime, Utc};
 use crate::admin::audit::{Entry, record};
+use chrono::{DateTime, Utc};
 use sqlx::{FromRow, PgPool};
 
 type Error = sqlx::Error;
@@ -51,10 +51,10 @@ pub async fn mail_sent(pool: &PgPool, id: i64) -> Result<(), Error> {
          UPDATE users SET email_bounces = 0
          WHERE email_bounces > 0 AND NOT email_bad AND email_lower = lower((SELECT to_addr FROM s))",
     )
-        .bind(id)
-        .execute(pool)
-        .await
-        .map(|_| ())
+    .bind(id)
+    .execute(pool)
+    .await
+    .map(|_| ())
 }
 
 pub async fn mail_failed(pool: &PgPool, id: i64, error: &str) -> Result<(), Error> {
@@ -100,8 +100,7 @@ pub async fn skip_mail_to_bad_addresses(pool: &PgPool) -> Result<(), Error> {
     .execute(pool)
     .await?;
     // Held notification mail about a topic that is gone or hidden since it was queued.
-    let account: Vec<&str> =
-        bf_core::notifications::KINDS.iter().filter(|k| k.mandatory).map(|k| k.key).collect();
+    let account: Vec<&str> = bf_core::notifications::KINDS.iter().filter(|k| k.mandatory).map(|k| k.key).collect();
     sqlx::query(
         "UPDATE mail_outbox o SET sent_at = now(), last_error = 'skipped: topic no longer visible'
          WHERE o.sent_at IS NULL AND o.unless_read_user IS NOT NULL
@@ -171,21 +170,24 @@ macro_rules! audience {
 pub async fn audience_ids(pool: &PgPool, a: &Audience) -> Result<Vec<i64>, Error> {
     // Only the constant AUDIENCE is interpolated; every value is bound.
     sqlx::query_scalar(concat!("SELECT u.id FROM users u WHERE ", audience!(), " ORDER BY u.id LIMIT 200000"))
-    .bind(&a.groups)
-    .bind(a.trust_min)
-    .bind(a.trust_max)
-    .bind(a.active_days)
-    .bind(a.min_posts)
-    .bind(a.verified_only)
-    .fetch_all(pool)
-    .await
+        .bind(&a.groups)
+        .bind(a.trust_min)
+        .bind(a.trust_max)
+        .bind(a.active_days)
+        .bind(a.min_posts)
+        .bind(a.verified_only)
+        .fetch_all(pool)
+        .await
 }
 
 /// (members reached, of them how many also get the email: those who have not switched it off).
 pub async fn audience_counts(pool: &PgPool, a: &Audience) -> Result<(i64, i64), Error> {
-    sqlx::query_as(concat!("SELECT count(*), count(*) FILTER (WHERE coalesce(p.channels, 3) & 2 <> 0)
+    sqlx::query_as(concat!(
+        "SELECT count(*), count(*) FILTER (WHERE coalesce(p.channels, 3) & 2 <> 0)
          FROM users u LEFT JOIN notification_prefs p ON p.user_id = u.id AND p.kind = 'bulk'
-         WHERE ", audience!()))
+         WHERE ",
+        audience!()
+    ))
     .bind(&a.groups)
     .bind(a.trust_min)
     .bind(a.trust_max)
@@ -294,7 +296,8 @@ pub async fn contact_mails_last_hour(pool: &PgPool) -> Result<i64, Error> {
 }
 
 pub async fn log_bulk(pool: &PgPool, actor: Option<i64>, subject: &str, count: i64) -> Result<(), Error> {
-    record(pool, Entry::new("mail.bulk").by(actor).on(subject).details(serde_json::json!({ "recipients": count }))).await
+    record(pool, Entry::new("mail.bulk").by(actor).on(subject).details(serde_json::json!({ "recipients": count })))
+        .await
 }
 
 /// Creates the unsubscribe token for one email.
@@ -319,7 +322,11 @@ pub async fn token_target(pool: &PgPool, token: &str) -> Result<Option<(i64, Str
 pub async fn unsubscribe(pool: &PgPool, user_id: i64, kind: &str) -> Result<(), Error> {
     // The digest is a setting of the account, not a notification type.
     if kind == "digest" {
-        return sqlx::query("UPDATE users SET digest = 'none' WHERE id = $1").bind(user_id).execute(pool).await.map(|_| ());
+        return sqlx::query("UPDATE users SET digest = 'none' WHERE id = $1")
+            .bind(user_id)
+            .execute(pool)
+            .await
+            .map(|_| ());
     }
     sqlx::query(
         "INSERT INTO notification_prefs (user_id, kind, channels) VALUES ($1, $2, $3)

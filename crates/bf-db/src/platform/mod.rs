@@ -2,8 +2,8 @@
 
 pub mod ads;
 pub mod api;
-pub mod backup;
 pub mod automations;
+pub mod backup;
 pub mod cook_state;
 pub mod digests;
 pub mod idempotency;

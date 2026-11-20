@@ -25,10 +25,7 @@ pub(crate) async fn topic_by_email(
     let pool = state.db()?;
     let user = users::user_by_id(pool, user_id.into()).await.db()?.ok_or(AppError::NotFound)?;
     // Everything a signed-in member would be stopped by on the site.
-    if bf_db::accounts::users::is_suspended(pool, user.id.get()).await.db()?
-        || !user.approved
-        || user.legal_pending
-    {
+    if bf_db::accounts::users::is_suspended(pool, user.id.get()).await.db()? || !user.approved || user.legal_pending {
         return Err(AppError::Forbidden);
     }
     let actor = Actor {
@@ -37,7 +34,7 @@ pub(crate) async fn topic_by_email(
         is_admin: user.is_admin,
         silenced: user.silenced,
         moderated_nodes: user.moderated_nodes.clone(),
-        denied: crate::platform::plugins::denials(&state, user.id.get(), &user.groups).await,
+        denied: crate::platform::plugins::denials(state, user.id.get(), &user.groups).await,
     };
     let tree = state.forum.get(pool).await?;
     let found = tree.node(node).is_some_and(|n| n.kind == "forum");
@@ -57,13 +54,9 @@ pub(crate) async fn topic_by_email(
         node,
         &[title, body],
         None,
-        posts::approved_post_count(
-            state.db()?,
-            user.id.get(),
-            state.settings().int("approve_first_posts"),
-        )
-        .await
-        .db()?,
+        posts::approved_post_count(state.db()?, user.id.get(), state.settings().int("approve_first_posts"))
+            .await
+            .db()?,
     )
     .map_err(AppError::Validation)?;
     let filtered = crate::platform::plugins::before_post(state, user.id.get(), &checked.texts[1]).await?;
@@ -108,10 +101,7 @@ pub(crate) async fn reply_by_email(state: &AppState, user_id: i64, id: i64, body
     let pool = state.db()?;
     let user = users::user_by_id(pool, user_id.into()).await.db()?.ok_or(AppError::NotFound)?;
     // Everything a signed-in member would be stopped by on the site.
-    if bf_db::accounts::users::is_suspended(pool, user.id.get()).await.db()?
-        || !user.approved
-        || user.legal_pending
-    {
+    if bf_db::accounts::users::is_suspended(pool, user.id.get()).await.db()? || !user.approved || user.legal_pending {
         return Err(AppError::Forbidden);
     }
     let actor = Actor {
@@ -120,7 +110,7 @@ pub(crate) async fn reply_by_email(state: &AppState, user_id: i64, id: i64, body
         is_admin: user.is_admin,
         silenced: user.silenced,
         moderated_nodes: user.moderated_nodes.clone(),
-        denied: crate::platform::plugins::denials(&state, user.id.get(), &user.groups).await,
+        denied: crate::platform::plugins::denials(state, user.id.get(), &user.groups).await,
     };
     let t = topics::topic_for(pool, id, Some(user.id.get())).await.db()?.ok_or(AppError::NotFound)?;
     let tree = state.forum.get(pool).await?;
@@ -147,13 +137,9 @@ pub(crate) async fn reply_by_email(state: &AppState, user_id: i64, id: i64, body
         t.node_id,
         &[body],
         None,
-        posts::approved_post_count(
-            state.db()?,
-            user.id.get(),
-            state.settings().int("approve_first_posts"),
-        )
-        .await
-        .db()?,
+        posts::approved_post_count(state.db()?, user.id.get(), state.settings().int("approve_first_posts"))
+            .await
+            .db()?,
     )
     .map_err(AppError::Validation)?;
     let filtered = crate::platform::plugins::before_post(state, user.id.get(), &checked.texts[0]).await?;

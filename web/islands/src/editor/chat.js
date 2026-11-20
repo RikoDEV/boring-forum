@@ -164,7 +164,9 @@ export function startChat(root, props, tools) {
 
   // --- Sidebar
   function row(c) {
-    const a = Object.assign(make("a", `chat-row${c.id === current?.id ? " is-active" : ""}`), { href: `/chat/${c.id}` });
+    const a = Object.assign(make("a", `chat-row${c.id === current?.id ? " is-active" : ""}`), {
+      href: `/chat/${c.id}`,
+    });
     a.append(c.kind === "dm" ? avatar(c.people[0] ?? props.me, 24) : hashGlyph());
     const name = make("span", "chat-row-name", nameOf(c));
     a.append(name);
@@ -232,7 +234,12 @@ export function startChat(root, props, tools) {
           await open(id, true);
           manageMembers();
         } catch (e) {
-          show(problem, e.message === tr("That did not work.") ? tr("Your trust level is too low to start a channel yet.") : e.message);
+          show(
+            problem,
+            e.message === tr("That did not work.")
+              ? tr("Your trust level is too low to start a channel yet.")
+              : e.message,
+          );
         }
       });
       body.append(field(name, tr("Name")), field(about, tr("Description")), problem, go);
@@ -825,7 +832,15 @@ export function startChat(root, props, tools) {
       myId = me.id;
       attach.hidden = !me.uploads;
       // Only the kinds chat takes are offered in the file picker.
-      const ACCEPT = { png: "image/png", jpg: "image/jpeg", gif: "image/gif", webp: "image/webp", pdf: "application/pdf", zip: ".zip,application/zip", txt: ".txt,text/plain" };
+      const ACCEPT = {
+        png: "image/png",
+        jpg: "image/jpeg",
+        gif: "image/gif",
+        webp: "image/webp",
+        pdf: "application/pdf",
+        zip: ".zip,application/zip",
+        txt: ".txt,text/plain",
+      };
       if (me.upload_types?.length) picker.accept = me.upload_types.map((t) => ACCEPT[t]).join(",");
       return loadChannels();
     })

@@ -14,13 +14,6 @@
 
 <div class="acp-wide acp-md">
   <Section legend={label} {hint}>
-    <textarea
-      use:markdown
-      bind:value
-      {rows}
-      {maxlength}
-      aria-label={label}
-      placeholder={tr("Markdown")}
-    ></textarea>
+    <textarea use:markdown bind:value {rows} {maxlength} aria-label={label} placeholder={tr("Markdown")}></textarea>
   </Section>
 </div>

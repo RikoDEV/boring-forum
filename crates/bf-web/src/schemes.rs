@@ -142,7 +142,11 @@ pub fn render(list: &[Source], light: &str, dark: &str) -> String {
         css.push_str(&format!(":root{{{}}}\n", declarations(l.light, d.dark)));
     }
     for s in list {
-        css.push_str(&format!(":root[data-scheme=\"{0}\"],[data-scheme=\"{0}\"]{{{1}}}\n", s.slug, declarations(s.light, s.dark)));
+        css.push_str(&format!(
+            ":root[data-scheme=\"{0}\"],[data-scheme=\"{0}\"]{{{1}}}\n",
+            s.slug,
+            declarations(s.light, s.dark)
+        ));
     }
     css
 }
@@ -241,7 +245,10 @@ mod tests {
         assert!(css.contains("--bf-color-accent-soft:color-mix("));
         // Light mode can show one scheme and dark mode another.
         let mixed = render(&list, "standard", "forest");
-        assert!(mixed.starts_with(":root{") && mixed.contains("--bf-color-accent:light-dark(#0b64c0,#17693c)"), "{mixed}");
+        assert!(
+            mixed.starts_with(":root{") && mixed.contains("--bf-color-accent:light-dark(#0b64c0,#17693c)"),
+            "{mixed}"
+        );
         install(&list, "forest", "forest");
         let (choices, default, _) = choices();
         assert_eq!(default, "forest");

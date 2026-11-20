@@ -87,7 +87,12 @@ async fn parse(
     if kind == "rating" {
         let num = |k: &str, d: i32| f.get(k).trim().parse::<i32>().unwrap_or(d);
         options = polls::rating_options(num("rating_min", 1), num("rating_max", 5), num("rating_step", 1)).ok_or_else(
-            || AppError::invalid("A rating poll runs from a number to a larger one, with {n} values at most.", &[("n", &polls::MAX_OPTIONS)]),
+            || {
+                AppError::invalid(
+                    "A rating poll runs from a number to a larger one, with {n} values at most.",
+                    &[("n", &polls::MAX_OPTIONS)],
+                )
+            },
         )?;
     } else if !(2..=polls::MAX_OPTIONS).contains(&options.len()) || options.iter().any(|o| o.chars().count() > 100) {
         return Err(AppError::invalid(
@@ -116,7 +121,8 @@ async fn parse(
         r @ ("voted" | "closed" | "staff") => r,
         _ => "always",
     };
-    let names: Vec<String> = f.get("groups").split(',').map(str::trim).filter(|n| !n.is_empty()).map(str::to_owned).collect();
+    let names: Vec<String> =
+        f.get("groups").split(',').map(str::trim).filter(|n| !n.is_empty()).map(str::to_owned).collect();
     if names.len() > 10 {
         return Err(AppError::Validation("Name up to 10 groups.".into()));
     }
@@ -368,7 +374,9 @@ fn chosen_options(fields: &[(String, String)], poll: &Poll) -> Result<Vec<i64>, 
     }
     let mut ranked: Vec<(u32, i64)> = fields
         .iter()
-        .filter_map(|(n, v)| Some((v.trim().parse::<u32>().ok().filter(|r| *r >= 1)?, n.strip_prefix("rank_")?.parse().ok()?)))
+        .filter_map(|(n, v)| {
+            Some((v.trim().parse::<u32>().ok().filter(|r| *r >= 1)?, n.strip_prefix("rank_")?.parse().ok()?))
+        })
         .collect();
     ranked.sort_unstable();
     if ranked.windows(2).any(|w| w[0].0 == w[1].0) {
@@ -384,7 +392,13 @@ pub(crate) fn poll_fields(t: bf_core::i18n::T, edit: Option<(&Poll, &[String])>)
     let kind = edit.map_or("choice", |(p, _)| p.kind.as_str());
     let value = |s: &str| esc(s);
     let (question, options, max_choices, trust, groups) = match edit {
-        Some((p, o)) => (value(&p.question), value(&o.join("\n")), p.max_choices, p.min_trust_level, value(&p.group_names.join(", "))),
+        Some((p, o)) => (
+            value(&p.question),
+            value(&o.join("\n")),
+            p.max_choices,
+            p.min_trust_level,
+            value(&p.group_names.join(", ")),
+        ),
         None => (String::new(), String::new(), 1, 0, String::new()),
     };
     let selected = |current: &str, v: &str| if current == v { " selected" } else { "" };
@@ -487,15 +501,16 @@ pub(crate) async fn poll_html(
     can_manage: bool,
     t: bf_core::i18n::T,
 ) -> Result<String, AppError> {
+    // The marker stands for the closing time's <time> element, put in after the words are escaped.
+    const WHEN: &str = "\u{e000}";
     let pool = state.db()?;
     let all = polls::polls_of(pool, item).await.db()?;
     let options = polls::options_of(pool, item, viewer.map(|v| v.id)).await.db()?;
-    let voters = if all.iter().any(|p| p.is_public) { polls::voters_of(pool, item, 300).await.db()? } else { Vec::new() };
+    let voters =
+        if all.iter().any(|p| p.is_public) { polls::voters_of(pool, item, 300).await.db()? } else { Vec::new() };
     let csrf = esc(csrf);
     let csrf_field = hidden_csrf(&csrf);
     let sprite = bf_web::assets::ICONS.url();
-    // The marker stands for the closing time's <time> element, put in after the words are escaped.
-    const WHEN: &str = "\u{e000}";
     let mut html = String::new();
     let archived: bool = sqlx::query_scalar("SELECT archived FROM items WHERE id = $1")
         .bind(item)
@@ -519,7 +534,11 @@ pub(crate) async fn poll_html(
         // A vote that is final and cast leaves nothing to submit.
         let can_submit = open && eligible && (p.vote_change || !voted);
         let total: i64 = rows.iter().map(|r| r.3).sum();
-        html.push_str(&format!("<section class=\"panel block poll\" id=\"poll-{}\"><h2>{}</h2>", p.id, esc(&p.question)));
+        html.push_str(&format!(
+            "<section class=\"panel block poll\" id=\"poll-{}\"><h2>{}</h2>",
+            p.id,
+            esc(&p.question)
+        ));
         if let Some(n) = p.post_number {
             html.push_str(&format!(
                 "<p class=\"small muted\"><a href=\"#post-{n}\">{}</a></p>",
@@ -537,7 +556,10 @@ pub(crate) async fn poll_html(
         match (closed, p.closes_at) {
             (true, _) => meta.push(t.msg("closed")),
             (false, Some(c)) => {
-                meta.push(t.msgf("closes {when}", &[("when", WHEN)]).replace(WHEN, &format!("\u{e001}{}\u{e002}", Ago::stamp(c))));
+                meta.push(
+                    t.msgf("closes {when}", &[("when", WHEN)])
+                        .replace(WHEN, &format!("\u{e001}{}\u{e002}", Ago::stamp(c))),
+                );
             }
             (false, None) => {}
         }
@@ -587,22 +609,22 @@ pub(crate) async fn poll_html(
         for (rank, o) in order.iter().enumerate() {
             let (_, id, label, votes, chosen) = &***o;
             let input = if can_submit {
-                match p.kind.as_str() {
-                    "ranked" => {
-                        let current = mine.get(id).copied();
-                        let mut s = format!("<select name=\"rank_{id}\" aria-label=\"{}\"><option value=\"\">–</option>", esc(&t.msg("Rank")));
-                        for n in 1..=rows.len() {
-                            let sel = if current == Some(n as i16) { " selected" } else { "" };
-                            s.push_str(&format!("<option value=\"{n}\"{sel}>{n}</option>"));
-                        }
-                        s.push_str("</select> ");
-                        s
+                if p.kind.as_str() == "ranked" {
+                    let current = mine.get(id).copied();
+                    let mut s = format!(
+                        "<select name=\"rank_{id}\" aria-label=\"{}\"><option value=\"\">–</option>",
+                        esc(&t.msg("Rank"))
+                    );
+                    for n in 1..=rows.len() {
+                        let sel = if current == Some(n as i16) { " selected" } else { "" };
+                        s.push_str(&format!("<option value=\"{n}\"{sel}>{n}</option>"));
                     }
-                    _ => {
-                        let kind = if p.multiple() { "checkbox" } else { "radio" };
-                        let checked = if *chosen { " checked" } else { "" };
-                        format!("<input type=\"{kind}\" name=\"option\" value=\"{id}\"{checked}> ")
-                    }
+                    s.push_str("</select> ");
+                    s
+                } else {
+                    let kind = if p.multiple() { "checkbox" } else { "radio" };
+                    let checked = if *chosen { " checked" } else { "" };
+                    format!("<input type=\"{kind}\" name=\"option\" value=\"{id}\"{checked}> ")
                 }
             } else {
                 String::new()
@@ -615,7 +637,10 @@ pub(crate) async fn poll_html(
                 } else {
                     String::new()
                 };
-                format!(" <span class=\"muted small\">{}</span>{winner}", esc(&t.msgf("First choices: {n}", &[("n", &first.to_string())])))
+                format!(
+                    " <span class=\"muted small\">{}</span>{winner}",
+                    esc(&t.msgf("First choices: {n}", &[("n", &first.to_string())]))
+                )
             } else if show {
                 let percent = if total > 0 { votes * 100 / total } else { 0 };
                 format!(" <span class=\"muted small\">{votes} · {percent}%</span>")
@@ -648,7 +673,11 @@ pub(crate) async fn poll_html(
                 "<p class=\"small muted\">{}</p>",
                 esc(&t.msgf(
                     "Instant-runoff count, round {round}: {votes} of {counted} ballots for the first place",
-                    &[("round", &r.rounds.to_string()), ("votes", &r.winner_votes.to_string()), ("counted", &r.counted.to_string())]
+                    &[
+                        ("round", &r.rounds.to_string()),
+                        ("votes", &r.winner_votes.to_string()),
+                        ("counted", &r.counted.to_string())
+                    ]
                 ))
             ));
         }
@@ -686,13 +715,18 @@ pub(crate) async fn poll_html(
 }
 
 /// This member's rank for each option of a ranked poll.
-async fn my_ranks(pool: &sqlx::PgPool, poll: i64, user: i64) -> Result<std::collections::HashMap<i64, i16>, sqlx::Error> {
-    let rows: Vec<(i64, i16)> =
-        sqlx::query_as("SELECT option_id, rank FROM poll_votes WHERE poll_id = $1 AND user_id = $2 AND rank IS NOT NULL")
-            .bind(poll)
-            .bind(user)
-            .fetch_all(pool)
-            .await?;
+async fn my_ranks(
+    pool: &sqlx::PgPool,
+    poll: i64,
+    user: i64,
+) -> Result<std::collections::HashMap<i64, i16>, sqlx::Error> {
+    let rows: Vec<(i64, i16)> = sqlx::query_as(
+        "SELECT option_id, rank FROM poll_votes WHERE poll_id = $1 AND user_id = $2 AND rank IS NOT NULL",
+    )
+    .bind(poll)
+    .bind(user)
+    .fetch_all(pool)
+    .await?;
     Ok(rows.into_iter().collect())
 }
 

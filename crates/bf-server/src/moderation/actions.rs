@@ -166,8 +166,7 @@ async fn apply_action(
             }
             "reply" => {
                 // A canned reply is still text a plugin may filter; a refusal skips the step.
-                let Some(value) =
-                    crate::platform::plugins::before_post_system(&state, user.id.get(), value).await
+                let Some(value) = crate::platform::plugins::before_post_system(&state, user.id.get(), value).await
                 else {
                     continue;
                 };

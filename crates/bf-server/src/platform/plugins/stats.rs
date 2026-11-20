@@ -67,6 +67,7 @@ pub(super) fn snapshot(plugin: &str) -> Value {
     })
 }
 
+#[expect(clippy::type_complexity, reason = "a private counter table")]
 static LIMITS: LazyLock<Mutex<HashMap<(String, &'static str), (i64, i64)>>> = LazyLock::new(Default::default);
 
 /// A fixed-window rate limit per plugin and kind of action: true and counted if `cost` more

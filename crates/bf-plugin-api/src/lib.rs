@@ -24,8 +24,8 @@
 //! approved. A host call that was not approved returns [`Error::Denied`]; it never panics.
 //! The full list of hooks, host calls and limits is in `docs/plugins/abi.md`.
 
-pub mod host;
 pub mod hooks;
+pub mod host;
 
 pub use host::Error;
 pub use serde_json::{Value, json};
@@ -113,8 +113,15 @@ impl Reply {
 
     /// A feed for a route of `kind = "feed"`: the host writes RSS, Atom and JSON Feed from it.
     /// Items are `{title, link (a path), html, published (RFC 3339)}`.
-    pub fn feed(title: impl Into<String>, link: impl Into<String>, description: impl Into<String>, items: Vec<Value>) -> Self {
-        Self(json!({ "feed": { "title": title.into(), "link": link.into(), "description": description.into(), "items": items } }))
+    pub fn feed(
+        title: impl Into<String>,
+        link: impl Into<String>,
+        description: impl Into<String>,
+        items: Vec<Value>,
+    ) -> Self {
+        Self(
+            json!({ "feed": { "title": title.into(), "link": link.into(), "description": description.into(), "items": items } }),
+        )
     }
 
     /// Adds one field to an answer that is a JSON object.
@@ -182,7 +189,8 @@ pub mod glue {
     /// Reads the request at `ptr`, runs `f`, and returns the answer as `(ptr << 32) | len`.
     pub fn handle(ptr: i32, len: i32, f: fn(Request) -> Reply) -> i64 {
         // SAFETY: the host wrote `len` bytes at `ptr`, which `alloc` handed out, just before this call.
-        let input = unsafe { core::slice::from_raw_parts(ptr as usize as *const u8, usize::try_from(len).unwrap_or(0)) };
+        let input =
+            unsafe { core::slice::from_raw_parts(ptr as usize as *const u8, usize::try_from(len).unwrap_or(0)) };
         let out = match serde_json::from_slice::<Request>(input) {
             Ok(req) => f(req).0,
             Err(e) => json!({ "error": e.to_string() }),

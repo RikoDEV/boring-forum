@@ -371,7 +371,8 @@ async fn handle_follow(state: &AppState, actor: &federation::RemoteActor, a: &Va
     if local_type == "user" {
         let by = federation::ensure_shadow_user(pool, actor).await.map_err(|e| e.to_string())?;
         let name = format!("{}@{}", actor.username, actor.domain);
-        let data = json!({ "by": name, "url": bf_core::slug::profile_path(by, &name), "group": format!("follower:{by}") });
+        let data =
+            json!({ "by": name, "url": bf_core::slug::profile_path(by, &name), "group": format!("follower:{by}") });
         crate::community::notifications::send(state, by, &[id], "follower", &data).await;
     }
     let me = actor_uri(state, local_type, id);
@@ -419,10 +420,16 @@ async fn handle_like(state: &AppState, actor: &federation::RemoteActor, a: &Valu
     }
     let first = bf_db::forum::reactions::reacted_at(pool, post, user).await.map_err(|e| e.to_string())?.is_none();
     // The daily allowance of local reactions applies to a remote member's likes too.
-    bf_db::forum::reactions::set_reaction_capped(pool, post, user, Some(1), Some(state.settings().int("reactions_per_day")))
-        .await
-        .map_err(|e| e.to_string())?
-        .ok_or("daily reaction limit reached")?;
+    bf_db::forum::reactions::set_reaction_capped(
+        pool,
+        post,
+        user,
+        Some(1),
+        Some(state.settings().int("reactions_per_day")),
+    )
+    .await
+    .map_err(|e| e.to_string())?
+    .ok_or("daily reaction limit reached")?;
     // The post's author hears about it like about a local like (their ignore list and notification
     // settings apply inside).
     if let (true, Some(author)) = (first, p.author_id)

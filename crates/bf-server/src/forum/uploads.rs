@@ -133,10 +133,7 @@ pub(crate) async fn store_from(
     // A picture that claims more pixels than any decoder here accepts (a few KB of PNG can claim
     // hundreds of megabytes) is refused before anything reads it.
     if is_image && too_many_pixels(bytes) {
-        return Err(AppError::invalid(
-            "Pictures can be at most {side}×{side} pixels.",
-            &[("side", &MAX_DECODE_SIDE)],
-        ));
+        return Err(AppError::invalid("Pictures can be at most {side}×{side} pixels.", &[("side", &MAX_DECODE_SIDE)]));
     }
     let pool = state.db()?;
     // Nothing is stored before the scans have passed.
@@ -293,7 +290,11 @@ async fn upload(
     let chat = q.target == "chat";
     let s = state.settings();
     if !staff {
-        let need = if chat { s.int("upload_min_trust_level").max(s.int("chat_upload_min_trust_level")) } else { s.int("upload_min_trust_level") };
+        let need = if chat {
+            s.int("upload_min_trust_level").max(s.int("chat_upload_min_trust_level"))
+        } else {
+            s.int("upload_min_trust_level")
+        };
         if i64::from(user.trust_level) < need {
             return Err(AppError::invalid("Files can be added from trust level {n}.", &[("n", &need)]));
         }
@@ -312,7 +313,10 @@ async fn upload(
             return Err(if allowed.is_empty() {
                 AppError::Validation("Files cannot be added here.".into())
             } else {
-                AppError::invalid("Only these kinds of file can be added here: {types}.", &[("types", &allowed.join(", "))])
+                AppError::invalid(
+                    "Only these kinds of file can be added here: {types}.",
+                    &[("types", &allowed.join(", "))],
+                )
             });
         }
     }
@@ -342,7 +346,10 @@ pub(crate) fn valid_key(key: &str) -> bool {
         Some((sha, ext)) => {
             sha.len() == 64
                 && sha.bytes().all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
-                && matches!(ext, "png" | "jpg" | "gif" | "webp" | "pdf" | "zip" | "txt" | "mp4" | "webm" | "7z" | "rar" | "gz")
+                && matches!(
+                    ext,
+                    "png" | "jpg" | "gif" | "webp" | "pdf" | "zip" | "txt" | "mp4" | "webm" | "7z" | "rar" | "gz"
+                )
         }
         None => false,
     }
@@ -602,7 +609,10 @@ async fn serve(
     }
     h.insert(header::X_CONTENT_TYPE_OPTIONS, HeaderValue::from_static("nosniff"));
     // Other sites' pages may embed it, unless the hotlink rule covers this kind of file.
-    h.insert("cross-origin-resource-policy", HeaderValue::from_static(if covered { "same-site" } else { "cross-origin" }));
+    h.insert(
+        "cross-origin-resource-policy",
+        HeaderValue::from_static(if covered { "same-site" } else { "cross-origin" }),
+    );
     h.insert(header::CONTENT_SECURITY_POLICY, HeaderValue::from_static("default-src 'none'; img-src 'self'; sandbox"));
     if is_video {
         h.insert(header::ACCEPT_RANGES, HeaderValue::from_static("bytes"));
@@ -951,7 +961,9 @@ mod tests {
     #[test]
     fn upload_links_are_found_by_their_extension() {
         let a = "a".repeat(64);
-        let raw = format!("see ![x](/uploads/{a}.png#10x10) and [f](https://h.test/uploads/{a}.PDF) /uploads/{a}.zip, /uploads/short.png");
+        let raw = format!(
+            "see ![x](/uploads/{a}.png#10x10) and [f](https://h.test/uploads/{a}.PDF) /uploads/{a}.zip, /uploads/short.png"
+        );
         assert_eq!(upload_refs(&raw), vec!["png", "pdf", "zip"]);
         assert!(upload_refs("no links /uploads/ here").is_empty());
     }

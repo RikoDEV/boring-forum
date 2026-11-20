@@ -189,7 +189,14 @@ async fn set_event(
         // Everyone who answered hears the event changed.
         let going = events::rsvp_users(pool, id).await.db()?;
         crate::community::notifications::event_news(
-            &state, user.id.get(), &going, "event_changed", t.id, &t.slug, &t.title, &user.username,
+            &state,
+            user.id.get(),
+            &going,
+            "event_changed",
+            t.id,
+            &t.slug,
+            &t.title,
+            &user.username,
         )
         .await;
     }
@@ -213,7 +220,14 @@ async fn remove_event(
     let going = events::rsvp_users(pool, id).await.db()?;
     events::remove_event(pool, id).await.db()?;
     crate::community::notifications::event_news(
-        &state, user.id.get(), &going, "event_cancelled", t.id, &t.slug, &t.title, &user.username,
+        &state,
+        user.id.get(),
+        &going,
+        "event_cancelled",
+        t.id,
+        &t.slug,
+        &t.title,
+        &user.username,
     )
     .await;
     state.microcache.clear();
@@ -255,7 +269,14 @@ async fn rsvp(
         && let Some(organiser) = t.author_id
     {
         crate::community::notifications::event_news(
-            &state, user.id.get(), &[organiser], "event_rsvp", t.id, &t.slug, &t.title, &user.username,
+            &state,
+            user.id.get(),
+            &[organiser],
+            "event_rsvp",
+            t.id,
+            &t.slug,
+            &t.title,
+            &user.username,
         )
         .await;
     }
@@ -407,7 +428,8 @@ async fn calendar(
     let end = last + Duration::days(i64::from(6 - last.weekday().num_days_from_monday()));
     let rows = events::events_between(pool, &tree.readable(&v.actor), start, end).await.db()?;
     let t = v.t();
-    let month_label = |d: NaiveDate| bf_web::ago::Ago::month_long(d.and_hms_opt(12, 0, 0).unwrap_or_default().and_utc()).to_string();
+    let month_label =
+        |d: NaiveDate| bf_web::ago::Ago::month_long(d.and_hms_opt(12, 0, 0).unwrap_or_default().and_utc()).to_string();
     let mut html = format!(
         "<div class=\"bf-cal-head\"><nav class=\"bf-segments small\" aria-label=\"{}\"><a href=\"/calendar?month={}\">{}</a><a href=\"/calendar\">{}</a><a href=\"/calendar?month={}\">{}</a></nav><h2>{}</h2><a class=\"small\" href=\"/calendar.ics\">{}</a></div>",
         esc(&t.msg("Month")),
@@ -536,16 +558,13 @@ async fn calendar_new(
         return Err(AppError::NotFound);
     }
     let date = NaiveDate::parse_from_str(&q.date, "%Y-%m-%d").map(|d| format!("&date={d}")).unwrap_or_default();
-    Ok(Redirect::to(&format!("{}?event=1{date}#new-topic", bf_core::slug::forum_path(node.id, &node.slug))).into_response())
+    Ok(Redirect::to(&format!("{}?event=1{date}#new-topic", bf_core::slug::forum_path(node.id, &node.slug)))
+        .into_response())
 }
 
 /// RFC 5545 text: backslash, semicolon, comma and newlines escaped.
 fn ics_text(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace(';', "\\;")
-        .replace(',', "\\,")
-        .replace("\r\n", "\\n")
-        .replace(['\n', '\r'], "\\n")
+    s.replace('\\', "\\\\").replace(';', "\\;").replace(',', "\\,").replace("\r\n", "\\n").replace(['\n', '\r'], "\\n")
 }
 
 /// Folds a content line at 75 octets, on character boundaries (RFC 5545 §3.1).

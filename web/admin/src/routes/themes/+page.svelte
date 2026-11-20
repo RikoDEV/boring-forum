@@ -108,24 +108,31 @@
   );
 
   const snapshot = (s) =>
-    JSON.stringify([s.light, s.dark, s.css, s.slotText, s.enabled, s.selectable, s.light_scheme, s.dark_scheme, s.group_ids]);
+    JSON.stringify([
+      s.light,
+      s.dark,
+      s.css,
+      s.slotText,
+      s.enabled,
+      s.selectable,
+      s.light_scheme,
+      s.dark_scheme,
+      s.group_ids,
+    ]);
   const dirty = $derived(!!selected && snapshot(selected) !== savedCopy);
-  const swatches = (t) => {
-    const l = t.tokens?.light ?? {};
-    return [l["header-bg"], l.bg, l.surface, l.accent].filter(Boolean);
-  };
   // The palettes a theme shows: the schemes it chose, or the site's defaults. Null is the built-in look.
   const scheme = (slug) => schemes.find((x) => x.slug === slug) ?? schemes[0];
   const look = (t) => ({
     light: scheme(t?.light_scheme || defaultLight)?.light ?? {},
     dark: scheme(t?.dark_scheme || defaultDark)?.dark ?? {},
   });
-  const schemeOptions = $derived([
-    ["", tr("Site default")],
-    ...schemes.map((x) => [x.slug, x.name]),
-  ]);
+  const schemeOptions = $derived([["", tr("Site default")], ...schemes.map((x) => [x.slug, x.name])]);
   const groupOptions = $derived(groups.map((g) => ({ value: String(g.id), label: g.name })));
-  const groupNames = (t) => t.group_ids.map((id) => groups.find((g) => g.id === id)?.name).filter(Boolean).join(", ");
+  const groupNames = (t) =>
+    t.group_ids
+      .map((id) => groups.find((g) => g.id === id)?.name)
+      .filter(Boolean)
+      .join(", ");
   const realThemes = $derived(themes.filter((t) => t.kind === "theme"));
   const components = $derived(themes.filter((t) => t.kind !== "theme"));
 
@@ -261,7 +268,8 @@
       {#if t.id === defaultId}<span class="acp-pill is-ok">{tr("Default")}</span>{/if}
       {#if !t.enabled}<span class="acp-pill is-muted">{tr("Off")}</span>{/if}
       {#if t.kind === "theme" && t.enabled && !t.selectable}<span class="acp-pill is-muted">{tr("Hidden")}</span>{/if}
-      {#if t.group_ids.length}<span class="acp-pill is-muted" title={groupNames(t)}>{tr("Limited to groups")}</span>{/if}
+      {#if t.group_ids.length}<span class="acp-pill is-muted" title={groupNames(t)}>{tr("Limited to groups")}</span
+        >{/if}
     </div>
     <div class="acp-actions">
       <button class="secondary" onclick={() => open(t)}>{tr("Edit")}</button>
@@ -325,7 +333,13 @@
             <input type="file" name="file" accept=".zip" required aria-label={tr("Theme zip file")} />
           </div>
         {:else}
-          <Field label={tr("Zip address: https://host/owner/repo/archive/v1.zip")} type="url" bind:value={url} wide required />
+          <Field
+            label={tr("Zip address: https://host/owner/repo/archive/v1.zip")}
+            type="url"
+            bind:value={url}
+            wide
+            required
+          />
         {/if}
       </div>
     </EditDialog>
@@ -344,7 +358,9 @@
         {#if !builtinOn}<span class="acp-pill is-muted">{tr("Off")}</span>{/if}
       </div>
       <div class="acp-actions">
-        {#if defaultId && builtinOn}<button class="secondary" onclick={() => makeDefault(0)}>{tr("Make default")}</button>{/if}
+        {#if defaultId && builtinOn}<button class="secondary" onclick={() => makeDefault(0)}
+            >{tr("Make default")}</button
+          >{/if}
         {#if builtinOn && defaultId}
           <button class="secondary" onclick={() => setBuiltin(false)}>{tr("Turn off")}</button>
         {:else if !builtinOn}
@@ -387,25 +403,57 @@
   {#if part === "settings"}
     <section class="acp-box">
       <Section switches>
-        <Switch check checked={selected.id === defaultId} disabled={selected.id === defaultId && !builtinOn}
+        <Switch
+          check
+          checked={selected.id === defaultId}
+          disabled={selected.id === defaultId && !builtinOn}
           onchange={(e) => makeDefault(e.currentTarget.checked ? selected.id : 0)}
           >{tr("Theme is the site's default, for everyone who has not chosen one")}</Switch
         >
         <Switch check bind:checked={selected.enabled}>{tr("Theme is on")}</Switch>
         <Switch check bind:checked={selected.selectable}>{tr("Theme can be selected by members")}</Switch>
       </Section>
-      <Section legend={tr("Colour schemes")} grid hint={tr("The schemes this theme shows. A member's own colour choice still wins.")}>
+      <Section
+        legend={tr("Colour schemes")}
+        grid
+        hint={tr("The schemes this theme shows. A member's own colour choice still wins.")}
+      >
         <Field label={tr("Colour scheme, light mode")} bind:value={selected.light_scheme} options={schemeOptions} />
         <Field label={tr("Colour scheme, dark mode")} bind:value={selected.dark_scheme} options={schemeOptions} />
       </Section>
       <p class="muted acp-pad"><a href="{base}/colours/">{tr("Edit colour schemes")}</a></p>
-      <Section legend={tr("Who can use it")} grid hint={tr("Limited to these groups, the theme is not offered to anyone else, whatever the site's default or their choice. Empty means everyone.")}>
-        <MultiSelect label={tr("Only for these groups")} placeholder={tr("Everyone")} options={groupOptions} bind:value={selected.group_ids} />
+      <Section
+        legend={tr("Who can use it")}
+        grid
+        hint={tr(
+          "Limited to these groups, the theme is not offered to anyone else, whatever the site's default or their choice. Empty means everyone.",
+        )}
+      >
+        <MultiSelect
+          label={tr("Only for these groups")}
+          placeholder={tr("Everyone")}
+          options={groupOptions}
+          bind:value={selected.group_ids}
+        />
       </Section>
     </section>
     <section class="acp-box acp-scheme-previews is-row" aria-label={tr("Preview")}>
-      <SchemePreview palette={look(selected).light} mode="light" title={selected.name} label={tr("Light")} base={baseColours} {shades} />
-      <SchemePreview palette={look(selected).dark} mode="dark" title={selected.name} label={tr("Dark")} base={baseColours} {shades} />
+      <SchemePreview
+        palette={look(selected).light}
+        mode="light"
+        title={selected.name}
+        label={tr("Light")}
+        base={baseColours}
+        {shades}
+      />
+      <SchemePreview
+        palette={look(selected).dark}
+        mode="dark"
+        title={selected.name}
+        label={tr("Dark")}
+        base={baseColours}
+        {shades}
+      />
     </section>
   {:else if part === "colours"}
     {#each warnings as w}<p class="err" role="status">{w}</p>{/each}

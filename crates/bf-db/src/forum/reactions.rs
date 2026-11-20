@@ -128,9 +128,11 @@ pub struct Reaction {
 }
 
 pub async fn reactions(pool: &PgPool) -> Result<Vec<Reaction>, Error> {
-    sqlx::query_as("SELECT id, name, icon, score, enabled, position, plugin, is_like FROM reactions ORDER BY position, id")
-        .fetch_all(pool)
-        .await
+    sqlx::query_as(
+        "SELECT id, name, icon, score, enabled, position, plugin, is_like FROM reactions ORDER BY position, id",
+    )
+    .fetch_all(pool)
+    .await
 }
 
 pub async fn create_reaction(pool: &PgPool, r: &Reaction) -> Result<i64, Error> {
@@ -148,15 +150,17 @@ pub async fn create_reaction(pool: &PgPool, r: &Reaction) -> Result<i64, Error> 
 
 /// Scores are not rewritten into past reputation: a new score counts from now on.
 pub async fn update_reaction(pool: &PgPool, id: i64, r: &Reaction) -> Result<bool, Error> {
-    Ok(sqlx::query("UPDATE reactions SET name = $2, icon = $3, score = $4, enabled = $5 WHERE id = $1 AND plugin IS NULL")
-        .bind(id)
-        .bind(&r.name)
-        .bind(&r.icon)
-        .bind(r.score)
-        .bind(r.enabled)
-        .execute(pool)
-        .await?
-        .rows_affected()
+    Ok(sqlx::query(
+        "UPDATE reactions SET name = $2, icon = $3, score = $4, enabled = $5 WHERE id = $1 AND plugin IS NULL",
+    )
+    .bind(id)
+    .bind(&r.name)
+    .bind(&r.icon)
+    .bind(r.score)
+    .bind(r.enabled)
+    .execute(pool)
+    .await?
+    .rows_affected()
         > 0)
 }
 

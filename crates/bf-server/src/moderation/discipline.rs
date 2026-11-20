@@ -72,10 +72,19 @@ struct ActForm {
     back: String,
 }
 
-async fn log(state: &AppState, actor: i64, action: &str, user: i64, details: serde_json::Value) -> Result<(), AppError> {
-    bf_db::admin::audit::record(state.db()?, bf_db::admin::audit::Entry::new(action).by(actor).on(format!("user:{user}")).details(details))
-        .await
-        .db()
+async fn log(
+    state: &AppState,
+    actor: i64,
+    action: &str,
+    user: i64,
+    details: serde_json::Value,
+) -> Result<(), AppError> {
+    bf_db::admin::audit::record(
+        state.db()?,
+        bf_db::admin::audit::Entry::new(action).by(actor).on(format!("user:{user}")).details(details),
+    )
+    .await
+    .db()
 }
 
 async fn act(State(state): State<AppState>, v: Viewer, Form(f): Form<ActForm>) -> Result<Response, AppError> {
@@ -103,9 +112,17 @@ async fn act(State(state): State<AppState>, v: Viewer, Form(f): Form<ActForm>) -
             if !members::update_user(pool, target.id.get(), &change, me).await.db()? {
                 return Err(AppError::NotFound);
             }
-            let (notice, action) = if kind == "silence" { ("silenced", "silenced") } else { ("suspended", "suspended") };
+            let (notice, action) =
+                if kind == "silence" { ("silenced", "silenced") } else { ("suspended", "suspended") };
             log(&state, me, &format!("mod.{kind}"), target.id.get(), json!({ "reason": reason, "days": days })).await?;
-            crate::community::notifications::send(&state, me, &[target.id.get()], notice, &json!({ "url": "/settings" })).await;
+            crate::community::notifications::send(
+                &state,
+                me,
+                &[target.id.get()],
+                notice,
+                &json!({ "url": "/settings" }),
+            )
+            .await;
             crate::moderation::dsa::record(
                 &state,
                 crate::moderation::dsa::Restriction {
@@ -161,7 +178,14 @@ async fn act(State(state): State<AppState>, v: Viewer, Form(f): Form<ActForm>) -
                 return Err(AppError::NotFound);
             }
             log(&state, me, "mod.lift", target.id.get(), json!({})).await?;
-            crate::community::notifications::send(&state, me, &[target.id.get()], "restored", &json!({ "url": "/settings" })).await;
+            crate::community::notifications::send(
+                &state,
+                me,
+                &[target.id.get()],
+                "restored",
+                &json!({ "url": "/settings" }),
+            )
+            .await;
             crate::platform::webhooks::moderated(&state, "lift", me, "user", target.id.get(), json!({})).await;
             state.microcache.clear();
             Ok(Redirect::to(&back_to(&f.back, "lift")).into_response())
@@ -171,7 +195,14 @@ async fn act(State(state): State<AppState>, v: Viewer, Form(f): Form<ActForm>) -
                 return Err(AppError::Validation("Confirm that this member is a spammer.".into()));
             }
             let topics = clean_up_spammer(&state, &v, &target, f.ban == "1").await?;
-            log(&state, me, "mod.spammer", target.id.get(), json!({ "reason": "spam", "topics": topics, "banned": f.ban == "1" })).await?;
+            log(
+                &state,
+                me,
+                "mod.spammer",
+                target.id.get(),
+                json!({ "reason": "spam", "topics": topics, "banned": f.ban == "1" }),
+            )
+            .await?;
             crate::platform::webhooks::moderated(
                 &state,
                 "spammer",
@@ -215,12 +246,14 @@ pub(crate) async fn clean_up_spammer(state: &AppState, v: &Viewer, target: &User
         // Never an internal address, never the moderator's own, never one on the allow list.
         if let Some(ip) = last_ip.filter(|ip| {
             ip.parse::<std::net::IpAddr>().is_ok_and(|a| !crate::platform::outbound::forbidden_ip(a) && Some(a) != v.ip)
-        }) && !bans::ip_allowed(pool, ip.parse().unwrap_or(std::net::IpAddr::from([0, 0, 0, 0]))).await.unwrap_or(false)
+        }) && !bans::ip_allowed(pool, ip.parse().unwrap_or(std::net::IpAddr::from([0, 0, 0, 0])))
+            .await
+            .unwrap_or(false)
         {
             bans::add(pool, "ip", &ip, Some("spammer"), Some(me)).await.db()?;
         }
     }
-    crate::moderation::topics::refresh(&state);
+    crate::moderation::topics::refresh(state);
     Ok(topics)
 }
 
@@ -287,7 +320,13 @@ async fn add_ban(State(state): State<AppState>, v: Viewer, Form(f): Form<BanForm
         return Err(AppError::Validation("That address is on the allow list and cannot be banned.".into()));
     }
     let reason: String = f.reason.trim().chars().take(200).collect();
-    let expires = f.days.trim().parse::<i64>().ok().filter(|d| *d > 0).map(|d| chrono::Utc::now() + chrono::Duration::days(d.min(3650)));
+    let expires = f
+        .days
+        .trim()
+        .parse::<i64>()
+        .ok()
+        .filter(|d| *d > 0)
+        .map(|d| chrono::Utc::now() + chrono::Duration::days(d.min(3650)));
     let ban = bans::add_until(
         state.db()?,
         &f.kind,
@@ -296,9 +335,10 @@ async fn add_ban(State(state): State<AppState>, v: Viewer, Form(f): Form<BanForm
         Some(me),
         expires,
     )
-        .await
-        .db()?;
-    crate::platform::webhooks::moderated(&state, "ban", me, "ban", ban, json!({ "kind": f.kind, "value": value })).await;
+    .await
+    .db()?;
+    crate::platform::webhooks::moderated(&state, "ban", me, "ban", ban, json!({ "kind": f.kind, "value": value }))
+        .await;
     Ok(Redirect::to("/modcp?tab=bans&done=ban").into_response())
 }
 
@@ -333,9 +373,12 @@ async fn remove_ban(
     if !bans::remove(pool, id).await.db()? {
         return Err(AppError::NotFound);
     }
-    bf_db::admin::audit::record(pool, bf_db::admin::audit::Entry::new("mod.unban").by(me).on(format!("ban:{id}")).details(json!({ "reason": what })))
-        .await
-        .db()?;
+    bf_db::admin::audit::record(
+        pool,
+        bf_db::admin::audit::Entry::new("mod.unban").by(me).on(format!("ban:{id}")).details(json!({ "reason": what })),
+    )
+    .await
+    .db()?;
     crate::platform::webhooks::moderated(&state, "unban", me, "ban", id, json!({ "what": what })).await;
     Ok(Redirect::to("/modcp?tab=bans&done=unban").into_response())
 }

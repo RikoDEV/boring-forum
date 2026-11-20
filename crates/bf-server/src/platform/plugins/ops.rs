@@ -30,6 +30,7 @@ pub(super) fn list<T: serde::de::DeserializeOwned>(req: &Value, field: &str) -> 
 async fn user_get(state: &AppState, req: &Value) -> Result<Value, String> {
     let pool = pool(state).map_err(failed)?;
     let id = req.get("user_id").and_then(Value::as_i64).unwrap_or_default();
+    #[expect(clippy::type_complexity, reason = "one row of one query, read right below")]
     let row: Option<(i64, String, Option<String>, i16, chrono::DateTime<chrono::Utc>)> =
         sqlx::query_as("SELECT id, username, display_name, trust_level, joined_at FROM users WHERE id = $1")
             .bind(id)
@@ -61,16 +62,20 @@ async fn user_can(state: &AppState, plugin: &str, req: &Value) -> Result<Value, 
     if let Some(held) = super::registry::holds(state, plugin, perm, id).await {
         return Ok(json!({ "allowed": held }));
     }
-    let bit = match perm {
-        "view" => Perms::VIEW,
-        "read" => Perms::READ,
-        "create" => Perms::CREATE,
-        "reply" => Perms::REPLY,
-        "attach" => Perms::ATTACH,
-        "download" => Perms::DOWNLOAD,
-        "moderate" => Perms::MODERATE,
-        _ => return Err(en("Use perm view, read, create, reply, attach, download, moderate or one of your own permission keys.").into()),
-    };
+    let bit =
+        match perm {
+            "view" => Perms::VIEW,
+            "read" => Perms::READ,
+            "create" => Perms::CREATE,
+            "reply" => Perms::REPLY,
+            "attach" => Perms::ATTACH,
+            "download" => Perms::DOWNLOAD,
+            "moderate" => Perms::MODERATE,
+            _ => return Err(en(
+                "Use perm view, read, create, reply, attach, download, moderate or one of your own permission keys.",
+            )
+            .into()),
+        };
     let u = bf_db::accounts::users::users_by_ids(pool, &[id])
         .await
         .map_err(failed)?
@@ -111,10 +116,7 @@ fn settings_get(state: &AppState, plugin: &str, req: &Value) -> Result<Value, St
 /// A message of the plugin's own catalog for this locale, then its base language, then English.
 pub(super) fn catalog_text(catalogs: &Value, locale: &str, key: &str) -> Option<String> {
     let base = locale.split(['-', '_']).next().unwrap_or(locale);
-    [locale, base, "en"]
-        .iter()
-        .find_map(|l| catalogs.get(*l)?.get(key)?.as_str())
-        .map(str::to_owned)
+    [locale, base, "en"].iter().find_map(|l| catalogs.get(*l)?.get(key)?.as_str()).map(str::to_owned)
 }
 
 /// `{name}` placeholders filled from `vars`.
@@ -197,7 +199,10 @@ fn realtime_push(state: &AppState, plugin: &str, req: &Value) -> Result<Value, S
 async fn schedule(state: &AppState, plugin: &str, req: &Value) -> Result<Value, String> {
     let pool = pool(state).map_err(failed)?;
     let name = req.get("name").and_then(Value::as_str).unwrap_or_default();
-    if name.is_empty() || name.len() > 40 || !name.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '-' | '_')) {
+    if name.is_empty()
+        || name.len() > 40
+        || !name.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '-' | '_'))
+    {
         return Err(en("Name the schedule with lowercase letters, digits, dashes and underscores.").into());
     }
     if req.get("cancel").and_then(Value::as_bool).unwrap_or(false) {
@@ -227,7 +232,11 @@ async fn create_topic(state: &AppState, plugin: &str, req: &Value) -> Result<Val
     let node = req.get("node_id").and_then(Value::as_i64).unwrap_or_default();
     let title = req.get("title").and_then(Value::as_str).unwrap_or_default().trim().to_owned();
     let body = req.get("body").and_then(Value::as_str).unwrap_or_default();
-    if title.chars().count() < 3 || title.chars().count() > 200 || body.trim().is_empty() || body.chars().count() > 20_000 {
+    if title.chars().count() < 3
+        || title.chars().count() > 200
+        || body.trim().is_empty()
+        || body.chars().count() > 20_000
+    {
         return Err(en("The title must be 3 to 200 characters and the body 1 to 20000.").into());
     }
     let bot = plugins::bot_user(pool, plugin).await.map_err(failed)?.ok_or(en("This plugin has no account."))?;
@@ -253,7 +262,8 @@ async fn create_topic(state: &AppState, plugin: &str, req: &Value) -> Result<Val
     let topic = bf_db::forum::posts::create_topic(pool, node, &title, &slug, &post).await.map_err(failed)?;
     bf_db::forum::links::record_links(pool, topic, 1, &cooked.links).await.map_err(failed)?;
     state.forum.invalidate();
-    crate::forum::posting::after_plugin_post(state, bot, &plugins::bot_username(plugin), &title, &slug, topic, node, 1).await;
+    crate::forum::posting::after_plugin_post(state, bot, &plugins::bot_username(plugin), &title, &slug, topic, node, 1)
+        .await;
     Ok(json!({ "id": topic, "slug": slug }))
 }
 
@@ -284,7 +294,12 @@ pub(super) async fn http_request(
         let v = v.as_str().unwrap_or_default();
         let lower = k.to_ascii_lowercase();
         let hop = ["host", "content-length", "transfer-encoding", "connection", "upgrade", "te", "trailer"];
-        if hop.contains(&lower.as_str()) || k.is_empty() || k.len() > 64 || v.len() > 2048 || headers.len() >= MAX_HEADERS {
+        if hop.contains(&lower.as_str())
+            || k.is_empty()
+            || k.len() > 64
+            || v.len() > 2048
+            || headers.len() >= MAX_HEADERS
+        {
             return Err(en("A header is not allowed.").into());
         }
         headers.push((k.clone(), v.to_owned()));

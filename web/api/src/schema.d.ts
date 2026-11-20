@@ -819,6 +819,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/openapi.json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * This document
+         * @description API key: `read`; a key limited to resources cannot reach this route.
+         */
+        get: operations["get_openapi.json"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/passkeys/login": {
         parameters: {
             query?: never;
@@ -1021,6 +1041,26 @@ export interface paths {
          * @description API key: `write`, or `write:posts` when the key is limited to resources. Writes with a session cookie also send `X-CSRF-Token`.
          */
         post: operations["react_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/posts/{id}/reactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who reacted to a post, by reaction
+         * @description API key: `read`, or `read:posts` when the key is limited to resources.
+         */
+        get: operations["get_posts__id__reactions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1791,6 +1831,8 @@ export interface components {
             views: number;
         };
         UpdateSetting: {
+            /** @description For a key or secret: remove the stored one. An empty `value` alone keeps it. */
+            clear?: boolean;
             value: Record<string, never>;
         };
         UserJson: {
@@ -5063,6 +5105,56 @@ export interface operations {
             };
         };
     };
+    "get_openapi.json": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description An `ETag` from an earlier response; answers 304 with no body while the data is unchanged. */
+                "If-None-Match"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    /** @description Validator of the JSON body; send it back as `If-None-Match`. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Not modified: the `If-None-Match` value is current */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not allowed, or the key lacks the scope */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No such item, or not visible to the caller */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     post_passkeys_login: {
         parameters: {
             query?: never;
@@ -5145,7 +5237,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description WebAuthn request options for signing in with a discoverable passkey. No session, body or CSRF token needed. No allowCredentials list is sent: the authenticator offers its own passkeys. Set-Cookie `bf_wa` (HttpOnly, Secure, SameSite=Strict, Path=/api/v1/passkeys/, 5 minutes) names the stored one-time challenge; the follow-up call must send it back. Cache-Control: no-store. */
+            /** @description WebAuthn request options for signing in with a discoverable passkey. No session, body or CSRF token needed. No allowCredentials list is sent: the authenticator offers its own passkeys. Set-Cookie `__Host-bf_wa` (HttpOnly, Secure, SameSite=Strict, Path=/, 5 minutes) names the stored one-time challenge; the follow-up call must send it back. Cache-Control: no-store. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5227,7 +5319,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Finish registering a passkey. Needs a signed-in session (X-CSRF-Token), a recent sudo confirmation, and the `bf_wa` challenge cookie from the options call, which is consumed once and must belong to the same member (403 otherwise). 400 when the challenge is missing or expired; 422 when the attestation fails verification or the passkey is already registered. Records an audit entry. */
+            /** @description Finish registering a passkey. Needs a signed-in session (X-CSRF-Token), a recent sudo confirmation, and the `__Host-bf_wa` challenge cookie from the options call, which is consumed once and must belong to the same member (403 otherwise). 400 when the challenge is missing or expired; 422 when the attestation fails verification or the passkey is already registered. Records an audit entry. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -5298,7 +5390,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description WebAuthn creation options for registering a passkey. Needs a signed-in session (the viewer's session CSRF token in X-CSRF-Token) and a recent sudo confirmation. No request body. Stores a one-time challenge owned by the member. Set-Cookie `bf_wa` (HttpOnly, Secure, SameSite=Strict, Path=/api/v1/passkeys/, 5 minutes) names the stored one-time challenge; the follow-up call must send it back. */
+            /** @description WebAuthn creation options for registering a passkey. Needs a signed-in session (the viewer's session CSRF token in X-CSRF-Token) and a recent sudo confirmation. No request body. Stores a one-time challenge owned by the member. Set-Cookie `__Host-bf_wa` (HttpOnly, Secure, SameSite=Strict, Path=/, 5 minutes) names the stored one-time challenge; the follow-up call must send it back. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5868,6 +5960,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_posts__id__reactions: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description An `ETag` from an earlier response; answers 304 with no body while the data is unchanged. */
+                "If-None-Match"?: string;
+            };
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    /** @description Validator of the JSON body; send it back as `If-None-Match`. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description The reactions in the order the site lists them, only those somebody used. */
+                        groups: {
+                            icon: string;
+                            id: number;
+                            name: string;
+                            /** @description Newest first. */
+                            users: {
+                                /** Format: date-time */
+                                at: string;
+                                name: string;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+            /** @description Not modified: the `If-None-Match` value is current */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not allowed, or the key lacks the scope */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No such item, or not visible to the caller */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };

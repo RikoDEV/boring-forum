@@ -570,7 +570,10 @@ async fn decide_notice(
     }
     bf_db::admin::audit::record(
         pool,
-        bf_db::admin::audit::Entry::new("dsa.notice").by(user.id.get()).on(format!("notice:{id}")).details(json!({ "decision": f.decision })),
+        bf_db::admin::audit::Entry::new("dsa.notice")
+            .by(user.id.get())
+            .on(format!("notice:{id}"))
+            .details(json!({ "decision": f.decision })),
     )
     .await
     .db()?;
@@ -677,7 +680,10 @@ async fn decide_appeal(
     }
     bf_db::admin::audit::record(
         pool,
-        bf_db::admin::audit::Entry::new("dsa.appeal").by(user.id.get()).on(format!("statement:{id}")).details(json!({ "outcome": f.outcome })),
+        bf_db::admin::audit::Entry::new("dsa.appeal")
+            .by(user.id.get())
+            .on(format!("statement:{id}"))
+            .details(json!({ "outcome": f.outcome })),
     )
     .await
     .db()?;

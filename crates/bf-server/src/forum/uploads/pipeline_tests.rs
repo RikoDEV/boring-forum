@@ -23,7 +23,11 @@ fn the_declared_name_never_decides_the_type() {
     // Extension/MIME mismatch: the bytes win, in both directions.
     assert_eq!(sniff(b"\x89PNG\r\n\x1a\n..", "photo.jpg").map(|s| s.1), Some("png"));
     assert_eq!(sniff(b"%PDF-1.4", "photo.png").map(|s| s.1), Some("pdf"));
-    assert_eq!(sniff(b"PK\x03\x04", "x.png").map(|s| (s.1, s.2)), Some(("zip", false)), "a zip named .png is not an image");
+    assert_eq!(
+        sniff(b"PK\x03\x04", "x.png").map(|s| (s.1, s.2)),
+        Some(("zip", false)),
+        "a zip named .png is not an image"
+    );
     assert!(sniff(b"GIF8", "a.gif").is_none(), "truncated magic");
     assert!(sniff(b"RIFF\x00\x00\x00\x00WAVEfmt ", "a.webp").is_none(), "RIFF but not WebP");
     assert!(sniff(b"RIFF", "a.webp").is_none(), "too short to be WebP");
@@ -80,9 +84,18 @@ fn storage_keys_are_lowercase_sha_plus_a_known_extension() {
         assert!(valid_key(&format!("{sha}.{ext}")), "{ext}");
     }
     for bad in [
-        format!("{sha}.svg"), format!("{sha}.html"), format!("{sha}."), format!("{sha}"), format!("{}.png", &sha[1..]),
-        format!("{sha}0.png"), format!("{}g.png", &sha[1..]), format!("../{sha}.png"), format!("{sha}.png/../x"),
-        format!("{sha}.png.exe"), String::new(), ".png".to_owned(),
+        format!("{sha}.svg"),
+        format!("{sha}.html"),
+        format!("{sha}."),
+        sha.to_string(),
+        format!("{}.png", &sha[1..]),
+        format!("{sha}0.png"),
+        format!("{}g.png", &sha[1..]),
+        format!("../{sha}.png"),
+        format!("{sha}.png/../x"),
+        format!("{sha}.png.exe"),
+        String::new(),
+        ".png".to_owned(),
     ] {
         assert!(!valid_key(&bad), "{bad:?}");
     }
@@ -93,7 +106,11 @@ fn thumbnail_keys_take_only_the_known_widths() {
     let sha = "a".repeat(64);
     let width = bf_cook::THUMB_WIDTHS[0];
     assert_eq!(thumb_key(&format!("{sha}-{width}.png")), Some((format!("{sha}.png"), width)));
-    assert_eq!(thumb_key(&format!("{sha}-{}.png", width + 1)), None, "an arbitrary width would let anyone fill the disk");
+    assert_eq!(
+        thumb_key(&format!("{sha}-{}.png", width + 1)),
+        None,
+        "an arbitrary width would let anyone fill the disk"
+    );
     assert_eq!(thumb_key(&format!("{sha}-abc.png")), None);
     assert_eq!(thumb_key(&format!("{sha}.png")), None);
     assert_eq!(thumb_key(&format!("{sha}--1.png")), None);
@@ -106,7 +123,18 @@ fn byte_ranges_stay_inside_the_file() {
     assert_eq!(byte_range("bytes=-10", 100), Some((90, 99)));
     assert_eq!(byte_range("bytes=-500", 100), Some((0, 99)), "a suffix longer than the file is the file");
     assert_eq!(byte_range("bytes=50-5000", 100), Some((50, 99)), "end is clamped");
-    for bad in ["bytes=100-", "bytes=200-300", "bytes=9-0", "bytes=-0", "bytes=0-1,5-6", "bytes=a-b", "bytes=", "items=0-1", "0-1", "bytes=-"] {
+    for bad in [
+        "bytes=100-",
+        "bytes=200-300",
+        "bytes=9-0",
+        "bytes=-0",
+        "bytes=0-1,5-6",
+        "bytes=a-b",
+        "bytes=",
+        "items=0-1",
+        "0-1",
+        "bytes=-",
+    ] {
         assert_eq!(byte_range(bad, 100), None, "{bad}");
     }
     assert_eq!(byte_range("bytes=0-0", 0), None, "empty file");

@@ -22,7 +22,14 @@
   let body = $state("");
   let notice = $state(true);
   let conversation = $state(false);
-  let audience = $state({ groups: [], trust_min: "", trust_max: "", active_days: "", min_posts: 0, verified_only: true });
+  const audience = $state({
+    groups: [],
+    trust_min: "",
+    trust_max: "",
+    active_days: "",
+    min_posts: 0,
+    verified_only: true,
+  });
   let reach = $state(null); // { recipients, emails } for the filters as they stand
   const num = (n) => Number(n ?? 0).toLocaleString(locale());
 
@@ -124,7 +131,10 @@
     size="is-large"
     status={dlg}
     save={confirming ? tr("Send") : tr("Review")}
-    onclose={() => (composing = confirming = false)}
+    onclose={() => {
+      composing = false;
+      confirming = false;
+    }}
     onsubmit={(e) => (confirming ? send(e) : review(e))}
   >
     {#if confirming}

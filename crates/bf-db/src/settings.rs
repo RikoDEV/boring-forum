@@ -30,13 +30,14 @@ pub async fn load(pool: &PgPool) -> Result<Settings, Error> {
     let rows = rows
         .into_iter()
         .filter_map(|(key, value)| match (is_secret(&key), value.as_str()) {
-            (true, Some(stored)) => match bf_core::secretbox::open(stored) {
-                Some(plain) => Some((key, Value::String(plain))),
-                None => {
+            (true, Some(stored)) => {
+                if let Some(plain) = bf_core::secretbox::open(stored) {
+                    Some((key, Value::String(plain)))
+                } else {
                     tracing::error!(%key, "setting is sealed with a key that is not configured");
                     None
                 }
-            },
+            }
             _ => Some((key, value)),
         })
         .collect::<Vec<_>>();

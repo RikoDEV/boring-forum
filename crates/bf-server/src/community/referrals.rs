@@ -2,7 +2,6 @@
 //! they are that member's referral. Members see their link and referrals at `/referrals`, and
 //! qualified referrals (trust level 1 reached) can earn groups.
 
-use bf_core::html::esc;
 use crate::http::i18n::{trf, trh};
 use crate::http::render::DbResult;
 use crate::http::ui::{Shell, begin, finish, table_box, when};
@@ -14,6 +13,7 @@ use axum::http::{HeaderMap, HeaderValue, header};
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::get;
 use bf_core::AppError;
+use bf_core::html::esc;
 use bf_core::slug::profile_path;
 use bf_db::community::referrals as db;
 use serde_json::json;
@@ -32,7 +32,8 @@ async fn link(
     Path(name): Path<String>,
 ) -> Result<Response, AppError> {
     let mut res = Redirect::to("/").into_response();
-    if !state.settings().bool("referrals_enabled") || v.user.is_some() || crate::http::viewer::is_subresource(&headers) {
+    if !state.settings().bool("referrals_enabled") || v.user.is_some() || crate::http::viewer::is_subresource(&headers)
+    {
         return Ok(res);
     }
     if let Some(id) = db::referrer(state.db()?, &name).await.db()? {

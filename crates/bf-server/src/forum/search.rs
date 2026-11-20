@@ -1,9 +1,10 @@
 //! Search pages and the search API.
 
 use crate::forum::topics::post_url;
-use crate::http::render::{ago, DbResult};
+use crate::forum::tree::Tree;
 use crate::http::render::layout;
 use crate::http::render::page;
+use crate::http::render::{DbResult, ago};
 use crate::http::viewer::Viewer;
 use crate::http::viewer::is_staff;
 use crate::state::AppState;
@@ -16,9 +17,8 @@ use bf_core::AppError;
 use bf_core::perms::Perms;
 use bf_core::slug::{forum_path, slugify};
 use bf_db::accounts::users;
-use bf_db::forum::{search, tags};
 use bf_db::forum::nodes::Node;
-use crate::forum::tree::Tree;
+use bf_db::forum::{search, tags};
 use bf_web::pages::{FacetLink, SearchFacets, SearchPage, SearchResult, render};
 use serde::Deserialize;
 use serde_json::json;
@@ -105,7 +105,8 @@ fn with_descendants(nodes: &[Node], matched: Vec<i64>) -> Vec<i64> {
     let mut i = 0;
     while i < out.len() && out.len() < 5000 {
         let id = out[i];
-        let below: Vec<i64> = nodes.iter().filter(|c| c.parent_id == Some(id) && !out.contains(&c.id)).map(|c| c.id).collect();
+        let below: Vec<i64> =
+            nodes.iter().filter(|c| c.parent_id == Some(id) && !out.contains(&c.id)).map(|c| c.id).collect();
         out.extend(below);
         i += 1;
     }
@@ -198,7 +199,11 @@ async fn run_search(state: &AppState, v: &Viewer, sq: &SearchQuery, limit: i64, 
     let filter = search::SearchFilter {
         author: parsed.author.as_deref().or(Some(sq.author.trim()).filter(|a| !a.is_empty())),
         after: parsed.after.as_deref().and_then(|s| resolve_date(s, today)).or_else(|| resolve_date(&sq.after, today)),
-        before: parsed.before.as_deref().and_then(|s| resolve_date(s, today)).or_else(|| resolve_date(&sq.before, today)),
+        before: parsed
+            .before
+            .as_deref()
+            .and_then(|s| resolve_date(s, today))
+            .or_else(|| resolve_date(&sq.before, today)),
         topics_only: sq.scope == "topics" || parsed.first_only,
         tags: &tags,
         not_tags: &not_tags,
@@ -213,7 +218,11 @@ async fn run_search(state: &AppState, v: &Viewer, sq: &SearchQuery, limit: i64, 
         max_replies: parsed.max_replies,
         title_only: parsed.title_only,
     };
-    let sort = if sq.sort.is_empty() { search::Sort::parse(parsed.order.unwrap_or("")) } else { search::Sort::parse(&sq.sort) };
+    let sort = if sq.sort.is_empty() {
+        search::Sort::parse(parsed.order.unwrap_or(""))
+    } else {
+        search::Sort::parse(&sq.sort)
+    };
     let grouped = sq.group != "0" && sq.topic.is_none();
     let page = sq.page.clamp(1, 500);
     let offset = (page - 1) * limit;
@@ -244,7 +253,11 @@ async fn run_search(state: &AppState, v: &Viewer, sq: &SearchQuery, limit: i64, 
     run.sort = sort;
     run.grouped = grouped;
     let fused = !semantic.is_empty();
-    let o = if fused { search::search_full(pool, &mk(FUSION_WINDOW, 0)).await.db()? } else { search::search_full(pool, &mk(limit, offset)).await.db()? };
+    let o = if fused {
+        search::search_full(pool, &mk(FUSION_WINDOW, 0)).await.db()?
+    } else {
+        search::search_full(pool, &mk(limit, offset)).await.db()?
+    };
     // What was highlighted: the corrected words when nothing matched the typed ones.
     let hl = if o.corrected { o.suggestion.clone().unwrap_or_default() } else { parsed.text.clone() };
     run.total = o.total;
@@ -265,7 +278,8 @@ async fn run_search(state: &AppState, v: &Viewer, sq: &SearchQuery, limit: i64, 
         // open is checked against its forum as it is now, and left out.
         let open = tree.readable(&v.actor);
         let cards: Vec<_> = cards.into_iter().filter(|c| open.contains(&c.3)).collect();
-        let mut by_id: std::collections::HashMap<i64, search::SearchHit> = o.hits.into_iter().map(|h| (h.item_id, h)).collect();
+        let mut by_id: std::collections::HashMap<i64, search::SearchHit> =
+            o.hits.into_iter().map(|h| (h.item_id, h)).collect();
         results = Vec::new();
         for id in wanted {
             if let Some(h) = by_id.remove(&id) {
@@ -565,7 +579,7 @@ async fn search(State(state): State<AppState>, v: Viewer, Query(sq): Query<Searc
     };
     let page_url = |n: i64| base.url(n);
     let last = ((total + SEARCH_PAGE - 1) / SEARCH_PAGE).clamp(1, 500);
-    let pages = bf_web::pages::page_window(last, this_page, &page_url);
+    let pages = bf_web::pages::page_window(last, this_page, page_url);
     let prev_url = (this_page > 1).then(|| page_url(this_page - 1));
     let next_url = (this_page < last).then(|| page_url(this_page + 1));
     let matches = if q.is_empty() || filtered || sq.topic.is_some() || this_page > 1 {
@@ -623,18 +637,19 @@ async fn search(State(state): State<AppState>, v: Viewer, Query(sq): Query<Searc
         years: facet_links(
             &facets.years,
             |f| Some(f.label.clone()),
-            |f| f.key.parse::<i32>().is_ok_and(|y| sq.after.trim() == format!("{y}-01-01") && sq.before.trim() == format!("{}-01-01", y + 1)),
+            |f| {
+                f.key.parse::<i32>().is_ok_and(|y| {
+                    sq.after.trim() == format!("{y}-01-01") && sq.before.trim() == format!("{}-01-01", y + 1)
+                })
+            },
             |f, on| {
                 let mut p = base.clone();
-                match (on, f.key.parse::<i32>()) {
-                    (false, Ok(y)) => {
-                        p.after = format!("{y}-01-01");
-                        p.before = format!("{}-01-01", y + 1);
-                    }
-                    _ => {
-                        p.after.clear();
-                        p.before.clear();
-                    }
+                if let (false, Ok(y)) = (on, f.key.parse::<i32>()) {
+                    p.after = format!("{y}-01-01");
+                    p.before = format!("{}-01-01", y + 1);
+                } else {
+                    p.after.clear();
+                    p.before.clear();
                 }
                 p.url(1)
             },
@@ -643,7 +658,7 @@ async fn search(State(state): State<AppState>, v: Viewer, Query(sq): Query<Searc
     };
     let suggestion = suggestion.map(|s| {
         let mut p = base.clone();
-        p.q = s.clone();
+        p.q.clone_from(&s);
         (s, p.url(1))
     });
     let original_url = {
@@ -719,7 +734,9 @@ pub(crate) async fn search_api(
     // Topic results carry their id and the metadata plugins made public, in one query.
     for r in &mut out {
         if r["kind"] == "topic"
-            && let Some(id) = r["url"].as_str().and_then(|u| u.split(['#', '?']).next()?.strip_prefix("/t/")?.split('/').nth(1)?.parse::<i64>().ok())
+            && let Some(id) = r["url"]
+                .as_str()
+                .and_then(|u| u.split(['#', '?']).next()?.strip_prefix("/t/")?.split('/').nth(1)?.parse::<i64>().ok())
         {
             r["id"] = json!(id);
         }

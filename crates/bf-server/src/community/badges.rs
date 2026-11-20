@@ -92,7 +92,9 @@ async fn delete_badge(
 ) -> Result<Response, AppError> {
     admin(&state, &v, &headers, true)?;
     if !badges::delete_badge(state.db()?, id).await.db()? {
-        return Err(AppError::Validation("A plugin's badges belong to the plugin: remove the plugin to remove them.".into()));
+        return Err(AppError::Validation(
+            "A plugin's badges belong to the plugin: remove the plugin to remove them.".into(),
+        ));
     }
     crate::admin::text_overrides::refresh(&state).await;
     Ok(StatusCode::NO_CONTENT.into_response())

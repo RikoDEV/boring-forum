@@ -171,7 +171,9 @@ pub(super) fn defs() -> Vec<SettingDef> {
                 "default_locale",
                 String,
                 true,
-                en("Language for visitors who have not picked one: browser (from their browser, English if we have none of theirs) or one language for all (en, pl, ar)"),
+                en(
+                    "Language for visitors who have not picked one: browser (from their browser, English if we have none of theirs) or one language for all (en, pl, ar)",
+                ),
             )
         },
         SettingDef {

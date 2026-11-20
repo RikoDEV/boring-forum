@@ -44,7 +44,9 @@ async fn add_ban(
     let who = admin(&state, &v, &headers, true)?;
     let value = b.value.trim();
     let ok = match b.kind.as_str() {
-        "ip" | "ip_allow" => value.parse::<sqlx::types::ipnetwork::IpNetwork>().is_ok() || value.parse::<std::net::IpAddr>().is_ok(),
+        "ip" | "ip_allow" => {
+            value.parse::<sqlx::types::ipnetwork::IpNetwork>().is_ok() || value.parse::<std::net::IpAddr>().is_ok()
+        }
         "asn" => value.trim_start_matches("AS").chars().all(|c| c.is_ascii_digit()) && !value.is_empty(),
         "email" => value.contains('@') && !value.contains(char::is_whitespace) && value.len() <= 254,
         _ => false,
@@ -68,7 +70,15 @@ async fn add_ban(
     let id = bf_db::moderation::bans::add_until(state.db()?, &b.kind, value, b.reason.as_deref(), who, expires)
         .await
         .db()?;
-    crate::platform::webhooks::moderated(&state, "ban", who.unwrap_or(0), "ban", id, json!({ "kind": b.kind, "value": value })).await;
+    crate::platform::webhooks::moderated(
+        &state,
+        "ban",
+        who.unwrap_or(0),
+        "ban",
+        id,
+        json!({ "kind": b.kind, "value": value }),
+    )
+    .await;
     Ok((StatusCode::CREATED, Json(json!({ "id": id }))).into_response())
 }
 

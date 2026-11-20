@@ -70,13 +70,17 @@
           <li class="acp-rowitem">
             <div class="acp-grow">
               <span class="acp-wrap">{n.body}</span>
-              <br /><small class="muted"><UserLink name={n.author} fallback={tr("Staff")} /> · {when(n.created_at)}</small>
+              <br /><small class="muted"
+                ><UserLink name={n.author} fallback={tr("Staff")} /> · {when(n.created_at)}</small
+              >
             </div>
             <button
               class="secondary"
               onclick={() =>
-                del(`/users/${id}/notes/${n.id}`).then(() => refresh(tr("Note removed")), (e) => dlg.fail(e))}
-              >{tr("Remove")}</button
+                del(`/users/${id}/notes/${n.id}`).then(
+                  () => refresh(tr("Note removed")),
+                  (e) => dlg.fail(e),
+                )}>{tr("Remove")}</button
             >
           </li>
         {/each}

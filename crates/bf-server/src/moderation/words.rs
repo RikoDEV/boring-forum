@@ -40,21 +40,23 @@ async fn add_word(
 ) -> Result<Response, AppError> {
     let user_id = crate::admin::api::admin(&state, &v, &headers, true)?.unwrap_or(0);
     let pattern = w.pattern.trim();
-    if !matches!(w.action.as_str(), "block" | "censor" | "require_approval" | "replace" | "link" | "tag" | "flag" | "silence")
-        || pattern.is_empty()
+    if !matches!(
+        w.action.as_str(),
+        "block" | "censor" | "require_approval" | "replace" | "link" | "tag" | "flag" | "silence"
+    ) || pattern.is_empty()
         || pattern.len() > 100
         || pattern.chars().any(char::is_whitespace)
     {
         return Err(AppError::Validation(
-            "action must be block, censor, require_approval, replace, link, tag, flag or silence; pattern is one word".into(),
+            "action must be block, censor, require_approval, replace, link, tag, flag or silence; pattern is one word"
+                .into(),
         ));
     }
     if w.action == "replace" && w.replacement.as_deref().is_none_or(str::is_empty) {
         return Err(AppError::Validation("replace needs a replacement".into()));
     }
     let pool = state.db()?;
-    let id =
-        watched_words::add_watched_word(pool, &w.action, pattern, w.replacement.as_deref()).await.db()?;
+    let id = watched_words::add_watched_word(pool, &w.action, pattern, w.replacement.as_deref()).await.db()?;
     bf_db::admin::audit::record(
         pool,
         bf_db::admin::audit::Entry::new("watched_word.add")
@@ -121,8 +123,7 @@ async fn import_words(
     }
     let words: Vec<String> = words.into_iter().collect();
     let pool = state.db()?;
-    let (added, existing) =
-        watched_words::import_watched_words(pool, &b.action, replacement, &words).await.db()?;
+    let (added, existing) = watched_words::import_watched_words(pool, &b.action, replacement, &words).await.db()?;
     bf_db::admin::audit::record(
         pool,
         bf_db::admin::audit::Entry::new("watched_word.import")
@@ -147,9 +148,12 @@ async fn delete_word(
     if !watched_words::delete_watched_word(pool, id).await.db()? {
         return Err(AppError::NotFound);
     }
-    bf_db::admin::audit::record(pool, bf_db::admin::audit::Entry::new("watched_word.delete").by(user_id).on(format!("watched_word:{id}")))
-        .await
-        .db()?;
+    bf_db::admin::audit::record(
+        pool,
+        bf_db::admin::audit::Entry::new("watched_word.delete").by(user_id).on(format!("watched_word:{id}")),
+    )
+    .await
+    .db()?;
     state.forum.invalidate();
     Ok(StatusCode::NO_CONTENT.into_response())
 }

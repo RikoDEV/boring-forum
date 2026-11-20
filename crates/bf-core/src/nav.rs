@@ -36,10 +36,8 @@ fn builtin_url(key: &str) -> Option<&'static str> {
 
 /// Optional modules with a page of their own: (link key, address, the setting that switches it
 /// on). Their links show only while the module is on.
-pub const MODULES: &[(&str, &str, &str)] = &[
-    ("clubs", "/clubs", "clubs_enabled"),
-    ("live", "/live", "live_topics_enabled"),
-];
+pub const MODULES: &[(&str, &str, &str)] =
+    &[("clubs", "/clubs", "clubs_enabled"), ("live", "/live", "live_topics_enabled")];
 
 /// The setting a module link depends on, if `key` is a module.
 pub fn module_setting(key: &str) -> Option<&'static str> {

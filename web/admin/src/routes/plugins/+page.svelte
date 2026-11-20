@@ -35,7 +35,10 @@
       load();
     }, status.fail);
   }
-  get("/groups").then((r) => (groupList = r), () => {});
+  get("/groups").then(
+    (r) => (groupList = r),
+    () => {},
+  );
   const load = () =>
     get("/plugins").then((r) => {
       plugins = r;
@@ -45,8 +48,7 @@
   /// What each capability lets a plugin do, in words an administrator can weigh.
   function describe(c) {
     if (c.startsWith("http:")) return tr("Its server code may contact {host}", { host: c.slice(5) });
-    if (c.startsWith("connect:"))
-      return tr("Its browser code may send requests to {origin}", { origin: c.slice(8) });
+    if (c.startsWith("connect:")) return tr("Its browser code may send requests to {origin}", { origin: c.slice(8) });
     const text = {
       kv: tr("Keep its own key-value data"),
       tables: tr("Create its own database tables"),
@@ -157,10 +159,20 @@
 </PageHead>
 {#if installing}
   <!-- Two ways in, each with its own button, so the dialog has no single submit. -->
-  <EditDialog title={tr("Install a plugin")} onclose={() => (installing = false)} onsubmit={upload} {status} save={tr("Install zip")}>
+  <EditDialog
+    title={tr("Install a plugin")}
+    onclose={() => (installing = false)}
+    onsubmit={upload}
+    {status}
+    save={tr("Install zip")}
+  >
     <div class="acp-form">
       <label class="acp-wide"
-        >{tr("Plugin package")}<input type="file" accept=".zip" onchange={(e) => (file = e.currentTarget.files[0])} /></label
+        >{tr("Plugin package")}<input
+          type="file"
+          accept=".zip"
+          onchange={(e) => (file = e.currentTarget.files[0])}
+        /></label
       >
       <Field
         label={tr("Or an archive address: https://host/owner/repo/archive/v1.zip")}
@@ -312,7 +324,8 @@
     </div>
     {#if settingsFields(p).length || (p.schema?.["x-admin-pages"] ?? []).length}
       <div class="acp-box-body acp-actions">
-        {#if settingsFields(p).length}<button class="secondary" onclick={() => openSettings(p)}>{tr("Settings")}</button>{/if}
+        {#if settingsFields(p).length}<button class="secondary" onclick={() => openSettings(p)}>{tr("Settings")}</button
+          >{/if}
         {#each p.schema?.["x-admin-pages"] ?? [] as pg (pg.key)}
           <a class="btn secondary" href="{base}/plugins/form?id={p.id}&key={pg.key}"
             >{localized(p.schema?.["x-locales"], pg.label_key, pg.label)}</a

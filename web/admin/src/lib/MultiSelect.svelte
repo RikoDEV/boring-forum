@@ -42,12 +42,15 @@
 
   // What a search found, and the labels of what it found that was picked.
   let found = $state([]);
-  let picked = $state({});
+  const picked = $state({});
   const byValue = (v) => options.find((o) => o.value === v);
   // Values no option matches any more (a deleted group), still shown so they can be removed.
   // A search's values are names, shown as they are.
   const chips = $derived(
-    value.map((v) => ({ value: v, label: byValue(v)?.label ?? picked[v] ?? (suggest ? String(v) : tr("Deleted #{v}", { v })) })),
+    value.map((v) => ({
+      value: v,
+      label: byValue(v)?.label ?? picked[v] ?? (suggest ? String(v) : tr("Deleted #{v}", { v })),
+    })),
   );
   const shown = $derived(
     suggest
@@ -169,10 +172,13 @@
     if (!suggest) return;
     const typed = query.trim();
     let current = true;
-    const timer = setTimeout(async () => {
-      const r = await suggest(typed).catch(() => []);
-      if (current) found = r;
-    }, typed ? 150 : 0);
+    const timer = setTimeout(
+      async () => {
+        const r = await suggest(typed).catch(() => []);
+        if (current) found = r;
+      },
+      typed ? 150 : 0,
+    );
     return () => {
       current = false;
       clearTimeout(timer);
@@ -243,7 +249,15 @@
   </div>
   {#if !hideLabel}<label class="bf-field-label" for={inputId}>{label}</label>{/if}
   {#if open}
-    <ul class="bf-tags-list" id={listId} popover="manual" bind:this={listEl} role="listbox" aria-multiselectable={max !== 1} aria-label={label}>
+    <ul
+      class="bf-tags-list"
+      id={listId}
+      popover="manual"
+      bind:this={listEl}
+      role="listbox"
+      aria-multiselectable={max !== 1}
+      aria-label={label}
+    >
       {#each shown as o, i (o.value)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
@@ -261,7 +275,13 @@
         </li>
       {:else}
         <li class="bf-multi-empty" role="presentation">
-          {suggest ? (query.trim() ? tr("No matches") : tr("Type to search")) : options.length ? tr("No matches") : tr("Nothing to choose")}
+          {suggest
+            ? query.trim()
+              ? tr("No matches")
+              : tr("Type to search")
+            : options.length
+              ? tr("No matches")
+              : tr("Nothing to choose")}
         </li>
       {/each}
     </ul>

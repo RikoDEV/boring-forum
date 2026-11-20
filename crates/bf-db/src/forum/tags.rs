@@ -136,7 +136,8 @@ pub async fn rename_tag(pool: &PgPool, id: i64, name: &str, slug: &str) -> Resul
 }
 
 pub async fn delete_tag(pool: &PgPool, id: i64) -> Result<bool, Error> {
-    Ok(sqlx::query("DELETE FROM tags WHERE id = $1 AND plugin IS NULL").bind(id).execute(pool).await?.rows_affected() > 0)
+    Ok(sqlx::query("DELETE FROM tags WHERE id = $1 AND plugin IS NULL").bind(id).execute(pool).await?.rows_affected()
+        > 0)
 }
 
 pub async fn tag_topics(

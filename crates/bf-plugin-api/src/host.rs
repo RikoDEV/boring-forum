@@ -133,7 +133,8 @@ pub fn request(op: &Value) -> Result<Value, Error> {
         let bytes = serde_json::to_vec(op).map_err(|e| Error::Failed(e.to_string()))?;
         // SAFETY: as in `log`.
         let r = unsafe { raw::request(bytes.as_ptr(), bytes.len() as i32) };
-        let answer: Value = serde_json::from_slice(&take(r)?.unwrap_or_default()).map_err(|e| Error::Failed(e.to_string()))?;
+        let answer: Value =
+            serde_json::from_slice(&take(r)?.unwrap_or_default()).map_err(|e| Error::Failed(e.to_string()))?;
         match answer.get("error").and_then(Value::as_str) {
             Some(e) => Err(Error::Failed(e.to_owned())),
             None => Ok(answer.get("ok").cloned().unwrap_or(Value::Null)),
@@ -219,8 +220,16 @@ pub fn file_fetch(url: &str, path: &str, content_type: &str) -> Result<String, E
 
 /// Capability `content_types`: offers an entry of a declared searchable `[[content_types]]` type to
 /// site search (a title, plain text, a path on this site). Index again to update.
-pub fn search_index(kind: &str, reference: &str, title: &str, body: &str, url: &str, author: Option<&str>) -> Result<(), Error> {
-    let mut op = json!({ "op": "search.index", "type": kind, "ref": reference, "title": title, "body": body, "url": url });
+pub fn search_index(
+    kind: &str,
+    reference: &str,
+    title: &str,
+    body: &str,
+    url: &str,
+    author: Option<&str>,
+) -> Result<(), Error> {
+    let mut op =
+        json!({ "op": "search.index", "type": kind, "ref": reference, "title": title, "body": body, "url": url });
     if let Some(author) = author {
         op["author"] = json!(author);
     }
@@ -234,8 +243,16 @@ pub fn search_remove(kind: &str, reference: &str) -> Result<(), Error> {
 
 /// Capability `content_types`: holds an entry for a moderator (`/review/apps`); the decision comes
 /// back as the `content.review` hook. `false` when it already waits or the plugin has too many waiting.
-pub fn review_hold(kind: &str, reference: &str, title: &str, excerpt: &str, url: &str, user_id: Option<i64>) -> Result<bool, Error> {
-    let mut op = json!({ "op": "review.hold", "type": kind, "ref": reference, "title": title, "excerpt": excerpt, "url": url });
+pub fn review_hold(
+    kind: &str,
+    reference: &str,
+    title: &str,
+    excerpt: &str,
+    url: &str,
+    user_id: Option<i64>,
+) -> Result<bool, Error> {
+    let mut op =
+        json!({ "op": "review.hold", "type": kind, "ref": reference, "title": title, "excerpt": excerpt, "url": url });
     if let Some(user_id) = user_id {
         op["user_id"] = json!(user_id);
     }
@@ -377,7 +394,13 @@ pub fn content_create_topic(node_id: i64, title: &str, body: &str) -> Result<Val
 
 /// Capability `content.write`: edits a post the plugin's own account wrote (the old text is kept
 /// as a revision). `title` is for a topic's first post.
-pub fn content_edit(topic: i64, number: i64, body: &str, reason: Option<&str>, title: Option<&str>) -> Result<(), Error> {
+pub fn content_edit(
+    topic: i64,
+    number: i64,
+    body: &str,
+    reason: Option<&str>,
+    title: Option<&str>,
+) -> Result<(), Error> {
     let mut op = json!({ "op": "content.edit", "topic": topic, "number": number, "body": body });
     if let Some(reason) = reason {
         op["reason"] = json!(reason);
@@ -391,13 +414,17 @@ pub fn content_edit(topic: i64, number: i64, body: &str, reason: Option<&str>, t
 /// Capability `files`: stores a text file, served at `/plugin-files/<id>/<path>`; returns its
 /// address. A request holds 64 KB, so a bigger file (up to 1 MB) is sent in pieces with `append`.
 pub fn file_put_text(path: &str, content_type: &str, text: &str, append: bool) -> Result<String, Error> {
-    let out = request(&json!({ "op": "file.put", "path": path, "content_type": content_type, "text": text, "append": append }))?;
+    let out = request(
+        &json!({ "op": "file.put", "path": path, "content_type": content_type, "text": text, "append": append }),
+    )?;
     Ok(out.get("url").and_then(Value::as_str).unwrap_or_default().to_owned())
 }
 
 /// Capability `files`: stores binary data (`base64`).
 pub fn file_put_base64(path: &str, content_type: &str, base64: &str, append: bool) -> Result<String, Error> {
-    let out = request(&json!({ "op": "file.put", "path": path, "content_type": content_type, "base64": base64, "append": append }))?;
+    let out = request(
+        &json!({ "op": "file.put", "path": path, "content_type": content_type, "base64": base64, "append": append }),
+    )?;
     Ok(out.get("url").and_then(Value::as_str).unwrap_or_default().to_owned())
 }
 

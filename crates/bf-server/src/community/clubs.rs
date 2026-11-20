@@ -235,7 +235,9 @@ async fn list(
     let shown: Vec<&clubs::Club> = rows
         .iter()
         .filter(|c| !mine_only || c.joined || (viewer.is_some() && c.owner_id == viewer.map(bf_core::ids::UserId::get)))
-        .filter(|c| !c.archived || c.joined || (viewer.is_some() && c.owner_id == viewer.map(bf_core::ids::UserId::get)))
+        .filter(|c| {
+            !c.archived || c.joined || (viewer.is_some() && c.owner_id == viewer.map(bf_core::ids::UserId::get))
+        })
         .filter(|c| needle.is_empty() || c.name.to_lowercase().contains(&needle))
         .collect();
 
@@ -492,8 +494,7 @@ async fn create_now_capped(
         grants.push((2, read));
     }
     let parent = Some(s.int("clubs_parent_node")).filter(|p| *p > 0);
-    let node =
-        bf_db::forum::nodes::create_node(pool, parent, "forum", name, &slug, "", &grants).await.db()?;
+    let node = bf_db::forum::nodes::create_node(pool, parent, "forum", name, &slug, "", &grants).await.db()?;
     let Some(id) = clubs::create_club(pool, name, node, group, owner, open, cap).await.db()? else {
         // Another request used up the allowance first: take back what was made for this one.
         bf_db::admin::forums::delete_node(pool, node, owner).await.db()?;

@@ -219,20 +219,32 @@ pub(super) async fn set_identity(
             }
             Err(e) => return Err(crate::http::render::db_err(e)),
         }
-        audit(pool, who, "user.rename", id, json!({ "from": super::mask_name(&user.username), "to": super::mask_name(&name) }))
-            .await?;
+        audit(
+            pool,
+            who,
+            "user.rename",
+            id,
+            json!({ "from": super::mask_name(&user.username), "to": super::mask_name(&name) }),
+        )
+        .await?;
     }
     if let Some(raw) = b.email.as_deref().map(str::trim).filter(|e| !e.eq_ignore_ascii_case(&user.email)) {
-        let email = auth::normalize_email(raw)
-            .ok_or_else(|| AppError::Validation("Enter a valid email address.".into()))?;
+        let email =
+            auth::normalize_email(raw).ok_or_else(|| AppError::Validation("Enter a valid email address.".into()))?;
         let email = email.as_str();
         if !users::change_email(pool, id.into(), email).await.db()? {
             return Err(AppError::Validation("That email address is already used by another member.".into()));
         }
         crate::platform::webhooks::fire(&state, "user.email_changed", json!({ "user_id": id }));
         // The log is append-only and outlives the account: it holds addresses only in masked form.
-        audit(pool, who, "user.email", id, json!({ "from": super::mask_email(&user.email), "to": super::mask_email(email) }))
-            .await?;
+        audit(
+            pool,
+            who,
+            "user.email",
+            id,
+            json!({ "from": super::mask_email(&user.email), "to": super::mask_email(email) }),
+        )
+        .await?;
     }
     if let Some(name) = b.display_name {
         let name = name.map(|n| n.trim().chars().take(60).collect::<String>()).filter(|n| !n.is_empty());

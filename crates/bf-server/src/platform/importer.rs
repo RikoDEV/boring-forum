@@ -451,7 +451,11 @@ type Files = std::collections::HashMap<String, Stored>;
 
 /// A SHA-1 in lower case, so it is found however the source wrote it; any other name as it is.
 fn hex_lower(name: &str) -> String {
-    if name.len() == 40 && name.bytes().all(|b| b.is_ascii_hexdigit()) { name.to_ascii_lowercase() } else { name.to_owned() }
+    if name.len() == 40 && name.bytes().all(|b| b.is_ascii_hexdigit()) {
+        name.to_ascii_lowercase()
+    } else {
+        name.to_owned()
+    }
 }
 
 /// How long the size or kind mark is at the start of `s`: `690x388`, `690x388,50%` or `attachment`.
@@ -761,7 +765,14 @@ impl Context<'_> {
         {
             let top = self.state.settings().trust_levels().max_level();
             let level = u.trust_level.unwrap_or(0).clamp(0, top);
-            importer::set_standing(self.pool, id, level, u.days_visited.unwrap_or(0).max(0), u.topics_read.unwrap_or(0).max(0)).await?;
+            importer::set_standing(
+                self.pool,
+                id,
+                level,
+                u.days_visited.unwrap_or(0).max(0),
+                u.topics_read.unwrap_or(0).max(0),
+            )
+            .await?;
         }
         Ok(())
     }
@@ -1005,7 +1016,10 @@ impl Context<'_> {
             votes.extend(importer::mapped(self.pool, "user", v.user_id).await?.map(|u| (u, v.option, v.rank)));
         }
         let post_number = match p.post_id {
-            Some(post) => importer::mapped(self.pool, "postnum", post).await?.and_then(|n| i32::try_from(n).ok()).filter(|n| *n > 1),
+            Some(post) => importer::mapped(self.pool, "postnum", post)
+                .await?
+                .and_then(|n| i32::try_from(n).ok())
+                .filter(|n| *n > 1),
             None => None,
         };
         let (groups, _) = bf_db::community::polls::groups_by_name(self.pool, &p.groups).await?;

@@ -117,7 +117,9 @@
     <ul class="acp-rows">
       {#each info?.schema ?? [] as t (t.name)}
         <li>
-          <details class="bf-disclosure is-small"><summary><code>{t.name}</code></summary><small class="muted">{t.columns.join(", ")}</small></details>
+          <details class="bf-disclosure is-small">
+            <summary><code>{t.name}</code></summary><small class="muted">{t.columns.join(", ")}</small>
+          </details>
         </li>
       {/each}
     </ul>

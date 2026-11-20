@@ -109,7 +109,10 @@ async fn quarantine_account(state: &AppState, user_id: i64, kind: &str, distance
         sqlx::query("DELETE FROM sessions WHERE user_id = $1").bind(user_id).execute(pool).await?;
         bf_db::admin::audit::record(
             pool,
-            bf_db::admin::audit::Entry::new("upload.known_image").by(0_i64).on(format!("user:{user_id}")).details(details.clone()),
+            bf_db::admin::audit::Entry::new("upload.known_image")
+                .by(0_i64)
+                .on(format!("user:{user_id}"))
+                .details(details.clone()),
         )
         .await?;
         bf_db::admin::notices::add_notice(

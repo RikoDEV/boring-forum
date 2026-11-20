@@ -6,8 +6,8 @@
 //! key, drop `BF_SECRET_KEY_OLD`. Rows already on the current key are left alone, so the command
 //! is safe to re-run and cheap when there is nothing to do.
 
-use bf_core::secretbox;
 use crate::admin::audit::{Entry, record};
+use bf_core::secretbox;
 use sqlx::Error;
 use sqlx::postgres::PgPool;
 
@@ -119,13 +119,15 @@ pub async fn rotate(pool: &PgPool) -> Result<Rotated, Error> {
             continue;
         }
         if let Some(plain) = ring.open(&stored) {
-            sqlx::query("UPDATE ap_keys SET private_pem = $3 WHERE owner_type = $1 AND owner_id = $2 AND private_pem = $4")
-                .bind(&owner_type)
-                .bind(owner_id)
-                .bind(ring.seal(&plain))
-                .bind(&stored)
-                .execute(pool)
-                .await?;
+            sqlx::query(
+                "UPDATE ap_keys SET private_pem = $3 WHERE owner_type = $1 AND owner_id = $2 AND private_pem = $4",
+            )
+            .bind(&owner_type)
+            .bind(owner_id)
+            .bind(ring.seal(&plain))
+            .bind(&stored)
+            .execute(pool)
+            .await?;
             out.actor_keys += 1;
         } else {
             tracing::error!(owner_type = %owner_type, owner_id, "federation actor key is sealed with a key that is not configured");
@@ -135,9 +137,13 @@ pub async fn rotate(pool: &PgPool) -> Result<Rotated, Error> {
 
     // The integration keys of the settings page (AI, Akismet, imgproxy, ...).
     let rows: Vec<(String, serde_json::Value)> =
-        sqlx::query_as("SELECT key, value FROM site_settings WHERE jsonb_typeof(value) = 'string'").fetch_all(pool).await?;
+        sqlx::query_as("SELECT key, value FROM site_settings WHERE jsonb_typeof(value) = 'string'")
+            .fetch_all(pool)
+            .await?;
     for (key, value) in rows {
-        let Some(stored) = value.as_str().filter(|s| !s.is_empty() && crate::settings::is_secret(&key)) else { continue };
+        let Some(stored) = value.as_str().filter(|s| !s.is_empty() && crate::settings::is_secret(&key)) else {
+            continue;
+        };
         if !ring.stale(stored) {
             continue;
         }
@@ -165,6 +171,7 @@ pub async fn rotate(pool: &PgPool) -> Result<Rotated, Error> {
         "unreadable": out.unreadable,
         "key_id": ring.current_id(),
         })),
-    ).await?;
+    )
+    .await?;
     Ok(out)
 }

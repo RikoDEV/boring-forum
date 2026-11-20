@@ -1,9 +1,9 @@
 //! Topics: lists, flags, pins, prefixes, scheduling, copies and moved-topic redirects.
 
+use crate::admin::audit::{Entry, record};
 use crate::forum::posts::NewPost;
 use crate::forum::posts::insert_post;
 use chrono::{DateTime, Utc};
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 use crate::moderation::tools::audit;
@@ -376,7 +376,14 @@ pub async fn copy_topic(
         .bind(copied as i32)
         .execute(&mut *tx)
         .await?;
-    record(&mut *tx, Entry::new("topic.copy").by(actor).on(format!("item:{from}")).details(serde_json::json!({ "copy": id, "to": to_node }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("topic.copy")
+            .by(actor)
+            .on(format!("item:{from}"))
+            .details(serde_json::json!({ "copy": id, "to": to_node })),
+    )
+    .await?;
     // The copied posts are attributed to their original authors: their counts follow.
     crate::moderation::topics::recount_authors_of(&mut tx, id).await?;
     tx.commit().await?;

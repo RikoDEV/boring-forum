@@ -62,10 +62,12 @@
   const remove = (b) =>
     confirm(
       b.slug
-        ? tr("Delete {name}? Members who earned it lose it. This is one of the forum's own badges and cannot be brought back.", { name: b.name })
+        ? tr(
+            "Delete {name}? Members who earned it lose it. This is one of the forum's own badges and cannot be brought back.",
+            { name: b.name },
+          )
         : tr("Delete {name}? Members who earned it lose it.", { name: b.name }),
-    ) &&
-    crud.remove(b.id);
+    ) && crud.remove(b.id);
   load();
 </script>
 

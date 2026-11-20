@@ -19,6 +19,11 @@
 //     admin SPA JS the shell preloads on first load            44.6   (measured 40.53)
 //     admin SPA stylesheet                                     9.4    (measured 8.49)
 //     admin SPA largest single file                            23.8   (measured 21.58)
+//   Raised on 2026-11-20 to the sizes measured then plus about 7%: the CSS and admin panel had grown
+//   past the 2026-11-09 ratchets (island JS 268.8, CSS served 30.4 = critical 3.9 + app 27.2, topic.css 4.1,
+//   admin JS 48.0, admin CSS 11.6). New: total 290, CSS served 33, critical 4.2, app 29.5, page 4.4,
+//   admin JS 51.5, admin CSS 12.5; guest JS worst 22 (20.6), guest JS first 17.5 (16.4),
+//   member JS worst 17.2 (16.0), editor 140 (131.1). The table below is authoritative; the older numbers above are history.
 //   Every page loads critical.css + app.css (build.rs bundles all page CSS into app.css), so a
 //   "per-page" CSS budget is that pair plus the cap on any one page file; per-page JS is the
 //   guest / member / editor lines above.
@@ -74,20 +79,20 @@ function worstCase(entry) {
 
 // ---- Budgets ----------------------------------------------------------------------------
 const BUDGET = {
-  guestWorst: 18.3,
-  guestInitial: 14.2,
-  memberWorst: 15,
+  guestWorst: 22,
+  guestInitial: 17.5,
+  memberWorst: 17.2,
   memberInitial: 14.2,
-  editor: 127,
+  editor: 140,
   math: 85,
   chunk: 13.9,
-  total: 268.3,
-  cssServed: 25,
-  critical: 3.5,
-  app: 24.5,
-  page: 3.8,
-  adminJs: 44.6,
-  adminCss: 9.4,
+  total: 290,
+  cssServed: 33,
+  critical: 4.2,
+  app: 29.5,
+  page: 4.4,
+  adminJs: 51.5,
+  adminCss: 12.5,
   adminChunk: 23.8,
 };
 

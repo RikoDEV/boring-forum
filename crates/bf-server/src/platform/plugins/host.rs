@@ -10,7 +10,10 @@ use wasmtime::{Caller, Linker, StoreLimits};
 
 use super::ops::failed;
 use super::stats::{self, allow};
-use super::{ENGINE, HTTP_TIMEOUT, MAX_HTTP_PER_CALL, MAX_VALUE, MAX_WRITES_PER_CALL, cook, http_allowed, ops, ops_content, write_out};
+use super::{
+    ENGINE, HTTP_TIMEOUT, MAX_HTTP_PER_CALL, MAX_VALUE, MAX_WRITES_PER_CALL, cook, http_allowed, ops, ops_content,
+    write_out,
+};
 
 pub(super) struct HostState {
     pub(super) limits: StoreLimits,
@@ -136,7 +139,9 @@ fn link_request(l: &mut Linker<HostState>) -> Result<(), wasmtime::Error> {
         }
         // Operations with no outside effect answer here, even without a database.
         let pure = match op.as_str() {
-            "time.now" => Some(json!({ "unix": chrono::Utc::now().timestamp(), "iso": chrono::Utc::now().to_rfc3339() })),
+            "time.now" => {
+                Some(json!({ "unix": chrono::Utc::now().timestamp(), "iso": chrono::Utc::now().to_rfc3339() }))
+            }
             "random.bytes" => {
                 let n = req.get("n").and_then(Value::as_i64).unwrap_or(16).clamp(1, 1024);
                 let hex: String = (0..n).map(|_| format!("{:02x}", rand::random::<u8>())).collect();
@@ -158,7 +163,11 @@ fn link_request(l: &mut Linker<HostState>) -> Result<(), wasmtime::Error> {
         if op == "file.fetch" || op == "http_request" {
             let fetch = op == "file.fetch";
             if c.data().http_calls >= MAX_HTTP_PER_CALL || (fetch && c.data().writes >= MAX_WRITES_PER_CALL) {
-                let limit = if fetch { en("Too many outbound requests or writes in one call.") } else { en("Too many outbound requests in one call.") };
+                let limit = if fetch {
+                    en("Too many outbound requests or writes in one call.")
+                } else {
+                    en("Too many outbound requests in one call.")
+                };
                 return reply(&mut c, Err(limit.into()));
             }
             c.data_mut().http_calls += 1;
@@ -278,7 +287,9 @@ pub(super) async fn host_request(
             // A topic the plugin owns (in a forum it declared or created, or one its account
             // opened) is readable whatever its forum's permissions say; any other only as a guest could.
             let owned = match plugins::bot_user(pool, plugin).await {
-                Ok(Some(bot)) => bf_db::platform::plugin_content::topic_owned(pool, plugin, bot, topic).await.unwrap_or(false),
+                Ok(Some(bot)) => {
+                    bf_db::platform::plugin_content::topic_owned(pool, plugin, bot, topic).await.unwrap_or(false)
+                }
                 _ => false,
             };
             let t = if owned { any_topic(state, topic).await? } else { public_topic(state, topic).await? };
@@ -290,7 +301,9 @@ pub(super) async fn host_request(
                 .iter()
                 .map(|p| json!({ "number": p.post_number, "author": p.author, "html": p.cooked, "created_at": p.created_at }))
                 .collect();
-            Ok(json!({ "id": t.id, "title": t.title, "slug": t.slug, "locked": t.locked, "state": t.state, "node_id": t.node_id, "owned": owned, "posts": posts }))
+            Ok(
+                json!({ "id": t.id, "title": t.title, "slug": t.slug, "locked": t.locked, "state": t.state, "node_id": t.node_id, "owned": owned, "posts": posts }),
+            )
         }
         // Posts as the plugin's own account. Watchers are told, but plugin post.created hooks do
         // not run for these, so two plugins cannot keep answering each other forever.
@@ -309,7 +322,8 @@ pub(super) async fn host_request(
                 plugins::bot_user(pool, plugin).await.map_err(failed)?.ok_or(en("This plugin has no account."))?;
             // The plugin's account must itself be allowed to reply in that forum, as `create_topic`
             // checks it may create there (a forum closed to its group stays closed to the plugin).
-            let actor = bf_core::perms::Actor { user_id: Some(bot.into()), groups: vec![2.into()], ..Default::default() };
+            let actor =
+                bf_core::perms::Actor { user_id: Some(bot.into()), groups: vec![2.into()], ..Default::default() };
             let perms = tree.perms(&actor, t.node_id);
             if !perms.has(bf_core::perms::Perms::READ) || !perms.has(bf_core::perms::Perms::REPLY) {
                 return Err(en("This plugin cannot reply in that forum.").into());
@@ -378,10 +392,12 @@ pub(super) async fn host_request(
             // Through the same delivery as the site's own kinds: the member's channel choices,
             // quiet hours and ignore list apply, and an open page hears about it live.
             let base = &state.config.base_url;
-            let body = format!("{text}
+            let body = format!(
+                "{text}
 
 {base}{url}
-");
+"
+            );
             let delay = state.settings().int("email_delay_minutes") as i32;
             let fresh = bf_db::community::notifications::deliver(pool, base, 0, &ids, &kind, &data, text, &body, delay)
                 .await
@@ -391,7 +407,9 @@ pub(super) async fn host_request(
             }
             Ok(json!({ "sent": ids.len() }))
         }
-        other => ops::more(state, plugin, catalogs, other, req).await.unwrap_or_else(|| Err(en("Unknown operation.").into())),
+        other => {
+            ops::more(state, plugin, catalogs, other, req).await.unwrap_or_else(|| Err(en("Unknown operation.").into()))
+        }
     }
 }
 

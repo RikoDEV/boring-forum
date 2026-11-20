@@ -370,16 +370,45 @@ pub fn clean_html(html: &str) -> String {
 
 /// Input types a plugin page may use. No `file` (a plugin form cannot upload), no `password`, no `image`.
 const PAGE_INPUT_TYPES: [&str; 17] = [
-    "text", "search", "email", "url", "tel", "number", "range", "date", "datetime-local", "time", "month", "week",
-    "color", "checkbox", "radio", "hidden", "submit",
+    "text",
+    "search",
+    "email",
+    "url",
+    "tel",
+    "number",
+    "range",
+    "date",
+    "datetime-local",
+    "time",
+    "month",
+    "week",
+    "color",
+    "checkbox",
+    "radio",
+    "hidden",
+    "submit",
 ];
 
 /// Field names that would shadow a property of the form (`form.action`, `form.submit`) or the
 /// host's own `_csrf` field.
 fn clobbers_form(name: &str) -> bool {
     name.starts_with('_')
-        || ["submit", "action", "method", "enctype", "target", "elements", "length", "reset", "id", "name", "attributes", "children", "style"]
-            .contains(&name.to_ascii_lowercase().as_str())
+        || [
+            "submit",
+            "action",
+            "method",
+            "enctype",
+            "target",
+            "elements",
+            "length",
+            "reset",
+            "id",
+            "name",
+            "attributes",
+            "children",
+            "style",
+        ]
+        .contains(&name.to_ascii_lowercase().as_str())
 }
 
 /// What a plugin's own page (`/app/<plugin>/…`) may contain: everything a slot may, plus forms that post
@@ -396,8 +425,22 @@ pub fn clean_page_html(html: &str, plugin: &str) -> String {
     b.add_tag_attributes(
         "input",
         [
-            "type", "name", "value", "placeholder", "required", "disabled", "readonly", "checked", "maxlength", "minlength",
-            "min", "max", "step", "pattern", "autocomplete", "size",
+            "type",
+            "name",
+            "value",
+            "placeholder",
+            "required",
+            "disabled",
+            "readonly",
+            "checked",
+            "maxlength",
+            "minlength",
+            "min",
+            "max",
+            "step",
+            "pattern",
+            "autocomplete",
+            "size",
         ],
     );
     b.add_tag_attributes(
@@ -414,7 +457,9 @@ pub fn clean_page_html(html: &str, plugin: &str) -> String {
         use std::borrow::Cow;
         match (el, attr) {
             (_, "id") | ("label", "for") => {
-                let ok = !value.is_empty() && value.len() <= 60 && value.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_');
+                let ok = !value.is_empty()
+                    && value.len() <= 60
+                    && value.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_');
                 ok.then(|| Cow::Owned(format!("pp-{value}")))
             }
             ("form", "method") => match value.to_ascii_lowercase().as_str() {
@@ -424,17 +469,29 @@ pub fn clean_page_html(html: &str, plugin: &str) -> String {
             },
             ("form", "action") => {
                 let rest = value.strip_prefix(own.as_str());
-                let ok = rest.is_some_and(|r| r.is_empty() || r.starts_with('/') || r.starts_with('?')) && !value.contains("//") && !value.contains('\\');
+                let ok = rest.is_some_and(|r| r.is_empty() || r.starts_with('/') || r.starts_with('?'))
+                    && !value.contains("//")
+                    && !value.contains('\\');
                 ok.then_some(Cow::Borrowed(value))
             }
-            ("input", "type") => PAGE_INPUT_TYPES.contains(&value.to_ascii_lowercase().as_str()).then_some(Cow::Borrowed(value)),
-            ("button", "type") => ["submit", "button", "reset"].contains(&value.to_ascii_lowercase().as_str()).then_some(Cow::Borrowed(value)),
+            ("input", "type") => {
+                PAGE_INPUT_TYPES.contains(&value.to_ascii_lowercase().as_str()).then_some(Cow::Borrowed(value))
+            }
+            ("button", "type") => ["submit", "button", "reset"]
+                .contains(&value.to_ascii_lowercase().as_str())
+                .then_some(Cow::Borrowed(value)),
             ("input" | "textarea" | "select" | "button", "name") => {
-                let ok = !value.is_empty() && value.len() <= 60 && !clobbers_form(value)
-                    && value.bytes().all(|c| c.is_ascii_alphanumeric() || matches!(c, b'-' | b'_' | b'.' | b'[' | b']'));
+                let ok = !value.is_empty()
+                    && value.len() <= 60
+                    && !clobbers_form(value)
+                    && value
+                        .bytes()
+                        .all(|c| c.is_ascii_alphanumeric() || matches!(c, b'-' | b'_' | b'.' | b'[' | b']'));
                 ok.then_some(Cow::Borrowed(value))
             }
-            (_, a) if a.starts_with("data-app-") || a.starts_with("aria-") => (value.len() <= 500).then_some(Cow::Borrowed(value)),
+            (_, a) if a.starts_with("data-app-") || a.starts_with("aria-") => {
+                (value.len() <= 500).then_some(Cow::Borrowed(value))
+            }
             _ => Some(Cow::Borrowed(value)),
         }
     });
@@ -560,7 +617,11 @@ pub fn resolve(preferred: &[Option<i64>], groups: &[i64]) -> Option<Arc<Compiled
         .chain(set.default.iter())
         .filter(usable)
         .find_map(|id| set.themes.get(id).cloned())
-        .or_else(|| set.builtin_off.then(|| set.order.iter().filter(usable).find_map(|id| set.themes.get(id).cloned())).flatten())
+        .or_else(|| {
+            set.builtin_off
+                .then(|| set.order.iter().filter(usable).find_map(|id| set.themes.get(id).cloned()))
+                .flatten()
+        })
         .or_else(|| set.base.clone())
 }
 
@@ -598,11 +659,27 @@ mod tests {
         let out = clean_page_html(dirty, "notes");
         assert!(out.contains(r#"action="/app/notes/new""#) && out.contains(r#"method="post""#), "{out}");
         assert!(out.contains(r#"data-app-n="1""#) && out.contains(r#"id="pp-a""#), "{out}");
-        for gone in ["script", "onsubmit", "onclick", "style=", "formaction", "evil.test", "data-island", "_csrf", "name=\"action\"", "type=\"password\"", "type=\"file\""] {
+        for gone in [
+            "script",
+            "onsubmit",
+            "onclick",
+            "style=",
+            "formaction",
+            "evil.test",
+            "data-island",
+            "_csrf",
+            "name=\"action\"",
+            "type=\"password\"",
+            "type=\"file\"",
+        ] {
             assert!(!out.contains(gone), "{gone} survived in {out}");
         }
         let posted = add_csrf_fields(&out, "tok");
-        assert_eq!(posted.matches("name=\"_csrf\" value=\"tok\"").count(), 1, "only the post form gets a token: {posted}");
+        assert_eq!(
+            posted.matches("name=\"_csrf\" value=\"tok\"").count(),
+            1,
+            "only the post form gets a token: {posted}"
+        );
     }
 
     fn src(id: i64, component: bool, css: &str, slots: Value) -> Source {
@@ -639,7 +716,11 @@ mod tests {
         assert_eq!(choices(&[7]).len(), 3);
         // With the built-in look off, someone who cannot use the default gets the first theme they can.
         install(
-            &[src(1, false, ".open{a:1}", json!({})), { let mut c = src(2, false, ".closed{a:1}", json!({})); c.groups = vec![7]; c }],
+            &[src(1, false, ".open{a:1}", json!({})), {
+                let mut c = src(2, false, ".closed{a:1}", json!({}));
+                c.groups = vec![7];
+                c
+            }],
             Some(2),
             "Site",
             true,
@@ -651,7 +732,9 @@ mod tests {
         t.palettes = Some((json!({"accent":"#111111"}), json!({"accent":"#222222"})));
         let css = css_of(&t);
         assert!(css.starts_with(":root { --bf-color-bg:light-dark("), "{css}");
-        assert!(css.find("--bf-color-accent:light-dark(#808080,#808080)").is_some() || css.contains("--bf-color-accent:"));
+        assert!(
+            css.find("--bf-color-accent:light-dark(#808080,#808080)").is_some() || css.contains("--bf-color-accent:")
+        );
     }
 
     #[test]

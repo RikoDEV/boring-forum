@@ -218,8 +218,10 @@ pub(super) async fn asset_file(Path((dir, path)): Path<(String, String)>) -> Res
         (*bytes).clone(),
     )
         .into_response();
-    res.headers_mut()
-        .insert(header::HeaderName::from_static("cross-origin-resource-policy"), header::HeaderValue::from_static("same-origin"));
+    res.headers_mut().insert(
+        header::HeaderName::from_static("cross-origin-resource-policy"),
+        header::HeaderValue::from_static("same-origin"),
+    );
     Ok(res)
 }
 
@@ -279,7 +281,10 @@ pub(crate) async fn draw(
         {
             let part = bf_web::theme::clean_html(part);
             if !part.trim().is_empty() {
-                html.push_str(&format!("<div class=\"bf-plugin-slot-item\" data-plugin=\"{}\">{part}</div>", bf_core::html::esc(&p.id)));
+                html.push_str(&format!(
+                    "<div class=\"bf-plugin-slot-item\" data-plugin=\"{}\">{part}</div>",
+                    bf_core::html::esc(&p.id)
+                ));
             }
         }
     }
@@ -297,6 +302,7 @@ pub(crate) async fn user_card_html(state: &AppState, v: &Viewer, user_id: i64) -
 }
 
 /// Presses per member and plugin in the current minute, for the limit on `action.run`.
+#[expect(clippy::type_complexity, reason = "a private counter table")]
 static PRESSES: std::sync::LazyLock<std::sync::Mutex<HashMap<(String, i64), (i64, i64)>>> =
     std::sync::LazyLock::new(Default::default);
 

@@ -72,9 +72,16 @@
       value,
     })),
   );
-  const age = (hours) => (hours == null ? tr("None waiting") : hours < 48 ? tr("{n} h", { n: hours }) : tr("{n} d", { n: Math.round(hours / 24) }));
+  const age = (hours) =>
+    hours == null
+      ? tr("None waiting")
+      : hours < 48
+        ? tr("{n} h", { n: hours })
+        : tr("{n} d", { n: Math.round(hours / 24) });
   const answered = $derived(
-    analytics?.topics_in_range ? Math.round(((analytics.topics_in_range - analytics.unanswered) / analytics.topics_in_range) * 100) : null,
+    analytics?.topics_in_range
+      ? Math.round(((analytics.topics_in_range - analytics.unanswered) / analytics.topics_in_range) * 100)
+      : null,
   );
 </script>
 
@@ -155,7 +162,9 @@
       ></a
     >
     <a class="acp-kpi" href="{base}/users/"
-      ><span>{tr("Restricted members")}</span><b>{(analytics.suspended + analytics.silenced).toLocaleString(locale())}</b><small
+      ><span>{tr("Restricted members")}</span><b
+        >{(analytics.suspended + analytics.silenced).toLocaleString(locale())}</b
+      ><small
         >{tr("{n} suspended, {m} silenced", { n: analytics.suspended, m: analytics.silenced })}{analytics.unapproved
           ? ` · ${tr("{n} awaiting approval", { n: analytics.unapproved })}`
           : ""}</small
@@ -173,11 +182,21 @@
     <section class="acp-box"><BarChart title={tr("New members")} data={series("signups")} /></section>
     <section class="acp-box"><BarChart title={tr("Likes")} data={series("likes")} /></section>
     <section class="acp-box"><BarChart title={tr("Reports and reviews")} data={series("reports")} /></section>
-    {#if sum("chats")}<section class="acp-box"><BarChart title={tr("Chat messages")} data={series("chats")} /></section>{/if}
-    {#if sum("searches")}<section class="acp-box"><BarChart title={tr("Searches")} data={series("searches")} /></section>{/if}
-    {#if sum("failed_logins")}<section class="acp-box"><BarChart title={tr("Failed logins")} data={series("failed_logins")} /></section>{/if}
+    {#if sum("chats")}<section class="acp-box">
+        <BarChart title={tr("Chat messages")} data={series("chats")} />
+      </section>{/if}
+    {#if sum("searches")}<section class="acp-box">
+        <BarChart title={tr("Searches")} data={series("searches")} />
+      </section>{/if}
+    {#if sum("failed_logins")}<section class="acp-box">
+        <BarChart title={tr("Failed logins")} data={series("failed_logins")} />
+      </section>{/if}
     <section class="acp-box">
-      <BarChart title={tr("Posts by day of the week")} data={weekdays} span={tn("admin.count.last_days", analytics.days)} />
+      <BarChart
+        title={tr("Posts by day of the week")}
+        data={weekdays}
+        span={tn("admin.count.last_days", analytics.days)}
+      />
     </section>
     <section class="acp-box">
       <BarChart title={tr("Posts by hour of the day")} data={hours} span={tr("UTC")} />
@@ -185,7 +204,7 @@
   </div>
 {/if}
 <div class="acp-masonry">
-{#if analytics}
+  {#if analytics}
     <section class="acp-box">
       <div class="acp-box-head"><h2>{tr("Active members")}</h2></div>
       <dl class="acp-facts">
@@ -257,9 +276,9 @@
         {/each}
       </ul>
     </section>
-{/if}
+  {/if}
 
-{#if board}
+  {#if board}
     <section class="acp-box">
       <div class="acp-box-head"><h2>{tr("Needs attention")}</h2></div>
       {#if board.problems.length}<ul class="acp-rows">
@@ -280,7 +299,7 @@
             </li>{/each}
         </ul>{:else}<p class="acp-empty">{tr("No actions yet.")}</p>{/if}
     </section>
-{/if}
+  {/if}
 </div>
 {#if board}
   <p class="muted">

@@ -26,44 +26,45 @@ mod extras;
 mod forms;
 mod gate;
 mod hooks;
-mod subject;
 mod host;
 mod load;
 mod ops;
 mod ops_content;
-mod registry;
 mod package;
+mod registry;
 mod routes;
 mod run;
 mod schedule;
 mod stats;
+mod subject;
 mod version;
 
 use self::admin::{disable, enable, grant_permission, install, install_url, list, rollback, set_settings, uninstall};
+pub(crate) use self::content_types::pending_count as held_for_review_count;
+pub(crate) use self::extras::{check_widget_config, emoji_entries, finish_callbacks};
 use self::host::{HostState, linker};
 use self::load::schema_list;
 use self::package::read_package;
 use self::routes::{
-    action_run, api_route, asset_file, client_file, emoji_file, login_begin, login_callback, member_filter, panel_page, slot_render,
+    action_run, api_route, asset_file, client_file, emoji_file, login_begin, login_callback, member_filter, panel_page,
+    slot_render,
 };
-pub(crate) use self::extras::{check_widget_config, emoji_entries, finish_callbacks};
 pub(crate) use self::routes::{onebox_card, user_card_html};
-pub(crate) use self::content_types::pending_count as held_for_review_count;
 use self::run::{call, listening, write_out};
 
 pub use self::admin::scaffold;
+pub(crate) use self::api::attach_meta;
 pub use self::dev::{pack, sign, watch};
+pub(crate) use self::gate::{action_gate, denials, denials_cached};
 pub use self::hooks::spawn_jobs;
 pub(crate) use self::hooks::{
-    add_plugin_fields, has_serializers, after_cook, before_post, before_post_system, cook, dispatch, dispatch_wait, extra_fields, filter_text,
-    registration_refused, render_widget, sitemap_paths,
+    add_plugin_fields, after_cook, before_post, before_post_system, cook, dispatch, dispatch_wait, extra_fields,
+    filter_text, has_serializers, registration_refused, render_widget, sitemap_paths,
 };
 pub(crate) use self::host::local_path;
-pub(crate) use self::api::attach_meta;
-pub(crate) use self::gate::{action_gate, denials, denials_cached};
-pub(crate) use self::registry::signup_refused;
 pub use self::load::reload;
 pub(crate) use self::package::archive_prefix;
+pub(crate) use self::registry::signup_refused;
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -175,6 +176,7 @@ pub const CAPABILITIES: &[&str] = &[
 /// - `badge.awarded`: `{user_id, badge}` (badge is its name); `trust.changed`: `{user_id, to, by}`
 /// - `chat.message`: `{channel, user_id, message_id, kind}`;
 ///   `message.created`: `{from_id, to_ids, conversation_id, new}`
+///
 /// Filters (`post.before_create`, `item.before_create`, `search.query`, `user.before_register`) may
 /// answer `{reject}` or `{data}`; see `hooks.rs`.
 pub const HOOKS: &[&str] = &[
@@ -246,7 +248,7 @@ fn known_capability(c: &str) -> bool {
 fn valid_connect_origin(o: &str) -> bool {
     reqwest::Url::parse(o).is_ok_and(|u| {
         matches!(u.scheme(), "https" | "wss")
-            && u.host_str().is_some_and(|h| valid_http_host(h))
+            && u.host_str().is_some_and(valid_http_host)
             && u.username().is_empty()
             && u.password().is_none()
             && u.path() == "/"
@@ -359,6 +361,7 @@ static CLIENTS: LazyLock<RwLock<HashMap<String, Arc<String>>>> = LazyLock::new(D
 
 /// Files of enabled plugins under `/plugins/<id>.<hash>/…`: style sheets (already in the
 /// `plugin` cascade layer) and `assets/`, with their media type.
+#[expect(clippy::type_complexity, reason = "a private table keyed by plugin and path")]
 static ASSETS: LazyLock<RwLock<HashMap<String, HashMap<String, (String, Arc<Vec<u8>>)>>>> =
     LazyLock::new(Default::default);
 

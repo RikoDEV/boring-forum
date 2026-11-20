@@ -101,7 +101,12 @@
   >
     <div class="acp-form">
       <Field label={tr("Action for all of them")} bind:value={bulk.action} options={Object.entries(LABELS)} />
-      {#if bulk.action === "replace"}<Field label={tr("Replacement")} bind:value={bulk.replacement} required wide />{/if}
+      {#if bulk.action === "replace"}<Field
+          label={tr("Replacement")}
+          bind:value={bulk.replacement}
+          required
+          wide
+        />{/if}
       <div class="acp-wide">
         <Section
           legend={tr("Word list")}
@@ -109,7 +114,11 @@
         >
           <div class="acp-group-style">
             <label class="acp-upload"
-              >{tr("Choose a file")}<input type="file" accept=".txt,.csv,.list,text/plain,text/csv" onchange={pick} /></label
+              >{tr("Choose a file")}<input
+                type="file"
+                accept=".txt,.csv,.list,text/plain,text/csv"
+                onchange={pick}
+              /></label
             >
             {#if file.name}<span class="muted">{tr("{name}: {n} words found", { name: file.name, n: file.words })}</span
               >{:else}<span class="muted">{tr("No file chosen.")}</span>{/if}
@@ -124,7 +133,12 @@
     <div class="acp-form">
       <Field label={tr("Action")} bind:value={fresh.action} options={Object.entries(LABELS)} />
       <Field label={tr("Word")} bind:value={fresh.pattern} required />
-      {#if fresh.action === "replace"}<Field label={tr("Replacement")} bind:value={fresh.replacement} required wide />{/if}
+      {#if fresh.action === "replace"}<Field
+          label={tr("Replacement")}
+          bind:value={fresh.replacement}
+          required
+          wide
+        />{/if}
     </div>
   </EditDialog>
 {/if}

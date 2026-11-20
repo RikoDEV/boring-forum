@@ -128,6 +128,7 @@ async fn remove(
 ) -> Result<Response, AppError> {
     let pool = state.db()?;
     explorer::delete(pool, id).await.found()?;
-    crate::admin::api::audit_log(pool, who, "explorer_query.delete", &format!("explorer_query:{id}"), json!({})).await?;
+    crate::admin::api::audit_log(pool, who, "explorer_query.delete", &format!("explorer_query:{id}"), json!({}))
+        .await?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }

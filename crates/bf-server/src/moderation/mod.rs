@@ -22,9 +22,18 @@ pub mod words;
 
 /// Writes a staff action to the audit log. Never fatal: the action has already happened.
 /// `actor` is `None` for the admin token. Put the state before and after in `details`.
-pub(crate) async fn audit(state: &AppState, actor: Option<i64>, action: &str, target: String, details: serde_json::Value) {
+pub(crate) async fn audit(
+    state: &AppState,
+    actor: Option<i64>,
+    action: &str,
+    target: String,
+    details: serde_json::Value,
+) {
     let Some(pool) = &state.pool else { return };
-    if let Err(e) = bf_db::admin::audit::record(pool, bf_db::admin::audit::Entry::new(action).by(actor).on(target).details(details)).await {
+    if let Err(e) =
+        bf_db::admin::audit::record(pool, bf_db::admin::audit::Entry::new(action).by(actor).on(target).details(details))
+            .await
+    {
         tracing::error!(error = %e, action, "audit entry not written");
     }
 }

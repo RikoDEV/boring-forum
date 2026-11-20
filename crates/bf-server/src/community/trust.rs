@@ -72,11 +72,7 @@ const GATES: &[(&str, &str)] = &[
 /// The features that open at `level`, in the viewer's language.
 pub(crate) fn unlocks(state: &AppState, t: &T, level: i16) -> Vec<String> {
     let s = state.settings();
-    GATES
-        .iter()
-        .filter(|(key, _)| s.int(key) == i64::from(level))
-        .map(|(_, what)| t.msg(what))
-        .collect()
+    GATES.iter().filter(|(key, _)| s.int(key) == i64::from(level)).map(|(_, what)| t.msg(what)).collect()
 }
 
 /// What a requirement measures, in words.
@@ -163,7 +159,11 @@ pub(crate) async fn promote(state: &AppState, announce: bool) {
             for (user, level) in raised {
                 if announce {
                     crate::community::notifications::trust_raised(state, user, level).await;
-                    crate::platform::webhooks::fire(state, "trust.changed", serde_json::json!({ "user_id": user, "to": level, "by": "auto" }));
+                    crate::platform::webhooks::fire(
+                        state,
+                        "trust.changed",
+                        serde_json::json!({ "user_id": user, "to": level, "by": "auto" }),
+                    );
                 }
             }
         }
@@ -187,11 +187,10 @@ async fn trust_page(State(state): State<AppState>, v: Viewer) -> Result<Response
     let s = state.settings();
     let get = s.trust_value();
     let (top, top_auto) = (s.trust_levels().max_level(), s.trust_levels().max_auto());
-    let standing =
-        bf_db::accounts::users::trust_standing(state.db()?, user.id, s.int("trust_recent_days") as i32)
-            .await
-            .db()?
-            .ok_or(AppError::NotFound)?;
+    let standing = bf_db::accounts::users::trust_standing(state.db()?, user.id, s.int("trust_recent_days") as i32)
+        .await
+        .db()?
+        .ok_or(AppError::NotFound)?;
     let level = standing.trust_level;
     let m = standing.metrics();
     let (l, set) = layout(&state, &v, Some(&t.msg("Your trust level")));

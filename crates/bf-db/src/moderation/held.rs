@@ -1,8 +1,8 @@
 //! Member writes held for approval outside forum posts.
 
+use crate::admin::audit::{Entry, record};
 use chrono::{DateTime, Utc};
 pub use sqlx::Error;
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 #[derive(Debug, Clone, FromRow)]
@@ -93,7 +93,11 @@ pub async fn resolve(pool: &PgPool, id: i64, approved: bool, actor: i64) -> Resu
     .await?
     .rows_affected();
     if n > 0 {
-        record(&mut *tx, Entry::new(if approved { "held.approve" } else { "held.reject" }).by(actor).on(format!("held:{id}"))).await?;
+        record(
+            &mut *tx,
+            Entry::new(if approved { "held.approve" } else { "held.reject" }).by(actor).on(format!("held:{id}")),
+        )
+        .await?;
     }
     tx.commit().await?;
     Ok(n > 0)

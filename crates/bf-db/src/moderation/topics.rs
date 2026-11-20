@@ -1,9 +1,9 @@
 //! Topic moderation that moves posts between topics or topics between forums
 //!: move, merge, split, restore, edit history and the deletion log.
 
+use crate::admin::audit::{Entry, record};
 use chrono::{DateTime, Utc};
 pub use sqlx::Error;
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool, Postgres, Transaction};
 
 async fn node_of(tx: &mut Transaction<'_, Postgres>, item_id: i64) -> Result<i64, Error> {
@@ -218,8 +218,16 @@ async fn move_topic_data(
     .bind(new_numbers)
     .execute(&mut **tx)
     .await?;
-    sqlx::query("UPDATE poll_options SET item_id = $2 WHERE item_id = $1").bind(from).bind(into).execute(&mut **tx).await?;
-    sqlx::query("UPDATE poll_votes SET item_id = $2 WHERE item_id = $1").bind(from).bind(into).execute(&mut **tx).await?;
+    sqlx::query("UPDATE poll_options SET item_id = $2 WHERE item_id = $1")
+        .bind(from)
+        .bind(into)
+        .execute(&mut **tx)
+        .await?;
+    sqlx::query("UPDATE poll_votes SET item_id = $2 WHERE item_id = $1")
+        .bind(from)
+        .bind(into)
+        .execute(&mut **tx)
+        .await?;
     for item in [from, into] {
         sqlx::query(
             "UPDATE items SET poll_question = (SELECT question FROM polls WHERE item_id = $1 ORDER BY position, id LIMIT 1)
@@ -239,10 +247,12 @@ async fn move_topic_data(
     .execute(&mut **tx)
     .await?;
     sqlx::query("DELETE FROM topic_votes WHERE item_id = $1").bind(from).execute(&mut **tx).await?;
-    sqlx::query("UPDATE items SET vote_count = (SELECT count(*) FROM topic_votes WHERE item_id = items.id) WHERE id = ANY($1)")
-        .bind([from, into])
-        .execute(&mut **tx)
-        .await?;
+    sqlx::query(
+        "UPDATE items SET vote_count = (SELECT count(*) FROM topic_votes WHERE item_id = items.id) WHERE id = ANY($1)",
+    )
+    .bind([from, into])
+    .execute(&mut **tx)
+    .await?;
     // Followers.
     sqlx::query(
         "INSERT INTO follows (user_id, target_type, target_id, level, email_freq)
@@ -253,7 +263,10 @@ async fn move_topic_data(
     .bind(into)
     .execute(&mut **tx)
     .await?;
-    sqlx::query("DELETE FROM follows WHERE target_type = 'item' AND target_id = $1").bind(from).execute(&mut **tx).await?;
+    sqlx::query("DELETE FROM follows WHERE target_type = 'item' AND target_id = $1")
+        .bind(from)
+        .execute(&mut **tx)
+        .await?;
     // The event, and its answers with it, when the target has none of its own.
     let moved_event = sqlx::query(
         "UPDATE topic_events SET item_id = $2 WHERE item_id = $1 AND NOT EXISTS (SELECT 1 FROM topic_events WHERE item_id = $2)",
@@ -530,13 +543,18 @@ pub async fn post_notes(pool: &PgPool, post_ids: &[i64]) -> Result<Vec<PostNote>
 
 pub async fn add_post_note(pool: &PgPool, post: i64, author: i64, body: &str) -> Result<i64, Error> {
     let mut tx = pool.begin().await?;
-    let id: i64 = sqlx::query_scalar("INSERT INTO post_notes (post_id, author_id, body) VALUES ($1, $2, $3) RETURNING id")
-        .bind(post)
-        .bind(author)
-        .bind(body)
-        .fetch_one(&mut *tx)
-        .await?;
-    record(&mut *tx, Entry::new("post.note.add").by(author).on(format!("post:{post}")).details(serde_json::json!({ "note": id }))).await?;
+    let id: i64 =
+        sqlx::query_scalar("INSERT INTO post_notes (post_id, author_id, body) VALUES ($1, $2, $3) RETURNING id")
+            .bind(post)
+            .bind(author)
+            .bind(body)
+            .fetch_one(&mut *tx)
+            .await?;
+    record(
+        &mut *tx,
+        Entry::new("post.note.add").by(author).on(format!("post:{post}")).details(serde_json::json!({ "note": id })),
+    )
+    .await?;
     tx.commit().await?;
     Ok(id)
 }
@@ -544,9 +562,22 @@ pub async fn add_post_note(pool: &PgPool, post: i64, author: i64, body: &str) ->
 /// Removes a note of this post; false when there is no such note on it.
 pub async fn delete_post_note(pool: &PgPool, post: i64, note: i64, actor: i64) -> Result<bool, Error> {
     let mut tx = pool.begin().await?;
-    let gone = sqlx::query("DELETE FROM post_notes WHERE id = $1 AND post_id = $2").bind(note).bind(post).execute(&mut *tx).await?.rows_affected() > 0;
+    let gone = sqlx::query("DELETE FROM post_notes WHERE id = $1 AND post_id = $2")
+        .bind(note)
+        .bind(post)
+        .execute(&mut *tx)
+        .await?
+        .rows_affected()
+        > 0;
     if gone {
-        record(&mut *tx, Entry::new("post.note.delete").by(actor).on(format!("post:{post}")).details(serde_json::json!({ "note": note }))).await?;
+        record(
+            &mut *tx,
+            Entry::new("post.note.delete")
+                .by(actor)
+                .on(format!("post:{post}"))
+                .details(serde_json::json!({ "note": note })),
+        )
+        .await?;
     }
     tx.commit().await?;
     Ok(gone)

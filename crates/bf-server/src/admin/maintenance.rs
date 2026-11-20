@@ -57,7 +57,8 @@ async fn run(
         }
         _ => return Err(AppError::NotFound),
     };
-    crate::admin::api::audit_log(pool, Some(who.unwrap_or(0)), &format!("maintenance.{task}"), "site", detail.clone()).await?;
+    crate::admin::api::audit_log(pool, Some(who.unwrap_or(0)), &format!("maintenance.{task}"), "site", detail.clone())
+        .await?;
     state.forum.invalidate();
     state.microcache.clear();
     Ok(Json(detail).into_response())
@@ -307,7 +308,7 @@ pub fn spawn_session_sweeper(state: AppState) {
 }
 
 /// Advisory-lock key of the maintenance tick (shared by every node on the database).
-const MAINTENANCE_LOCK: i64 = 0x6266_6d61_696e_74;
+const MAINTENANCE_LOCK: i64 = 0x0062_666d_6169_6e74;
 
 /// Daily housekeeping: revision retention and orphaned uploads, each logged.
 pub fn spawn_housekeeping(state: AppState) {

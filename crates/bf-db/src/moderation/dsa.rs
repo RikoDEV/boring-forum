@@ -70,7 +70,11 @@ macro_rules! notice_cols {
 
 pub async fn open_notices(pool: &PgPool, limit: i64) -> Result<Vec<Notice>, Error> {
     // Only a fixed column list or select prefix (a constant) is interpolated; every value is bound.
-    sqlx::query_as(concat!("SELECT ", notice_cols!(), " FROM legal_notices WHERE status = 'open' ORDER BY created_at LIMIT $1"))
+    sqlx::query_as(concat!(
+        "SELECT ",
+        notice_cols!(),
+        " FROM legal_notices WHERE status = 'open' ORDER BY created_at LIMIT $1"
+    ))
     .bind(limit)
     .fetch_all(pool)
     .await
@@ -166,7 +170,11 @@ macro_rules! statement_cols {
 
 pub async fn statement(pool: &PgPool, id: i64) -> Result<Option<Statement>, Error> {
     // Only a fixed column list or select prefix (a constant) is interpolated; every value is bound.
-    sqlx::query_as(concat!("SELECT ", statement_cols!(), " FROM moderation_statements s LEFT JOIN users u ON u.id = s.user_id WHERE s.id = $1"))
+    sqlx::query_as(concat!(
+        "SELECT ",
+        statement_cols!(),
+        " FROM moderation_statements s LEFT JOIN users u ON u.id = s.user_id WHERE s.id = $1"
+    ))
     .bind(id)
     .fetch_optional(pool)
     .await
@@ -188,8 +196,12 @@ pub async fn appeal(pool: &PgPool, id: i64, user_id: i64, text: &str) -> Result<
 
 pub async fn pending_appeals(pool: &PgPool, limit: i64) -> Result<Vec<Statement>, Error> {
     // Only a fixed column list or select prefix (a constant) is interpolated; every value is bound.
-    sqlx::query_as(concat!("SELECT ", statement_cols!(), " FROM moderation_statements s LEFT JOIN users u ON u.id = s.user_id
-         WHERE s.appealed_at IS NOT NULL AND s.appeal_outcome IS NULL ORDER BY s.appealed_at LIMIT $1"))
+    sqlx::query_as(concat!(
+        "SELECT ",
+        statement_cols!(),
+        " FROM moderation_statements s LEFT JOIN users u ON u.id = s.user_id
+         WHERE s.appealed_at IS NOT NULL AND s.appeal_outcome IS NULL ORDER BY s.appealed_at LIMIT $1"
+    ))
     .bind(limit)
     .fetch_all(pool)
     .await

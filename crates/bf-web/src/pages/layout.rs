@@ -448,7 +448,8 @@ impl Layout {
             .iter()
             .map(|a| {
                 let mut a = a.clone();
-                if let Some(l) = a.get("label").and_then(|l| l.as_str()).map(|l| crate::theme::plugin_label(locale, l)) {
+                if let Some(l) = a.get("label").and_then(|l| l.as_str()).map(|l| crate::theme::plugin_label(locale, l))
+                {
                     a["label"] = l.into();
                 }
                 a
@@ -534,7 +535,11 @@ impl Layout {
         let plugin = self.plugins.as_ref().and_then(|p| p.slots.get(name)).map_or("", String::as_str);
         // A slot a plugin draws per viewer is filled in by the page script (`slot.render`).
         let dynamic = self.plugins.as_ref().is_some_and(|p| p.extras.dynamic_slots.contains(name));
-        let holder = if dynamic { format!("<div class=\"bf-plugin-slot\" data-plugin-slot=\"{name}\"></div>") } else { String::new() };
+        let holder = if dynamic {
+            format!("<div class=\"bf-plugin-slot\" data-plugin-slot=\"{name}\"></div>")
+        } else {
+            String::new()
+        };
         format!("{theme}{plugin}{holder}")
     }
 
@@ -589,7 +594,10 @@ impl Layout {
         let (scheme, rest) = canonical.split_once("://")?;
         let origin = format!("{scheme}://{}", rest.split('/').next()?);
         let title = self.title.strip_suffix(&format!(" - {}", self.site_name)).unwrap_or(&self.title);
-        Some(format!("{origin}{}", bf_core::og::picture_path(kind, title, &self.description, &style.version(), style.extension())))
+        Some(format!(
+            "{origin}{}",
+            bf_core::og::picture_path(kind, title, &self.description, &style.version(), style.extension())
+        ))
     }
 
     pub fn new(settings: &Settings, title: Option<&str>) -> Self {
@@ -699,7 +707,10 @@ pub struct GifConfig {
 /// lists fall back to the defaults, so a stray setting cannot reach the page.
 fn gif_config(s: &bf_core::settings::Settings) -> Option<GifConfig> {
     let key = s.str("gif_api_key").trim().to_owned();
-    if !s.bool("gifs_enabled") || key.is_empty() || !key.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_')) {
+    if !s.bool("gifs_enabled")
+        || key.is_empty()
+        || !key.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_'))
+    {
         return None;
     }
     let country: String = s.str("gif_country").trim().to_ascii_uppercase();
@@ -707,8 +718,15 @@ fn gif_config(s: &bf_core::settings::Settings) -> Option<GifConfig> {
         key,
         provider: crate::security::gif_provider(s.str("gif_provider"))?,
         format: if s.str("gif_format") == "gif" { "gif" } else { "webp" },
-        filter: ["off", "low", "medium", "high"].into_iter().find(|f| *f == s.str("gif_content_filter")).unwrap_or("high"),
-        country: if country.len() == 2 && country.chars().all(|c| c.is_ascii_alphabetic()) { country } else { "US".to_owned() },
+        filter: ["off", "low", "medium", "high"]
+            .into_iter()
+            .find(|f| *f == s.str("gif_content_filter"))
+            .unwrap_or("high"),
+        country: if country.len() == 2 && country.chars().all(|c| c.is_ascii_alphabetic()) {
+            country
+        } else {
+            "US".to_owned()
+        },
         limit: if s.bool("gif_limit_scroll") { s.int("gif_max_results").clamp(24, 1000) } else { 0 },
     })
 }

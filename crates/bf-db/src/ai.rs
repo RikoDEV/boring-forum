@@ -46,12 +46,10 @@ pub async fn tokens_this_month(pool: &PgPool) -> Result<i64, Error> {
 
 /// Requests a member made in the last 24 hours.
 pub async fn requests_today(pool: &PgPool, user: i64) -> Result<i64, Error> {
-    sqlx::query_scalar(
-        "SELECT count(*) FROM ai_usage WHERE user_id = $1 AND created_at > now() - interval '1 day'",
-    )
-    .bind(user)
-    .fetch_one(pool)
-    .await
+    sqlx::query_scalar("SELECT count(*) FROM ai_usage WHERE user_id = $1 AND created_at > now() - interval '1 day'")
+        .bind(user)
+        .fetch_one(pool)
+        .await
 }
 
 #[derive(Debug, Clone, FromRow)]
@@ -140,7 +138,12 @@ pub async fn save_summary(
 }
 
 /// A topic's visible posts after `after` as (number, author, raw), oldest first.
-pub async fn topic_posts(pool: &PgPool, item: i64, after: i32, limit: i64) -> Result<Vec<(i32, String, String)>, Error> {
+pub async fn topic_posts(
+    pool: &PgPool,
+    item: i64,
+    after: i32,
+    limit: i64,
+) -> Result<Vec<(i32, String, String)>, Error> {
     sqlx::query_as(
         "SELECT p.post_number, COALESCE(u.username, 'deleted'), bf_strip_hidden(p.raw) FROM posts p
          LEFT JOIN users u ON u.id = p.author_id
@@ -251,7 +254,11 @@ pub async fn top_emotions(pool: &PgPool, days: i32) -> Result<Vec<(String, i64)>
 }
 
 /// Posts that look bad, newest first: (post, topic title, author, spam, toxicity).
-pub async fn flagged_posts(pool: &PgPool, toxic_at: i16, spam_at: i16) -> Result<Vec<(i64, i64, String, String, i16, i16)>, Error> {
+pub async fn flagged_posts(
+    pool: &PgPool,
+    toxic_at: i16,
+    spam_at: i16,
+) -> Result<Vec<(i64, i64, String, String, i16, i16)>, Error> {
     sqlx::query_as(
         "SELECT l.post_id, i.id, i.title, COALESCE(u.username, 'deleted'), l.spam, l.toxicity
          FROM ai_post_labels l JOIN posts p ON p.id = l.post_id JOIN items i ON i.id = p.item_id
@@ -336,8 +343,9 @@ pub async fn embedding_work(
 
 pub async fn embedding_count(pool: &PgPool) -> Result<(i64, i64), Error> {
     let done: i64 = sqlx::query_scalar("SELECT count(*) FROM ai_embeddings").fetch_one(pool).await?;
-    let all: i64 =
-        sqlx::query_scalar("SELECT count(*) FROM items WHERE kind = 'topic' AND state = 'visible'").fetch_one(pool).await?;
+    let all: i64 = sqlx::query_scalar("SELECT count(*) FROM items WHERE kind = 'topic' AND state = 'visible'")
+        .fetch_one(pool)
+        .await?;
     Ok((done, all))
 }
 
@@ -455,30 +463,31 @@ pub async fn topic_cards(
 pub async fn ensure_persona_user(pool: &PgPool, slug: &str) -> Result<(i64, String), Error> {
     let name = format!("ai-{slug}");
     let email = format!("{name}@plugins.invalid");
-    let existing: Option<i64> =
-        sqlx::query_scalar("SELECT id FROM users WHERE email_lower = lower($1)").bind(&email).fetch_optional(pool).await?;
-    let id = match existing {
-        Some(id) => id,
-        None => {
-            let mut tx = pool.begin().await?;
-            let (id, made) = crate::accounts::users::insert_user(
-                &mut tx,
-                &crate::accounts::users::NewUser {
-                    username: &name,
-                    email: &email,
-                    password_hash: None,
-                    display_name: None,
-                    primary_group: Some(2),
-                    joined_at: None,
-                    verified: true,
-                    kind: crate::accounts::users::AccountKind::Bot,
-                    fit_name: true,
-                },
-            )
-            .await?;
-            tx.commit().await?;
-            return Ok((id.get(), made));
-        }
+    let existing: Option<i64> = sqlx::query_scalar("SELECT id FROM users WHERE email_lower = lower($1)")
+        .bind(&email)
+        .fetch_optional(pool)
+        .await?;
+    let id = if let Some(id) = existing {
+        id
+    } else {
+        let mut tx = pool.begin().await?;
+        let (id, made) = crate::accounts::users::insert_user(
+            &mut tx,
+            &crate::accounts::users::NewUser {
+                username: &name,
+                email: &email,
+                password_hash: None,
+                display_name: None,
+                primary_group: Some(2),
+                joined_at: None,
+                verified: true,
+                kind: crate::accounts::users::AccountKind::Bot,
+                fit_name: true,
+            },
+        )
+        .await?;
+        tx.commit().await?;
+        return Ok((id.get(), made));
     };
     Ok((id, name))
 }

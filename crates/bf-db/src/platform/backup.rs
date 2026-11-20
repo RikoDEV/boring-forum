@@ -54,19 +54,18 @@ pub async fn tables(conn: &mut PgConnection) -> Result<Vec<Table>, Error> {
     )
     .fetch_all(&mut *conn)
     .await?;
-    rows.iter()
-        .map(|r| Ok(Table { name: r.try_get(0)?, columns: r.try_get(1)? }))
-        .collect()
+    rows.iter().map(|r| Ok(Table { name: r.try_get(0)?, columns: r.try_get(1)? })).collect()
 }
 
 /// Every sequence with where it stands: its last value and whether that value was handed out.
 /// (A sequence set with `setval(n, false)`, like the one that keeps new groups clear of the
 /// built-in ones, has not handed anything out yet but must come back at `n`.)
 pub async fn sequences(conn: &mut PgConnection) -> Result<Vec<(String, i64, bool)>, Error> {
-    let names: Vec<String> =
-        sqlx::query_scalar("SELECT sequencename::text FROM pg_sequences WHERE schemaname = 'public' ORDER BY sequencename")
-            .fetch_all(&mut *conn)
-            .await?;
+    let names: Vec<String> = sqlx::query_scalar(
+        "SELECT sequencename::text FROM pg_sequences WHERE schemaname = 'public' ORDER BY sequencename",
+    )
+    .fetch_all(&mut *conn)
+    .await?;
     let mut out = Vec::with_capacity(names.len());
     for name in names {
         // A name from the database's own catalog, quoted as an identifier.
@@ -189,7 +188,9 @@ pub fn entry_name(table: &str) -> String {
 
 /// Whether a name from a backup file can be a table name: nothing that could leave a folder.
 pub fn safe_table_name(name: &str) -> bool {
-    !name.is_empty() && name.len() <= 63 && name.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_')
+    !name.is_empty()
+        && name.len() <= 63
+        && name.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_')
 }
 
 /// A file under `dir` for a table.

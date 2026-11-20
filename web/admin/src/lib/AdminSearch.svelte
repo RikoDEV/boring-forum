@@ -132,7 +132,6 @@
   {#if open && words.length}
     <ul class="acp-find-list" id={listId} role="listbox" aria-label={tr("Search results")}>
       {#each results as r, i (r.id)}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           id="acp-find-{i}"
           role="option"

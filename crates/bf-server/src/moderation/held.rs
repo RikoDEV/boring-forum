@@ -269,8 +269,7 @@ async fn apply(state: &AppState, h: &Held) -> Result<bool, AppError> {
         }
         "status_reply" => crate::community::statuses::deliver_reply(state, n("status")?, from, &s("body")).await?,
         "profile" => {
-            let mut fields =
-                bf_db::accounts::preferences::profile_fields(pool, h.user_id.into()).await.db()?;
+            let mut fields = bf_db::accounts::preferences::profile_fields(pool, h.user_id.into()).await.db()?;
             if p.get("about").is_some() {
                 fields.about_md = Some(s("about"));
             }
@@ -284,9 +283,7 @@ async fn apply(state: &AppState, h: &Held) -> Result<bool, AppError> {
                 fields.website = Some(s("website"));
             }
             let html = fields.about_md.as_deref().map(|a| bf_cook::cook(a).html);
-            bf_db::accounts::preferences::save_profile(pool, h.user_id.into(), &fields, html.as_deref())
-                .await
-                .db()?;
+            bf_db::accounts::preferences::save_profile(pool, h.user_id.into(), &fields, html.as_deref()).await.db()?;
         }
         "signature" => {
             let raw = s("signature");
@@ -299,8 +296,8 @@ async fn apply(state: &AppState, h: &Held) -> Result<bool, AppError> {
             // (a moderator may rename a locked one), and the title still passes the title rules.
             let t = bf_db::forum::topics::topic_for(pool, item, None).await.db()?.ok_or(AppError::NotFound)?;
             let tree = state.forum.get(pool).await?;
-            let moderator = staff
-                || tree.perms(&crate::http::viewer::actor_for(&author), t.node_id).has(Perms::MODERATE);
+            let moderator =
+                staff || tree.perms(&crate::http::viewer::actor_for(&author), t.node_id).has(Perms::MODERATE);
             if !moderator && (t.author_id != Some(h.user_id) || t.locked) {
                 return Ok(false);
             }

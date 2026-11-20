@@ -225,18 +225,11 @@ async fn sync_flag(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, item: i64) ->
 }
 
 pub async fn polls_of(pool: &PgPool, item: i64) -> Result<Vec<Poll>, Error> {
-    sqlx::query_as(select_poll!("WHERE p.item_id = $1 ORDER BY p.position, p.id"))
-        .bind(item)
-        .fetch_all(pool)
-        .await
+    sqlx::query_as(select_poll!("WHERE p.item_id = $1 ORDER BY p.position, p.id")).bind(item).fetch_all(pool).await
 }
 
 pub async fn poll(pool: &PgPool, item: i64, poll: i64) -> Result<Option<Poll>, Error> {
-    sqlx::query_as(select_poll!("WHERE p.id = $1 AND p.item_id = $2"))
-        .bind(poll)
-        .bind(item)
-        .fetch_optional(pool)
-        .await
+    sqlx::query_as(select_poll!("WHERE p.id = $1 AND p.item_id = $2")).bind(poll).bind(item).fetch_optional(pool).await
 }
 
 /// (poll id, option id, label, votes, whether this viewer chose it), for every poll of a topic.
@@ -530,7 +523,7 @@ pub fn instant_runoff(ballots: &[Vec<i64>], options: &[i64]) -> Runoff {
         }
         out.rounds += 1;
         if out.rounds == 1 {
-            out.first_choices = tally.clone();
+            out.first_choices.clone_from(&tally);
         }
         // The most votes; of equals the one listed first.
         let best = remaining.iter().copied().max_by_key(|o| (tally[o], std::cmp::Reverse(place(o))));

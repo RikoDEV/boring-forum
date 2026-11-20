@@ -43,7 +43,10 @@
       status.fail(e);
     }
   }
-  get("/tree").then((t) => (nodes = t.nodes), () => {});
+  get("/tree").then(
+    (t) => (nodes = t.nodes),
+    () => {},
+  );
   load();
 
   let timer = 0;
@@ -72,7 +75,8 @@
           : d.target,
     });
   }
-  const remove = () => confirm(tr("Delete the permalink {url}?", { url: crud.draft.url })) && crud.remove(crud.draft.id);
+  const remove = () =>
+    confirm(tr("Delete the permalink {url}?", { url: crud.draft.url })) && crud.remove(crud.draft.id);
 </script>
 
 <PageHead
@@ -95,7 +99,12 @@
     ondelete={crud.draft.id ? remove : null}
   >
     <div class="acp-form">
-      <Field label={tr("Old address, like c/old-forum/12 or viewtopic.php?t=7")} bind:value={crud.draft.url} required wide />
+      <Field
+        label={tr("Old address, like c/old-forum/12 or viewtopic.php?t=7")}
+        bind:value={crud.draft.url}
+        required
+        wide
+      />
       <Field label={tr("Points at")} bind:value={crud.draft.kind} options={KINDS} onchange={() => (pick = [])} />
       {#if crud.draft.kind === "forum"}
         <Field label={tr("Forum or category")} bind:value={crud.draft.target_id} options={forums} />
@@ -128,7 +137,8 @@
           {#if p.missing}<span class="acp-pill is-danger">{tr("Missing")}</span>
             <span class="muted">{NAME[p.kind]} {p.target_id ?? p.target}</span>
           {:else}
-            <span class="muted">{NAME[p.kind]}:</span> {p.label}
+            <span class="muted">{NAME[p.kind]}:</span>
+            {p.label}
             {#if p.kind !== "url"}<small class="muted"><code>{p.destination}</code></small>{/if}
           {/if}
         </td>
@@ -139,4 +149,6 @@
     {/each}
   </tbody>
 </table>
-{#if total > rows.length && !search.trim()}<p class="muted"><small>{tr("The first {n} of {total} are shown: search for the rest.", { n: rows.length, total })}</small></p>{/if}
+{#if total > rows.length && !search.trim()}<p class="muted">
+    <small>{tr("The first {n} of {total} are shown: search for the rest.", { n: rows.length, total })}</small>
+  </p>{/if}

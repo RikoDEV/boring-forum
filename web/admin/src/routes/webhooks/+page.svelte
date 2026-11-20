@@ -62,7 +62,13 @@
   {#if NEW[tab]}<button onclick={() => (status.clear(), (dialog = NEW[tab][0]))}>{NEW[tab][1]}</button>{/if}
 </PageHead>
 {#if dialog === "hook"}
-  <EditDialog title={tr("New webhook")} onclose={() => (dialog = null)} onsubmit={add} {status} save={tr("Add webhook")}>
+  <EditDialog
+    title={tr("New webhook")}
+    onclose={() => (dialog = null)}
+    onsubmit={add}
+    {status}
+    save={tr("Add webhook")}
+  >
     <div class="acp-form">
       <Field
         label={tr("Address")}
@@ -91,7 +97,13 @@
     </div>
   </EditDialog>
 {:else if dialog === "app"}
-  <EditDialog title={tr("New application")} onclose={() => (dialog = null)} onsubmit={addClient} {status} save={tr("Add application")}>
+  <EditDialog
+    title={tr("New application")}
+    onclose={() => (dialog = null)}
+    onsubmit={addClient}
+    {status}
+    save={tr("Add application")}
+  >
     <div class="acp-form">
       <Field label={tr("App name")} bind:value={app.name} required />
       <Field label={tr("Redirect address")} type="url" bind:value={app.uri} required />

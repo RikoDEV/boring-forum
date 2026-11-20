@@ -1,7 +1,7 @@
 // The panel's messages, in the admin's own language (catalog keys under `admin.` in
 // crates/bf-core/locales): fetched once with the site's header (/api/v1/admin/shell) before the
 // first page renders, so `t()` can be called anywhere, also outside components.
-import KEYS from "./keys.json";
+import KEYS from "./keys.json" with { type: "json" };
 
 let shellPromise = null;
 let messages = {};

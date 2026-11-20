@@ -98,7 +98,6 @@ pub async fn ping(pool: &PgPool) -> Result<(), Error> {
 }
 
 // Query functions, by domain. Each module covers one concern.
-mod sql;
 pub mod accounts;
 pub mod admin;
 pub mod ai;
@@ -108,3 +107,4 @@ pub mod forum;
 pub mod moderation;
 pub mod platform;
 pub mod settings;
+mod sql;

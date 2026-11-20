@@ -259,16 +259,16 @@ const TOOLS = [
   ["quote", tr("Quote"), quote, "Mod-Shift-9"],
   ["list", tr("Bulleted list"), bullets, "Mod-Shift-8"],
 ];
-// The Insert menu (and the "/" menu): [icon, label, command, shortcut, kind]. `narrow` items are
-// on the bar on wide screens and only here on a phone; `math` is offered only where the site
-// renders it; `table` and `palette` open their own pickers.
-/** @type {[string, string, any, string?, string?][]} */
 // Puts the pictures around the cursor in a grid, or opens an empty one.
 const imageGrid = (view) => {
   groupImages(view);
   return true;
 };
 
+// The Insert menu (and the "/" menu): [icon, label, command, shortcut, kind]. `narrow` items are
+// on the bar on wide screens and only here on a phone; `math` is offered only where the site
+// renders it; `table` and `palette` open their own pickers.
+/** @type {[string, string, any, string?, string?][]} */
 const INSERT = [
   ["heading", tr("Heading"), nextHeading, "", "narrow"],
   ["quote", tr("Quote"), quote, "", "narrow"],
@@ -1803,11 +1803,11 @@ export function mount(textarea, opts = {}) {
     if (icon !== "bold" && icon !== "italic" && icon !== "link") b.classList.add("bf-narrow-hide");
     left.append(b);
   }
-  for (const [icon, title, run] of [
+  for (const [icon, title, run] of /** @type {[string, string, (view: any) => boolean][]} */ ([
     ...TOOLS.filter((t) => ["bold", "italic", "link", "code"].includes(t[0])),
     ["code", tr("Code"), format("`")],
     ["strikethrough", tr("Strikethrough"), format("~~")],
-  ]) {
+  ])) {
     const b = iconButton(icon, title);
     b.addEventListener("click", () => run(view));
     selbar.append(b);

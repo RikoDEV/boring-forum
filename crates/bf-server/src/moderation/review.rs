@@ -2,10 +2,10 @@
 
 use crate::forum::posting::announce_post;
 use crate::forum::tree::Tree;
-use crate::http::render::{ago, DbResult};
 use crate::http::render::db_err;
 use crate::http::render::layout;
 use crate::http::render::page;
+use crate::http::render::{DbResult, ago};
 use crate::http::viewer::Viewer;
 use crate::http::viewer::is_staff;
 use crate::state::AppState;
@@ -353,8 +353,15 @@ async fn resolve(
         if f.decision == "silence" {
             let hours = state.settings().int("flag_auto_silence_hours");
             let hours = if hours > 0 { hours } else { 72 };
-            crate::moderation::spam::silence_for(&state, me, target.id.get(), hours, "A post of theirs was reported as spam.", false)
-                .await;
+            crate::moderation::spam::silence_for(
+                &state,
+                me,
+                target.id.get(),
+                hours,
+                "A post of theirs was reported as spam.",
+                false,
+            )
+            .await;
         } else {
             crate::moderation::discipline::clean_up_spammer(&state, &v, target, false).await?;
         }

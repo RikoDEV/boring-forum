@@ -1,7 +1,8 @@
 use serde_json::{Value, json};
 
 pub(super) fn docs() -> Vec<Value> {
-    let endpoint = json!({ "type": "string", "description": "The push service address from the browser's PushSubscription." });
+    let endpoint =
+        json!({ "type": "string", "description": "The push service address from the browser's PushSubscription." });
     let credential_options_note = "Set-Cookie `__Host-bf_wa` (HttpOnly, Secure, SameSite=Strict, Path=/, 5 minutes) names the stored one-time challenge; the follow-up call must send it back.";
     vec![
         json!({

@@ -251,7 +251,13 @@ fn taken(e: &sqlx::Error) -> bool {
 }
 
 /// One line of the staff log for a custom page.
-async fn audit(state: &AppState, who: Option<i64>, action: &str, id: i64, c: Option<(&Checked, &PageBody)>) -> Result<(), AppError> {
+async fn audit(
+    state: &AppState,
+    who: Option<i64>,
+    action: &str,
+    id: i64,
+    c: Option<(&Checked, &PageBody)>,
+) -> Result<(), AppError> {
     let details = match c {
         Some((c, b)) => json!({
             "slug": c.slug, "title": c.title, "template": c.template, "path": c.path,

@@ -307,11 +307,13 @@ fn random_markup_never_panics() {
     }
 }
 
-
 #[test]
 fn grid_blocks_put_pictures_side_by_side() {
     let sha = "a".repeat(64);
-    let html = cook(&format!("before\n\n[grid]\n![a](/uploads/{sha}.png#100x80)\n![b](https://example.org/b.png)\n[/grid]\n\nafter")).html;
+    let html = cook(&format!(
+        "before\n\n[grid]\n![a](/uploads/{sha}.png#100x80)\n![b](https://example.org/b.png)\n[/grid]\n\nafter"
+    ))
+    .html;
     assert!(html.contains("<div class=\"bf-grid\">"), "{html}");
     assert_eq!(html.matches("<img").count(), 2, "{html}");
     assert!(html.contains("before") && html.contains("after"), "{html}");

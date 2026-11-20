@@ -142,7 +142,14 @@ async fn register(
         }
         Err(e) => return Err(db_err(e)),
     }
-    crate::admin::api::audit_log(pool, Some(user.id.get()), "account.passkey_add", &format!("user:{}", user.id), serde_json::json!({})).await?;
+    crate::admin::api::audit_log(
+        pool,
+        Some(user.id.get()),
+        "account.passkey_add",
+        &format!("user:{}", user.id),
+        serde_json::json!({}),
+    )
+    .await?;
     Ok((StatusCode::CREATED, Json(json!({ "ok": true }))).into_response())
 }
 

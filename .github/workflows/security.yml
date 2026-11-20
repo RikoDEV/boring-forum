@@ -37,8 +37,7 @@ jobs:
       - name: RustSec audit of Cargo.lock
         # The same ignores as deny.toml, so the two tools cannot disagree about what is accepted.
         run: |
-          ignores=$(grep -oE 'RUSTSEC-[0-9]{4}-[0-9]{4}' deny.toml | sed 's/^/--ignore /' | tr '
-' ' ')
+          ignores=$(grep -oE 'RUSTSEC-[0-9]{4}-[0-9]{4}' deny.toml | sed 's/^/--ignore /' | tr '\n' ' ')
           cargo audit --deny warnings $ignores
       - name: Every dependency audited or exempted (supply-chain/)
         run: cargo vet --locked

@@ -11,7 +11,10 @@ function medal({ tier, icon: name, color = 0, level = 0, rare = false, label }) 
   const shape = el("span", { class: `bf-medal-shape bf-medal-c${(((color | 0) % 10) + 10) % 10}` });
   shape.append(icon(name));
   m.append(shape);
-  if (level > 0) m.append(el("span", { class: "bf-medal-level" }, level >= 1000 && level % 1000 === 0 ? `${level / 1000}k` : String(level)));
+  if (level > 0)
+    m.append(
+      el("span", { class: "bf-medal-level" }, level >= 1000 && level % 1000 === 0 ? `${level / 1000}k` : String(level)),
+    );
   wrap.append(m);
   return wrap;
 }
@@ -251,7 +254,8 @@ function buildTopic(t) {
   by.append(t.author ? userLink(t.author) : document.createTextNode(tr("deleted member")), started);
   body.append(by);
 
-  if (t.gist) body.append(el("p", { class: "bf-tc-excerpt bf-tc-gist", "data-tip": tr("A summary made by AI") }, t.gist));
+  if (t.gist)
+    body.append(el("p", { class: "bf-tc-excerpt bf-tc-gist", "data-tip": tr("A summary made by AI") }, t.gist));
   else if (t.excerpt) body.append(el("p", { class: "bf-tc-excerpt" }, t.excerpt));
   if (t.tags?.length) {
     const tags = el("div", { class: "bf-tc-tags" });

@@ -1,4 +1,4 @@
-//! imgproxy (https://imgproxy.net) for pictures from other sites: posts and link previews show
+//! imgproxy (<https://imgproxy.net>) for pictures from other sites: posts and link previews show
 //! them through the admin's own imgproxy instead of from the third party's server, so a reader's
 //! address and browser never reach it, the picture is resized and recompressed, and a site that
 //! takes its picture away does not leave a hole in an old post.
@@ -44,7 +44,7 @@ pub(crate) struct Config {
 
 fn unhex(s: &str) -> Option<Vec<u8>> {
     let s = s.trim();
-    if s.is_empty() || s.len() % 2 != 0 || s.len() > 512 || !s.bytes().all(|b| b.is_ascii_hexdigit()) {
+    if s.is_empty() || !s.len().is_multiple_of(2) || s.len() > 512 || !s.bytes().all(|b| b.is_ascii_hexdigit()) {
         return None;
     }
     (0..s.len()).step_by(2).map(|i| u8::from_str_radix(&s[i..i + 2], 16).ok()).collect()
@@ -121,12 +121,26 @@ impl Config {
         };
         let width = u32::try_from(s.int("imgproxy_width")).unwrap_or(1280).clamp(100, 4000);
         let gifs = s.bool("imgproxy_gifs");
-        let fingerprint: String = Sha256::digest(format!("{base}|{}|{}|{width}|{format}|{gifs}", s.str("imgproxy_key"), s.str("imgproxy_salt")))
-            .iter()
-            .take(4)
-            .map(|b| format!("{b:02x}"))
-            .collect();
-        Some(Config { base, host, own_host: host_of(site_url).unwrap_or_default(), key, salt, width, format, gifs, fingerprint })
+        let fingerprint: String = Sha256::digest(format!(
+            "{base}|{}|{}|{width}|{format}|{gifs}",
+            s.str("imgproxy_key"),
+            s.str("imgproxy_salt")
+        ))
+        .iter()
+        .take(4)
+        .map(|b| format!("{b:02x}"))
+        .collect();
+        Some(Config {
+            base,
+            host,
+            own_host: host_of(site_url).unwrap_or_default(),
+            key,
+            salt,
+            width,
+            format,
+            gifs,
+            fingerprint,
+        })
     }
 
     /// The origin pictures are sent from, for the page's policy.
@@ -146,7 +160,10 @@ impl Config {
         if internal_host(&u) {
             return false;
         }
-        if host == self.host || host == self.own_host || UNTOUCHED.iter().any(|h| host == *h || host.ends_with(&format!(".{h}"))) {
+        if host == self.host
+            || host == self.own_host
+            || UNTOUCHED.iter().any(|h| host == *h || host.ends_with(&format!(".{h}")))
+        {
             return false;
         }
         self.gifs || !u.path().to_ascii_lowercase().ends_with(".gif")
@@ -201,7 +218,13 @@ pub(crate) fn rewrite<'a>(text: &'a str, cfg: &Config) -> Cow<'a, str> {
 /// The tag with its `src` swapped, or None when it has none worth swapping.
 fn swap(tag: &str, cfg: &Config) -> Option<String> {
     let at = tag.find(" src=")? + " src=".len();
-    let (quote_len, quote) = if tag[at..].starts_with("\\\"") { (2, "\\\"") } else if tag[at..].starts_with('"') { (1, "\"") } else { return None };
+    let (quote_len, quote) = if tag[at..].starts_with("\\\"") {
+        (2, "\\\"")
+    } else if tag[at..].starts_with('"') {
+        (1, "\"")
+    } else {
+        return None;
+    };
     let start = at + quote_len;
     let end = start + tag[start..].find(quote)?;
     let src = tag[start..end].replace("&amp;", "&");
@@ -219,7 +242,10 @@ fn carries_source(path: &str, json: &str) -> bool {
 
 fn signable(res: &Response) -> bool {
     res.headers().get(header::CONTENT_TYPE).and_then(|v| v.to_str().ok()).is_some_and(|t| {
-        t.starts_with("text/html") || t.starts_with("application/json") || t.starts_with("application/rss+xml") || t.starts_with("application/atom+xml")
+        t.starts_with("text/html")
+            || t.starts_with("application/json")
+            || t.starts_with("application/rss+xml")
+            || t.starts_with("application/atom+xml")
     })
 }
 
@@ -232,7 +258,9 @@ pub(crate) async fn layer(State(state): State<AppState>, mut req: Request, next:
     let suffix = format!("-p{}", cfg.fingerprint);
     if let Some(v) = req.headers().get(header::IF_NONE_MATCH).and_then(|v| v.to_str().ok()).map(str::to_owned) {
         req.headers_mut().remove(header::IF_NONE_MATCH);
-        if let Some(own) = super::upload_links::strip_tag_suffix(&v, &suffix).and_then(|t| HeaderValue::from_str(&t).ok()) {
+        if let Some(own) =
+            super::upload_links::strip_tag_suffix(&v, &suffix).and_then(|t| HeaderValue::from_str(&t).ok())
+        {
             req.headers_mut().insert(header::IF_NONE_MATCH, own);
         }
     }
@@ -244,7 +272,11 @@ pub(crate) async fn layer(State(state): State<AppState>, mut req: Request, next:
     let Ok(bytes) = axum::body::to_bytes(body, 32 * 1024 * 1024).await else {
         return Response::builder().status(500).body(axum::body::Body::empty()).unwrap_or_default();
     };
-    let is_json = parts.headers.get(header::CONTENT_TYPE).and_then(|v| v.to_str().ok()).is_some_and(|t| t.starts_with("application/json"));
+    let is_json = parts
+        .headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|t| t.starts_with("application/json"));
     let body = match std::str::from_utf8(&bytes) {
         Ok(text) if is_json && carries_source(&path, text) => bytes,
         Ok(text) => match rewrite(text, &cfg) {
@@ -254,7 +286,11 @@ pub(crate) async fn layer(State(state): State<AppState>, mut req: Request, next:
         Err(_) => bytes,
     };
     // A page keeps its validator only for as long as the settings that shaped it.
-    if let Some(tag) = parts.headers.get(header::ETAG).and_then(|v| v.to_str().ok()).map(|t| super::upload_links::tag_with_suffix(t, &suffix))
+    if let Some(tag) = parts
+        .headers
+        .get(header::ETAG)
+        .and_then(|v| v.to_str().ok())
+        .map(|t| super::upload_links::tag_with_suffix(t, &suffix))
         && let Ok(v) = HeaderValue::from_str(&tag)
     {
         parts.headers.insert(header::ETAG, v);
@@ -312,7 +348,7 @@ mod tests {
         mac.update(format!("/{path}").as_bytes());
         assert_eq!(sig, URL_SAFE_NO_PAD.encode(mac.finalize().into_bytes()));
         // A width above the site's limit is brought down to it; a format adds an extension.
-        assert!(cfg("webp", false).url("https://a.example/x.png", 99_999).unwrap().contains("/rs:fit:1280:0:0/") );
+        assert!(cfg("webp", false).url("https://a.example/x.png", 99_999).unwrap().contains("/rs:fit:1280:0:0/"));
         assert!(cfg("webp", false).url("https://a.example/x.png", 600).unwrap().ends_with(".webp"));
     }
 
@@ -360,7 +396,11 @@ mod tests {
     fn settings_make_a_config_only_when_they_are_whole() {
         let mut s = bf_core::settings::Settings::default();
         assert!(Config::from_settings(&s, "https://forum.example").is_none(), "off");
-        for (k, v) in [("imgproxy_enabled", serde_json::json!(true)), ("imgproxy_url", "https://img.example.com/".into()), ("imgproxy_key", "00ff".into())] {
+        for (k, v) in [
+            ("imgproxy_enabled", serde_json::json!(true)),
+            ("imgproxy_url", "https://img.example.com/".into()),
+            ("imgproxy_key", "00ff".into()),
+        ] {
             s.set(k, v).unwrap();
         }
         assert!(Config::from_settings(&s, "https://forum.example").is_none(), "no salt");

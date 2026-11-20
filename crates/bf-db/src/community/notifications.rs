@@ -19,8 +19,7 @@ pub struct Row {
 pub async fn list(pool: &PgPool, user_id: i64, kinds: Option<&[&str]>, limit: i64) -> Result<Vec<Row>, Error> {
     let kinds: Option<Vec<String>> = kinds.map(|k| k.iter().map(|s| (*s).to_owned()).collect());
     // Notices about the member's own account stay even when the topic they name is gone.
-    let account: Vec<&str> =
-        bf_core::notifications::KINDS.iter().filter(|k| k.mandatory).map(|k| k.key).collect();
+    let account: Vec<&str> = bf_core::notifications::KINDS.iter().filter(|k| k.mandatory).map(|k| k.key).collect();
     // A notification whose topic was deleted or hidden since is not shown (`/t/slug/123...`).
     sqlx::query_as(
         "SELECT id, kind, data, read, created_at FROM notifications n
@@ -40,8 +39,7 @@ pub async fn list(pool: &PgPool, user_id: i64, kinds: Option<&[&str]>, limit: i6
 
 /// The newest unread notifications the list would show (same filter as `list`), for the badge.
 pub async fn list_unread(pool: &PgPool, user_id: i64, limit: i64) -> Result<Vec<Row>, Error> {
-    let account: Vec<&str> =
-        bf_core::notifications::KINDS.iter().filter(|k| k.mandatory).map(|k| k.key).collect();
+    let account: Vec<&str> = bf_core::notifications::KINDS.iter().filter(|k| k.mandatory).map(|k| k.key).collect();
     sqlx::query_as(
         "SELECT id, kind, data, read, created_at FROM notifications n
          WHERE user_id = $1 AND NOT read
@@ -77,8 +75,7 @@ pub async fn topic_nodes(pool: &PgPool, ids: &[i64]) -> Result<Vec<(i64, i64)>, 
 /// topics that still exist, so the sender side can drop what the recipient may no longer read.
 /// Notices about the member's own account are not included.
 pub async fn held_mail_topics(pool: &PgPool, limit: i64) -> Result<Vec<(i64, i64, i64, i64)>, Error> {
-    let account: Vec<&str> =
-        bf_core::notifications::KINDS.iter().filter(|k| k.mandatory).map(|k| k.key).collect();
+    let account: Vec<&str> = bf_core::notifications::KINDS.iter().filter(|k| k.mandatory).map(|k| k.key).collect();
     sqlx::query_as(
         "SELECT o.id, o.unless_read_user, i.id, i.node_id FROM mail_outbox o
          JOIN items i ON i.id = substring(o.unless_read_url from '^/t/[^/]+/([0-9]{1,18})')::bigint
@@ -429,4 +426,3 @@ pub async fn mailing_list_members(pool: &PgPool, author: i64, item: i64, node: i
     .fetch_all(pool)
     .await
 }
-

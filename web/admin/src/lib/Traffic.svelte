@@ -10,7 +10,7 @@
     { key: "anonymous", label: () => tr("Anonymous") },
     { key: "crawler", label: () => tr("Crawlers") },
   ];
-  let shown = $state({ member: true, anonymous: true, crawler: false });
+  const shown = $state({ member: true, anonymous: true, crawler: false });
   let active = $state(null);
 
   const compact = (n) => new Intl.NumberFormat(locale(), { notation: "compact", maximumFractionDigits: 1 }).format(n);
@@ -18,7 +18,9 @@
   const day = (iso) => new Date(`${iso}T00:00:00`).toLocaleDateString(locale(), { day: "numeric", month: "short" });
   const total = (d) => SERIES.reduce((n, s) => n + (shown[s.key] ? d[s.key] : 0), 0);
 
-  const change = $derived(data.views_before ? Math.round(((data.views - data.views_before) / data.views_before) * 100) : null);
+  const change = $derived(
+    data.views_before ? Math.round(((data.views - data.views_before) / data.views_before) * 100) : null,
+  );
   const top = $derived.by(() => {
     const max = Math.max(1, ...data.daily.map(total));
     // The next round number up (1, 2, 5, 10 ...), so the grid lines fall on whole values.
@@ -54,7 +56,10 @@
   <div class="acp-traffic-body">
     <div class="acp-traffic-top">
       <p class="acp-traffic-headline">
-        {tr("{views} pageviews in the last {days} days", { views: compact(data.views), days: data.days })}{#if change !== null}&nbsp;— <span class:is-up={change >= 0} class:is-down={change < 0}
+        {tr("{views} pageviews in the last {days} days", {
+          views: compact(data.views),
+          days: data.days,
+        })}{#if change !== null}&nbsp;— <span class:is-up={change >= 0} class:is-down={change < 0}
             >{change >= 0 ? tr("up {pct}%", { pct: change }) : tr("down {pct}%", { pct: -change })}</span
           >{/if}
       </p>
@@ -83,8 +88,18 @@
         {#each [...ticks].reverse() as t}<span>{whole(t)}</span>{/each}
       </div>
       <div class="acp-traffic-grid">
-        <div class="acp-traffic-lines" aria-hidden="true">{#each ticks as _}<i></i>{/each}</div>
-        <div class="acp-traffic-bars" role="img" aria-label={tr("{title}: {total} in the last {length} days", { title: tr("Page views"), total: data.views, length: data.days })}>
+        <div class="acp-traffic-lines" aria-hidden="true">
+          {#each ticks as _}<i></i>{/each}
+        </div>
+        <div
+          class="acp-traffic-bars"
+          role="img"
+          aria-label={tr("{title}: {total} in the last {length} days", {
+            title: tr("Page views"),
+            total: data.views,
+            length: data.days,
+          })}
+        >
           {#each data.daily as d, i}
             <div
               class="acp-traffic-col"
@@ -101,7 +116,8 @@
               {#if active === i}
                 <span class="acp-traffic-tip" class:is-end={i > data.daily.length / 2}>
                   <strong>{day(d.day)}</strong>
-                  {#each SERIES as s}{#if shown[s.key]}<span class="is-{s.key}">{s.label()}: {whole(d[s.key])}</span>{/if}{/each}
+                  {#each SERIES as s}{#if shown[s.key]}<span class="is-{s.key}">{s.label()}: {whole(d[s.key])}</span
+                      >{/if}{/each}
                 </span>
               {/if}
             </div>
@@ -112,7 +128,9 @@
         </div>
       </div>
     </div>
-    {#if empty}<p class="acp-empty">{tr("No page views recorded yet: they are counted as people browse the site.")}</p>{/if}
+    {#if empty}<p class="acp-empty">
+        {tr("No page views recorded yet: they are counted as people browse the site.")}
+      </p>{/if}
 
     <div class="acp-traffic-legend" role="group" aria-label={tr("Show in the chart")}>
       {#each SERIES as s}
@@ -126,13 +144,17 @@
       <section>
         <h3>{tr("Top referrers")}</h3>
         {#if data.referrers.length}<ul>
-            {#each data.referrers as r}<li><span>{r.name}</span><b>{pct(r.views)}% <small>({whole(r.views)})</small></b></li>{/each}
+            {#each data.referrers as r}<li>
+                <span>{r.name}</span><b>{pct(r.views)}% <small>({whole(r.views)})</small></b>
+              </li>{/each}
           </ul>{:else}<p class="acp-empty">{tr("None yet")}</p>{/if}
       </section>
       <section>
         <h3>{tr("Top entry URLs")}</h3>
         {#if data.entries.length}<ul>
-            {#each data.entries as r}<li><a href={r.name} title={r.name}>{r.name}</a><b>{pct(r.views)}% <small>({whole(r.views)})</small></b></li>{/each}
+            {#each data.entries as r}<li>
+                <a href={r.name} title={r.name}>{r.name}</a><b>{pct(r.views)}% <small>({whole(r.views)})</small></b>
+              </li>{/each}
           </ul>{:else}<p class="acp-empty">{tr("None yet")}</p>{/if}
       </section>
       <section>

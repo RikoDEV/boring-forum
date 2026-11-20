@@ -159,7 +159,11 @@ async fn backup_command(args: &[String]) -> Result<(), Box<dyn std::error::Error
         println!("{}  ({} bytes)", dir.join(&made.name).display(), made.size);
         return Ok(());
     }
-    let file = args.iter().skip(1).find(|a| !a.starts_with("--")).ok_or("usage: boring-forum restore <backup.tar.gz> [--yes]")?;
+    let file = args
+        .iter()
+        .skip(1)
+        .find(|a| !a.starts_with("--"))
+        .ok_or("usage: boring-forum restore <backup.tar.gz> [--yes]")?;
     if !args.iter().any(|a| a == "--yes") {
         eprintln!("This replaces every table in the database and adds the backup's uploads.");
         eprintln!("Stop the server first. Type restore to continue:");

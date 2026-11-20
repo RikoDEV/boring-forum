@@ -52,12 +52,8 @@ pub(super) async fn list_channels(State(state): State<AppState>, v: Viewer) -> R
     enabled(&state)?;
     let user = v.require_user()?;
     let pool = state.db()?;
-    Ok(Json(
-        chat::channels_for(pool, user.id.get(), &bf_core::ids::raw(&v.actor.groups), v.actor.is_admin)
-            .await
-            .db()?,
-    )
-    .into_response())
+    Ok(Json(chat::channels_for(pool, user.id.get(), &bf_core::ids::raw(&v.actor.groups), v.actor.is_admin).await.db()?)
+        .into_response())
 }
 
 #[derive(Deserialize)]
@@ -130,7 +126,10 @@ pub(super) async fn messages(
     let term: String = q.q.trim().chars().take(100).collect();
     let term = term.as_str();
     if !term.is_empty() {
-        let key = v.user.as_ref().map_or_else(|| format!("ip:{}", crate::http::ratelimit::ip_key(v.ip)), |u| format!("u:{}", u.id));
+        let key = v
+            .user
+            .as_ref()
+            .map_or_else(|| format!("ip:{}", crate::http::ratelimit::ip_key(v.ip)), |u| format!("u:{}", u.id));
         crate::http::ratelimit::SEARCH_BY_USER.enforce(&key)?;
     }
     let term = if term.is_empty() {

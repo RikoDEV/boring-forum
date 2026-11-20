@@ -67,15 +67,12 @@ pub(super) async fn autocomplete(
                 None => None,
             };
             let me = v.user.as_ref().map_or(0, |u| u.id.get());
-            let people = users::mention_candidates(pool, &q.q, topic, me, 8, crate::http::viewer::is_staff(&v))
-                .await
-                .db()?;
+            let people =
+                users::mention_candidates(pool, &q.q, topic, me, 8, crate::http::viewer::is_staff(&v)).await.db()?;
             let groups = if q.q.is_empty() {
                 vec![]
             } else {
-                mentions::mentionable_groups(pool, &bf_core::ids::raw(&v.actor.groups), &q.q, 4)
-                    .await
-                    .db()?
+                mentions::mentionable_groups(pool, &bf_core::ids::raw(&v.actor.groups), &q.q, 4).await.db()?
             };
             let group = |n: String| json!({ "label": n, "group": true });
             people

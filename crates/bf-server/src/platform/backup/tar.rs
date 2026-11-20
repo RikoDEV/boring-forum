@@ -152,7 +152,8 @@ impl<R: Read> Reader<R> {
         let name = cstr(&h[0..100]);
         let name = if prefix.is_empty() { name } else { format!("{prefix}/{name}") };
         let kind = h[156];
-        self.left = size.checked_add(((BLOCK as u64) - size % BLOCK as u64) % BLOCK as u64).ok_or_else(|| bad("a size"))?;
+        self.left =
+            size.checked_add(((BLOCK as u64) - size % BLOCK as u64) % BLOCK as u64).ok_or_else(|| bad("a size"))?;
         Ok(Some(Entry { name, size, is_file: kind == b'0' || kind == 0 }))
     }
 

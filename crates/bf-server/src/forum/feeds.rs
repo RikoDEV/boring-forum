@@ -81,7 +81,10 @@ async fn fixed_sitemap_urls(
             bf_seo::SitemapUrl { loc: format!("{base}/tag/{}", bf_core::html::url_encode(&slug)), lastmod: Some(at) }
         }));
         urls.extend(feeds::sitemap_profiles(pool, 5000).await.unwrap_or_default().into_iter().map(|name| {
-            bf_seo::SitemapUrl { loc: format!("{base}/u/{}", bf_core::html::url_encode(&name.to_ascii_lowercase())), lastmod: None }
+            bf_seo::SitemapUrl {
+                loc: format!("{base}/u/{}", bf_core::html::url_encode(&name.to_ascii_lowercase())),
+                lastmod: None,
+            }
         }));
     }
     urls.extend(

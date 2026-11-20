@@ -26,7 +26,8 @@ pub(super) async fn list(State(state): State<AppState>, v: Viewer, headers: Head
     let mut rows: Vec<Value> = all
         .iter()
         .map(|p| {
-            let new_caps: Vec<&String> = p.capabilities.iter().filter(|c| !p.approved_capabilities.contains(c)).collect();
+            let new_caps: Vec<&String> =
+                p.capabilities.iter().filter(|c| !p.approved_capabilities.contains(c)).collect();
             let mut row = serde_json::to_value(p).unwrap_or_default();
             row["new_capabilities"] = json!(new_caps);
             row["requires"] = json!(requirements(p.schema.as_ref()));
@@ -38,7 +39,12 @@ pub(super) async fn list(State(state): State<AppState>, v: Viewer, headers: Head
     for row in &mut rows {
         let id = row["id"].as_str().unwrap_or_default().to_owned();
         let perms = bf_db::platform::registry_groups::permissions_of(state.db()?, &id).await.db()?;
-        row["permissions"] = json!(perms.into_iter().map(|(key, label, groups)| json!({ "key": key, "label": label, "groups": groups })).collect::<Vec<_>>());
+        row["permissions"] = json!(
+            perms
+                .into_iter()
+                .map(|(key, label, groups)| json!({ "key": key, "label": label, "groups": groups }))
+                .collect::<Vec<_>>()
+        );
     }
     Ok(Json(rows).into_response())
 }
@@ -81,7 +87,9 @@ fn unmet(all: &[plugins::Summary], schema: Option<&Value>) -> Vec<String> {
 /// Plugins that are on and need this one.
 fn dependents(all: &[plugins::Summary], id: &str) -> Vec<String> {
     all.iter()
-        .filter(|o| o.enabled && o.id != id && requirements(o.schema.as_ref()).iter().any(|r| split_requirement(r).0 == id))
+        .filter(|o| {
+            o.enabled && o.id != id && requirements(o.schema.as_ref()).iter().any(|r| split_requirement(r).0 == id)
+        })
         .map(|o| o.id.clone())
         .collect()
 }
@@ -236,7 +244,10 @@ pub(super) async fn enable(
     let all = plugins::summaries(pool).await.db()?;
     let current = all.iter().find(|p| p.id == id).cloned().ok_or(AppError::NotFound)?;
     if let Some(r) = unmet(&all, current.schema.as_ref()).first() {
-        return Err(AppError::invalid("This plugin needs {requirement}, which is not installed and enabled.", &[("requirement", r)]));
+        return Err(AppError::invalid(
+            "This plugin needs {requirement}, which is not installed and enabled.",
+            &[("requirement", r)],
+        ));
     }
     let (mut asked, mut approved) = (current.capabilities, b.capabilities);
     asked.sort();

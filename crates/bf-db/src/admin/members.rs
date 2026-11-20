@@ -1,9 +1,9 @@
 //! Member and group administration.
 
+use crate::admin::audit::{Entry, record};
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 pub use sqlx::Error;
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 #[derive(Debug, Serialize, FromRow)]
@@ -126,7 +126,8 @@ pub async fn update_user(pool: &PgPool, id: i64, c: &UserChange, actor: i64) -> 
         sqlx::query("DELETE FROM user_secondary_groups WHERE user_id = $1").bind(id).execute(&mut *tx).await?;
         // An administrator editing a member: the one path that may grant a staff group.
         for group in groups {
-            crate::community::groups::add_members(&mut tx, &[id], *group, crate::community::groups::Grant::Staff).await?;
+            crate::community::groups::add_members(&mut tx, &[id], *group, crate::community::groups::Grant::Staff)
+                .await?;
         }
     }
     let after: Vec<i64> = sqlx::query_scalar(
@@ -188,7 +189,8 @@ pub async fn update_user(pool: &PgPool, id: i64, c: &UserChange, actor: i64) -> 
         "trust_level_locked": c.trust_level_locked,
         "email_verified": c.email_verified,
         })),
-    ).await?;
+    )
+    .await?;
     tx.commit().await?;
     Ok(true)
 }
@@ -239,10 +241,11 @@ pub struct GroupStyle<'a> {
 /// Renames and restyles a group. False when there is no such group.
 pub async fn update_group(pool: &PgPool, id: i64, g: &GroupStyle<'_>, actor: i64) -> Result<bool, Error> {
     let mut tx = pool.begin().await?;
-    let old: Option<(String, String)> = sqlx::query_as("SELECT name, slug FROM groups WHERE id = $1 AND plugin IS NULL FOR UPDATE")
-        .bind(id)
-        .fetch_optional(&mut *tx)
-        .await?;
+    let old: Option<(String, String)> =
+        sqlx::query_as("SELECT name, slug FROM groups WHERE id = $1 AND plugin IS NULL FOR UPDATE")
+            .bind(id)
+            .fetch_optional(&mut *tx)
+            .await?;
     let Some((old_name, old_slug)) = old else { return Ok(false) };
     sqlx::query("UPDATE groups SET name = $2, slug = $3, colour = $4, icon = $5, image = $6 WHERE id = $1")
         .bind(id)
@@ -259,7 +262,8 @@ pub async fn update_group(pool: &PgPool, id: i64, g: &GroupStyle<'_>, actor: i64
         "from": { "name": old_name, "slug": old_slug },
         "to": { "name": g.name, "slug": g.slug, "colour": g.colour, "icon": g.icon, "image": g.image },
         })),
-    ).await?;
+    )
+    .await?;
     tx.commit().await?;
     Ok(true)
 }
@@ -301,7 +305,14 @@ pub async fn delete_group(pool: &PgPool, id: i64, actor: i64) -> Result<bool, Er
         .await?
         .rows_affected();
     sqlx::query("DELETE FROM groups WHERE id = $1").bind(id).execute(&mut *tx).await?;
-    record(&mut *tx, Entry::new("group.delete").by(actor).on(format!("group:{id}")).details(serde_json::json!({ "name": name, "primary_members_moved": moved }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("group.delete")
+            .by(actor)
+            .on(format!("group:{id}"))
+            .details(serde_json::json!({ "name": name, "primary_members_moved": moved })),
+    )
+    .await?;
     tx.commit().await?;
     Ok(true)
 }

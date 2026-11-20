@@ -1,9 +1,9 @@
 //! IP and email bans, flood checks and new-device detection.
 
+use crate::admin::audit::{Entry, record};
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 pub use sqlx::Error;
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 use std::net::IpAddr;
 
@@ -25,7 +25,11 @@ macro_rules! live {
 }
 
 pub async fn list(pool: &PgPool) -> Result<Vec<Ban>, Error> {
-    sqlx::query_as(concat!("SELECT id, kind, value, reason, created_at, expires_at FROM bans WHERE ", live!(), " ORDER BY id DESC"))
+    sqlx::query_as(concat!(
+        "SELECT id, kind, value, reason, created_at, expires_at FROM bans WHERE ",
+        live!(),
+        " ORDER BY id DESC"
+    ))
     .fetch_all(pool)
     .await
 }
@@ -61,7 +65,14 @@ pub async fn add_until(
     .bind(expires)
     .fetch_one(&mut *tx)
     .await?;
-    record(&mut *tx, Entry::new("ban.add").by(actor).on(format!("ban:{id}")).details(serde_json::json!({ "kind": kind, "value": value, "expires_at": expires }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("ban.add")
+            .by(actor)
+            .on(format!("ban:{id}"))
+            .details(serde_json::json!({ "kind": kind, "value": value, "expires_at": expires })),
+    )
+    .await?;
     tx.commit().await?;
     Ok(id)
 }

@@ -10,7 +10,9 @@ mod bbcode;
 pub use bbcode::to_markdown as bbcode_to_markdown;
 pub use bbcode::{set_bbcode, set_custom_emoji, set_plugin_emoji};
 mod extension;
-pub use extension::{MAX_CALLBACKS, PLACEHOLDER_CLOSE, PLACEHOLDER_OPEN, Rule as ExtensionRule, check as check_extension, set_extensions};
+pub use extension::{
+    MAX_CALLBACKS, PLACEHOLDER_CLOSE, PLACEHOLDER_OPEN, Rule as ExtensionRule, check as check_extension, set_extensions,
+};
 mod highlight;
 mod html;
 pub mod inert;
@@ -133,10 +135,8 @@ pub fn cook(raw: &str) -> Cooked {
     // for the cooker's own, and a plugin's answer would land wherever it was typed (an attribute).
     // The hidden-content marker is the cooker's own too: a typed one would take the place of a
     // real block when it is shown.
-    let raw = strip_hidden(&raw.replace(HIDDEN_MARKER, "")).replace(
-        [extension::PLACEHOLDER_OPEN, extension::PLACEHOLDER_CLOSE],
-        "",
-    );
+    let raw = strip_hidden(&raw.replace(HIDDEN_MARKER, ""))
+        .replace([extension::PLACEHOLDER_OPEN, extension::PLACEHOLDER_CLOSE], "");
     let arena = Arena::new();
     let opts = options();
     let raw = grid_fences(&bbcode::to_markdown(&limit_quote_depth(&raw)));
@@ -155,23 +155,28 @@ pub fn cook(raw: &str) -> Cooked {
     #[expect(clippy::expect_used, reason = "the formatter only fails when the writer does, and a String never does")]
     format_html_with_plugins(root, &opts, &mut html, &plugins).expect("formatting into a String cannot fail");
     let callbacks = if outermost { extension::take() } else { Vec::new() };
-    Cooked { html: sanitize(&inline_styles(&images(&html))), mentions: mentions.into_iter().collect(), links, callbacks }
+    Cooked {
+        html: sanitize(&inline_styles(&images(&html))),
+        mentions: mentions.into_iter().collect(),
+        links,
+        callbacks,
+    }
 }
 
 /// `[grid]` (or `[grid=3]` for three columns, 2 to 6) and `[/grid]` on lines of their own (a block of
 /// pictures shown side by side, as Discourse writes it) become a ```` ```grid ```` fence. A marker without its partner, or inside a code fence,
 /// stays the text it is.
 fn grid_fences(raw: &str) -> String {
-    if !raw.contains("[grid") {
-        return raw.to_owned();
-    }
-    let lines: Vec<&str> = raw.split('\n').collect();
     // What each line is: `Open(columns)` starts a grid, `Close` ends it.
     #[derive(Clone, Copy)]
     enum Mark {
         Open(Option<u8>),
         Close,
     }
+    if !raw.contains("[grid") {
+        return raw.to_owned();
+    }
+    let lines: Vec<&str> = raw.split('\n').collect();
     let mut mark: Vec<Option<Mark>> = vec![None; lines.len()];
     let mut fence: Option<(char, usize)> = None;
     let mut open: Option<(usize, Option<u8>)> = None;

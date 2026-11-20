@@ -99,7 +99,17 @@ async fn create_topic(state: &AppState, url: &str, node: i64) -> Result<i64, App
     };
     let item = bf_db::forum::posts::create_topic(pool, node, &title, &slug, &post).await.db()?;
     embeds::add_embed(pool, url, item).await.db()?;
-    crate::forum::posting::after_system_post(state, author, bf_core::i18n::en("Anonymous"), &title, &slug, item, node, 1).await;
+    crate::forum::posting::after_system_post(
+        state,
+        author,
+        bf_core::i18n::en("Anonymous"),
+        &title,
+        &slug,
+        item,
+        node,
+        1,
+    )
+    .await;
     state.forum.invalidate();
     // Two first views at once: both made a topic, and the earlier one is the thread.
     Ok(embeds::embed_item(pool, url).await.db()?.unwrap_or(item))
@@ -134,7 +144,8 @@ async fn comments(State(state): State<AppState>, Query(q): Query<EmbedQuery>) ->
         html.push_str(&format!(
             "<article><strong>{}</strong><div>{}</div></article>",
             match p.author.as_deref() {
-                Some(n) => format!("<a href=\"{}{}\">{}</a>", esc(base), esc(&bf_core::slug::profile_path(0, n)), esc(n)),
+                Some(n) =>
+                    format!("<a href=\"{}{}\">{}</a>", esc(base), esc(&bf_core::slug::profile_path(0, n)), esc(n)),
                 None => trh("deleted member"),
             },
             p.cooked

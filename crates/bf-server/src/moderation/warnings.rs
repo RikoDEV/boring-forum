@@ -1,7 +1,7 @@
 //! Warnings.
 
 use crate::http::i18n::trh;
-use crate::http::render::{ago, DbResult};
+use crate::http::render::{DbResult, ago};
 use crate::http::ui::simple_page;
 use crate::http::viewer::{Viewer, is_staff};
 use crate::state::AppState;
@@ -53,8 +53,7 @@ pub(crate) async fn issue(state: &AppState, v: &Viewer, id: i64, points: i32, re
     if !is_staff(v) {
         return Err(AppError::Forbidden);
     }
-    let target =
-        bf_db::accounts::users::user_by_id(pool, id.into()).await.db()?.ok_or(AppError::NotFound)?;
+    let target = bf_db::accounts::users::user_by_id(pool, id.into()).await.db()?.ok_or(AppError::NotFound)?;
     if target.id == user.id || target.is_admin {
         return Err(AppError::Validation("You cannot warn yourself or an administrator.".into()));
     }
@@ -73,9 +72,7 @@ pub(crate) async fn issue(state: &AppState, v: &Viewer, id: i64, points: i32, re
         days: s.int("warning_action_days") as i32,
     };
     let (_, was_silenced, was_suspended) = warnings::warning_state(pool, id).await.db()?;
-    warnings::warn(pool, id, user.id.get(), points, reason, s.int("warning_expire_days") as i32, &t)
-        .await
-        .db()?;
+    warnings::warn(pool, id, user.id.get(), points, reason, s.int("warning_expire_days") as i32, &t).await.db()?;
     let (_, silenced, suspended) = warnings::warning_state(pool, id).await.db()?;
     let url = format!("/u/{id}/warnings");
     let data = json!({ "message": reason, "url": url });

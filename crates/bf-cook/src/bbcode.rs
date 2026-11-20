@@ -114,7 +114,9 @@ fn emoji(s: &str) -> String {
     while let Some(i) = rest.find(':') {
         out.push_str(&rest[..i]);
         let after = &rest[i + 1..];
-        if let Some((e, url)) = after.find(':').and_then(|e| map.get(&after[..e]).or_else(|| plugin.get(&after[..e])).map(|u| (e, u))) {
+        if let Some((e, url)) =
+            after.find(':').and_then(|e| map.get(&after[..e]).or_else(|| plugin.get(&after[..e])).map(|u| (e, u)))
+        {
             out.push_str(&format!("![:{}:]({url})", &after[..e]));
             rest = &after[e + 1..];
         } else {

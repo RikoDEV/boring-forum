@@ -1,8 +1,8 @@
 //! Users: lookup, creation, renames, approval and trust promotion.
 
+use crate::admin::audit::{Entry, record};
 use bf_core::ids::{ForumId, GroupId, UserId};
 use chrono::{DateTime, Utc};
-use crate::admin::audit::{Entry, record};
 use sqlx::{FromRow, PgPool};
 
 type Error = sqlx::Error;
@@ -257,8 +257,12 @@ pub async fn create_user(pool: &PgPool, username: &str, email: &str, password_ha
 
 pub async fn user_by_login(pool: &PgPool, login: &str) -> Result<Option<User>, Error> {
     // Only the constant USER_COLS is interpolated; every value is bound.
-    sqlx::query_as(concat!("SELECT ", user_cols!(), " FROM users u WHERE (u.username_lower = lower($1) OR u.email_lower = lower($1))
-         AND (u.suspended_until IS NULL OR u.suspended_until < now())"))
+    sqlx::query_as(concat!(
+        "SELECT ",
+        user_cols!(),
+        " FROM users u WHERE (u.username_lower = lower($1) OR u.email_lower = lower($1))
+         AND (u.suspended_until IS NULL OR u.suspended_until < now())"
+    ))
     .bind(login)
     .fetch_optional(pool)
     .await
@@ -412,7 +416,14 @@ pub async fn change_author(pool: &PgPool, item_id: i64, new_author: i64, actor: 
     .await?;
     // `last_poster_id` may have been the old author (a topic with only its first post).
     crate::moderation::topics::recount_item(&mut tx, item_id).await?;
-    record(&mut *tx, Entry::new("topic.change_author").by(actor).on(format!("item:{item_id}")).details(serde_json::json!({ "from": old, "to": new_author }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("topic.change_author")
+            .by(actor)
+            .on(format!("item:{item_id}"))
+            .details(serde_json::json!({ "from": old, "to": new_author })),
+    )
+    .await?;
     tx.commit().await
 }
 
@@ -714,11 +725,13 @@ pub async fn demote_inactive(
 /// After a level was removed: members above `top` drop to it, and forums that asked for more
 /// ask for `top`. Returns how many members moved.
 pub async fn cap_trust_level(pool: &PgPool, top: i16) -> Result<u64, Error> {
-    let moved = sqlx::query("UPDATE users SET trust_level = $1, trust_nudged_level = least(trust_nudged_level, $1) WHERE trust_level > $1")
-        .bind(top)
-        .execute(pool)
-        .await?
-        .rows_affected();
+    let moved = sqlx::query(
+        "UPDATE users SET trust_level = $1, trust_nudged_level = least(trust_nudged_level, $1) WHERE trust_level > $1",
+    )
+    .bind(top)
+    .execute(pool)
+    .await?
+    .rows_affected();
     sqlx::query("UPDATE nodes SET min_trust_level = $1 WHERE min_trust_level > $1").bind(top).execute(pool).await?;
     Ok(moved)
 }
@@ -840,10 +853,10 @@ pub async fn skeleton_taken(pool: &PgPool, skeleton: &str, except_user: Option<i
     sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM users WHERE username_skeleton = $1 AND NOT remote AND id <> COALESCE($2, 0))",
     )
-        .bind(skeleton)
-        .bind(except_user)
-        .fetch_one(pool)
-        .await
+    .bind(skeleton)
+    .bind(except_user)
+    .fetch_one(pool)
+    .await
 }
 
 /// Accounts whose skeleton is missing or stale (new accounts, renames), a batch at a time.

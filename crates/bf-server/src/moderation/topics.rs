@@ -3,7 +3,7 @@
 use crate::forum::posting::validate_title;
 use crate::forum::topics::readable_topic;
 use crate::forum::tree::Tree;
-use crate::http::render::{db_err, DbResult};
+use crate::http::render::{DbResult, db_err};
 use crate::http::viewer::Viewer;
 use crate::state::AppState;
 use axum::extract::{Path, State};
@@ -159,8 +159,15 @@ pub(crate) async fn move_topic(
         }
     }
     crate::platform::webhooks::emit(&state, "topic.moved", json!({ "topic_id": id, "from": from, "to": f.to })).await;
-    crate::platform::webhooks::moderated(&state, "move", user.id.get(), "topic", id, json!({ "from": from, "to": f.to }))
-        .await;
+    crate::platform::webhooks::moderated(
+        &state,
+        "move",
+        user.id.get(),
+        "topic",
+        id,
+        json!({ "from": from, "to": f.to }),
+    )
+    .await;
     refresh(&state);
     Ok(Redirect::to(&topic_path(id, &t.slug)).into_response())
 }
@@ -252,7 +259,10 @@ async fn bulk(
             .db()?;
     // Whatever is wrong with the request as a whole is refused before any topic is touched.
     let action = get("action");
-    if !matches!(action, "lock" | "unlock" | "pin" | "unpin" | "delete" | "move" | "archive" | "unarchive" | "tag" | "owner") {
+    if !matches!(
+        action,
+        "lock" | "unlock" | "pin" | "unpin" | "delete" | "move" | "archive" | "unarchive" | "tag" | "owner"
+    ) {
         return Err(AppError::BadRequest("unknown action".into()));
     }
     let to: Option<i64> = if action == "move" {
@@ -290,7 +300,17 @@ async fn bulk(
             let mut all: Vec<String> = have.into_iter().map(|(_, name, _)| name).collect();
             all.push(csv.clone());
             match crate::forum::posting::apply_tags(&state, &v.actor, *t, &all.join(","), true).await {
-                Ok(()) => crate::platform::webhooks::moderated(&state, "tag", user.id.get(), "topic", *t, json!({ "tags": csv })).await,
+                Ok(()) => {
+                    crate::platform::webhooks::moderated(
+                        &state,
+                        "tag",
+                        user.id.get(),
+                        "topic",
+                        *t,
+                        json!({ "tags": csv }),
+                    )
+                    .await;
+                }
                 Err(e) => {
                     tracing::warn!(topic = *t, error = ?e, "bulk tag failed for one topic");
                     failed += 1;
@@ -365,13 +385,18 @@ async fn bulk(
                                     },
                                 )
                                 .await;
-                                let url = sid.map_or_else(|| "/notifications".to_owned(), |id| format!("/statements/{id}"));
+                                let url =
+                                    sid.map_or_else(|| "/notifications".to_owned(), |id| format!("/statements/{id}"));
                                 let data = json!({ "by": user.username, "title": title, "url": url, "message": "" });
                                 crate::community::notifications::send(&state, me, &[author], "moderation", &data).await;
                             }
                         }
-                        crate::platform::webhooks::emit(&state, "topic.deleted", json!({ "topic_id": *t, "actor": me }))
-                            .await;
+                        crate::platform::webhooks::emit(
+                            &state,
+                            "topic.deleted",
+                            json!({ "topic_id": *t, "actor": me }),
+                        )
+                        .await;
                         crate::platform::webhooks::moderated(&state, "delete_topic", me, "topic", *t, json!({})).await;
                     }
                     ("move", Some(dest)) => {
@@ -381,8 +406,15 @@ async fn bulk(
                             json!({ "topic_id": *t, "from": id, "to": dest }),
                         )
                         .await;
-                        crate::platform::webhooks::moderated(&state, "move", me, "topic", *t, json!({ "from": id, "to": dest }))
-                            .await;
+                        crate::platform::webhooks::moderated(
+                            &state,
+                            "move",
+                            me,
+                            "topic",
+                            *t,
+                            json!({ "from": id, "to": dest }),
+                        )
+                        .await;
                     }
                     _ => crate::platform::webhooks::moderated(&state, action, me, "topic", *t, json!({})).await,
                 }

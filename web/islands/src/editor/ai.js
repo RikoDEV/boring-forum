@@ -2,7 +2,6 @@
 // draft. Nothing is applied by itself: the answer is shown, and the member chooses to use it.
 import { jsonHeaders, tr } from "../dom.js";
 
-
 /** @param {object} body */
 async function ask(body) {
   const res = await fetch("/api/v1/ai/helper", {
@@ -31,8 +30,8 @@ const button = (label, cls = "btn") => {
 export function aiHelper({ view, iconButton, topic, form }) {
   if (!document.querySelector('meta[name="bf-ai-helper"]')) return null;
   const titleInput = form?.querySelector('input[name="title"]') ?? null;
-  const tagsInput = form?.querySelector("#tags") ?? null;
-  const forumPicker = form?.querySelector("[data-forum-picker]") ?? null;
+  const tagsInput = /** @type {HTMLInputElement | null} */ (form?.querySelector("#tags") ?? null);
+  const forumPicker = /** @type {HTMLInputElement | null} */ (form?.querySelector("[data-forum-picker]") ?? null);
 
   const root = document.createElement("div");
   root.className = "composer-ai";

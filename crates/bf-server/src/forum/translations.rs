@@ -4,7 +4,6 @@
 //! no query for them. Forum and category names and descriptions are not here: they are site texts,
 //! translated in the admin panel's Site text page like every other text.
 
-use bf_core::html::esc;
 use crate::http::i18n::trh;
 use crate::http::render::DbResult;
 use crate::http::ui::{Shell, begin, finish, hidden_csrf, md_field, text_field, user_link, when};
@@ -15,6 +14,7 @@ use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::{get, post};
 use axum::{Form, Router};
 use bf_core::AppError;
+use bf_core::html::esc;
 use bf_core::perms::Perms;
 use bf_core::slug::topic_path;
 use bf_db::forum::translations as db;
@@ -127,13 +127,11 @@ async fn source(state: &AppState, v: &Viewer, kind: &str, id: i64) -> Result<(St
             // A translation is shown in place of the post, so its author may write one only while
             // they could edit the post itself: not silenced, the topic open, the post not locked,
             // and inside the edit window.
-            let may = translator
-                || moderator
-                || (own && crate::forum::posting::editable_post(state, v, id).await.is_ok());
+            let may =
+                translator || moderator || (own && crate::forum::posting::editable_post(state, v, id).await.is_ok());
             // The source is the post's text: `[hide]` blocks only for those the topic shows them to.
-            let sees_hidden = moderator
-                || own
-                || bf_db::community::onboarding::has_posted(pool, item, user.id.get()).await.db()?;
+            let sees_hidden =
+                moderator || own || bf_db::community::onboarding::has_posted(pool, item, user.id.get()).await.db()?;
             let raw = if sees_hidden { raw } else { bf_cook::strip_hidden(&raw) };
             let heading = if number == 1 { title } else { String::new() };
             Ok((heading, raw, format!("{}#post-{number}", topic_path(item, &slug)), may))
@@ -161,12 +159,15 @@ async fn page(
     let existing = db::of(state.db()?, &kind, id).await.db()?;
     let ctx = begin(&state, &v);
     let locales = bf_core::i18n::locales();
-    let name_of = |code: &str| locales.iter().find(|(c, _)| *c == code).map_or_else(|| code.to_owned(), |(_, n)| (*n).to_owned());
+    let name_of =
+        |code: &str| locales.iter().find(|(c, _)| *c == code).map_or_else(|| code.to_owned(), |(_, n)| (*n).to_owned());
     // The language being edited: the one asked for, else the newest version, else the first.
     let chosen = if bf_core::i18n::supported(&q.locale) {
         q.locale.clone()
     } else {
-        existing.first().map_or_else(|| locales.first().map(|(c, _)| (*c).to_owned()).unwrap_or_default(), |t| t.locale.clone())
+        existing
+            .first()
+            .map_or_else(|| locales.first().map(|(c, _)| (*c).to_owned()).unwrap_or_default(), |t| t.locale.clone())
     };
     let current = existing.iter().find(|t| t.locale == chosen);
 
@@ -206,7 +207,11 @@ async fn page(
         "<form method=\"post\" action=\"/translate/{kind}/{id}\" class=\"bf-box bf-tr-editor\">{csrf}         <div class=\"bf-tr-fields\">         <label class=\"bf-field\"><select name=\"locale\">{options}</select><span class=\"bf-field-label\">{l1}</span></label>{title_field}{body}         </div>         <div class=\"bf-tr-actions\"><a class=\"btn\" href=\"{back_e}\">{cancel}</a><button class=\"btn primary\">{save}</button></div></form>",
         csrf = hidden_csrf(&ctx.token),
         l1 = trh("Language (saving one that exists replaces it)"),
-        title_field = if title.is_empty() { String::new() } else { text_field("title", "Title", current.map_or(title.as_str(), |t| t.title.as_str()), 200, true) },
+        title_field = if title.is_empty() {
+            String::new()
+        } else {
+            text_field("title", "Title", current.map_or(title.as_str(), |t| t.title.as_str()), 200, true)
+        },
         body = md_field("raw", "Text (Markdown)", current.map_or(raw.as_str(), |t| t.raw.as_str()), 12, kind == "post"),
         back_e = esc(&back),
         cancel = trh("Cancel"),
@@ -217,7 +222,11 @@ async fn page(
         "<section class=\"bf-box bf-tr-original\"><div class=\"bf-box-head\"><h2>{}</h2></div><div class=\"bf-tr-source\">{}{}</div></section>",
         trh("The original"),
         if title.is_empty() { String::new() } else { format!("<p class=\"bf-tr-source-title\">{}</p>", esc(&title)) },
-        if raw.trim().is_empty() { format!("<p class=\"muted\">{}</p>", trh("No description.")) } else { format!("<pre class=\"bf-held-text\">{}</pre>", esc(&raw)) },
+        if raw.trim().is_empty() {
+            format!("<p class=\"muted\">{}</p>", trh("No description."))
+        } else {
+            format!("<pre class=\"bf-held-text\">{}</pre>", esc(&raw))
+        },
     );
     let html = format!(
         "<div class=\"bf-tr\">{editor}<aside class=\"bf-tr-side\"><section class=\"bf-box\"><div class=\"bf-box-head\"><h2>{vh}</h2></div>{versions}</section>{original}</aside></div>",

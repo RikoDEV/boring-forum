@@ -140,7 +140,9 @@ jobs:
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       # The ignored tests of bf-db apply every file in crates/bf-db/migrations to the empty
       # database above.
-      - run: cargo test --locked -p bf-db -- --ignored --test-threads=1
+      # Integration tests only (`--test '*'`): the ignored unit tests in src/ need a hand-made fixture
+      # database (see the doc comment on each) and are not part of this job.
+      - run: cargo test --locked -p bf-db --test '*' -- --ignored --test-threads=1
       # CONTRIBUTING.md: never edit an applied migration. A pull request may only add files.
       - name: Applied migrations are unchanged
         if: github.event_name == 'pull_request'

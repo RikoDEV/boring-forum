@@ -64,8 +64,10 @@ fn upload_image(url: &str) -> Option<(&str, u32, u32)> {
     let (w, h): (u32, u32) = (w.parse().ok()?, h.parse().ok()?);
     let (sha, ext) = path.strip_prefix("/uploads/")?.split_once('.')?;
     let hex = sha.len() == 64 && sha.bytes().all(|b| b.is_ascii_hexdigit());
-    (hex && matches!(ext, "png" | "jpg" | "gif" | "webp") && (1..=MAX_IMAGE_SIDE).contains(&w) && (1..=MAX_IMAGE_SIDE).contains(&h))
-        .then_some((path, w, h))
+    (hex && matches!(ext, "png" | "jpg" | "gif" | "webp")
+        && (1..=MAX_IMAGE_SIDE).contains(&w)
+        && (1..=MAX_IMAGE_SIDE).contains(&h))
+    .then_some((path, w, h))
 }
 
 /// Text colours members can apply with `[text]{colour}`; also the `clr-` classes the sanitizer
@@ -207,13 +209,19 @@ pub fn sanitize(html: &str) -> String {
                 ok.then(|| value.into())
             }
             // The picture grid (`[grid]`) is the one first-party class a post may carry on a block.
-            ("div", "class") => (matches!(value, "bf-grid" | "bf-grid bf-grid-2" | "bf-grid bf-grid-3" | "bf-grid bf-grid-4" | "bf-grid bf-grid-5" | "bf-grid bf-grid-6")
-                || value.split_whitespace().all(|c| c.starts_with("plug-") && c.len() < 40))
-                .then(|| value.into()),
-            (_, "class") => value
-                .split_whitespace()
-                .all(|c| c.starts_with("plug-") && c.len() < 40)
-                .then(|| value.into()),
+            ("div", "class") => (matches!(
+                value,
+                "bf-grid"
+                    | "bf-grid bf-grid-2"
+                    | "bf-grid bf-grid-3"
+                    | "bf-grid bf-grid-4"
+                    | "bf-grid bf-grid-5"
+                    | "bf-grid bf-grid-6"
+            ) || value.split_whitespace().all(|c| c.starts_with("plug-") && c.len() < 40))
+            .then(|| value.into()),
+            (_, "class") => {
+                value.split_whitespace().all(|c| c.starts_with("plug-") && c.len() < 40).then(|| value.into())
+            }
             // Generated anchors only; a prefix stops ids clobbering the page's own.
             (_, "id") => (value.starts_with("h-") || value.starts_with("fn-") || value.starts_with("fnref-"))
                 .then(|| value.into()),

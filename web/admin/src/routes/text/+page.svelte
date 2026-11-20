@@ -137,7 +137,9 @@
         <li class="acp-rowitem">
           <div class="acp-grow">
             <small class="muted acp-text-key">{c.key}</small>{#if mine(c.key)}
-              <span class="acp-pill">{tr("Changed")}</span>{/if}<br /><span dir="auto" class="acp-text-preview">{mine(c.key) || c.default}</span>
+              <span class="acp-pill">{tr("Changed")}</span>{/if}<br /><span dir="auto" class="acp-text-preview"
+              >{mine(c.key) || c.default}</span
+            >
           </div>
           <button class="secondary" onclick={() => edit(c)}>{tr("Edit")}</button>
         </li>

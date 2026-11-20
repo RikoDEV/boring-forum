@@ -34,7 +34,9 @@
   const payload = () => ({
     levels: levels.map((l) => ({
       ...strip(l),
-      ...Object.fromEntries([...KINDS.map((k) => k[0]), "recent_posts"].map((f) => [f, Math.max(0, Number(l[f]) || 0)])),
+      ...Object.fromEntries(
+        [...KINDS.map((k) => k[0]), "recent_posts"].map((f) => [f, Math.max(0, Number(l[f]) || 0)]),
+      ),
     })),
     recent_days: Math.min(3650, Math.max(1, Number(recentDays) || 100)),
   });

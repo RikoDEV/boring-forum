@@ -12,6 +12,9 @@ pub struct GroupPage {
     pub members: Vec<String>,
 }
 
+/// A member in the directory: (name, group, posts, reputation, joined, trust level and its name when shown).
+pub type MemberRow = (String, String, i32, i64, crate::ago::Ago, Option<(i16, String)>);
+
 #[derive(Template)]
 #[template(path = "users.html")]
 pub struct UsersPage {
@@ -20,8 +23,7 @@ pub struct UsersPage {
     pub sort: String,
     /// (label, url, current).
     pub sorts: Vec<(String, String, bool)>,
-    /// (name, group, posts, reputation, joined, trust level and its name when shown).
-    pub rows: Vec<(String, String, i32, i64, crate::ago::Ago, Option<(i16, String)>)>,
+    pub rows: Vec<MemberRow>,
     pub prev_url: Option<String>,
     pub next_url: Option<String>,
     pub page: i64,

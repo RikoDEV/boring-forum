@@ -394,7 +394,12 @@ pub(crate) async fn process_inbound(
 /// Stores a mail's attachments through the site's upload pipeline, as the member's own uploads
 /// (the same trust, size, type, scan, metadata and daily-quota rules as the upload form), and
 /// returns the body with their links appended. Any file refused refuses the whole mail.
-async fn attach_files(state: &AppState, user: i64, body: &str, files: &[(String, Vec<u8>)]) -> Result<String, AppError> {
+async fn attach_files(
+    state: &AppState,
+    user: i64,
+    body: &str,
+    files: &[(String, Vec<u8>)],
+) -> Result<String, AppError> {
     use crate::forum::uploads::{Accept, allowed_types, sniff, store};
     if files.is_empty() {
         return Ok(body.to_owned());
@@ -429,7 +434,10 @@ async fn attach_files(state: &AppState, user: i64, body: &str, files: &[(String,
             return Err(if allowed.is_empty() {
                 AppError::Validation("Files cannot be added here.".into())
             } else {
-                AppError::invalid("Only these kinds of file can be added here: {types}.", &[("types", &allowed.join(", "))])
+                AppError::invalid(
+                    "Only these kinds of file can be added here: {types}.",
+                    &[("types", &allowed.join(", "))],
+                )
             });
         }
         let stored = store(state, u.id.get(), filename, bytes, Accept::Files, max_kb).await?;
@@ -452,8 +460,7 @@ async fn attach_files(state: &AppState, user: i64, body: &str, files: &[(String,
 async fn message_by_email(state: &AppState, user: i64, conversation: i64, body: &str) -> Result<(), AppError> {
     let pool = state.db()?;
     let u = bf_db::accounts::users::user_by_id(pool, user.into()).await.db()?.ok_or(AppError::NotFound)?;
-    if bf_db::accounts::users::is_suspended(pool, user).await.db()? || !u.approved || u.legal_pending || u.silenced
-    {
+    if bf_db::accounts::users::is_suspended(pool, user).await.db()? || !u.approved || u.legal_pending || u.silenced {
         return Err(AppError::Forbidden);
     }
     let body = body.trim();
@@ -507,10 +514,8 @@ async fn message_by_email(state: &AppState, user: i64, conversation: i64, body: 
 /// Tells a member, at their own address, that the mail they sent was not posted.
 async fn bounce(state: &AppState, user: i64, subject: &str, why: &AppError) {
     let Some(pool) = &state.pool else { return };
-    let Ok(Some(email)) = sqlx::query_scalar::<_, String>("SELECT email FROM users WHERE id = $1")
-        .bind(user)
-        .fetch_optional(pool)
-        .await
+    let Ok(Some(email)) =
+        sqlx::query_scalar::<_, String>("SELECT email FROM users WHERE id = $1").bind(user).fetch_optional(pool).await
     else {
         return;
     };
@@ -552,10 +557,16 @@ pub(crate) fn html_to_text(html: &str) -> String {
             }
             '>' if in_tag => {
                 in_tag = false;
-                let name = tag.trim_start_matches('/').split(|c: char| c.is_whitespace() || c == '/').next().unwrap_or("").to_ascii_lowercase();
+                let name = tag
+                    .trim_start_matches('/')
+                    .split(|c: char| c.is_whitespace() || c == '/')
+                    .next()
+                    .unwrap_or("")
+                    .to_ascii_lowercase();
                 if matches!(name.as_str(), "script" | "style") {
                     skip = !tag.starts_with('/');
-                } else if matches!(name.as_str(), "br" | "p" | "div" | "li" | "tr" | "h1" | "h2" | "h3" | "blockquote") {
+                } else if matches!(name.as_str(), "br" | "p" | "div" | "li" | "tr" | "h1" | "h2" | "h3" | "blockquote")
+                {
                     out.push('\n');
                 }
             }
@@ -588,11 +599,14 @@ mod tests {
 
     #[test]
     fn html_mail_becomes_text() {
-        assert_eq!(html_to_text("<p>Hi&nbsp;there</p><style>x{}</style><div>a &amp; b<br>c</div>"), "
+        assert_eq!(
+            html_to_text("<p>Hi&nbsp;there</p><style>x{}</style><div>a &amp; b<br>c</div>"),
+            "
 Hi there
 
 a & b
-c");
+c"
+        );
     }
 
     #[test]

@@ -35,8 +35,8 @@ fn answer(state: &AppState, p: &links::Preview) -> Response {
     let image = super::imgproxy::Config::from_settings(&state.settings(), &state.config.base_url)
         .and_then(|c| c.url(&p.image, 640))
         .unwrap_or_else(|| p.image.clone());
-    let mut res = Json(json!({ "title": p.title, "description": p.description, "image": image, "site": p.site }))
-        .into_response();
+    let mut res =
+        Json(json!({ "title": p.title, "description": p.description, "image": image, "site": p.site })).into_response();
     res.headers_mut().insert(header::CACHE_CONTROL, HeaderValue::from_static("public, max-age=3600"));
     res
 }
@@ -51,13 +51,10 @@ async fn preview(
     if let Some(id) = internal_topic(&q.url, &state.config.base_url) {
         let (t, _, _) = readable_topic(&state, &v, id).await?;
         let site = state.settings().str("site_name").to_owned();
-        let mut res = answer(&state, &links::Preview {
-            title: t.title,
-            description: String::new(),
-            image: String::new(),
-            site,
-            ok: true,
-        });
+        let mut res = answer(
+            &state,
+            &links::Preview { title: t.title, description: String::new(), image: String::new(), site, ok: true },
+        );
         // Permission-checked: no shared cache may keep this.
         res.headers_mut().insert(header::CACHE_CONTROL, HeaderValue::from_static("private, no-store"));
         return Ok(res);

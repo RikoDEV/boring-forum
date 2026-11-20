@@ -40,6 +40,7 @@ pub(super) async fn require_2fa(
         }
     }
     sqlx::query("UPDATE groups SET require_2fa = $2 WHERE id = $1").bind(id).bind(b.on).execute(pool).await.found()?;
-    super::audit_log(pool, Some(actor(who)), "group.require_2fa", &format!("group:{id}"), json!({ "on": b.on })).await?;
+    super::audit_log(pool, Some(actor(who)), "group.require_2fa", &format!("group:{id}"), json!({ "on": b.on }))
+        .await?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }

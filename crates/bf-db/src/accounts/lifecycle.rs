@@ -3,9 +3,9 @@
 //! [`REGISTRY`] is the one list of everything that points at a member. Export and erasure both
 //! read it, and a test compares it with the schema, so the two cannot drift apart or miss a table.
 
+use crate::admin::audit::{Entry, record};
 use chrono::{DateTime, Utc};
 use serde_json::Value;
-use crate::admin::audit::{Entry, record};
 use sqlx::PgPool;
 
 type Error = sqlx::Error;
@@ -70,7 +70,12 @@ pub const REGISTRY: &[Personal] = &[
     p("sessions", "impersonated_by", Null, No("the administrator behind an impersonated session; the link only")),
     p("club_bans", "user_id", Delete, No("a club owner's ban list")),
     p("mass_messages", "sender_id", Null, No("staff action; the message record stays")),
-    p("plugin_review_items", "submitted_by", Keep("a staff review entry; the member shows as deleted-N"), No("staff queue")),
+    p(
+        "plugin_review_items",
+        "submitted_by",
+        Keep("a staff review entry; the member shows as deleted-N"),
+        No("staff queue"),
+    ),
     p("plugin_review_items", "decided_by", Keep("moderation record"), No("staff action")),
     p("post_notes", "author_id", Keep("a staff note; the author shows as deleted-N"), No("staff note")),
     p("email_tokens", "user_id", Delete, No("one-time secrets")),
@@ -312,7 +317,10 @@ async fn anonymize_in(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, user: i64)
         .bind(user)
         .execute(&mut **tx)
         .await?;
-        sqlx::query("UPDATE posts SET raw = '', cooked = '' WHERE author_id = $1").bind(user).execute(&mut **tx).await?;
+        sqlx::query("UPDATE posts SET raw = '', cooked = '' WHERE author_id = $1")
+            .bind(user)
+            .execute(&mut **tx)
+            .await?;
         // Earlier versions of those posts are the same text: they go too.
         sqlx::query("DELETE FROM post_revisions WHERE post_id IN (SELECT id FROM posts WHERE author_id = $1)")
             .bind(user)
@@ -338,8 +346,10 @@ async fn anonymize_in(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, user: i64)
     .execute(&mut **tx)
     .await?;
     // Topics they voted for lose the votes below; their counters are recounted afterwards.
-    let voted: Vec<i64> =
-        sqlx::query_scalar("SELECT item_id FROM topic_votes WHERE user_id = $1").bind(user).fetch_all(&mut **tx).await?;
+    let voted: Vec<i64> = sqlx::query_scalar("SELECT item_id FROM topic_votes WHERE user_id = $1")
+        .bind(user)
+        .fetch_all(&mut **tx)
+        .await?;
     for entry in REGISTRY {
         // Table and column names come from the constant registry; the member id is bound.
         let sql = match entry.erase {
@@ -353,10 +363,12 @@ async fn anonymize_in(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, user: i64)
         };
         sqlx::query(sqlx::AssertSqlSafe(sql)).bind(user).execute(&mut **tx).await?;
     }
-    sqlx::query("UPDATE items SET vote_count = (SELECT count(*) FROM topic_votes WHERE item_id = items.id) WHERE id = ANY($1)")
-        .bind(&voted)
-        .execute(&mut **tx)
-        .await?;
+    sqlx::query(
+        "UPDATE items SET vote_count = (SELECT count(*) FROM topic_votes WHERE item_id = items.id) WHERE id = ANY($1)",
+    )
+    .bind(&voted)
+    .execute(&mut **tx)
+    .await?;
     // The federated actor: remote servers stop hearing about it (the Delete activity is queued by
     // the caller before this runs) and its private key goes once that is delivered.
     sqlx::query("DELETE FROM ap_followers WHERE local_type = 'user' AND local_id = $1")
@@ -364,7 +376,7 @@ async fn anonymize_in(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>, user: i64)
         .execute(&mut **tx)
         .await?;
     // Plugins' rows that name this member (their declared `user_column`) and `user:<id>:` keys.
-    crate::platform::plugins::purge_user(&mut **tx, user).await?;
+    crate::platform::plugins::purge_user(tx, user).await?;
     sqlx::query("UPDATE posts SET ip = NULL WHERE author_id = $1").bind(user).execute(&mut **tx).await?;
     sqlx::query("DELETE FROM mail_outbox WHERE sent_at IS NULL AND to_addr = (SELECT email FROM users WHERE id = $1)")
         .bind(user)
@@ -442,7 +454,8 @@ macro_rules! drop_likes {
         )
     };
 }
-const DROP_LIKES_OWN: &str = drop_likes!("USING posts p WHERE l.post_id = p.id AND l.user_id = $1 AND p.author_id = $2");
+const DROP_LIKES_OWN: &str =
+    drop_likes!("USING posts p WHERE l.post_id = p.id AND l.user_id = $1 AND p.author_id = $2");
 const DROP_LIKES_DUPLICATE: &str =
     drop_likes!("USING post_likes b WHERE l.post_id = b.post_id AND l.user_id = $1 AND b.user_id = $2");
 
@@ -489,6 +502,10 @@ pub async fn merge(pool: &PgPool, from: i64, into: i64, actor: Option<i64>) -> R
         sqlx::query(sql).bind(from).bind(into).execute(&mut *tx).await?;
     }
     anonymize_in(&mut tx, from).await?;
-    record(&mut *tx, Entry::new("user.merge").by(actor).on(from.to_string()).details(serde_json::json!({ "into": into }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("user.merge").by(actor).on(from.to_string()).details(serde_json::json!({ "into": into })),
+    )
+    .await?;
     tx.commit().await
 }

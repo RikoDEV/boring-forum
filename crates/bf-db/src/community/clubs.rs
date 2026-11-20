@@ -1,7 +1,7 @@
 //! Clubs: member-owned forums with their own membership.
 
-use crate::platform::importer::CLUB_COLS;
 use crate::admin::audit::{Entry, record};
+use crate::platform::importer::CLUB_COLS;
 use sqlx::PgPool;
 
 type Error = sqlx::Error;
@@ -87,8 +87,10 @@ pub async fn create_club(
             .bind(owner)
             .execute(&mut *tx)
             .await?;
-        let owned: i64 =
-            sqlx::query_scalar("SELECT count(*) FROM clubs WHERE owner_id = $1").bind(owner).fetch_one(&mut *tx).await?;
+        let owned: i64 = sqlx::query_scalar("SELECT count(*) FROM clubs WHERE owner_id = $1")
+            .bind(owner)
+            .fetch_one(&mut *tx)
+            .await?;
         if owned >= cap {
             return Ok(None);
         }
@@ -111,7 +113,8 @@ pub async fn create_club(
 pub async fn club_membership(pool: &PgPool, group: i64, user: i64, join: bool) -> Result<(), Error> {
     if join {
         let mut tx = pool.begin().await?;
-        crate::community::groups::add_members(&mut tx, &[user], group, crate::community::groups::Grant::Automatic).await?;
+        crate::community::groups::add_members(&mut tx, &[user], group, crate::community::groups::Grant::Automatic)
+            .await?;
         return tx.commit().await;
     }
     sqlx::query("DELETE FROM user_secondary_groups WHERE group_id = $1 AND user_id = $2")
@@ -194,7 +197,12 @@ pub async fn club_requests(pool: &PgPool, owner: i64) -> Result<Vec<(i64, i64, S
 }
 
 /// Members of a club, owner first, then by name: (id, username).
-pub async fn club_members(pool: &PgPool, group: i64, owner: Option<i64>, limit: i64) -> Result<Vec<(i64, String)>, Error> {
+pub async fn club_members(
+    pool: &PgPool,
+    group: i64,
+    owner: Option<i64>,
+    limit: i64,
+) -> Result<Vec<(i64, String)>, Error> {
     sqlx::query_as(
         "SELECT u.id, u.username FROM user_secondary_groups m JOIN users u ON u.id = m.user_id
          WHERE m.group_id = $1 ORDER BY (u.id = $2) DESC, u.username_lower LIMIT $3",
@@ -253,13 +261,12 @@ pub async fn remove_member(pool: &PgPool, club: i64, group: i64, user: i64, ban:
 /// is not a member.
 pub async fn transfer_club(pool: &PgPool, club: i64, node: i64, group: i64, to: i64) -> Result<bool, Error> {
     let mut tx = pool.begin().await?;
-    let member: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM user_secondary_groups WHERE group_id = $1 AND user_id = $2)",
-    )
-    .bind(group)
-    .bind(to)
-    .fetch_one(&mut *tx)
-    .await?;
+    let member: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_secondary_groups WHERE group_id = $1 AND user_id = $2)")
+            .bind(group)
+            .bind(to)
+            .fetch_one(&mut *tx)
+            .await?;
     if !member {
         return Ok(false);
     }
@@ -283,7 +290,10 @@ crate::sql::set_col!(
 pub async fn delete_club(pool: &PgPool, club: i64, actor: i64) -> Result<bool, Error> {
     let mut tx = pool.begin().await?;
     let row: Option<(i64, i64, String)> =
-        sqlx::query_as("SELECT node_id, group_id, name FROM clubs WHERE id = $1 FOR UPDATE").bind(club).fetch_optional(&mut *tx).await?;
+        sqlx::query_as("SELECT node_id, group_id, name FROM clubs WHERE id = $1 FOR UPDATE")
+            .bind(club)
+            .fetch_optional(&mut *tx)
+            .await?;
     let Some((node, group, name)) = row else { return Ok(false) };
     let has_topics: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM items WHERE node_id = $1)")
         .bind(node)
@@ -293,9 +303,16 @@ pub async fn delete_club(pool: &PgPool, club: i64, actor: i64) -> Result<bool, E
         return Ok(false);
     }
     sqlx::query("DELETE FROM nodes WHERE id = $1").bind(node).execute(&mut *tx).await?;
-    sqlx::query("UPDATE users SET primary_group_id = 2 WHERE primary_group_id = $1").bind(group).execute(&mut *tx).await?;
+    sqlx::query("UPDATE users SET primary_group_id = 2 WHERE primary_group_id = $1")
+        .bind(group)
+        .execute(&mut *tx)
+        .await?;
     sqlx::query("DELETE FROM groups WHERE id = $1").bind(group).execute(&mut *tx).await?;
-    record(&mut *tx, Entry::new("club.delete").by(actor).on(format!("club:{club}")).details(serde_json::json!({ "name": name }))).await?;
+    record(
+        &mut *tx,
+        Entry::new("club.delete").by(actor).on(format!("club:{club}")).details(serde_json::json!({ "name": name })),
+    )
+    .await?;
     tx.commit().await?;
     Ok(true)
 }

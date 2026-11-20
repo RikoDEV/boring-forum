@@ -69,32 +69,46 @@ async fn queue_one(
     let lines: String = topics
         .iter()
         .map(|(id, slug, title, replies)| {
-            format!("- {title} ({})
+            format!(
+                "- {title} ({})
   {base}{}
-", t.n("count.replies", *replies), bf_core::slug::topic_path(*id, slug))
+",
+                t.n("count.replies", *replies),
+                bf_core::slug::topic_path(*id, slug)
+            )
         })
         .collect();
     let watched_lines: String = watched
         .iter()
         .map(|(id, slug, title, n)| {
-            format!("- {title} ({})
+            format!(
+                "- {title} ({})
   {base}{}
-", t.n("count.replies", *n), bf_core::slug::topic_path(*id, slug))
+",
+                t.n("count.replies", *n),
+                bf_core::slug::topic_path(*id, slug)
+            )
         })
         .collect();
     let mut sections = String::new();
     if !topics.is_empty() {
-        let heading = if monthly { t.msg("Popular topics this month:") } else { t.msg("New topics since your last digest:") };
-        sections.push_str(&format!("{heading}
+        let heading =
+            if monthly { t.msg("Popular topics this month:") } else { t.msg("New topics since your last digest:") };
+        sections.push_str(&format!(
+            "{heading}
 
 {lines}
-"));
+"
+        ));
     }
     if !watched.is_empty() {
-        sections.push_str(&format!("{}
+        sections.push_str(&format!(
+            "{}
 
 {watched_lines}
-", t.msg("New replies in topics you watch:")));
+",
+            t.msg("New replies in topics you watch:")
+        ));
     }
     if monthly {
         let joined = bf_db::platform::digests::new_members_since(pool, u.since).await.map_err(db)?;

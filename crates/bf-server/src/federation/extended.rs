@@ -433,8 +433,7 @@ pub(crate) async fn inbound_dm(
     let raw = crate::platform::plugins::before_post_system(state, user, &raw).await.ok_or("refused by a plugin")?;
     // Members who take messages from nobody (or only from people they follow) and those who
     // ignore the sender are left out, as they would be for a member's message.
-    let refusing =
-        bf_db::community::messages::restricting(pool, user, &recipients).await.map_err(|e| e.to_string())?;
+    let refusing = bf_db::community::messages::restricting(pool, user, &recipients).await.map_err(|e| e.to_string())?;
     let mut allowed = Vec::new();
     for r in recipients {
         if !refusing.contains(&r) && !federation::ignores(pool, r, user).await.map_err(|e| e.to_string())? {

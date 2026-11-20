@@ -64,9 +64,7 @@ pub async fn move_stray_widgets(pool: &PgPool, id: i64, template: &str) -> Resul
 }
 
 pub async fn all(pool: &PgPool) -> Result<Vec<Page>, Error> {
-    sqlx::query_as(concat!("SELECT ", columns!(), " FROM custom_pages ORDER BY title"))
-        .fetch_all(pool)
-        .await
+    sqlx::query_as(concat!("SELECT ", columns!(), " FROM custom_pages ORDER BY title")).fetch_all(pool).await
 }
 
 pub async fn by_slug(pool: &PgPool, slug: &str) -> Result<Option<Page>, Error> {

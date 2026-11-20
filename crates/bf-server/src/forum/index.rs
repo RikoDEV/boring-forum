@@ -5,10 +5,10 @@ use crate::forum::posting::create_targets;
 use crate::forum::topics::path_id;
 use crate::forum::tree::Tree;
 use crate::forum::tree::guest;
-use crate::http::render::{ago, DbResult};
 use crate::http::render::layout;
 use crate::http::render::page;
 use crate::http::render::unread_count;
+use crate::http::render::{DbResult, ago};
 use crate::http::viewer::Viewer;
 use crate::http::viewer::cookie;
 use crate::state::AppState;
@@ -361,7 +361,7 @@ async fn forum(
         && v.user.as_ref().is_some_and(|u| !u.is_admin && i32::from(node.min_trust_level) > i32::from(u.trust_level));
     let composer_blocked = level_short.then(|| {
         let t = v.t();
-        let (have, need) = (v.user.as_ref().map_or(0, |u| u.trust_level), i16::from(node.min_trust_level));
+        let (have, need) = (v.user.as_ref().map_or(0, |u| u.trust_level), node.min_trust_level);
         t.msgf(
             "Starting topics here needs trust level {need} ({name}). You are at level {have}.",
             &[

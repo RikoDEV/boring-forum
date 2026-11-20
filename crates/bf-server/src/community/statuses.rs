@@ -44,8 +44,7 @@ fn clean(body: &str) -> Result<&str, AppError> {
 
 /// The feed of the member with this id, at one status when given.
 async fn back(state: &AppState, owner: i64, status: Option<i64>) -> Result<Response, AppError> {
-    let p =
-        bf_db::accounts::users::profile(state.db()?, owner.into()).await.db()?.ok_or(AppError::NotFound)?;
+    let p = bf_db::accounts::users::profile(state.db()?, owner.into()).await.db()?.ok_or(AppError::NotFound)?;
     state.microcache.clear();
     let at = status.map_or(String::new(), |s| format!("#status-{s}"));
     Ok(Redirect::to(&format!("{}?tab=status{at}", profile_path(owner, &p.username))).into_response())
@@ -120,8 +119,7 @@ async fn reply(
 /// is not locked and its owner does not ignore them. Staff are exempt, as on the profile page.
 async fn check_reply(state: &AppState, s: &statuses::Status, replier: i64, staff: bool) -> Result<(), AppError> {
     let pool = state.db()?;
-    let owner =
-        bf_db::accounts::users::profile(pool, s.user_id.into()).await.db()?.ok_or(AppError::NotFound)?;
+    let owner = bf_db::accounts::users::profile(pool, s.user_id.into()).await.db()?.ok_or(AppError::NotFound)?;
     // The same rule as the profile page, which is the only place a status shows.
     let visible = match owner.profile_visibility.as_str() {
         "nobody" => replier == s.user_id || staff,
@@ -148,8 +146,7 @@ pub(crate) async fn deliver_reply(state: &AppState, id: i64, from: (i64, &str), 
     let replier = bf_db::accounts::users::user_by_id(pool, from.0.into()).await.db()?.ok_or(AppError::Forbidden)?;
     let staff = replier.is_admin || replier.groups.contains(&bf_core::ids::GroupId::MODERATORS);
     check_reply(state, &s, from.0, staff).await?;
-    let owner =
-        bf_db::accounts::users::profile(pool, s.user_id.into()).await.db()?.ok_or(AppError::NotFound)?;
+    let owner = bf_db::accounts::users::profile(pool, s.user_id.into()).await.db()?.ok_or(AppError::NotFound)?;
     let url = format!("{}?tab=status#status-{id}", profile_path(s.user_id, &owner.username));
     statuses::reply(pool, &s, from.0, body).await.db()?;
     // Through the sender every other notification uses: the owner's preference for this kind, their

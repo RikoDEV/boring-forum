@@ -112,8 +112,9 @@
     queueMicrotask(() => requestAnimationFrame(() => handle.isConnected && handle.focus()));
   }
   const removeReaction = (r) =>
-    confirm(tr('Delete the reaction "{name}"? What members reacted with it disappears from posts.', { name: r.name })) &&
-    save(del(`/reactions/${r.id}`));
+    confirm(
+      tr('Delete the reaction "{name}"? What members reacted with it disappears from posts.', { name: r.name }),
+    ) && save(del(`/reactions/${r.id}`));
   const save = (promise) => {
     status.clear();
     return promise.then(load, status.fail);
@@ -166,7 +167,12 @@
     onsubmit={(e) =>
       create(
         e,
-        () => post("/report-reasons", { ...newReason, weight: Number(newReason.weight), position: Number(newReason.position) }),
+        () =>
+          post("/report-reasons", {
+            ...newReason,
+            weight: Number(newReason.weight),
+            position: Number(newReason.position),
+          }),
         () => (newReason = blankReason()),
       )}
   >
@@ -182,7 +188,12 @@
     onclose={() => (dialog = null)}
     {status}
     save={tr("Add reaction")}
-    onsubmit={(e) => create(e, () => post("/reactions", newReaction), () => (newReaction = blankReaction()))}
+    onsubmit={(e) =>
+      create(
+        e,
+        () => post("/reactions", newReaction),
+        () => (newReaction = blankReaction()),
+      )}
   >
     <div class="acp-form">
       <Field label={tr("Name")} bind:value={newReaction.name} required />
@@ -195,13 +206,20 @@
     onclose={() => (dialog = null)}
     {status}
     save={tr("Add group")}
-    onsubmit={(e) => create(e, () => post("/tag-groups", groupBody(newGroup)), () => (newGroup = blankGroup()))}
+    onsubmit={(e) =>
+      create(
+        e,
+        () => post("/tag-groups", groupBody(newGroup)),
+        () => (newGroup = blankGroup()),
+      )}
   >
     <div class="acp-form">
       <Field label={tr("Name")} bind:value={newGroup.name} required />
       <Field label={tr("Tags")} bind:value={newGroup.tagsText} />
       <Field label={tr("Forum ids")} bind:value={newGroup.nodesText} />
-      <div class="acp-wide"><Section switches><Switch label={tr("One per topic")} bind:checked={newGroup.one_per_topic} /></Section></div>
+      <div class="acp-wide">
+        <Section switches><Switch label={tr("One per topic")} bind:checked={newGroup.one_per_topic} /></Section>
+      </div>
     </div>
   </EditDialog>
 {:else if dialog === "rule"}
@@ -210,7 +228,12 @@
     onclose={() => (dialog = null)}
     {status}
     save={tr("Add rule")}
-    onsubmit={(e) => create(e, () => post("/promotion-rules", ruleBody(newRule)), () => (newRule = blankRule()))}
+    onsubmit={(e) =>
+      create(
+        e,
+        () => post("/promotion-rules", ruleBody(newRule)),
+        () => (newRule = blankRule()),
+      )}
   >
     <div class="acp-form">
       <Field label={tr("Name")} bind:value={newRule.name} required wide />
@@ -224,12 +247,19 @@
     onclose={() => (dialog = null)}
     {status}
     save={tr("Add announcement")}
-    onsubmit={(e) => create(e, () => post("/announcements", newNotice), () => (newNotice = blankNotice()))}
+    onsubmit={(e) =>
+      create(
+        e,
+        () => post("/announcements", newNotice),
+        () => (newNotice = blankNotice()),
+      )}
   >
     <div class="acp-form">
       <Field label={tr("Title")} bind:value={newNotice.title} required wide />
       <MarkdownField label={tr("Text")} rows="4" bind:value={newNotice.body} />
-      <div class="acp-wide"><Section switches><Switch label={tr("On")} bind:checked={newNotice.enabled} /></Section></div>
+      <div class="acp-wide">
+        <Section switches><Switch label={tr("On")} bind:checked={newNotice.enabled} /></Section>
+      </div>
     </div>
   </EditDialog>
 {/if}
@@ -279,20 +309,24 @@
           >
           <td><Switch bind:checked={r.needs_note} aria-label={tr("Needs a note")} /></td>
           <td><Switch bind:checked={r.illegal} aria-label={tr("Illegal content")} /></td>
-          <td><Switch bind:checked={r.message_user} aria-label={tr("Send the note to the author instead of filing a report")} /></td>
-          <td><input type="number" bind:value={r.position} aria-label={tr("Order")} style:width="5rem" /></td>
           <td
-            ><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} disabled={r.key === "other"} /></td
+            ><Switch
+              bind:checked={r.message_user}
+              aria-label={tr("Send the note to the author instead of filing a report")}
+            /></td
           >
+          <td><input type="number" bind:value={r.position} aria-label={tr("Order")} style:width="5rem" /></td>
+          <td><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} disabled={r.key === "other"} /></td>
           <td
             >{#if !r.plugin}<button
-              onclick={() =>
-                save(put(`/report-reasons/${r.key}`, { ...r, weight: Number(r.weight), position: Number(r.position) }))}
-              >{tr("Save")}</button
-            >
-            {#if r.key !== "other"}<button class="secondary" onclick={() => save(del(`/report-reasons/${r.key}`))}
-                >{tr("Delete")}</button
-              >{/if}{/if}</td
+                onclick={() =>
+                  save(
+                    put(`/report-reasons/${r.key}`, { ...r, weight: Number(r.weight), position: Number(r.position) }),
+                  )}>{tr("Save")}</button
+              >
+              {#if r.key !== "other"}<button class="secondary" onclick={() => save(del(`/report-reasons/${r.key}`))}
+                  >{tr("Delete")}</button
+                >{/if}{/if}</td
           >
         </tr>
       {/each}
@@ -302,8 +336,9 @@
   <table>
     <thead
       ><tr
-        ><th class="acp-grip-col"><span class="visually-hidden">{tr("Order")}</span></th><th>{tr("Emoji")}</th><th>{tr("Name")}</th><th>{tr("Reputation")}</th><th>{tr("On")}</th
-        ><th class="acp-cell-end"></th></tr
+        ><th class="acp-grip-col"><span class="visually-hidden">{tr("Order")}</span></th><th>{tr("Emoji")}</th><th
+          >{tr("Name")}</th
+        ><th>{tr("Reputation")}</th><th>{tr("On")}</th><th class="acp-cell-end"></th></tr
       ></thead
     >
     <tbody>
@@ -329,7 +364,10 @@
                 e.dataTransfer.setData("text/plain", String(r.id));
                 e.dataTransfer.setDragImage(e.currentTarget.closest("tr"), 0, 0);
               }}
-              ondragend={() => (grabbed = hover = null)}
+              ondragend={() => {
+                grabbed = null;
+                hover = null;
+              }}
               onkeydown={(e) => nudgeRow(e, r)}
               ><svg class="bf-icon" aria-hidden="true"><use href="{sprite}#grip-vertical"></use></svg></span
             >
@@ -348,7 +386,8 @@
           <td><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} /></td>
           <td class="acp-cell-end">
             {#if !r.plugin}<button onclick={() => save(put(`/reactions/${r.id}`, r))}>{tr("Save")}</button>
-              {#if !r.is_like}<button class="is-danger" onclick={() => removeReaction(r)}>{tr("Delete")}</button>{/if}{/if}
+              {#if !r.is_like}<button class="is-danger" onclick={() => removeReaction(r)}>{tr("Delete")}</button
+                >{/if}{/if}
           </td>
         </tr>
       {/each}
@@ -364,10 +403,14 @@
           <Field label={tr("Name")} bind:value={g.name} />
           <Field label={tr("Tags")} bind:value={g.tagsText} />
           <Field label={tr("Forum ids")} bind:value={g.nodesText} />
-          <div class="acp-wide"><Section switches><Switch label={tr("One per topic")} bind:checked={g.one_per_topic} /></Section></div>
+          <div class="acp-wide">
+            <Section switches><Switch label={tr("One per topic")} bind:checked={g.one_per_topic} /></Section>
+          </div>
           <div class="acp-actions">
-            <button onclick={() => save(put(`/tag-groups/${g.id}`, groupBody(g)))}>{tr("Save")}</button
-            ><button class="is-danger acp-end" onclick={() => save(del(`/tag-groups/${g.id}`))}>{tr("Delete")}</button>
+            <button onclick={() => save(put(`/tag-groups/${g.id}`, groupBody(g)))}>{tr("Save")}</button><button
+              class="is-danger acp-end"
+              onclick={() => save(del(`/tag-groups/${g.id}`))}>{tr("Delete")}</button
+            >
           </div>
         </div>
       </section>
@@ -392,9 +435,9 @@
           <Field label={tr("Name")} bind:value={r.name} wide />
           {@render ruleFields(r)}
           <div class="acp-actions">
-            <button onclick={() => save(put(`/promotion-rules/${r.id}`, ruleBody(r)))}>{tr("Save")}</button
-            ><button class="is-danger acp-end" onclick={() => save(del(`/promotion-rules/${r.id}`))}
-              >{tr("Delete")}</button
+            <button onclick={() => save(put(`/promotion-rules/${r.id}`, ruleBody(r)))}>{tr("Save")}</button><button
+              class="is-danger acp-end"
+              onclick={() => save(del(`/promotion-rules/${r.id}`))}>{tr("Delete")}</button
             >
           </div>
         </div>

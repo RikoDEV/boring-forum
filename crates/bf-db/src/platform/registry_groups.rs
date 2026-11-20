@@ -59,7 +59,8 @@ pub async fn plugin_group_id(pool: &PgPool, plugin: &str, key: &str) -> Result<O
 pub async fn set_plugin_group_member(pool: &PgPool, group: i64, user: i64, member: bool) -> Result<(), Error> {
     if member {
         let mut tx = pool.begin().await?;
-        crate::community::groups::add_members(&mut tx, &[user], group, crate::community::groups::Grant::Automatic).await?;
+        crate::community::groups::add_members(&mut tx, &[user], group, crate::community::groups::Grant::Automatic)
+            .await?;
         tx.commit().await?;
     } else {
         sqlx::query("DELETE FROM user_secondary_groups WHERE user_id = $1 AND group_id = $2")
@@ -210,10 +211,12 @@ pub async fn sync_badges(pool: &PgPool, declared: &[BadgeRow], active_plugins: &
     .bind(&keep)
     .execute(&mut *tx)
     .await?;
-    sqlx::query("UPDATE badges SET enabled = false WHERE slug LIKE 'plugin:%' AND NOT split_part(slug, ':', 2) = ANY($1)")
-        .bind(active_plugins)
-        .execute(&mut *tx)
-        .await?;
+    sqlx::query(
+        "UPDATE badges SET enabled = false WHERE slug LIKE 'plugin:%' AND NOT split_part(slug, ':', 2) = ANY($1)",
+    )
+    .bind(active_plugins)
+    .execute(&mut *tx)
+    .await?;
     tx.commit().await
 }
 

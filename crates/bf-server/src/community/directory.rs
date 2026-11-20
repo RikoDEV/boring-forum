@@ -49,11 +49,11 @@ async fn users(
         _ => "posts",
     };
     let q = u.q.trim().to_owned();
-    let q = if q.is_empty() { q } else { crate::platform::plugins::filter_text(&state, "search.query", "q", &q).await? };
+    let q =
+        if q.is_empty() { q } else { crate::platform::plugins::filter_text(&state, "search.query", "q", &q).await? };
     let n = u.page.unwrap_or(1).clamp(1, 10_000);
-    let mut rows = directory::members(state.db()?, sort, &q, USERS_PER_PAGE + 1, (n - 1) * USERS_PER_PAGE)
-        .await
-        .db()?;
+    let mut rows =
+        directory::members(state.db()?, sort, &q, USERS_PER_PAGE + 1, (n - 1) * USERS_PER_PAGE).await.db()?;
     let more = rows.len() as i64 > USERS_PER_PAGE;
     rows.truncate(USERS_PER_PAGE as usize);
     let url = |sort: &str, n: i64| {
@@ -127,7 +127,18 @@ async fn badges(
     let badges = badges
         .into_iter()
         .map(|b| {
-            (b.id, t.msg(&b.name), t.msg(&b.description), b.points, b.holders, b.tier, b.icon, t.msg(&b.category), b.color, b.level)
+            (
+                b.id,
+                t.msg(&b.name),
+                t.msg(&b.description),
+                b.points,
+                b.holders,
+                b.tier,
+                b.icon,
+                t.msg(&b.category),
+                b.color,
+                b.level,
+            )
         })
         .collect::<Vec<_>>();
     Ok(page(

@@ -99,7 +99,8 @@ impl Imap {
             if let Some(rest) = line.strip_prefix(&format!("{tag} ")) {
                 return if rest.starts_with("OK") { Ok((lines, literals)) } else { Err(rest.to_owned()) };
             }
-            let size = line.strip_suffix('}').and_then(|l| l.rsplit_once('{')).and_then(|(_, n)| n.parse::<usize>().ok());
+            let size =
+                line.strip_suffix('}').and_then(|l| l.rsplit_once('{')).and_then(|(_, n)| n.parse::<usize>().ok());
             if let Some(size) = size {
                 // A mail is never trusted to be small.
                 if size > 5_000_000 {

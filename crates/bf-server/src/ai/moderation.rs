@@ -82,7 +82,12 @@ pub(crate) async fn answers_yes(state: &AppState, question: &str, title: &str, r
 }
 
 /// A reply written by the model for an automation rule, following the administrator's instructions.
-pub(crate) async fn write_reply(state: &AppState, instructions: &str, title: &str, raw: &str) -> Result<String, bf_core::AppError> {
+pub(crate) async fn write_reply(
+    state: &AppState,
+    instructions: &str,
+    title: &str,
+    raw: &str,
+) -> Result<String, bf_core::AppError> {
     let system = format!(
         "You reply to a post on a discussion forum, on behalf of the site's staff. Follow these instructions: {}
          Be brief and polite, answer in the language of the post, use Markdown. {DATA_RULE}",
@@ -114,7 +119,9 @@ pub(crate) async fn check_post(state: &AppState, p: &NewPost) {
         .flatten();
     let Some(post_id) = post_id else { return };
     let Some(labels) = classify(state, &p.title, &p.raw).await else { return };
-    if let Err(e) = bf_db::ai::save_labels(pool, post_id, labels.spam, labels.toxicity, labels.sentiment, &labels.emotion).await {
+    if let Err(e) =
+        bf_db::ai::save_labels(pool, post_id, labels.spam, labels.toxicity, labels.sentiment, &labels.emotion).await
+    {
         tracing::warn!(error = %e, "AI labels could not be saved");
     }
     let spam = judged && spam_on && i64::from(labels.spam) >= s.int("ai_spam_threshold");
@@ -160,7 +167,8 @@ pub(crate) async fn check_post(state: &AppState, p: &NewPost) {
                 .await;
             }
             if spam && matches!(action.as_str(), "hold" | "hide") {
-                crate::moderation::spam::spam_hidden(state, p.author_id, "The AI judged a post of theirs to be spam.").await;
+                crate::moderation::spam::spam_hidden(state, p.author_id, "The AI judged a post of theirs to be spam.")
+                    .await;
             }
             state.forum.invalidate();
             state.microcache.clear();
@@ -176,7 +184,10 @@ mod tests {
 
     #[test]
     fn labels_are_clamped_and_cleaned() {
-        let l = parse_labels("```json\n{\"spam\": 140, \"toxicity\": -5, \"sentiment\": \"Negative\", \"emotion\": \"Anger!\"}\n```").unwrap();
+        let l = parse_labels(
+            "```json\n{\"spam\": 140, \"toxicity\": -5, \"sentiment\": \"Negative\", \"emotion\": \"Anger!\"}\n```",
+        )
+        .unwrap();
         assert_eq!(l, Labels { spam: 100, toxicity: 0, sentiment: "negative", emotion: "anger".into() });
         let l = parse_labels("{\"spam\": 12.4}").unwrap();
         assert_eq!((l.spam, l.sentiment, l.emotion.as_str()), (12, "neutral", ""));

@@ -191,7 +191,8 @@ impl FromRequestParts<AppState> for Viewer {
                 v.actor = pending_actor(&u);
             }
             v.user = Some(u);
-            v.plugin_scopes = bf_db::platform::registry_content::key_scopes(pool, &auth::token_digest(key)).await.unwrap_or_default();
+            v.plugin_scopes =
+                bf_db::platform::registry_content::key_scopes(pool, &auth::token_digest(key)).await.unwrap_or_default();
             // Resource scopes (`read:topics`, ...) narrow what the key may reach.
             if !crate::platform::api_keys::resource_allowed(&v.plugin_scopes, &parts.method, parts.uri.path()) {
                 return Err(AppError::Forbidden);
@@ -207,7 +208,9 @@ impl FromRequestParts<AppState> for Viewer {
         let found = if let Some(u) = state.sessions.get(&digest) {
             Some(u)
         } else {
-            let loaded = sessions::session_user_idle(pool, &digest, state.settings().int("session_idle_minutes")).await.map_err(AppError::internal)?;
+            let loaded = sessions::session_user_idle(pool, &digest, state.settings().int("session_idle_minutes"))
+                .await
+                .map_err(AppError::internal)?;
             if let Some(u) = &loaded {
                 let agent = parts.headers.get(header::USER_AGENT).and_then(|h| h.to_str().ok());
                 // E.g. BF_GEO_HEADER=CF-IPCountry; no address database is shipped.

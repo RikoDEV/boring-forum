@@ -34,7 +34,8 @@ pub(crate) async fn user(state: &AppState, id: i64, viewer_signed_in: bool) -> O
         .iter()
         .filter(|f| f.public)
         .filter_map(|f| {
-            let value = answers.iter().find(|(fid, _)| *fid == f.id).map(|(_, v)| v.clone()).filter(|v| !v.is_empty())?;
+            let value =
+                answers.iter().find(|(fid, _)| *fid == f.id).map(|(_, v)| v.clone()).filter(|v| !v.is_empty())?;
             Some(json!({ "label": f.label, "kind": f.kind, "value": value, "icon": f.icon, "plugin": f.plugin }))
         })
         .collect();
@@ -62,9 +63,9 @@ pub(crate) async fn of_page(state: &AppState, page: &str, viewer_signed_in: bool
             let tree = state.forum.get(pool).await.ok()?;
             let guest = bf_core::perms::Actor { groups: vec![1.into()], ..Default::default() };
             let node = tree.node(id)?;
-            tree.perms(&guest, id).has(bf_core::perms::Perms::READ).then(|| {
-                json!({ "kind": "forum", "id": id, "title": node.title, "slug": node.slug })
-            })
+            tree.perms(&guest, id)
+                .has(bf_core::perms::Perms::READ)
+                .then(|| json!({ "kind": "forum", "id": id, "title": node.title, "slug": node.slug }))
         }
         _ => None,
     }

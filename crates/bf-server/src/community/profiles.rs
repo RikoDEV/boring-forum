@@ -129,18 +129,14 @@ async fn profile(
     };
     let readable = tree.readable(&v.actor);
     let posts = if tab == "posts" { users::user_posts(pool, id, &readable, 20).await.db()? } else { vec![] };
-    let bookmark_rows = if tab == "bookmarks" {
-        bookmarks::bookmarks(pool, id.get(), &readable).await.db()?
-    } else {
-        vec![]
-    };
+    let bookmark_rows =
+        if tab == "bookmarks" { bookmarks::bookmarks(pool, id.get(), &readable).await.db()? } else { vec![] };
     let vote_rows = if tab == "votes" {
         bf_db::forum::topics::voted_topics(pool, id.get(), &readable, 50).await.db()?
     } else {
         vec![]
     };
-    let topic_rows =
-        if tab == "topics" { users::user_topics(pool, id, &readable, 30).await.db()? } else { vec![] };
+    let topic_rows = if tab == "topics" { users::user_topics(pool, id, &readable, 30).await.db()? } else { vec![] };
     let statuses = if tab == "status" { status_views(pool, &v, id.get()).await? } else { vec![] };
     let top_posts = if tab == "summary" {
         bf_db::forum::summary::top_posts_of(pool, id.get(), &readable)
@@ -314,12 +310,7 @@ fn activity_feed(
 }
 
 /// A renamed member's old address follows them; `@group` mentions link here too.
-async fn moved_profile_redirect(
-    pool: &sqlx::PgPool,
-    v: &Viewer,
-    name: &str,
-    tab: &str,
-) -> Result<Response, AppError> {
+async fn moved_profile_redirect(pool: &sqlx::PgPool, v: &Viewer, name: &str, tab: &str) -> Result<Response, AppError> {
     if let Some(id) = bf_db::accounts::users::user_by_old_name(pool, name).await.db()? {
         let current = users::profile(pool, id).await.db()?.ok_or(AppError::NotFound)?;
         // An old name must not tell who a private profile belongs to now.
@@ -589,8 +580,7 @@ async fn change_title(
     };
     // The plugins' title filter and every title rule a new topic meets: length, emoji, hidden
     // characters, capitals and, when the site forbids repeats, a title another topic already has.
-    let filtered =
-        crate::platform::plugins::filter_text(&state, "item.before_create", "title", title).await?;
+    let filtered = crate::platform::plugins::filter_text(&state, "item.before_create", "title", title).await?;
     let title = filtered.as_str();
     crate::forum::posting::validate_title(&state, title).map_err(AppError::Validation)?;
     if title != t.title && !state.settings().bool("allow_duplicate_topic_titles") {

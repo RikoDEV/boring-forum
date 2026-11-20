@@ -68,7 +68,8 @@ pub async fn reload(state: &AppState) -> Result<(), AppError> {
         // Browser code runs on this site's origin, outside the sandbox: only with the capability.
         let may_client = p.capabilities.iter().any(|c| c == "client");
         connect.extend(p.capabilities.iter().filter_map(|c| c.strip_prefix(CONNECT_PREFIX)).map(str::to_owned));
-        let catalogs = Arc::new(p.schema.as_ref().and_then(|s| s.get("x-locales")).cloned().unwrap_or_else(|| json!({})));
+        let catalogs =
+            Arc::new(p.schema.as_ref().and_then(|s| s.get("x-locales")).cloned().unwrap_or_else(|| json!({})));
         if let Some(js) = p.client_js.filter(|_| may_client) {
             let hash: String = Sha256::digest(js.as_bytes()).iter().take(8).map(|b| format!("{b:02x}")).collect();
             let file = format!("{}.{hash}.js", p.id);

@@ -27,8 +27,8 @@ export function lightbox() {
 }
 
 // The pills under a post open a dialog with who reacted. It loads when first asked for, once per page.
-if (!window.bfReactionsDialog) {
-  window.bfReactionsDialog = true;
+if (!(/** @type {any} */ (window).bfReactionsDialog)) {
+  /** @type {any} */ (window).bfReactionsDialog = true;
   document.addEventListener("click", async (e) => {
     const pills = e.target.closest?.("[data-reactions]");
     if (!pills || e.defaultPrevented) return;
@@ -78,8 +78,8 @@ function redrawReactions(footer, postId, data) {
   );
 }
 
-if (!window.bfReacting) {
-  window.bfReacting = true;
+if (!(/** @type {any} */ (window).bfReacting)) {
+  /** @type {any} */ (window).bfReacting = true;
   document.addEventListener("submit", async (e) => {
     const form = e.target;
     if (!(form instanceof HTMLFormElement) || e.defaultPrevented) return;

@@ -127,8 +127,10 @@ async fn raw_insert_of_a_local_user_without_a_skeleton_is_refused_by_the_trigger
     .execute(&db.pool)
     .await;
     assert!(raw.is_err(), "a local user without a username skeleton must be refused");
-    let n: i64 =
-        sqlx::query_scalar("SELECT count(*) FROM users WHERE username_lower = 'raw'").fetch_one(&db.pool).await.unwrap();
+    let n: i64 = sqlx::query_scalar("SELECT count(*) FROM users WHERE username_lower = 'raw'")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
     assert_eq!(n, 0);
     db.drop_db().await;
 }
@@ -195,7 +197,11 @@ async fn audit_record_writes_actor_target_details_and_ip() {
     let ip: std::net::IpAddr = "203.0.113.9".parse().unwrap();
     audit::record(
         &db.pool,
-        Entry::new("user.test").by(actor).on("user:42").details(serde_json::json!({"why": "because"})).from_ip(Some(ip)),
+        Entry::new("user.test")
+            .by(actor)
+            .on("user:42")
+            .details(serde_json::json!({"why": "because"}))
+            .from_ip(Some(ip)),
     )
     .await
     .unwrap();
@@ -222,12 +228,13 @@ async fn concurrent_votes_on_a_single_choice_poll_leave_one_ballot() {
         .fetch_one(&db.pool)
         .await
         .unwrap();
-    let item: i64 =
-        sqlx::query_scalar("INSERT INTO items (node_id, title, slug, state) VALUES ($1, 't', 't', 'visible') RETURNING id")
-            .bind(node)
-            .fetch_one(&db.pool)
-            .await
-            .unwrap();
+    let item: i64 = sqlx::query_scalar(
+        "INSERT INTO items (node_id, title, slug, state) VALUES ($1, 't', 't', 'visible') RETURNING id",
+    )
+    .bind(node)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
     let poll_id: i64 =
         sqlx::query_scalar("INSERT INTO polls (item_id, question, max_choices) VALUES ($1, 'q', 1) RETURNING id")
             .bind(item)
@@ -319,8 +326,11 @@ async fn save_draft_keeps_at_most_fifty_drafts_per_user() {
     for i in 0..55 {
         uploads::save_draft(&db.pool, user, &format!("ctx{i}"), &serde_json::json!({ "i": i })).await.unwrap();
     }
-    let n: i64 =
-        sqlx::query_scalar("SELECT count(*) FROM drafts WHERE user_id = $1").bind(user).fetch_one(&db.pool).await.unwrap();
+    let n: i64 = sqlx::query_scalar("SELECT count(*) FROM drafts WHERE user_id = $1")
+        .bind(user)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
     assert_eq!(n, 50);
     assert!(uploads::draft(&db.pool, user, "ctx54").await.unwrap().is_some(), "the latest draft survives");
     db.drop_db().await;

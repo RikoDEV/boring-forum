@@ -237,13 +237,9 @@ pub(super) async fn new_topic(
         id,
         &[f.title.trim(), &f.body],
         None,
-        posts::approved_post_count(
-            state.db()?,
-            user.id.get(),
-            state.settings().int("approve_first_posts"),
-        )
-        .await
-        .db()?,
+        posts::approved_post_count(state.db()?, user.id.get(), state.settings().int("approve_first_posts"))
+            .await
+            .db()?,
     ) {
         Ok(c) => c,
         Err(e) => {
@@ -291,9 +287,7 @@ pub(super) async fn new_topic(
     if let Some(minutes) = publish_in {
         // Waiting for its time is not waiting for a reviewer: no review item, no early approval.
         bf_db::forum::tools::drop_scheduled_review(pool, topic_id).await.db()?;
-        bf_db::forum::tools::set_timer(pool, topic_id, "publish", minutes.min(5_256_000), user.id.get())
-            .await
-            .db()?;
+        bf_db::forum::tools::set_timer(pool, topic_id, "publish", minutes.min(5_256_000), user.id.get()).await.db()?;
     }
     if let Some(e) = &event {
         bf_db::community::events::set_event(pool, topic_id, &e.as_new()).await.db()?;

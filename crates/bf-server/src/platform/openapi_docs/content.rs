@@ -1,5 +1,8 @@
 //! Topic, post, composer-helper and profile-card routes.
 
+// The schema builders read as values at the call sites, so they take them by value.
+#![expect(clippy::needless_pass_by_value)]
+
 use serde_json::{Value, json};
 
 fn s() -> Value {
@@ -44,7 +47,21 @@ fn forum_topic_row() -> Value {
             "last_posted_at": dt(), "created_at": dt(), "tags": arr(s()),
             "meta": d(json!({ "type": "object", "additionalProperties": true }), "Public plugin metadata, present only when a plugin keeps some for this topic."),
         }),
-        &["id", "title", "slug", "url", "author", "forum_id", "pinned", "locked", "replies", "views", "last_posted_at", "created_at", "tags"],
+        &[
+            "id",
+            "title",
+            "slug",
+            "url",
+            "author",
+            "forum_id",
+            "pinned",
+            "locked",
+            "replies",
+            "views",
+            "last_posted_at",
+            "created_at",
+            "tags",
+        ],
     )
 }
 
@@ -77,7 +94,34 @@ fn topic_card() -> Value {
             "unread": d(json!({ "type": ["integer", "null"] }), "Unread posts for a signed-in reader; null for guests and fully read topics."),
             "unread_url": sn(),
         }),
-        &["id", "title", "url", "prefix", "forum", "forum_url", "author", "started", "started_at", "last_poster", "last_posted", "last_posted_at", "replies", "views", "likes", "participants", "votes", "excerpt", "gist", "image", "pinned", "locked", "solved", "tags", "unread", "unread_url"],
+        &[
+            "id",
+            "title",
+            "url",
+            "prefix",
+            "forum",
+            "forum_url",
+            "author",
+            "started",
+            "started_at",
+            "last_poster",
+            "last_posted",
+            "last_posted_at",
+            "replies",
+            "views",
+            "likes",
+            "participants",
+            "votes",
+            "excerpt",
+            "gist",
+            "image",
+            "pinned",
+            "locked",
+            "solved",
+            "tags",
+            "unread",
+            "unread_url",
+        ],
     )
 }
 
@@ -108,7 +152,39 @@ fn user_card() -> Value {
             "slot_html": d(s(), "HTML drawn by plugins in the card slot; present only when a plugin adds some."),
             "plugins": plugins_note(),
         }),
-        &["id", "username", "display_name", "title", "url", "group", "group_colour", "groups", "rank", "rank_tier", "rank_color", "trust", "cover", "cover_y", "status", "bio", "location", "joined", "joined_at", "last_seen", "last_seen_at", "online", "posts", "likes", "solved", "reputation", "followers", "badges", "own", "following", "can_message"],
+        &[
+            "id",
+            "username",
+            "display_name",
+            "title",
+            "url",
+            "group",
+            "group_colour",
+            "groups",
+            "rank",
+            "rank_tier",
+            "rank_color",
+            "trust",
+            "cover",
+            "cover_y",
+            "status",
+            "bio",
+            "location",
+            "joined",
+            "joined_at",
+            "last_seen",
+            "last_seen_at",
+            "online",
+            "posts",
+            "likes",
+            "solved",
+            "reputation",
+            "followers",
+            "badges",
+            "own",
+            "following",
+            "can_message",
+        ],
     )
 }
 

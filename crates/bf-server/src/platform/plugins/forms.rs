@@ -126,7 +126,10 @@ pub(super) fn validate(fields: &[Value], values: &Value) -> Result<Value, (&'sta
         let clean = match f["type"].as_str().unwrap_or("text") {
             "switch" => Value::Bool(v.as_bool().ok_or_else(|| bad(BAD_SWITCH))?),
             "number" => {
-                let n = v.as_f64().or_else(|| v.as_str().and_then(|s| s.trim().parse().ok())).ok_or_else(|| bad(BAD_NUMBER))?;
+                let n = v
+                    .as_f64()
+                    .or_else(|| v.as_str().and_then(|s| s.trim().parse().ok()))
+                    .ok_or_else(|| bad(BAD_NUMBER))?;
                 let low = f["min"].as_f64().unwrap_or(f64::MIN);
                 let high = f["max"].as_f64().unwrap_or(f64::MAX);
                 if !n.is_finite() || n < low || n > high {
@@ -146,7 +149,8 @@ pub(super) fn validate(fields: &[Value], values: &Value) -> Result<Value, (&'sta
                 if s.chars().count() > MAX_TEXT {
                     return Err(bad(BAD_TEXT));
                 }
-                let link = !s.is_empty() && (s.starts_with("https://") || s.starts_with("http://") || super::local_path(s));
+                let link =
+                    !s.is_empty() && (s.starts_with("https://") || s.starts_with("http://") || super::local_path(s));
                 if ty == "url" && !s.is_empty() && !link {
                     return Err(bad(BAD_LINK));
                 }

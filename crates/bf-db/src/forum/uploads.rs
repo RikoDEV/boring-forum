@@ -38,10 +38,13 @@ macro_rules! cols {
 /// Records an upload. Storage keys are content-addressed (`{sha256}.{ext}`), so the
 /// same bytes uploaded again return the existing row instead of a second copy.
 pub async fn insert(pool: &PgPool, u: &NewUpload<'_>) -> Result<Upload, Error> {
-    sqlx::query_as(concat!("INSERT INTO uploads (sha256, user_id, storage_key, filename, mime, size, width, height)
+    sqlx::query_as(concat!(
+        "INSERT INTO uploads (sha256, user_id, storage_key, filename, mime, size, width, height)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (storage_key) DO UPDATE SET storage_key = EXCLUDED.storage_key
-         RETURNING ", cols!()))
+         RETURNING ",
+        cols!()
+    ))
     .bind(u.sha256)
     .bind(u.user_id)
     .bind(u.storage_key)
@@ -106,10 +109,7 @@ pub async fn by_key(pool: &PgPool, key: &str) -> Result<Option<Upload>, Error> {
 /// Where a file is used, as (kind, id): a post, a private message or a chat message. Empty for a
 /// file that is only an avatar, an emoji and the like, or not used yet.
 pub async fn uses(pool: &PgPool, id: i64) -> Result<Vec<(String, i64)>, Error> {
-    sqlx::query_as("SELECT kind, ref_id FROM upload_uses WHERE upload_id = $1 LIMIT 200")
-        .bind(id)
-        .fetch_all(pool)
-        .await
+    sqlx::query_as("SELECT kind, ref_id FROM upload_uses WHERE upload_id = $1 LIMIT 200").bind(id).fetch_all(pool).await
 }
 
 /// The forum and state of posts: (post id, forum id, state). A post in a topic that is not

@@ -50,18 +50,15 @@ pub async fn navigation_sources(pool: &PgPool) -> Result<Vec<String>, Error> {
 
 /// Adds an override unless the language already has one for this key; true when it was added.
 pub async fn add_text_override(pool: &PgPool, locale: &str, key: &str, value: &str) -> Result<bool, Error> {
-    Ok(sqlx::query(
-        "INSERT INTO translation_overrides (locale, key, value) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
-    )
-    .bind(locale)
-    .bind(key)
-    .bind(value)
-    .execute(pool)
-    .await?
-    .rows_affected()
+    Ok(sqlx::query("INSERT INTO translation_overrides (locale, key, value) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING")
+        .bind(locale)
+        .bind(key)
+        .bind(value)
+        .execute(pool)
+        .await?
+        .rows_affected()
         > 0)
 }
-
 
 pub async fn set_text_override(pool: &PgPool, locale: &str, key: &str, value: &str) -> Result<(), Error> {
     sqlx::query(

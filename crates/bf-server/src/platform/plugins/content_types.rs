@@ -44,7 +44,11 @@ pub(super) struct ContentTypeDecl {
     pub(super) permission: Option<String>,
 }
 
-pub(super) fn validate(types: &[ContentTypeDecl], capabilities: &[String], permissions: &[String]) -> Result<(), String> {
+pub(super) fn validate(
+    types: &[ContentTypeDecl],
+    capabilities: &[String],
+    permissions: &[String],
+) -> Result<(), String> {
     if types.is_empty() {
         return Ok(());
     }
@@ -135,7 +139,12 @@ async fn search_index(state: &AppState, plugin: &str, types: &[ContentTypeDecl],
     Ok(json!({ "indexed": true }))
 }
 
-async fn search_remove(state: &AppState, plugin: &str, types: &[ContentTypeDecl], req: &Value) -> Result<Value, String> {
+async fn search_remove(
+    state: &AppState,
+    plugin: &str,
+    types: &[ContentTypeDecl],
+    req: &Value,
+) -> Result<Value, String> {
     let t = declared(types, req)?;
     let reference = short(req, "ref", 100)?;
     let removed = pc::remove_doc(pool(state).map_err(failed)?, plugin, &t.key, reference).await.map_err(failed)?;
@@ -164,7 +173,12 @@ async fn review_hold(state: &AppState, plugin: &str, types: &[ContentTypeDecl], 
     Ok(json!({ "held": id.is_some(), "id": id }))
 }
 
-async fn review_withdraw(state: &AppState, plugin: &str, types: &[ContentTypeDecl], req: &Value) -> Result<Value, String> {
+async fn review_withdraw(
+    state: &AppState,
+    plugin: &str,
+    types: &[ContentTypeDecl],
+    req: &Value,
+) -> Result<Value, String> {
     let t = declared(types, req)?;
     let reference = short(req, "ref", 100)?;
     let gone = pc::withdraw(pool(state).map_err(failed)?, plugin, &t.key, reference).await.map_err(failed)?;
@@ -271,7 +285,14 @@ mod tests {
     use super::*;
 
     fn decl(key: &str) -> ContentTypeDecl {
-        ContentTypeDecl { key: key.into(), label: "Entry".into(), label_key: None, search: true, review: true, permission: None }
+        ContentTypeDecl {
+            key: key.into(),
+            label: "Entry".into(),
+            label_key: None,
+            search: true,
+            review: true,
+            permission: None,
+        }
     }
 
     #[test]

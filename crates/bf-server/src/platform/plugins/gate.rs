@@ -25,16 +25,28 @@ const TTL: Duration = Duration::from_secs(10);
 
 /// What a plugin may deny: the forum permission names, and the actions the gate maps requests to.
 pub(super) const ACTIONS: [&str; 20] = [
-    "view", "read", "create", "reply", "attach", "download", "moderate", "edit", "delete", "react", "flag", "chat", "pm",
-    "upload", "vote", "bookmark", "follow", "report", "comment", "write",
+    "view", "read", "create", "reply", "attach", "download", "moderate", "edit", "delete", "react", "flag", "chat",
+    "pm", "upload", "vote", "bookmark", "follow", "report", "comment", "write",
 ];
 
 /// State-changing routes no plugin can take away: signing in and out, registration and recovery,
 /// the admin panel (its own gate), federation and plugin endpoints (their own rules). Everything
 /// else that changes state is at least a `write`.
 pub(super) const EXEMPT: [&str; 14] = [
-    "login", "logout", "register", "forgot", "reset", "confirm-email", "auth", "oauth", "ap", "admin", "plugin",
-    "safe-mode", "language", "impersonate",
+    "login",
+    "logout",
+    "register",
+    "forgot",
+    "reset",
+    "confirm-email",
+    "auth",
+    "oauth",
+    "ap",
+    "admin",
+    "plugin",
+    "safe-mode",
+    "language",
+    "impersonate",
 ];
 
 fn exempt(path: &str) -> bool {
@@ -43,7 +55,11 @@ fn exempt(path: &str) -> bool {
     EXEMPT.contains(&first)
         || (first == "api" && matches!(seg.next(), Some("v1")) && {
             let rest = path.trim_start_matches("/api/v1/");
-            rest.starts_with("admin") || rest.starts_with("csp-report") || rest.starts_with("push") || rest.starts_with("webauthn") || rest.starts_with("auth")
+            rest.starts_with("admin")
+                || rest.starts_with("csp-report")
+                || rest.starts_with("push")
+                || rest.starts_with("webauthn")
+                || rest.starts_with("auth")
         })
         || path.starts_with("/api/p/")
 }
@@ -153,7 +169,9 @@ pub(super) fn actions_of(method: &str, path: &str) -> Vec<&'static str> {
             "modcp" | "review" => out.push("moderate"),
             _ => {}
         }
-        if first == "t" && matches!(last, "mod" | "move" | "split" | "merge" | "pin" | "slow" | "timer" | "banner" | "date") {
+        if first == "t"
+            && matches!(last, "mod" | "move" | "split" | "merge" | "pin" | "slow" | "timer" | "banner" | "date")
+        {
             out.push("moderate");
         }
         if first == "t" && seg.get(2) == Some(&"action") {
@@ -175,7 +193,10 @@ pub(crate) async fn action_gate(State(state): State<AppState>, req: Request, nex
     let (mut parts, body) = req.into_parts();
     let mut actions = actions_of(parts.method.as_str(), parts.uri.path());
     // Taking `write` away freezes every state-changing request that is not exempt.
-    if !matches!(parts.method.as_str(), "GET" | "HEAD" | "OPTIONS") && !exempt(parts.uri.path()) && !actions.contains(&"write") {
+    if !matches!(parts.method.as_str(), "GET" | "HEAD" | "OPTIONS")
+        && !exempt(parts.uri.path())
+        && !actions.contains(&"write")
+    {
         actions.push("write");
     }
     let refused = if actions.is_empty() {
@@ -237,15 +258,22 @@ mod tests {
                 let handler: String = rest.chars().take(160).collect();
                 let handler = handler.split(".route(").next().unwrap_or_default();
                 let mutates = ["post(", "put(", "patch(", "delete("].iter().any(|m| {
-                    handler.match_indices(m).any(|(i, _)| !handler[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_'))
+                    handler
+                        .match_indices(m)
+                        .any(|(i, _)| !handler[..i].ends_with(|c: char| c.is_alphanumeric() || c == '_'))
                 });
                 if !mutates || !path.starts_with('/') {
                     continue;
                 }
                 mutating += 1;
-                let concrete = path.replace("{*path}", "a/b").split('{').enumerate().map(|(i, part)| {
-                    if i == 0 { part.to_owned() } else { format!("1{}", part.split_once('}').map_or("", |x| x.1)) }
-                }).collect::<String>();
+                let concrete = path
+                    .replace("{*path}", "a/b")
+                    .split('{')
+                    .enumerate()
+                    .map(|(i, part)| {
+                        if i == 0 { part.to_owned() } else { format!("1{}", part.split_once('}').map_or("", |x| x.1)) }
+                    })
+                    .collect::<String>();
                 let actions = actions_of("POST", &concrete);
                 if exempt(&concrete) {
                     exempted += 1;
@@ -261,7 +289,16 @@ mod tests {
         assert!(mutating > 100, "the scan found only {mutating} routes");
         println!("{mutating} state-changing routes: {gated} gated, {exempted} exempt");
         for e in EXEMPT {
-            assert!(exempt_seen.contains(e) || e == "safe-mode" || e == "language" || e == "forgot" || e == "reset" || e == "confirm-email" || e == "oauth", "exempt entry {e} matches no route");
+            assert!(
+                exempt_seen.contains(e)
+                    || e == "safe-mode"
+                    || e == "language"
+                    || e == "forgot"
+                    || e == "reset"
+                    || e == "confirm-email"
+                    || e == "oauth",
+                "exempt entry {e} matches no route"
+            );
         }
     }
 

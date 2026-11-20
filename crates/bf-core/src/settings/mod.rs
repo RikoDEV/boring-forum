@@ -141,10 +141,13 @@ pub type ExtraSetting = (String, SettingType, Value, Option<i64>, Option<i64>, S
 /// Replaces the plugins' settings. Strings are leaked: a few bytes per setting, and the same
 /// setting is only leaked again if its text changed.
 pub fn set_extra(list: Vec<ExtraSetting>) {
-    static SEEN: std::sync::Mutex<Option<std::collections::HashMap<String, &'static str>>> = std::sync::Mutex::new(None);
+    static SEEN: std::sync::Mutex<Option<std::collections::HashMap<String, &'static str>>> =
+        std::sync::Mutex::new(None);
     let mut seen = SEEN.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     let seen = seen.get_or_insert_with(Default::default);
-    let mut intern = |s: &str| -> &'static str { *seen.entry(s.to_owned()).or_insert_with(|| Box::leak(s.to_owned().into_boxed_str())) };
+    let mut intern = |s: &str| -> &'static str {
+        seen.entry(s.to_owned()).or_insert_with(|| Box::leak(s.to_owned().into_boxed_str()))
+    };
     let defs = list
         .into_iter()
         .map(|(key, ty, default, min, max, description)| SettingDef {
@@ -203,7 +206,10 @@ impl Settings {
                 if def.key == "og_kinds" && !crate::og::kinds_ok(s) {
                     return Err(SettingError::NotPageKinds(key.to_owned()));
                 }
-                if crate::og::COLOUR_SETTINGS.contains(&def.key) && !(s.is_empty() && def.key == "og_background_colour_end") && !crate::og::colour_ok(s) {
+                if crate::og::COLOUR_SETTINGS.contains(&def.key)
+                    && !(s.is_empty() && def.key == "og_background_colour_end")
+                    && !crate::og::colour_ok(s)
+                {
                     return Err(SettingError::NotColour(key.to_owned()));
                 }
                 if def.key == "trust_levels" {

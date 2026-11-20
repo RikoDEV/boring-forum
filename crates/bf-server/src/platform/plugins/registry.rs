@@ -4,8 +4,8 @@
 //! time plugins load, owned by the plugin (removed with it, read-only in the core admin panel).
 
 use crate::state::AppState;
-use bf_db::accounts::fields::Field;
 use bf_core::settings::SettingType;
+use bf_db::accounts::fields::Field;
 use bf_db::platform::registry_content::{self as rc, NodeRow};
 use bf_db::platform::registry_groups::{self as rg, BadgeRow};
 use bf_db::platform::registry_more::{self as rm, ReactionRow, ReasonRow};
@@ -28,7 +28,9 @@ fn text_kind() -> String {
 /// A registry key: lowercase letters, digits, dashes and underscores. It namespaces the row
 /// (`plugin:<id>:<key>`), so two plugins never collide.
 pub(super) fn good_key(k: &str) -> bool {
-    !k.is_empty() && k.len() <= 40 && k.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '-' | '_'))
+    !k.is_empty()
+        && k.len() <= 40
+        && k.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '-' | '_'))
 }
 
 /// `[[profile_fields]]`: a field members fill in on their profile and, with `show_on_signup`, on
@@ -295,12 +297,18 @@ impl Sections {
     /// Each section's name (also its capability) and entry count.
     fn lens(&self) -> [(&'static str, usize); 12] {
         [
-            ("profile_fields", self.profile_fields.len()), ("groups", self.groups.len()),
-            ("permissions", self.permissions.len()), ("badges", self.badges.len()),
-            ("notification_kinds", self.notification_kinds.len()), ("reactions", self.reactions.len()),
-            ("flag_reasons", self.flag_reasons.len()), ("settings", self.settings.len()),
-            ("api_scopes", self.api_scopes.len()), ("tags", self.tags.len()),
-            ("nodes", self.nodes.len()), ("meta", self.meta.len()),
+            ("profile_fields", self.profile_fields.len()),
+            ("groups", self.groups.len()),
+            ("permissions", self.permissions.len()),
+            ("badges", self.badges.len()),
+            ("notification_kinds", self.notification_kinds.len()),
+            ("reactions", self.reactions.len()),
+            ("flag_reasons", self.flag_reasons.len()),
+            ("settings", self.settings.len()),
+            ("api_scopes", self.api_scopes.len()),
+            ("tags", self.tags.len()),
+            ("nodes", self.nodes.len()),
+            ("meta", self.meta.len()),
         ]
     }
 
@@ -318,10 +326,10 @@ impl Sections {
                 return Err(format!("A plugin that declares [[{section}]] must ask for the {section} capability."));
             }
         }
-        keys_ok_list(self.settings.iter().map(|k| k.key.as_str()).collect(), "setting")?;
-        keys_ok_list(self.api_scopes.iter().map(|k| k.key.as_str()).collect(), "API scope")?;
-        keys_ok_list(self.tags.iter().map(|k| k.key.as_str()).collect(), "tag")?;
-        keys_ok_list(self.nodes.iter().map(|k| k.key.as_str()).collect(), "forum")?;
+        keys_ok_list(&self.settings.iter().map(|k| k.key.as_str()).collect::<Vec<_>>(), "setting")?;
+        keys_ok_list(&self.api_scopes.iter().map(|k| k.key.as_str()).collect::<Vec<_>>(), "API scope")?;
+        keys_ok_list(&self.tags.iter().map(|k| k.key.as_str()).collect::<Vec<_>>(), "tag")?;
+        keys_ok_list(&self.nodes.iter().map(|k| k.key.as_str()).collect::<Vec<_>>(), "forum")?;
         for s in &self.settings {
             let range_ok = match (s.kind(), s.default.as_i64()) {
                 (Some(SettingType::Int), Some(d)) => s.min.is_none_or(|m| d >= m) && s.max.is_none_or(|m| d <= m),
@@ -329,7 +337,10 @@ impl Sections {
                 (None, _) => false,
             };
             if !range_ok || s.description.trim().is_empty() || s.description.chars().count() > 200 {
-                return Err(format!("Bad setting {}: a type (bool, int or string) with a default of that type, and a description.", s.key));
+                return Err(format!(
+                    "Bad setting {}: a type (bool, int or string) with a default of that type, and a description.",
+                    s.key
+                ));
             }
         }
         if let Some(s) = self.api_scopes.iter().find(|s| s.label.trim().is_empty() || s.label.chars().count() > 100) {
@@ -358,12 +369,14 @@ impl Sections {
         if let Some(m) = self.meta.iter().find(|m| !seen_meta.insert((m.target.as_str(), m.key.as_str()))) {
             return Err(format!("Repeated metadata {}.", m.key));
         }
-        if let Some(m) = self.meta.iter().find(|m| !["topic", "post", "user"].contains(&m.target.as_str()) || !good_key(&m.key)) {
+        if let Some(m) =
+            self.meta.iter().find(|m| !["topic", "post", "user"].contains(&m.target.as_str()) || !good_key(&m.key))
+        {
             return Err(format!("Bad metadata {}: target topic or post.", m.key));
         }
-        keys_ok_list(self.notification_kinds.iter().map(|k| k.key.as_str()).collect(), "notification kind")?;
-        keys_ok_list(self.reactions.iter().map(|k| k.key.as_str()).collect(), "reaction")?;
-        keys_ok_list(self.flag_reasons.iter().map(|k| k.key.as_str()).collect(), "flag reason")?;
+        keys_ok_list(&self.notification_kinds.iter().map(|k| k.key.as_str()).collect::<Vec<_>>(), "notification kind")?;
+        keys_ok_list(&self.reactions.iter().map(|k| k.key.as_str()).collect::<Vec<_>>(), "reaction")?;
+        keys_ok_list(&self.flag_reasons.iter().map(|k| k.key.as_str()).collect::<Vec<_>>(), "flag reason")?;
         if let Some(k) = self.notification_kinds.iter().find(|k| {
             k.label.trim().is_empty()
                 || k.label.chars().count() > 80
@@ -374,7 +387,11 @@ impl Sections {
             return Err(format!("Bad notification kind {}.", k.key));
         }
         if let Some(r) = self.reactions.iter().find(|r| {
-            r.name.trim().is_empty() || r.name.chars().count() > 40 || r.icon.trim().is_empty() || r.icon.chars().count() > 8 || !(-1..=1).contains(&r.score)
+            r.name.trim().is_empty()
+                || r.name.chars().count() > 40
+                || r.icon.trim().is_empty()
+                || r.icon.chars().count() > 8
+                || !(-1..=1).contains(&r.score)
         }) {
             return Err(format!("Bad reaction {}.", r.key));
         }
@@ -385,15 +402,13 @@ impl Sections {
         {
             return Err(format!("Bad flag reason {}.", r.key));
         }
-        keys_ok_list(self.groups.iter().map(|g| g.key.as_str()).collect(), "group")?;
-        keys_ok_list(self.permissions.iter().map(|g| g.key.as_str()).collect(), "permission")?;
-        keys_ok_list(self.badges.iter().map(|g| g.key.as_str()).collect(), "badge")?;
+        keys_ok_list(&self.groups.iter().map(|g| g.key.as_str()).collect::<Vec<_>>(), "group")?;
+        keys_ok_list(&self.permissions.iter().map(|g| g.key.as_str()).collect::<Vec<_>>(), "permission")?;
+        keys_ok_list(&self.badges.iter().map(|g| g.key.as_str()).collect::<Vec<_>>(), "badge")?;
         let hex = |c: &str| c.len() == 7 && c.starts_with('#') && c[1..].chars().all(|x| x.is_ascii_hexdigit());
-        if let Some(g) = self
-            .groups
-            .iter()
-            .find(|g| g.name.trim().is_empty() || g.name.chars().count() > 60 || g.colour.as_deref().is_some_and(|c| !hex(c)))
-        {
+        if let Some(g) = self.groups.iter().find(|g| {
+            g.name.trim().is_empty() || g.name.chars().count() > 60 || g.colour.as_deref().is_some_and(|c| !hex(c))
+        }) {
             return Err(format!("Bad group {}: a name up to 60 characters and a colour like #aabbcc.", g.key));
         }
         if let Some(p) = self.permissions.iter().find(|p| p.label.trim().is_empty() || p.label.chars().count() > 100) {
@@ -428,7 +443,7 @@ impl Sections {
     }
 }
 
-fn keys_ok_list(keys: Vec<&str>, what: &str) -> Result<(), String> {
+fn keys_ok_list(keys: &[&str], what: &str) -> Result<(), String> {
     let mut seen = std::collections::HashSet::new();
     match keys.iter().find(|k| !good_key(k) || !seen.insert(**k)) {
         Some(k) => Err(format!("Bad or repeated {what} key {k}.")),
@@ -479,9 +494,11 @@ pub(super) async fn sync_all(state: &AppState) {
     let (mut kinds, mut reactions, mut reasons) = (Vec::new(), Vec::new(), Vec::new());
     for p in &active {
         let s = Sections::load(p.schema.as_ref());
-        kinds.extend(s.notification_kinds.into_iter().map(|k| {
-            (format!("plugin:{}:{}", p.id, k.key), k.label, k.icon, k.tab, k.email)
-        }));
+        kinds.extend(
+            s.notification_kinds
+                .into_iter()
+                .map(|k| (format!("plugin:{}:{}", p.id, k.key), k.label, k.icon, k.tab, k.email)),
+        );
         reactions.extend(s.reactions.into_iter().map(|r| ReactionRow {
             plugin: p.id.clone(),
             key: r.key,
@@ -588,7 +605,8 @@ pub(super) async fn group_member(state: &AppState, plugin: &str, req: &Value, me
     let pool = crate::http::render::pool(state).map_err(failed)?;
     let key = req.get("key").and_then(Value::as_str).unwrap_or_default();
     let user = req.get("user_id").and_then(Value::as_i64).unwrap_or_default();
-    let group = rg::plugin_group_id(pool, plugin, key).await.map_err(failed)?.ok_or(bf_core::i18n::en("No such group."))?;
+    let group =
+        rg::plugin_group_id(pool, plugin, key).await.map_err(failed)?.ok_or(bf_core::i18n::en("No such group."))?;
     let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
         .bind(user)
         .fetch_one(pool)
@@ -628,9 +646,12 @@ pub(super) async fn profile_set(state: &AppState, plugin: &str, req: &Value) -> 
     let raw = req.get("value").and_then(Value::as_str).unwrap_or_default();
     let missing = bf_core::i18n::en("No such profile field.");
     let id = registry::plugin_field_id(pool, plugin, key).await.map_err(failed)?.ok_or(missing)?;
-    let field = bf_db::accounts::fields::fields(pool).await.map_err(failed)?.into_iter().find(|f| f.id == id).ok_or(missing)?;
+    let field =
+        bf_db::accounts::fields::fields(pool).await.map_err(failed)?.into_iter().find(|f| f.id == id).ok_or(missing)?;
     let value = field.check(raw)?;
-    bf_db::accounts::fields::save_values(pool, bf_core::ids::UserId::from(user), &[(id, value)]).await.map_err(failed)?;
+    bf_db::accounts::fields::save_values(pool, bf_core::ids::UserId::from(user), &[(id, value)])
+        .await
+        .map_err(failed)?;
     Ok(json!({ "saved": true }))
 }
 
@@ -651,11 +672,14 @@ mod tests {
 
     #[test]
     fn keys_are_unique_and_definitions_valid() {
-        let dup = sections("[[profile_fields]]\nkey = \"a\"\nlabel = \"A\"\n[[profile_fields]]\nkey = \"a\"\nlabel = \"B\"");
+        let dup =
+            sections("[[profile_fields]]\nkey = \"a\"\nlabel = \"A\"\n[[profile_fields]]\nkey = \"a\"\nlabel = \"B\"");
         assert!(dup.validate(&["profile_fields".into()]).is_err());
         let bad = sections("[[profile_fields]]\nkey = \"a\"\nlabel = \"A\"\ntype = \"select\"");
         assert!(bad.validate(&["profile_fields".into()]).is_err(), "a choice needs options");
-        let ok = sections("[[profile_fields]]\nkey = \"a\"\nlabel = \"A\"\ntype = \"select\"\noptions = [\"x\", \"y\"]\nshow_on_signup = true");
+        let ok = sections(
+            "[[profile_fields]]\nkey = \"a\"\nlabel = \"A\"\ntype = \"select\"\noptions = [\"x\", \"y\"]\nshow_on_signup = true",
+        );
         assert!(ok.validate(&["profile_fields".into()]).is_ok());
         assert!(ok.profile_fields[0].field().unwrap().show_on_register);
     }

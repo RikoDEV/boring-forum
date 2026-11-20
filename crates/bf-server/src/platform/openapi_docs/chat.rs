@@ -54,6 +54,7 @@ fn held() -> Value {
     })
 }
 
+#[expect(clippy::needless_pass_by_value, reason = "the schema builders read as values at the call sites")]
 fn one_of_held(ok: Value) -> Value {
     json!({ "oneOf": [ok, held()], "description": "The normal body, or (HTTP 202) the held-for-approval notice." })
 }

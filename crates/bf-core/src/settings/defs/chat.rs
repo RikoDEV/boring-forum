@@ -28,7 +28,13 @@ pub(super) fn defs() -> Vec<SettingDef> {
                 en("Kinds of file chat messages may carry; only those the site allows for uploads count"),
             )
         },
-        int("chat_upload_min_trust_level", 1, 0, 20, en("Trust level needed to add files to chat messages; staff always may")),
+        int(
+            "chat_upload_min_trust_level",
+            1,
+            0,
+            20,
+            en("Trust level needed to add files to chat messages; staff always may"),
+        ),
         int("chat_max_files_per_message", 4, 1, 20, en("Most files one chat message may carry")),
         int("chat_wait_seconds", 0, 0, 3600, en("Minimum seconds between two chat messages by a member; 0 is off")),
         int(

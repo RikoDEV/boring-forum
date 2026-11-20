@@ -81,7 +81,8 @@ pub(crate) fn window(state: &AppState) -> i64 {
 fn parse(rest: &str) -> Option<(&str, &str, usize)> {
     let sha = rest.get(..64).filter(|s| s.bytes().all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase()))?;
     let tail = &rest[64..];
-    let len = tail.bytes().take_while(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || matches!(b, b'.' | b'-')).count();
+    let len =
+        tail.bytes().take_while(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || matches!(b, b'.' | b'-')).count();
     let name = &tail[..len];
     // `.png`, or a thumbnail `-640.webp`: the extension is the last part.
     let ext = name.rsplit('.').next().filter(|e| !e.is_empty() && name.contains('.'))?;

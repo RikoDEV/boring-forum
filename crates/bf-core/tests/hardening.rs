@@ -21,7 +21,8 @@ fn email_rejects_two_at_signs_and_non_ascii() {
 
 #[test]
 fn email_rejects_bad_dots() {
-    for bad in [".a@example.com", "a.@example.com", "a..b@example.com", "a@example..com", "a@.example.com", "a@example"] {
+    for bad in [".a@example.com", "a.@example.com", "a..b@example.com", "a@example..com", "a@.example.com", "a@example"]
+    {
         assert_eq!(normalize_email(bad), None, "{bad}");
     }
 }

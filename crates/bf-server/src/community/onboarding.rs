@@ -3,12 +3,12 @@
 use crate::http::render::{DbResult, layout, page};
 use crate::http::viewer::Viewer;
 use crate::state::AppState;
+use axum::Form;
 use axum::Router;
 use axum::extract::State;
 use axum::http::{HeaderMap, header};
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::{get, post};
-use axum::Form;
 use bf_core::AppError;
 use bf_core::i18n::en;
 use bf_db::community::onboarding;
@@ -47,8 +47,7 @@ async fn dismiss(
 /// Guided first steps, none required.
 async fn welcome(State(state): State<AppState>, v: Viewer) -> Result<Response, AppError> {
     let user = v.require_user()?;
-    let (avatar, about, posted, verified) =
-        onboarding::onboarding(state.db()?, user.id.get()).await.db()?;
+    let (avatar, about, posted, verified) = onboarding::onboarding(state.db()?, user.id.get()).await.db()?;
     let profile = bf_core::slug::profile_path(user.id.get(), &user.username);
     let mut steps = vec![
         WelcomeStep {

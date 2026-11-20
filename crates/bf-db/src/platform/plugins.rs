@@ -267,7 +267,8 @@ fn condition(
         "lt" => compare("<", bind(arg)),
         "lte" => compare("<=", bind(arg)),
         "in" => {
-            let list = arg.as_array().filter(|l| !l.is_empty() && l.len() <= MAX_IN).ok_or("in takes 1 to 50 values.")?;
+            let list =
+                arg.as_array().filter(|l| !l.is_empty() && l.len() <= MAX_IN).ok_or("in takes 1 to 50 values.")?;
             let parts: Vec<String> = list.iter().map(|v| compare("=", bind(v))).collect();
             format!("({})", parts.join(" OR "))
         }
@@ -281,13 +282,12 @@ fn condition(
 
 /// `ORDER BY` from `order`: a column, with `desc`; or a list of up to three columns, each
 /// optionally prefixed `-` for descending (`["-pinned", "-created_at"]`). Empty when not given.
-fn order_by(
-    req: &serde_json::Value,
-    col: &impl Fn(&str) -> Result<&'static str, String>,
-) -> Result<String, String> {
+fn order_by(req: &serde_json::Value, col: &impl Fn(&str) -> Result<&'static str, String>) -> Result<String, String> {
     let desc_all = req.get("desc").and_then(serde_json::Value::as_bool).unwrap_or(false);
     let wanted: Vec<(String, bool)> = match req.get("order") {
-        Some(serde_json::Value::String(c)) => vec![(c.trim_start_matches('-').to_owned(), desc_all || c.starts_with('-'))],
+        Some(serde_json::Value::String(c)) => {
+            vec![(c.trim_start_matches('-').to_owned(), desc_all || c.starts_with('-'))]
+        }
         Some(serde_json::Value::Array(list)) => list
             .iter()
             .filter_map(serde_json::Value::as_str)
@@ -552,7 +552,7 @@ fn build_op(plugin: &str, tables: &[TableSpec], req: &serde_json::Value) -> Resu
         "select" => {
             let mut order = order_by(req, &col)?;
             if order.is_empty() {
-                order = " ORDER BY id".to_owned();
+                " ORDER BY id".clone_into(&mut order);
             }
             let limit = req.get("limit").and_then(serde_json::Value::as_i64).unwrap_or(MAX_ROWS).clamp(1, MAX_ROWS);
             let offset = req.get("offset").and_then(serde_json::Value::as_i64).unwrap_or(0).clamp(0, MAX_OFFSET);
@@ -587,8 +587,8 @@ fn build_op(plugin: &str, tables: &[TableSpec], req: &serde_json::Value) -> Resu
 
 /// What the plugin is told when a statement fails: a repeated value in a `unique` column is
 /// named, everything else is left vague.
-fn op_failed(e: sqlx::Error) -> String {
-    let duplicate = e.as_database_error().and_then(|d| d.code()).is_some_and(|c| c == "23505");
+fn op_failed(e: &sqlx::Error) -> String {
+    let duplicate = e.as_database_error().and_then(sqlx::error::DatabaseError::code).is_some_and(|c| c == "23505");
     if duplicate { "That value already exists.".to_owned() } else { "The operation failed.".to_owned() }
 }
 
@@ -605,14 +605,14 @@ pub async fn table_op(
         for v in &b.binds {
             q = q.bind(v.clone());
         }
-        let rows = q.fetch_all(pool).await.map_err(op_failed)?;
+        let rows = q.fetch_all(pool).await.map_err(|e| op_failed(&e))?;
         return Ok(serde_json::Value::Array(rows));
     }
     let mut q = sqlx::query(sqlx::AssertSqlSafe(b.sql.clone()));
     for v in &b.binds {
         q = q.bind(v.clone());
     }
-    let done = q.execute(pool).await.map_err(op_failed)?;
+    let done = q.execute(pool).await.map_err(|e| op_failed(&e))?;
     Ok(serde_json::json!({ "affected": done.rows_affected() }))
 }
 
@@ -653,7 +653,10 @@ pub async fn purge_user(conn: &mut sqlx::PgConnection, user: i64) -> Result<(), 
             .execute(&mut *conn)
             .await?;
     }
-    sqlx::query("DELETE FROM plugin_meta WHERE target = 'user' AND target_id = $1").bind(user).execute(&mut *conn).await?;
+    sqlx::query("DELETE FROM plugin_meta WHERE target = 'user' AND target_id = $1")
+        .bind(user)
+        .execute(&mut *conn)
+        .await?;
     sqlx::query("DELETE FROM plugin_kv WHERE starts_with(key, $1)")
         .bind(format!("user:{user}:"))
         .execute(&mut *conn)
@@ -747,30 +750,28 @@ pub async fn ensure_bot(pool: &PgPool, plugin: &str) -> Result<i64, Error> {
         .bind(&email)
         .fetch_optional(pool)
         .await?;
-    let id =
-        match existing {
-            Some(id) => id,
-            None => {
-                let mut tx = pool.begin().await?;
-                let (id, _) = crate::accounts::users::insert_user(
-                    &mut tx,
-                    &crate::accounts::users::NewUser {
-                        username: &name,
-                        email: &email,
-                        password_hash: None,
-                        display_name: None,
-                        primary_group: Some(2),
-                        joined_at: None,
-                        verified: true,
-                        kind: crate::accounts::users::AccountKind::Bot,
-                        fit_name: true,
-                    },
-                )
-                .await?;
-                tx.commit().await?;
-                id.get()
-            }
-        };
+    let id = if let Some(id) = existing {
+        id
+    } else {
+        let mut tx = pool.begin().await?;
+        let (id, _) = crate::accounts::users::insert_user(
+            &mut tx,
+            &crate::accounts::users::NewUser {
+                username: &name,
+                email: &email,
+                password_hash: None,
+                display_name: None,
+                primary_group: Some(2),
+                joined_at: None,
+                verified: true,
+                kind: crate::accounts::users::AccountKind::Bot,
+                fit_name: true,
+            },
+        )
+        .await?;
+        tx.commit().await?;
+        id.get()
+    };
     sqlx::query("UPDATE plugins SET bot_user_id = $2 WHERE id = $1").bind(plugin).bind(id).execute(pool).await?;
     Ok(id)
 }
@@ -937,7 +938,11 @@ mod table_tests {
         let sql = |req: serde_json::Value| build_op("a-b", &s, &req).unwrap();
         let page = sql(json!({"action":"select","table":"notes","order":["-n","body"],"offset":40,"limit":20,
             "where":{"n":{"gte":3,"lt":9},"body":{"prefix":"x'; DROP TABLE users; --"}}}));
-        assert!(page.sql.contains("ORDER BY \"n\" DESC, \"body\" ASC, id") && page.sql.contains("OFFSET 40"), "{}", page.sql);
+        assert!(
+            page.sql.contains("ORDER BY \"n\" DESC, \"body\" ASC, id") && page.sql.contains("OFFSET 40"),
+            "{}",
+            page.sql
+        );
         assert!(page.sql.contains(">=") && page.sql.contains("starts_with"), "{}", page.sql);
         assert!(!page.sql.contains("DROP"), "values are bound, not pasted");
         assert_eq!(page.binds.len(), 3);
@@ -992,7 +997,11 @@ mod table_tests {
     #[test]
     fn declarations_are_checked() {
         let bad = |name: &str, col: &str, ty: &str| {
-            let t = TableSpec { name: name.into(), columns: [(col.to_owned(), ty.to_owned())].into(), ..Default::default() };
+            let t = TableSpec {
+                name: name.into(),
+                columns: [(col.to_owned(), ty.to_owned())].into(),
+                ..Default::default()
+            };
             validate_tables("a", &[t]).is_err()
         };
         assert!(!bad("notes", "body", "text"));

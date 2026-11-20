@@ -19,7 +19,8 @@ pub const KINDS: [&str; 7] = ["home", "topic", "forum", "tag", "profile", "page"
 pub const TEMPLATES: [&str; 3] = ["classic", "centered", "poster"];
 
 /// Settings that hold a colour written `#rrggbb`.
-pub const COLOUR_SETTINGS: [&str; 4] = ["og_background_colour", "og_background_colour_end", "og_text_colour", "og_accent_colour"];
+pub const COLOUR_SETTINGS: [&str; 4] =
+    ["og_background_colour", "og_background_colour_end", "og_text_colour", "og_accent_colour"];
 
 /// The longest text drawn, in characters; longer text is cut when the address is made.
 pub const TITLE_MAX: usize = 110;
@@ -130,11 +131,9 @@ impl Style {
 /// without that key (`Config::secret_key_error`), so on a production site addresses always stay
 /// valid across restarts. Only plain-http development, or a site that opted out with
 /// `BF_ALLOW_NO_SECRET_KEY=1`, gets a key made per run.
-static KEY: LazyLock<Vec<u8>> = LazyLock::new(|| {
-    match std::env::var("BF_SECRET_KEY") {
-        Ok(v) if !v.trim().is_empty() => Sha256::digest(format!("bf-og-image:{v}")).to_vec(),
-        _ => Sha256::digest(format!("bf-og-image:{}", crate::auth::random_token())).to_vec(),
-    }
+static KEY: LazyLock<Vec<u8>> = LazyLock::new(|| match std::env::var("BF_SECRET_KEY") {
+    Ok(v) if !v.trim().is_empty() => Sha256::digest(format!("bf-og-image:{v}")).to_vec(),
+    _ => Sha256::digest(format!("bf-og-image:{}", crate::auth::random_token())).to_vec(),
 });
 
 #[expect(clippy::expect_used, reason = "HMAC accepts a key of any length")]
@@ -254,7 +253,10 @@ mod tests {
         assert!(matches!(s.set("og_text_colour", json!("")), Err(SettingError::NotColour(_))), "text needs a colour");
         assert!(s.set("og_background_colour_end", json!("")).is_ok(), "no gradient is allowed");
         assert!(matches!(s.set("og_template", json!("fancy")), Err(SettingError::NotOneOf { .. })));
-        assert!(matches!(s.set("og_background_image_url", json!("https://evil.example/x.png")), Err(SettingError::NotAnUpload(_))));
+        assert!(matches!(
+            s.set("og_background_image_url", json!("https://evil.example/x.png")),
+            Err(SettingError::NotAnUpload(_))
+        ));
         assert!(matches!(s.set("og_overlay", json!(95)), Err(SettingError::OutOfRange { .. })));
         // A look read from the settings covers only the kinds listed, and only when switched on.
         let mut look = Style::from_settings(&s);

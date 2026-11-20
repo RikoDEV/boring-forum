@@ -23,9 +23,7 @@ macro_rules! cols {
 }
 
 pub async fn all(pool: &PgPool) -> Result<Vec<Scheme>, Error> {
-    sqlx::query_as(concat!("SELECT ", cols!(), " FROM color_schemes ORDER BY position, id"))
-        .fetch_all(pool)
-        .await
+    sqlx::query_as(concat!("SELECT ", cols!(), " FROM color_schemes ORDER BY position, id")).fetch_all(pool).await
 }
 
 pub async fn insert(
@@ -35,8 +33,11 @@ pub async fn insert(
     light: &serde_json::Value,
     dark: &serde_json::Value,
 ) -> Result<Scheme, Error> {
-    sqlx::query_as(concat!("INSERT INTO color_schemes (slug, name, light, dark, position)
-         VALUES ($1, $2, $3, $4, coalesce((SELECT max(position) + 1 FROM color_schemes), 0)) RETURNING ", cols!()))
+    sqlx::query_as(concat!(
+        "INSERT INTO color_schemes (slug, name, light, dark, position)
+         VALUES ($1, $2, $3, $4, coalesce((SELECT max(position) + 1 FROM color_schemes), 0)) RETURNING ",
+        cols!()
+    ))
     .bind(slug)
     .bind(name)
     .bind(Json(light))
@@ -72,7 +73,10 @@ pub async fn delete(pool: &PgPool, id: i64) -> Result<Option<String>, Error> {
         .fetch_optional(&mut *tx)
         .await?;
     if let Some(slug) = &slug {
-        sqlx::query("UPDATE users SET color_scheme = NULL WHERE color_scheme = $1").bind(slug).execute(&mut *tx).await?;
+        sqlx::query("UPDATE users SET color_scheme = NULL WHERE color_scheme = $1")
+            .bind(slug)
+            .execute(&mut *tx)
+            .await?;
     }
     tx.commit().await?;
     Ok(slug)

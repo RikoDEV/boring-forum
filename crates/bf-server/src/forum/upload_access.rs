@@ -37,27 +37,26 @@ pub(crate) async fn access(state: &AppState, v: &Viewer, up: &Upload) -> Result<
     if uses.is_empty() {
         // A file edited out of a post lives on in the post's history only: that is not "used
         // nowhere". It stays with its uploader and with those who can read that history.
-        let (old, orphaned) = match REVISION_HOMES.get(&up.id) {
-            Some(found) => found,
-            None => {
-                let nodes = uploads::revision_homes(pool, up.id, &up.storage_key).await.db()?;
-                // Used by a post, message or chat before and by nothing now (its post was deleted
-                // or its author erased): until the sweep removes it, only its uploader and admins
-                // have it, not everyone with the address.
-                let orphaned: bool = sqlx::query_scalar(
-                    "SELECT u.had_use
-                        AND NOT EXISTS (SELECT 1 FROM users x WHERE x.avatar_upload_id = u.id OR x.cover_upload_id = u.id)
-                        AND NOT EXISTS (SELECT 1 FROM custom_emoji e WHERE e.url LIKE '%' || u.storage_key || '%')
-                     FROM uploads u WHERE u.id = $1",
-                )
-                .bind(up.id)
-                .fetch_optional(pool)
-                .await
-                .db()?
-                .unwrap_or(false);
-                REVISION_HOMES.insert(up.id, (nodes.clone(), orphaned));
-                (nodes, orphaned)
-            }
+        let (old, orphaned) = if let Some(found) = REVISION_HOMES.get(&up.id) {
+            found
+        } else {
+            let nodes = uploads::revision_homes(pool, up.id, &up.storage_key).await.db()?;
+            // Used by a post, message or chat before and by nothing now (its post was deleted
+            // or its author erased): until the sweep removes it, only its uploader and admins
+            // have it, not everyone with the address.
+            let orphaned: bool = sqlx::query_scalar(
+                "SELECT u.had_use
+                    AND NOT EXISTS (SELECT 1 FROM users x WHERE x.avatar_upload_id = u.id OR x.cover_upload_id = u.id)
+                    AND NOT EXISTS (SELECT 1 FROM custom_emoji e WHERE e.url LIKE '%' || u.storage_key || '%')
+                 FROM uploads u WHERE u.id = $1",
+            )
+            .bind(up.id)
+            .fetch_optional(pool)
+            .await
+            .db()?
+            .unwrap_or(false);
+            REVISION_HOMES.insert(up.id, (nodes.clone(), orphaned));
+            (nodes, orphaned)
         };
         if old.is_empty() && !orphaned {
             return Ok(Access { allowed: true, public: true, in_content: false });
@@ -80,8 +79,7 @@ pub(crate) async fn access(state: &AppState, v: &Viewer, up: &Upload) -> Result<
         let p = tree.perms(actor, node);
         p.has(Perms::READ) && (!needs_download || p.has(Perms::DOWNLOAD) || p.has(Perms::MODERATE))
     };
-    let public =
-        !members_only && homes.iter().any(|(_, node, st)| st == "visible" && may_open(&guest, *node));
+    let public = !members_only && homes.iter().any(|(_, node, st)| st == "visible" && may_open(&guest, *node));
     if public {
         return Ok(Access { allowed: true, public: true, in_content: true });
     }

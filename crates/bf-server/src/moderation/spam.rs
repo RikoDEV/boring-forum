@@ -18,7 +18,9 @@ pub(crate) fn link_hosts(raw: &str) -> Vec<String> {
     for (i, _) in raw.match_indices("http") {
         let rest = &raw[i..];
         let Some(after) = rest.strip_prefix("https://").or_else(|| rest.strip_prefix("http://")) else { continue };
-        let end = after.find(|c: char| c.is_whitespace() || matches!(c, '/' | ')' | ']' | '>' | '"' | '\'' | '?' | '#' | '<')).unwrap_or(after.len());
+        let end = after
+            .find(|c: char| c.is_whitespace() || matches!(c, '/' | ')' | ']' | '>' | '"' | '\'' | '?' | '#' | '<'))
+            .unwrap_or(after.len());
         let authority = &after[..end];
         let host = authority.rsplit('@').next().unwrap_or(authority).split(':').next().unwrap_or_default();
         let host = host.trim_matches('.').to_lowercase();
@@ -32,9 +34,11 @@ pub(crate) fn link_hosts(raw: &str) -> Vec<String> {
 
 /// Whether `host` is one of the domains in `list` (one per line or comma), or a subdomain of one.
 pub(crate) fn domain_listed(host: &str, list: &str) -> bool {
-    list.split(['\n', ',']).map(|d| d.trim().to_lowercase()).map(|d| d.trim_start_matches("*.").trim_start_matches("www.").to_owned()).filter(|d| !d.is_empty()).any(|d| {
-        host == d || host.strip_suffix(d.as_str()).is_some_and(|front| front.ends_with('.'))
-    })
+    list.split(['\n', ','])
+        .map(|d| d.trim().to_lowercase())
+        .map(|d| d.trim_start_matches("*.").trim_start_matches("www.").to_owned())
+        .filter(|d| !d.is_empty())
+        .any(|d| host == d || host.strip_suffix(d.as_str()).is_some_and(|front| front.ends_with('.')))
 }
 
 /// What the link-domain lists say about a text: (blocked domain, held for review).
@@ -71,7 +75,14 @@ pub(crate) async fn silence_author(state: &AppState, user_id: i64, why: &str) ->
 }
 
 /// Silences a member for `hours`, logs it under `actor`, tells them and records the DSA statement.
-pub(crate) async fn silence_for(state: &AppState, actor: i64, user_id: i64, hours: i64, why: &str, automatic: bool) -> bool {
+pub(crate) async fn silence_for(
+    state: &AppState,
+    actor: i64,
+    user_id: i64,
+    hours: i64,
+    why: &str,
+    automatic: bool,
+) -> bool {
     let Some(pool) = &state.pool else { return false };
     let until = chrono::Utc::now() + chrono::Duration::hours(hours);
     // An automatic silence never replaces a longer (or endless) one a moderator or an earlier flag set.
@@ -148,7 +159,9 @@ pub(crate) async fn flag_as_spam(state: &AppState, post_id: i64, note: &str) {
     let Some(bot) = crate::ai::actor(state).await else { return };
     let Ok(Some(post)) = posts::post_ref(pool, post_id).await else { return };
     match bf_db::moderation::review::report(pool, bot, &post, "spam", Some(note), 1.5).await {
-        Ok(_) => crate::community::notifications::tell_reviewers(state, post.node_id, post.author_id.unwrap_or(0)).await,
+        Ok(_) => {
+            crate::community::notifications::tell_reviewers(state, post.node_id, post.author_id.unwrap_or(0)).await;
+        }
         Err(e) => tracing::warn!(error = %e, "spam flag failed"),
     }
 }

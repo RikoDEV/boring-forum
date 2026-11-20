@@ -90,7 +90,8 @@ pub(super) enum Activity {
 
 const TOPICS_TODAY: &str = "SELECT count(*) FROM items WHERE author_id = $1 AND created_at > now() - interval '1 day'";
 // A reply posted anonymously is under the shared account, with its writer in `real_author_id`.
-const REPLIES_TODAY: &str = "SELECT count(*) FROM posts WHERE (author_id = $1 OR real_author_id = $1) AND post_number > 1 AND action IS NULL
+const REPLIES_TODAY: &str =
+    "SELECT count(*) FROM posts WHERE (author_id = $1 OR real_author_id = $1) AND post_number > 1 AND action IS NULL
      AND created_at > now() - interval '1 day'";
 const EDITS_TODAY: &str =
     "SELECT count(*) FROM post_revisions WHERE editor_id = $1 AND created_at > now() - interval '1 day'";
@@ -108,9 +109,8 @@ pub(super) async fn check_activity_limits(
     let s = state.settings();
     let pool = state.db()?;
     let uid = user.id.get();
-    let count = |sql: &'static str| async move {
-        sqlx::query_scalar::<_, i64>(sql).bind(uid).fetch_one(pool).await.db()
-    };
+    let count =
+        |sql: &'static str| async move { sqlx::query_scalar::<_, i64>(sql).bind(uid).fetch_one(pool).await.db() };
     let new_account = async {
         sqlx::query_scalar::<_, bool>("SELECT joined_at > now() - interval '1 day' FROM users WHERE id = $1")
             .bind(uid)
@@ -278,7 +278,7 @@ pub(super) fn screen(
     let node = tree.node(node_id);
     if node.is_some_and(|n| i32::from(n.min_trust_level) > i32::from(user.trust_level)) {
         let t = crate::http::i18n::lang();
-        let need = i16::from(node.map_or(0, |n| n.min_trust_level));
+        let need = node.map_or(0, |n| n.min_trust_level);
         return Err(t.msgf(
             "Posting in this forum needs trust level {need} ({name}). You are at level {have}. Follow your progress at /trust.",
             &[
@@ -304,8 +304,7 @@ pub(super) fn screen(
     if let Some(domain) = bad_domain {
         return Err(trf("Links to {domain} are not allowed here.", &[("domain", &domain)]));
     }
-    pending |= review_domain
-        && edit_of.is_none_or(|old| !crate::moderation::spam::link_verdict(state, old).1);
+    pending |= review_domain && edit_of.is_none_or(|old| !crate::moderation::spam::link_verdict(state, old).1);
     let mut watched_tags = Vec::new();
     let mut out = Vec::with_capacity(texts.len());
     for t in texts {
@@ -316,7 +315,11 @@ pub(super) fn screen(
             bf_core::watched::Outcome::Allow { text, needs_approval, tags, silence, .. } => {
                 pending |= needs_approval;
                 if silence {
-                    crate::moderation::spam::silence_in_background(state, user.id.get(), "A watched word that silences its author was used.");
+                    crate::moderation::spam::silence_in_background(
+                        state,
+                        user.id.get(),
+                        "A watched word that silences its author was used.",
+                    );
                 }
                 watched_tags.extend(tags);
                 out.push(text);
@@ -346,10 +349,8 @@ pub(crate) async fn screen_federated(
     raw: &str,
 ) -> Result<Federated, String> {
     let pool = state.db().map_err(|_| "no database".to_owned())?;
-    let mut user = users::user_by_id(pool, shadow.into())
-        .await
-        .map_err(|e| e.to_string())?
-        .ok_or("no shadow account")?;
+    let mut user =
+        users::user_by_id(pool, shadow.into()).await.map_err(|e| e.to_string())?.ok_or("no shadow account")?;
     // A remote account cannot accept terms, set up 2FA or be an administrator.
     user.legal_pending = false;
     user.needs_2fa = false;
@@ -382,9 +383,10 @@ pub(crate) async fn screen_federated(
     daily_limit(state, &user).await.map_err(|_| "daily limit")?;
     let activity = topic.map_or(Activity::Topic, Activity::Reply);
     check_activity_limits(state, &user, activity).await.map_err(|_| "activity limit")?;
-    let approved = bf_db::forum::posts::approved_post_count(pool, user.id.get(), state.settings().int("approve_first_posts"))
-        .await
-        .map_err(|e| e.to_string())?;
+    let approved =
+        bf_db::forum::posts::approved_post_count(pool, user.id.get(), state.settings().int("approve_first_posts"))
+            .await
+            .map_err(|e| e.to_string())?;
     let screened = screen(state, &tree, &user, &actor, node_id, &[raw], None, approved)?;
     let text = screened.texts.into_iter().next().unwrap_or_default();
     check_duplicate_post(state, &user, &text).await.map_err(|_| "duplicate")?;

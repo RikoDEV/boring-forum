@@ -60,7 +60,7 @@ pub(super) async fn forum_topics(
 ) -> Result<Response, AppError> {
     let pool = state.db()?;
     let tree: std::sync::Arc<Tree> = state.forum.get(pool).await?;
-    if tree.node(id).filter(|n| n.kind == "forum").is_none() || !tree.perms(&v.actor, id).has(Perms::READ) {
+    if tree.node(id).as_ref().is_none_or(|n| n.kind != "forum") || !tree.perms(&v.actor, id).has(Perms::READ) {
         return Err(AppError::NotFound);
     }
     let viewer = v.user.as_ref().map(|u| u.id.get());

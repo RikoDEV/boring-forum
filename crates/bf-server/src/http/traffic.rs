@@ -129,12 +129,15 @@ pub(crate) async fn record(State(state): State<AppState>, req: Request, next: Ne
     let ip = req
         .extensions()
         .get::<ConnectInfo<SocketAddr>>()
-        .map(|c| crate::http::ratelimit::client_ip(c.0.ip(), headers))
-        .unwrap_or(IpAddr::from([0, 0, 0, 0]));
+        .map_or(IpAddr::from([0, 0, 0, 0]), |c| crate::http::ratelimit::client_ip(c.0.ip(), headers));
     let path: String = req.uri().path().chars().take(200).collect();
     let res = next.run(req).await;
     let html = res.status() == StatusCode::OK
-        && res.headers().get(header::CONTENT_TYPE).and_then(|h| h.to_str().ok()).is_some_and(|t| t.starts_with("text/html"));
+        && res
+            .headers()
+            .get(header::CONTENT_TYPE)
+            .and_then(|h| h.to_str().ok())
+            .is_some_and(|t| t.starts_with("text/html"));
     if html && let Some(tx) = sender(&state) {
         let now = chrono::Utc::now();
         let kind = if crate::community::browsing::bot_name(&agent).is_some() {

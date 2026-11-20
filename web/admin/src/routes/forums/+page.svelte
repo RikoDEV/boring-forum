@@ -1,5 +1,6 @@
 <script>
   import { tick } from "svelte";
+  import { SvelteSet } from "svelte/reactivity";
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
   import { Status } from "#lib/status.svelte.js";
@@ -108,7 +109,7 @@
   const childrenOf = (id) =>
     nodes.filter((x) => x.parent_id === id).sort((a, b) => a.position - b.position || a.id - b.id);
   // Everything below a row: it cannot be dropped into its own subtree.
-  function below(id, out = new Set()) {
+  function below(id, out = new SvelteSet()) {
     for (const k of childrenOf(id)) if (!out.has(k.id)) below(k.id, out.add(k.id));
     return out;
   }
@@ -261,11 +262,11 @@
         selected.parent_id && selected.inherit_perms
           ? patch(`/nodes/${selected.id}`, { inherit_perms: true })
           : put(
-          `/nodes/${selected.id}/permissions`,
-          Object.fromEntries(
-            Object.entries(grants).map(([g, ps]) => [g, PERMS.reduce((acc, p) => acc | (ps[p] ? bits[p] : 0), 0)]),
-          ),
-        ),
+              `/nodes/${selected.id}/permissions`,
+              Object.fromEntries(
+                Object.entries(grants).map(([g, ps]) => [g, PERMS.reduce((acc, p) => acc | (ps[p] ? bits[p] : 0), 0)]),
+              ),
+            ),
       tr("Permissions saved"),
     );
 
@@ -347,7 +348,10 @@
             ondragover={(e) => dragOver(e, n)}
             ondragleave={() => over?.id === n.id && (over = null)}
             ondrop={drop}
-            ondragend={() => (drag = over = null)}
+            ondragend={() => {
+              drag = null;
+              over = null;
+            }}
           >
             <button
               aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
@@ -495,7 +499,12 @@
               <tbody
                 >{#each groups as g (g.id)}<tr
                     ><td>{g.name}</td>{#each PERMS as p}<td
-                        ><input type="checkbox" bind:checked={grants[g.id][p]} disabled={selected.inherit_perms} aria-label="{g.name} {p}" /></td
+                        ><input
+                          type="checkbox"
+                          bind:checked={grants[g.id][p]}
+                          disabled={selected.inherit_perms}
+                          aria-label="{g.name} {p}"
+                        /></td
                       >{/each}</tr
                   >{/each}</tbody
               >

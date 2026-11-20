@@ -340,8 +340,13 @@ mod tests {
                 return found.1;
             }
             match k {
-                "trust_level_1_auto" | "trust_level_2_auto" | "trust_level_3_auto" | "trust_level_1_exists"
-                | "trust_level_2_exists" | "trust_level_3_exists" | "trust_level_4_exists" => 1,
+                "trust_level_1_auto"
+                | "trust_level_2_auto"
+                | "trust_level_3_auto"
+                | "trust_level_1_exists"
+                | "trust_level_2_exists"
+                | "trust_level_3_exists"
+                | "trust_level_4_exists" => 1,
                 _ => 0,
             }
         }
@@ -392,7 +397,10 @@ mod tests {
         assert!(Levels::parse(r#"[{"auto":true}]"#).is_err(), "level 0 cannot be earned");
         assert!(Levels::parse(r#"[{},{"posts":-1}]"#).is_err());
         assert!(Levels::parse(r#"[{},{"days":99999}]"#).is_err());
-        assert!(Levels::parse(r#"[{},{"auto":false},{"auto":true}]"#).is_err(), "an earned level needs the one below earned");
+        assert!(
+            Levels::parse(r#"[{},{"auto":false},{"auto":true}]"#).is_err(),
+            "an earned level needs the one below earned"
+        );
         assert!(Levels::parse(r#"[{},{"name":"a<b"}]"#).is_err());
         assert!(Levels::parse(r#"[{},{"auto":true,"posts":3}]"#).is_ok());
         let too_many = format!("[{}]", vec!["{}"; 22].join(","));
@@ -432,7 +440,16 @@ mod tests {
         l.0[4].auto = true;
         let get = |k: &str| l.value(k);
         assert_eq!(max_auto(&get), 5);
-        let rich = Metrics { posts: 5000, days: 999, topics_read: 999, likes_received: 99, likes_given: 99, days_visited: 99, reputation: 99, ..Metrics::default() };
+        let rich = Metrics {
+            posts: 5000,
+            days: 999,
+            topics_read: 999,
+            likes_received: 99,
+            likes_given: 99,
+            days_visited: 99,
+            reputation: 99,
+            ..Metrics::default()
+        };
         assert_eq!(earned_level(&get, 0, &rich), 5);
     }
 

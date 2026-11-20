@@ -81,7 +81,11 @@
     status.clear();
     dialog = d;
   };
-  const ADD = { tags: [tr("New tag"), show("tag")], emoji: [tr("New emoji"), show("emoji")], invites: [tr("Create invite link"), makeInvite] };
+  const ADD = {
+    tags: [tr("New tag"), show("tag")],
+    emoji: [tr("New emoji"), show("emoji")],
+    invites: [tr("Create invite link"), makeInvite],
+  };
   load();
   loadExtras();
 </script>
@@ -94,10 +98,23 @@
     <div class="acp-form"><Field label={tr("Tag name")} bind:value={tagName} maxlength="40" required wide /></div>
   </EditDialog>
 {:else if dialog === "emoji"}
-  <EditDialog title={tr("New emoji")} onclose={() => (dialog = null)} onsubmit={addEmoji} {status} save={tr("Add emoji")}>
+  <EditDialog
+    title={tr("New emoji")}
+    onclose={() => (dialog = null)}
+    onsubmit={addEmoji}
+    {status}
+    save={tr("Add emoji")}
+  >
     <div class="acp-form">
       <Field label={tr("Name")} bind:value={eName} required wide />
-      <label class="acp-wide">{tr("Picture")}<input type="file" accept="image/*" required onchange={(e) => (eFile = e.currentTarget.files[0])} /></label>
+      <label class="acp-wide"
+        >{tr("Picture")}<input
+          type="file"
+          accept="image/*"
+          required
+          onchange={(e) => (eFile = e.currentTarget.files[0])}
+        /></label
+      >
     </div>
   </EditDialog>
 {:else if dialog === "invite"}
@@ -123,13 +140,16 @@
     <ul class="acp-rows">
       {#each tags as t (t.id)}
         <li class="acp-rowitem">
-          <input class="acp-grow" bind:value={t.name} aria-label={tr("Tag name")} disabled={!!t.plugin} />{#if t.plugin}<span
-              class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: t.plugin })}</span
-            >{/if}<small class="muted">{tn("count.topics", t.topics)}</small
-          >{#if !t.plugin}<button class="secondary" onclick={() => rename(t)}>{tr("Rename")}</button><button
-              class="is-danger"
-              onclick={() => remove(t)}>{tr("Delete")}</button
-            >{/if}
+          <input
+            class="acp-grow"
+            bind:value={t.name}
+            aria-label={tr("Tag name")}
+            disabled={!!t.plugin}
+          />{#if t.plugin}<span class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: t.plugin })}</span
+            >{/if}<small class="muted">{tn("count.topics", t.topics)}</small>{#if !t.plugin}<button
+              class="secondary"
+              onclick={() => rename(t)}>{tr("Rename")}</button
+            ><button class="is-danger" onclick={() => remove(t)}>{tr("Delete")}</button>{/if}
         </li>
       {:else}<li class="muted">{tr("No tags yet. Add one, or they appear here once a topic uses them.")}</li>{/each}
     </ul>

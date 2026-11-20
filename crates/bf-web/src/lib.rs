@@ -6,6 +6,6 @@ pub mod assets;
 pub mod custom_code;
 pub mod microcache;
 pub mod pages;
-pub mod security;
 pub mod schemes;
+pub mod security;
 pub mod theme;

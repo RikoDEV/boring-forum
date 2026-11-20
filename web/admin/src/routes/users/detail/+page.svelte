@@ -204,266 +204,272 @@
   {:else if tab === "security"}
     <Security {id} {ov} {refresh} />
   {:else}
-  {#snippet need(r)}
-    <li class:is-met={r.current >= r.needed}>
-      <span class="acp-trust-label">{r.label}</span>
-      <b>{Math.min(r.current, r.needed)} / {r.needed}</b>
-      <progress value={r.current} max={r.needed}></progress>
-    </li>
-  {/snippet}
-  {#if trust}
-    <section class="acp-box">
-      <div class="acp-box-head">
-        <h2>{tr("Trust level")}</h2>
-        <span class="muted"
-          >{trust.level} · {trust.name}{#if trust.next}{" "}→ {trust.next.level} · {trust.next.name}{/if}</span
-        >
-      </div>
-      <div class="acp-box-body acp-trust">
-        {#if trust.locked}
-          <p>{tr("Set by hand, so automatic promotion and demotion skip this member")}</p>
-        {:else if trust.paused}
-          <p>{tr("Not promoted while suspended or silenced.")}</p>
-        {/if}
-        {#if trust.next}
-          {#if trust.next.requirements.length}
-            <ul class="acp-trust-list">
-              {#each trust.next.requirements as r}{@render need(r)}{/each}
-            </ul>
-          {:else}
-            <p>{tr("No requirements; moves up at the next check.")}</p>
+    {#snippet need(r)}
+      <li class:is-met={r.current >= r.needed}>
+        <span class="acp-trust-label">{r.label}</span>
+        <b>{Math.min(r.current, r.needed)} / {r.needed}</b>
+        <progress value={r.current} max={r.needed}></progress>
+      </li>
+    {/snippet}
+    {#if trust}
+      <section class="acp-box">
+        <div class="acp-box-head">
+          <h2>{tr("Trust level")}</h2>
+          <span class="muted"
+            >{trust.level} · {trust.name}{#if trust.next}&#32;→ {trust.next.level} · {trust.next.name}{/if}</span
+          >
+        </div>
+        <div class="acp-box-body acp-trust">
+          {#if trust.locked}
+            <p>{tr("Set by hand, so automatic promotion and demotion skip this member")}</p>
+          {:else if trust.paused}
+            <p>{tr("Not promoted while suspended or silenced.")}</p>
           {/if}
-        {/if}
-        {#if trust.keep}
-          <p class="muted">{tr("Keeping level {n}", { n: trust.level })}</p>
-          <ul class="acp-trust-list">
-            {@render need(trust.keep)}
+          {#if trust.next}
+            {#if trust.next.requirements.length}
+              <ul class="acp-trust-list">
+                {#each trust.next.requirements as r}{@render need(r)}{/each}
+              </ul>
+            {:else}
+              <p>{tr("No requirements; moves up at the next check.")}</p>
+            {/if}
+          {/if}
+          {#if trust.keep}
+            <p class="muted">{tr("Keeping level {n}", { n: trust.level })}</p>
+            <ul class="acp-trust-list">
+              {@render need(trust.keep)}
+            </ul>
+          {/if}
+          {#if !trust.next && !trust.keep}
+            <p class="muted">{tr("Nothing more to earn or keep at this level.")}</p>
+          {/if}
+        </div>
+      </section>
+    {/if}
+
+    <div class="acp-cols">
+      <div>
+        <section class="acp-box">
+          <div class="acp-box-head"><h2>{tr("Moderation")}</h2></div>
+          <ul class="acp-rows">
+            {#if !u.approved}<li class="acp-action-row">
+                <div class="acp-grow">
+                  <strong>{tr("Approval")}</strong>
+                  <p>{tr("This account is waiting to be let in.")}</p>
+                </div>
+                <button onclick={() => change({ approved: true }, tr("Approved"))}>{tr("Approve")}</button>
+              </li>{/if}
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Silence")}</strong>
+                <p>{tr("Can read, but cannot post or message.")}</p>
+              </div>
+              {#if active(u.silenced_until)}<button
+                  class="secondary"
+                  onclick={() => change({ silenced_until: null }, tr("Silence lifted"))}>{tr("Lift silence")}</button
+                >
+              {:else}<button class="secondary" onclick={() => openDialog("silence")}>{tr("Silence")}</button>{/if}
+            </li>
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Suspend")}</strong>
+                <p>{tr("Signed out and cannot log in.")}</p>
+              </div>
+              {#if active(u.suspended_until)}<button
+                  class="secondary"
+                  onclick={() => change({ suspended_until: null }, tr("Suspension lifted"))}
+                  >{tr("Lift suspension")}</button
+                >
+              {:else}<button class="secondary" onclick={() => openDialog("suspend")}>{tr("Suspend")}</button>{/if}
+            </li>
           </ul>
-        {/if}
-        {#if !trust.next && !trust.keep}
-          <p class="muted">{tr("Nothing more to earn or keep at this level.")}</p>
-        {/if}
-      </div>
-    </section>
-  {/if}
+        </section>
 
-  <div class="acp-cols">
-    <div>
-      <section class="acp-box">
-        <div class="acp-box-head"><h2>{tr("Moderation")}</h2></div>
-        <ul class="acp-rows">
-          {#if !u.approved}<li class="acp-action-row">
-              <div class="acp-grow">
-                <strong>{tr("Approval")}</strong>
-                <p>{tr("This account is waiting to be let in.")}</p>
-              </div>
-              <button onclick={() => change({ approved: true }, tr("Approved"))}>{tr("Approve")}</button>
-            </li>{/if}
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Silence")}</strong>
-              <p>{tr("Can read, but cannot post or message.")}</p>
-            </div>
-            {#if active(u.silenced_until)}<button
-                class="secondary"
-                onclick={() => change({ silenced_until: null }, tr("Silence lifted"))}>{tr("Lift silence")}</button
+        <section class="acp-box">
+          <div class="acp-box-head"><h2>{tr("Permissions")}</h2></div>
+          <ul class="acp-rows">
+            <li class="acp-action-row">
+              <div class="acp-grow"><strong>{tr("Primary group")}</strong></div>
+              <select
+                aria-label={tr("Primary group")}
+                value={u.primary_group_id}
+                onchange={(e) => change({ primary_group_id: Number(e.currentTarget.value) }, tr("Group changed"))}
+                >{#each groups.filter((g) => g.id !== 1) as g}<option value={g.id}>{g.name}</option>{/each}</select
               >
-            {:else}<button class="secondary" onclick={() => openDialog("silence")}>{tr("Silence")}</button>{/if}
-          </li>
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Suspend")}</strong>
-              <p>{tr("Signed out and cannot log in.")}</p>
-            </div>
-            {#if active(u.suspended_until)}<button
-                class="secondary"
-                onclick={() => change({ suspended_until: null }, tr("Suspension lifted"))}
-                >{tr("Lift suspension")}</button
+            </li>
+            <li class="acp-action-row">
+              <div class="acp-grow"><strong>{tr("Trust level")}</strong></div>
+              <select
+                aria-label={tr("Trust level")}
+                value={u.trust_level}
+                onchange={(e) => change({ trust_level: Number(e.currentTarget.value) }, tr("Trust level changed"))}
+                >{#each trustLevels as l}<option value={l.level}>{l.level}{l.label ? ` · ${l.label}` : ""}</option
+                  >{/each}</select
               >
-            {:else}<button class="secondary" onclick={() => openDialog("suspend")}>{tr("Suspend")}</button>{/if}
-          </li>
-        </ul>
-      </section>
-
-      <section class="acp-box">
-        <div class="acp-box-head"><h2>{tr("Permissions")}</h2></div>
-        <ul class="acp-rows">
-          <li class="acp-action-row">
-            <div class="acp-grow"><strong>{tr("Primary group")}</strong></div>
-            <select
-              aria-label={tr("Primary group")}
-              value={u.primary_group_id}
-              onchange={(e) => change({ primary_group_id: Number(e.currentTarget.value) }, tr("Group changed"))}
-              >{#each groups.filter((g) => g.id !== 1) as g}<option value={g.id}>{g.name}</option>{/each}</select
-            >
-          </li>
-          <li class="acp-action-row">
-            <div class="acp-grow"><strong>{tr("Trust level")}</strong></div>
-            <select
-              aria-label={tr("Trust level")}
-              value={u.trust_level}
-              onchange={(e) => change({ trust_level: Number(e.currentTarget.value) }, tr("Trust level changed"))}
-              >{#each trustLevels as l}<option value={l.level}>{l.level}{l.label ? ` · ${l.label}` : ""}</option>{/each}</select
-            >
-<Switch
-              check
-              label={tr("Keep this level")}
-              checked={u.trust_level_locked}
-              onchange={(e) =>
-                change(
-                  { trust_level_locked: e.currentTarget.checked },
-                  e.currentTarget.checked ? tr("Trust level locked") : tr("Trust level unlocked"),
-                )}
-            />
-          </li>
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Other groups")}</strong>
-              <div class="acp-pick">
-              <MultiSelect
-                label={tr("Other groups")}
-                hideLabel
-                placeholder={tr("Add to a group")}
-                options={groups.filter((g) => g.id > 2 && g.id !== u.primary_group_id).map((g) => ({ value: g.id, label: g.name }))}
-                bind:value={picked}
+              <Switch
+                check
+                label={tr("Keep this level")}
+                checked={u.trust_level_locked}
+                onchange={(e) =>
+                  change(
+                    { trust_level_locked: e.currentTarget.checked },
+                    e.currentTarget.checked ? tr("Trust level locked") : tr("Trust level unlocked"),
+                  )}
               />
-              </div>
-            </div>
-          </li>
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Title")}</strong>
-              <p>{tr("Shown under their name.")}</p>
-            </div>
-            <input bind:value={title} aria-label={tr("Title")} /><button
-              class="secondary"
-              onclick={() => change({ title: title.trim() || null }, tr("Title saved"))}>{tr("Save")}</button
-            >
-          </li>
-        </ul>
-      </section>
-    </div>
-
-    <div>
-      <section class="acp-box">
-        <div class="acp-box-head"><h2>{tr("Account")}</h2></div>
-        <dl class="acp-dl">
-          <dt>{tr("Joined")}</dt>
-          <dd>{when(u.joined_at)}</dd>
-          <dt>{tr("Last seen")}</dt>
-          <dd>{when(u.last_seen_at)}</dd>
-          <dt>{tr("Member id")}</dt>
-          <dd>{u.id}</dd>
-        </dl>
-        <ul class="acp-rows">
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Email")}</strong>
-              <p>{u.email_verified ? tr("Verified") : tr("Not verified")}</p>
-            </div>
-            <button
-              class="secondary"
-              onclick={() => change({ email_verified: !u.email_verified }, tr("Email status changed"))}
-              >{u.email_verified ? tr("Mark unverified") : tr("Mark verified")}</button
-            >
-          </li>
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Password")}</strong>
-              <p>{tr("Mails them a link to choose a new one.")}</p>
-            </div>
-            <button
-              class="secondary"
-              onclick={() => act(() => post(`/users/${id}/send-password-reset`), tr("Reset link sent"))}
-              >{tr("Send reset link")}</button
-            >
-          </li>
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Profile")}</strong>
-              <p>{tr("Remove a picture or text they should not have.")}</p>
-            </div>
-            <button class="secondary" onclick={() => openDialog("clear")}>{tr("Clear fields")}</button>
-          </li>
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Sessions")}</strong>
-              <p>{tr("Sign them out on every device.")}</p>
-            </div>
-            <button
-              class="secondary"
-              onclick={() => act(() => post(`/users/${id}/logout`), tr("Signed out everywhere"))}
-              >{tr("Log out")}</button
-            >
-          </li>
-          {#if u.totp_enabled}<li class="acp-action-row">
+            </li>
+            <li class="acp-action-row">
               <div class="acp-grow">
-                <strong>{tr("Two-factor")}</strong>
-                <p>{tr("For someone who lost their device.")}</p>
+                <strong>{tr("Other groups")}</strong>
+                <div class="acp-pick">
+                  <MultiSelect
+                    label={tr("Other groups")}
+                    hideLabel
+                    placeholder={tr("Add to a group")}
+                    options={groups
+                      .filter((g) => g.id > 2 && g.id !== u.primary_group_id)
+                      .map((g) => ({ value: g.id, label: g.name }))}
+                    bind:value={picked}
+                  />
+                </div>
+              </div>
+            </li>
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Title")}</strong>
+                <p>{tr("Shown under their name.")}</p>
+              </div>
+              <input bind:value={title} aria-label={tr("Title")} /><button
+                class="secondary"
+                onclick={() => change({ title: title.trim() || null }, tr("Title saved"))}>{tr("Save")}</button
+              >
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <div>
+        <section class="acp-box">
+          <div class="acp-box-head"><h2>{tr("Account")}</h2></div>
+          <dl class="acp-dl">
+            <dt>{tr("Joined")}</dt>
+            <dd>{when(u.joined_at)}</dd>
+            <dt>{tr("Last seen")}</dt>
+            <dd>{when(u.last_seen_at)}</dd>
+            <dt>{tr("Member id")}</dt>
+            <dd>{u.id}</dd>
+          </dl>
+          <ul class="acp-rows">
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Email")}</strong>
+                <p>{u.email_verified ? tr("Verified") : tr("Not verified")}</p>
               </div>
               <button
                 class="secondary"
-                onclick={() => act(() => post(`/users/${id}/reset-2fa`), tr("Two-factor reset"))}>{tr("Reset")}</button
+                onclick={() => change({ email_verified: !u.email_verified }, tr("Email status changed"))}
+                >{u.email_verified ? tr("Mark unverified") : tr("Mark verified")}</button
               >
-            </li>{/if}
-        </ul>
-      </section>
+            </li>
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Password")}</strong>
+                <p>{tr("Mails them a link to choose a new one.")}</p>
+              </div>
+              <button
+                class="secondary"
+                onclick={() => act(() => post(`/users/${id}/send-password-reset`), tr("Reset link sent"))}
+                >{tr("Send reset link")}</button
+              >
+            </li>
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Profile")}</strong>
+                <p>{tr("Remove a picture or text they should not have.")}</p>
+              </div>
+              <button class="secondary" onclick={() => openDialog("clear")}>{tr("Clear fields")}</button>
+            </li>
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Sessions")}</strong>
+                <p>{tr("Sign them out on every device.")}</p>
+              </div>
+              <button
+                class="secondary"
+                onclick={() => act(() => post(`/users/${id}/logout`), tr("Signed out everywhere"))}
+                >{tr("Log out")}</button
+              >
+            </li>
+            {#if u.totp_enabled}<li class="acp-action-row">
+                <div class="acp-grow">
+                  <strong>{tr("Two-factor")}</strong>
+                  <p>{tr("For someone who lost their device.")}</p>
+                </div>
+                <button
+                  class="secondary"
+                  onclick={() => act(() => post(`/users/${id}/reset-2fa`), tr("Two-factor reset"))}
+                  >{tr("Reset")}</button
+                >
+              </li>{/if}
+          </ul>
+        </section>
 
-      <section class="acp-box">
-        <div class="acp-box-head"><h2>{tr("Danger zone")}</h2></div>
-        <ul class="acp-rows">
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Merge into another account")}</strong>
-              <p>{tr("Moves their content there and removes this account.")}</p>
-            </div>
-            <input
-              type="number"
-              min="1"
-              bind:value={mergeInto}
-              placeholder={tr("Member id")}
-              aria-label={tr("Merge into member id")}
-              style:width="7rem"
-            /><button
-              class="is-danger"
-              disabled={!mergeInto}
-              onclick={() =>
-                arm("merge", () => act(() => post(`/users/${id}/merge`, { into: Number(mergeInto) }), tr("Merged")))}
-              >{danger === "merge" ? tr("Click again") : tr("Merge")}</button
-            >
-          </li>
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Delete as spammer")}</strong>
-              <p>{tr("Removes the account and all its posts.")}</p>
-            </div>
-            <button
-              class="is-danger"
-              onclick={() =>
-                arm("spam", () => act(() => post(`/users/${id}/delete-spammer`), tr("Deleted as a spammer")))}
-              >{danger === "spam" ? tr("Click again") : tr("Delete spammer")}</button
-            >
-          </li>
-          <li class="acp-action-row">
-            <div class="acp-grow">
-              <strong>{tr("Delete account")}</strong>
-              <p>{tr("Posts stay, without their name.")}</p>
-            </div>
-            <button class="is-danger" onclick={() => arm("del", () => act(() => del(`/users/${id}`), tr("Deleted")))}
-              >{danger === "del" ? tr("Click again") : tr("Delete")}</button
-            >
-          </li>
-        </ul>
-      </section>
+        <section class="acp-box">
+          <div class="acp-box-head"><h2>{tr("Danger zone")}</h2></div>
+          <ul class="acp-rows">
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Merge into another account")}</strong>
+                <p>{tr("Moves their content there and removes this account.")}</p>
+              </div>
+              <input
+                type="number"
+                min="1"
+                bind:value={mergeInto}
+                placeholder={tr("Member id")}
+                aria-label={tr("Merge into member id")}
+                style:width="7rem"
+              /><button
+                class="is-danger"
+                disabled={!mergeInto}
+                onclick={() =>
+                  arm("merge", () => act(() => post(`/users/${id}/merge`, { into: Number(mergeInto) }), tr("Merged")))}
+                >{danger === "merge" ? tr("Click again") : tr("Merge")}</button
+              >
+            </li>
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Delete as spammer")}</strong>
+                <p>{tr("Removes the account and all its posts.")}</p>
+              </div>
+              <button
+                class="is-danger"
+                onclick={() =>
+                  arm("spam", () => act(() => post(`/users/${id}/delete-spammer`), tr("Deleted as a spammer")))}
+                >{danger === "spam" ? tr("Click again") : tr("Delete spammer")}</button
+              >
+            </li>
+            <li class="acp-action-row">
+              <div class="acp-grow">
+                <strong>{tr("Delete account")}</strong>
+                <p>{tr("Posts stay, without their name.")}</p>
+              </div>
+              <button class="is-danger" onclick={() => arm("del", () => act(() => del(`/users/${id}`), tr("Deleted")))}
+                >{danger === "del" ? tr("Click again") : tr("Delete")}</button
+              >
+            </li>
+          </ul>
+        </section>
+      </div>
     </div>
-  </div>
 
-  <section class="acp-box">
-    <div class="acp-box-head"><h2>{tr("History")}</h2></div>
-    {#if history.length}<ul class="acp-rows">
-        {#each history as row}<li><small class="acp-wrap">{Object.values(row).map(show).join(" · ")}</small></li>{/each}
-      </ul>{:else}<p class="acp-empty">{tr("Nothing yet.")}</p>{/if}
-  </section>
+    <section class="acp-box">
+      <div class="acp-box-head"><h2>{tr("History")}</h2></div>
+      {#if history.length}<ul class="acp-rows">
+          {#each history as row}<li>
+              <small class="acp-wrap">{Object.values(row).map(show).join(" · ")}</small>
+            </li>{/each}
+        </ul>{:else}<p class="acp-empty">{tr("Nothing yet.")}</p>{/if}
+    </section>
   {/if}
 
   {#if dialog === "identity"}
@@ -508,7 +514,14 @@
     >
       <div class="acp-form">
         <Field label={tr("Days")} type="number" min="1" max="365" bind:value={restrict.days} required />
-        <Field label={tr("Reason the member sees")} bind:value={restrict.reason} rows="4" maxlength="500" required wide />
+        <Field
+          label={tr("Reason the member sees")}
+          bind:value={restrict.reason}
+          rows="4"
+          maxlength="500"
+          required
+          wide
+        />
       </div>
     </EditDialog>
   {:else if dialog === "clear"}

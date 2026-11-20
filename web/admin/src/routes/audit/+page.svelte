@@ -61,7 +61,7 @@
         ><td><small><When iso={r.created_at} /></small></td><td><UserLink name={r.actor} fallback="system" /></td><td
           ><code>{r.action}</code></td
         >
-        <td>{#if r.target_name}<UserLink name={r.target_name} />{:else}{r.target ?? ""}{/if}</td><td
+        <td>{@render target(r)}</td><td
           ><small class="muted acp-wrap">{JSON.stringify(r.details) === "{}" ? "" : JSON.stringify(r.details)}</small
           ></td
         ></tr

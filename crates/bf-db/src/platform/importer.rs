@@ -158,11 +158,13 @@ pub async fn add_tags(pool: &PgPool, item: i64, tags: &[(String, String)]) -> Re
             .bind(slug)
             .execute(pool)
             .await?;
-        sqlx::query("INSERT INTO item_tags (item_id, tag_id) SELECT $1, id FROM tags WHERE slug = $2 ON CONFLICT DO NOTHING")
-            .bind(item)
-            .bind(slug)
-            .execute(pool)
-            .await?;
+        sqlx::query(
+            "INSERT INTO item_tags (item_id, tag_id) SELECT $1, id FROM tags WHERE slug = $2 ON CONFLICT DO NOTHING",
+        )
+        .bind(item)
+        .bind(slug)
+        .execute(pool)
+        .await?;
     }
     Ok(())
 }

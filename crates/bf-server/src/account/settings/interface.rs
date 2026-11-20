@@ -56,7 +56,10 @@ pub(super) async fn save_interface(
 }
 
 /// `/language/{code}` for visitors: remembers the choice in a cookie.
-pub(super) async fn set_language(headers: axum::http::HeaderMap, Path(code): Path<String>) -> Result<Response, AppError> {
+pub(super) async fn set_language(
+    headers: axum::http::HeaderMap,
+    Path(code): Path<String>,
+) -> Result<Response, AppError> {
     if !bf_core::i18n::supported(&code) || crate::http::viewer::is_subresource(&headers) {
         return Err(AppError::NotFound);
     }

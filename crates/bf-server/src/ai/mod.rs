@@ -9,8 +9,8 @@
 //! - Whatever a member wrote is data to the model, never instructions: prompts say so, and answers
 //!   are parsed for a few fields, never executed or rendered as HTML.
 
-use crate::state::AppState;
 use crate::http::viewer::Viewer;
+use crate::state::AppState;
 use axum::Router;
 use axum::http::HeaderMap;
 use bf_core::AppError;
@@ -74,7 +74,10 @@ pub(crate) fn language_name(code: &str) -> String {
         "en" => "English".into(),
         "pl" => "Polish".into(),
         "ar" => "Arabic".into(),
-        other => bf_core::i18n::locales().into_iter().find(|(c, _)| *c == other).map_or_else(|| other.to_owned(), |(_, n)| n.to_owned()),
+        other => bf_core::i18n::locales()
+            .into_iter()
+            .find(|(c, _)| *c == other)
+            .map_or_else(|| other.to_owned(), |(_, n)| n.to_owned()),
     }
 }
 

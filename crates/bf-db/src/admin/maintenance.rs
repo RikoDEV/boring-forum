@@ -34,21 +34,28 @@ pub async fn remove_orphan_uploads(pool: &PgPool) -> Result<Vec<String>, Error> 
     let mut tx = pool.begin().await?;
     // These are full text scans, far beyond the pool's request timeout on a large forum.
     sqlx::query("SET LOCAL statement_timeout = '10min'").execute(&mut *tx).await?;
-    let keys = sqlx::query_scalar(concat!("WITH gone AS (
-           DELETE FROM uploads u WHERE u.created_at < now() - interval '7 days' ", unused!(), "
+    let keys = sqlx::query_scalar(concat!(
+        "WITH gone AS (
+           DELETE FROM uploads u WHERE u.created_at < now() - interval '7 days' ",
+        unused!(),
+        "
            RETURNING storage_key)
-         SELECT DISTINCT storage_key FROM gone"))
+         SELECT DISTINCT storage_key FROM gone"
+    ))
     .fetch_all(&mut *tx)
     .await?;
     tx.commit().await?;
     Ok(keys)
 }
 
-
 /// Removes one upload row when this member uploaded it and nothing uses it, for a draft that was
 /// thrown away. True when the row went, so the caller deletes the stored files.
 pub async fn remove_unused_upload(pool: &PgPool, user: i64, key: &str) -> Result<bool, Error> {
-    let gone: Option<String> = sqlx::query_scalar(concat!("DELETE FROM uploads u WHERE u.storage_key = $1 AND u.user_id = $2 ", unused!(), " RETURNING storage_key"))
+    let gone: Option<String> = sqlx::query_scalar(concat!(
+        "DELETE FROM uploads u WHERE u.storage_key = $1 AND u.user_id = $2 ",
+        unused!(),
+        " RETURNING storage_key"
+    ))
     .bind(key)
     .bind(user)
     .fetch_optional(pool)

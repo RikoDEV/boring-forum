@@ -134,7 +134,7 @@ pub(crate) async fn resume_stalled(state: &AppState) {
         tracing::info!(job, left = rest.len(), "resuming a mass message");
         let state = state.clone();
         tokio::spawn(async move {
-            deliver(state, job, (sender, name), subject, body, rest, notice, conversation, delivered).await
+            deliver(state, job, (sender, name), subject, body, rest, notice, conversation, delivered).await;
         });
     }
 }

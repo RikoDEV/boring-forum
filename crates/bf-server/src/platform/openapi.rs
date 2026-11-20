@@ -257,7 +257,8 @@ impl Modify for Documented {
             let (Some(method), Some(path)) = (d["method"].as_str(), d["path"].as_str()) else { continue };
             let Some(op) = paths.get_mut(path).and_then(|p| p.get_mut(method)) else { continue };
             if let Some(q) = d["query"].as_array() {
-                let mut params: Vec<Value> = op.get("parameters").and_then(Value::as_array).cloned().unwrap_or_default();
+                let mut params: Vec<Value> =
+                    op.get("parameters").and_then(Value::as_array).cloned().unwrap_or_default();
                 for p in q {
                     params.push(json!({
                         "name": p["name"], "in": "query",
@@ -269,7 +270,11 @@ impl Modify for Documented {
                 op["parameters"] = Value::Array(params);
             }
             if let Some(req) = d.get("request").filter(|v| !v.is_null()) {
-                let media = if op.pointer("/requestBody/content/multipart~1form-data").is_some() { "multipart/form-data" } else { "application/json" };
+                let media = if op.pointer("/requestBody/content/multipart~1form-data").is_some() {
+                    "multipart/form-data"
+                } else {
+                    "application/json"
+                };
                 op["requestBody"] = json!({ "required": true, "content": { media: { "schema": req } } });
             }
             let status = d["status"].as_str().unwrap_or("200");
@@ -321,15 +326,19 @@ impl Modify for Documented {
                         });
                     }
                     if let Some(r) = op.get_mut("responses").and_then(Value::as_object_mut) {
-                        r.entry("304").or_insert_with(|| json!({ "description": "Not modified: the `If-None-Match` value is current" }));
+                        r.entry("304").or_insert_with(
+                            || json!({ "description": "Not modified: the `If-None-Match` value is current" }),
+                        );
                     }
                 } else if !reads {
                     params.push(json!({ "name": "Idempotency-Key", "in": "header", "required": false,
                         "description": "1 to 255 visible ASCII characters. A retry with the same key and request replays the stored answer instead of acting twice; the same key on a different request is 422, and while the first is still running 409.",
                         "schema": { "type": "string", "maxLength": 255 } }));
                     if let Some(r) = op.get_mut("responses").and_then(Value::as_object_mut) {
-                        r.entry("409").or_insert_with(|| err("A request with this `Idempotency-Key` is still being processed"));
-                        r.entry("422").or_insert_with(|| err("This `Idempotency-Key` was used for a different request"));
+                        r.entry("409")
+                            .or_insert_with(|| err("A request with this `Idempotency-Key` is still being processed"));
+                        r.entry("422")
+                            .or_insert_with(|| err("This `Idempotency-Key` was used for a different request"));
                     }
                 }
                 op["parameters"] = Value::Array(params);
@@ -340,17 +349,15 @@ impl Modify for Documented {
                 // `write:<resource>` when the key is limited to resources (`api_keys::resource_allowed`).
                 let base = if reads { "read" } else { "write" };
                 let resource = crate::platform::api_keys::resource_of(path);
-                let note = match resource {
-                    Some(r) => {
-                        op["x-required-scope"] = json!({ "base": base, "resource": format!("{base}:{r}") });
-                        format!("API key: `{base}`, or `{base}:{r}` when the key is limited to resources.")
-                    }
-                    None => {
-                        op["x-required-scope"] = json!({ "base": base });
-                        format!("API key: `{base}`; a key limited to resources cannot reach this route.")
-                    }
+                let note = if let Some(r) = resource {
+                    op["x-required-scope"] = json!({ "base": base, "resource": format!("{base}:{r}") });
+                    format!("API key: `{base}`, or `{base}:{r}` when the key is limited to resources.")
+                } else {
+                    op["x-required-scope"] = json!({ "base": base });
+                    format!("API key: `{base}`; a key limited to resources cannot reach this route.")
                 };
-                let note = if reads { note } else { format!("{note} Writes with a session cookie also send `X-CSRF-Token`.") };
+                let note =
+                    if reads { note } else { format!("{note} Writes with a session cookie also send `X-CSRF-Token`.") };
                 if op.get("security").is_none() {
                     op["security"] = json!([{ "session": [] }, { "api_key": [] }]);
                 }
@@ -380,27 +387,34 @@ mod tests {
     /// Every row of `ROUTES` has a typed entry in `openapi_docs` (a body or response schema, and
     /// who may call), and the other way round.
     #[test]
-    #[expect(clippy::expect_used, reason = "a test over static data")]
     fn every_listed_route_is_typed() {
         let docs = super::super::openapi_docs::all();
         let key = |m: &str, p: &str| format!("{m} {p}");
-        let typed: std::collections::HashSet<String> =
-            docs.iter().map(|d| key(d["method"].as_str().expect("method"), d["path"].as_str().expect("path"))).collect();
+        let typed: std::collections::HashSet<String> = docs
+            .iter()
+            .map(|d| key(d["method"].as_str().expect("method"), d["path"].as_str().expect("path")))
+            .collect();
         let listed: std::collections::HashSet<String> = super::ROUTES.iter().map(|r| key(r.0, r.1)).collect();
         let untyped: Vec<_> = listed.difference(&typed).collect();
         let stray: Vec<_> = typed.difference(&listed).collect();
         assert!(untyped.is_empty(), "ROUTES rows without an openapi_docs entry: {untyped:#?}");
         assert!(stray.is_empty(), "openapi_docs entries without a ROUTES row: {stray:#?}");
         for d in &docs {
-            assert!(d.get("auth").is_some_and(|a| a.is_string()), "no auth in {d}");
-            assert!(d.get("response").is_some() || d["status"].as_str().is_some_and(|s| s != "200"), "no response in {d}");
+            assert!(d.get("auth").is_some_and(serde_json::Value::is_string), "no auth in {d}");
+            assert!(
+                d.get("response").is_some() || d["status"].as_str().is_some_and(|s| s != "200"),
+                "no response in {d}"
+            );
         }
     }
 
     /// Member routes that are deliberately not in the document, each with the reason. Everything
     /// else registered under `/api/v1` must be documented, method by method.
     const NOT_DOCUMENTED: &[(&str, &str)] = &[
-        ("/api/v1/webhooks/bounce", "receiver for the mail provider's bounce webhook, signed by the provider; not for clients"),
+        (
+            "/api/v1/webhooks/bounce",
+            "receiver for the mail provider's bounce webhook, signed by the provider; not for clients",
+        ),
         ("/api/v1/webhooks/inbound-mail", "receiver for the mail provider's inbound mail webhook; not for clients"),
     ];
 
@@ -408,7 +422,6 @@ mod tests {
     /// spec, and `NOT_DOCUMENTED` aside) is in the document, method by method. Reads `.route(` calls
     /// whether the path sits on the same line or the next, and the router nested under `/api/v1`.
     #[test]
-    #[expect(clippy::expect_used, reason = "a test over the source tree")]
     fn every_member_route_is_documented() {
         fn walk(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
             for e in std::fs::read_dir(dir).expect("read_dir").flatten() {
@@ -444,7 +457,11 @@ mod tests {
                     continue;
                 }
                 // The method calls up to the next route or the end of the statement.
-                let stop = [tail.find(".route("), tail.find(';'), Some(400.min(tail.len()))].into_iter().flatten().min().unwrap_or(tail.len());
+                let stop = [tail.find(".route("), tail.find(';'), Some(400.min(tail.len()))]
+                    .into_iter()
+                    .flatten()
+                    .min()
+                    .unwrap_or(tail.len());
                 let tail = &tail[..tail.floor_char_boundary(stop)];
                 if let Some((p, _)) = NOT_DOCUMENTED.iter().find(|(p, _)| *p == path) {
                     exempt_seen.insert(*p);
@@ -466,8 +483,14 @@ mod tests {
         }
         assert!(seen > 80, "the scan found only {seen} routes; did the router move?");
         for (p, why) in NOT_DOCUMENTED {
-            assert!(exempt_seen.contains(p), "NOT_DOCUMENTED lists {p} ({why}) but no such route is registered; remove it");
+            assert!(
+                exempt_seen.contains(p),
+                "NOT_DOCUMENTED lists {p} ({why}) but no such route is registered; remove it"
+            );
         }
-        assert!(missing.is_empty(), "routes missing from the OpenAPI document (annotate the handler with #[utoipa::path], or add a ROUTES row and an openapi_docs entry): {missing:#?}");
+        assert!(
+            missing.is_empty(),
+            "routes missing from the OpenAPI document (annotate the handler with #[utoipa::path], or add a ROUTES row and an openapi_docs entry): {missing:#?}"
+        );
     }
 }

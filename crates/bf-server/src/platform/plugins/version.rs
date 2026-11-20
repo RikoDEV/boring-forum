@@ -34,7 +34,8 @@ pub(super) fn satisfies(version: &str, req: &str) -> bool {
     if req.is_empty() || req == "*" {
         return true;
     }
-    let (op, rest) = ["^", "~", ">=", "="].iter().find_map(|op| req.strip_prefix(op).map(|r| (*op, r.trim()))).unwrap_or(("^", req));
+    let (op, rest) =
+        ["^", "~", ">=", "="].iter().find_map(|op| req.strip_prefix(op).map(|r| (*op, r.trim()))).unwrap_or(("^", req));
     let Some(min) = parse(rest) else { return false };
     let n = parts(rest);
     match op {

@@ -1,6 +1,9 @@
 //! Plugin development commands (`boring-forum plugin pack | sign | watch`): build a folder into
 //! the zip the forum installs, sign it, and reinstall it on a dev server every time a file changes.
 
+// The output of the `plugin` subcommands, not of a request.
+#![allow(clippy::print_stdout, clippy::print_stderr)]
+
 use serde_json::Value;
 use std::io::{Read, Write};
 use std::path::Path;
@@ -70,7 +73,9 @@ pub fn pack(dir: &str) -> Result<Vec<u8>, String> {
     let root = Path::new(dir);
     let mut files = Files::new();
     collect(root, root, &mut files)?;
-    files.retain(|(n, _)| !matches!(n.as_str(), "Cargo.toml" | "Cargo.lock" | "build.sh" | ".gitignore") && !n.starts_with("src/"));
+    files.retain(|(n, _)| {
+        !matches!(n.as_str(), "Cargo.toml" | "Cargo.lock" | "build.sh" | ".gitignore") && !n.starts_with("src/")
+    });
     if root.join("Cargo.toml").exists() {
         let manifest = files.iter().find(|(n, _)| n == "plugin.toml").ok_or("plugin.toml is missing.")?;
         let parsed: toml::Value = toml::from_str(&String::from_utf8_lossy(&manifest.1)).map_err(|e| e.to_string())?;

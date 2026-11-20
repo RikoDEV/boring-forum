@@ -12,7 +12,7 @@
     ["privacy", tr("Privacy policy")],
     ["guidelines", tr("Community guidelines")],
   ];
-  let versions = $state({}); // kind -> latest version (0: never published)
+  const versions = $state({}); // kind -> latest version (0: never published)
   let draft = $state(null); // { kind, label, body } while a document is open for a new version
   const status = new Status();
   const dialog = new Status();
@@ -68,7 +68,8 @@
         <div class="acp-grow">
           <strong>{label}</strong><br />
           {#if versions[k]}<small class="muted">{tr("Version {version}", { version: versions[k] })}</small>
-          {:else if k in versions}<small class="muted">{tr("Not published yet: it has no link on the site.")}</small>{/if}
+          {:else if k in versions}<small class="muted">{tr("Not published yet: it has no link on the site.")}</small
+            >{/if}
         </div>
         {#if versions[k]}<a href="/legal/{k}" target="_blank">{tr("View current")}</a>{/if}
         <button class="secondary" onclick={() => open(k, label)}>{tr("Edit")}</button>

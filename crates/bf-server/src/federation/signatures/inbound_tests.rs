@@ -66,11 +66,9 @@ fn a_swapped_digest_header_breaks_the_signature() {
 
 #[test]
 fn a_changed_date_host_or_content_type_breaks_the_signature() {
-    for (name, value) in [
-        ("date", "Mon, 09 Nov 2026 12:00:00 GMT"),
-        ("host", "other.example"),
-        ("content-type", "text/plain"),
-    ] {
+    for (name, value) in
+        [("date", "Mon, 09 Nov 2026 12:00:00 GMT"), ("host", "other.example"), ("content-type", "text/plain")]
+    {
         let mut f = fixture();
         f.headers.insert(name, HeaderValue::from_static(value));
         assert!(!signature_ok(&f, &f.pem, &f.headers, &uri()), "{name}");
@@ -97,7 +95,7 @@ fn another_key_or_a_garbage_key_does_not_verify() {
     assert!(!signature_ok(&f, &other_pem, &f.headers, &uri()));
     assert!(!signature_ok(&f, "", &f.headers, &uri()));
     assert!(!signature_ok(&f, "-----BEGIN PUBLIC KEY-----\nAAAA\n-----END PUBLIC KEY-----", &f.headers, &uri()));
-    assert!(verify_with(&f.pem, "msg", &[]) == false);
+    assert!(!verify_with(&f.pem, "msg", &[]));
     let _ = &f.key;
 }
 

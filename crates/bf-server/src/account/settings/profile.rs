@@ -108,7 +108,9 @@ pub(super) async fn save_profile(
             if !crate::http::viewer::is_staff(&v)
                 && bf_db::accounts::users::display_name_impersonates(pool, &n, Some(user.id.get())).await.db()?
             {
-                return Err(AppError::Validation("That display name looks too much like a staff member's name.".into()));
+                return Err(AppError::Validation(
+                    "That display name looks too much like a staff member's name.".into(),
+                ));
             }
             keep("display_name", crate::moderation::gate::words(&state, &v, &n).await?, current.display_name.clone())
         }
