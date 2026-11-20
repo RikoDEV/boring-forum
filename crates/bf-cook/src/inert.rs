@@ -29,13 +29,64 @@ const FORBIDDEN_TAGS: &[(&str, &str)] = &[
     ("<marquee", "a marquee element survived"),
 ];
 
-/// Attribute names that must never appear inside a tag.
+/// Attribute names that must never appear on a tag. Matched against the names only: a heading's
+/// generated `id="h-srcdoc"` is a value, not an attribute.
 const FORBIDDEN_ATTRS: &[(&str, &str)] = &[
     ("srcdoc", "an srcdoc attribute survived"),
     ("formaction", "a formaction attribute survived"),
-    ("expression(", "a CSS expression survived"),
     ("xlink:href", "an xlink:href survived"),
 ];
+
+/// Text that must never appear anywhere inside a tag, in a name or a value.
+const FORBIDDEN_IN_TAG: &[(&str, &str)] = &[("expression(", "a CSS expression survived")];
+
+/// The attribute names of a tag's contents (`a href="x" srcdoc=y`): quoted and unquoted values are
+/// skipped, so only what a browser would read as a name is returned.
+fn attribute_names(tag: &str) -> Vec<&str> {
+    let bytes = tag.as_bytes();
+    let mut names = Vec::new();
+    let mut i = 0;
+    // The tag name itself.
+    while i < bytes.len() && !bytes[i].is_ascii_whitespace() && bytes[i] != b'/' {
+        i += 1;
+    }
+    while i < bytes.len() {
+        while i < bytes.len() && (bytes[i].is_ascii_whitespace() || bytes[i] == b'/') {
+            i += 1;
+        }
+        let start = i;
+        while i < bytes.len() && !bytes[i].is_ascii_whitespace() && bytes[i] != b'=' && bytes[i] != b'/' {
+            i += 1;
+        }
+        if i > start {
+            names.push(&tag[start..i]);
+        }
+        while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+            i += 1;
+        }
+        if i < bytes.len() && bytes[i] == b'=' {
+            i += 1;
+            while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+                i += 1;
+            }
+            match bytes.get(i) {
+                Some(&q) if q == b'"' || q == b'\'' => {
+                    i += 1;
+                    while i < bytes.len() && bytes[i] != q {
+                        i += 1;
+                    }
+                    i += 1;
+                }
+                _ => {
+                    while i < bytes.len() && !bytes[i].is_ascii_whitespace() {
+                        i += 1;
+                    }
+                }
+            }
+        }
+    }
+    names
+}
 
 /// URL schemes that must never begin an attribute value.
 const FORBIDDEN_SCHEMES: &[&str] = &["javascript:", "vbscript:", "data:text/html"];
@@ -81,7 +132,13 @@ pub fn violations(html: &str) -> Vec<String> {
     }
 
     for tag in tags(&lower) {
-        for (needle, why) in FORBIDDEN_ATTRS {
+        let names = attribute_names(tag);
+        for (name, why) in FORBIDDEN_ATTRS {
+            if names.iter().any(|n| n == name) {
+                found.push((*why).to_owned());
+            }
+        }
+        for (needle, why) in FORBIDDEN_IN_TAG {
             if tag.contains(needle) {
                 found.push((*why).to_owned());
             }
@@ -125,6 +182,22 @@ pub fn assert_inert(html: &str, input: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn an_attribute_value_that_spells_a_forbidden_name_is_not_that_attribute() {
+        // A heading called "srcdoc" gets the anchor `h-srcdoc`: a value, found by the fuzzer.
+        assert!(violations(r##"<h1 id="h-srcdoc">srcdoc<a href="#srcdoc"></a></h1>"##).is_empty());
+        // The attribute itself is still caught, quoted, unquoted, after other attributes or after a slash.
+        for bad in [
+            r#"<iframe srcdoc="x">"#,
+            "<iframe srcdoc=x>",
+            r#"<a title="t" srcdoc='y'>"#,
+            "<iframe/srcdoc=x>",
+            "<button formaction=x>",
+        ] {
+            assert!(!violations(bad).is_empty(), "{bad}");
+        }
+    }
 
     #[test]
     fn plain_markup_is_inert() {

@@ -18,14 +18,17 @@ fuzz_target!(|data: &[u8]| {
 
     let parsed = bf_core::search::parse(q);
 
-    // Dates reach a date comparison, so anything that is not a plain `YYYY-MM-DD` must have
-    // been rejected by the parser rather than passed along to be interpreted later.
+    // Dates reach a date comparison, so anything that is not a plain `YYYY-MM-DD` or a relative
+    // `7d`, `2w`, `3m`, `1y` must have been rejected by the parser rather than passed along to be
+    // interpreted later.
     for date in [&parsed.before, &parsed.after].into_iter().flatten() {
-        assert!(
-            date.len() == 10 && date.as_bytes().iter().enumerate().all(|(i, b)| match i {
+        let plain = date.len() == 10
+            && date.as_bytes().iter().enumerate().all(|(i, b)| match i {
                 4 | 7 => *b == b'-',
                 _ => b.is_ascii_digit(),
-            }),
+            });
+        assert!(
+            plain || bf_core::search::relative_days(date).is_some(),
             "parse accepted a date it cannot have validated: {date:?} from {q:?}"
         );
     }

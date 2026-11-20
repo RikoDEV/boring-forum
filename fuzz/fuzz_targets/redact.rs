@@ -36,8 +36,10 @@ fuzz_target!(|data: &[u8]| {
     }
 
     // The path is what makes a log line useful, so it must be preserved exactly.
-    let path = uri.split('?').next().unwrap_or("");
-    assert!(redacted.starts_with(path), "redact_uri changed the path\n  input: {uri:?}\n  output: {redacted:?}");
+    // Only a credential segment of the path (`/reset/{token}`) may change, and `redact_path` is what
+    // changes it: anything else in the path must come through as it went in.
+    let path = bf_core::log::redact_path(uri.split('?').next().unwrap_or(""));
+    assert!(redacted.starts_with(&path),"redact_uri changed the path\n  input: {uri:?}\n  output: {redacted:?}");
 
     // Idempotent, so a URI that passes through two layers of logging is not mangled.
     assert_eq!(bf_core::log::redact_uri(&redacted), redacted, "redact_uri is not idempotent for {uri:?}");
