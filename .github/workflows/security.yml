@@ -87,6 +87,10 @@ jobs:
             exit 1
           }
           for f in crates/*/Cargo.toml; do
+            # The one recorded exception: the plugin SDK exports `#[unsafe(no_mangle)]` entry points
+            # for WebAssembly, which `unsafe_code = "forbid"` would refuse. It runs inside the guest,
+            # not in the server, and says so in its Cargo.toml. Anything else must inherit the lints.
+            [ "$f" = crates/bf-plugin-api/Cargo.toml ] && continue
             grep -qA1 '^\[lints\]' "$f" || { echo "::error::$f does not inherit workspace lints"; exit 1; }
           done
 
