@@ -17,8 +17,12 @@ fuzz_target!(|data: &[u8]| {
     // 1. Whatever went in, what comes out must be inert.
     bf_cook::inert::assert_inert(&clean, html);
 
-    // 2. Idempotent. If sanitizing twice differs, the sanitizer's own output is parsed
-    //    differently than it was written -- a mutation-XSS primitive, and the bug class that
-    //    broke several HTML sanitizers in other languages.
-    assert_eq!(bf_cook::sanitize(&clean), clean, "sanitize is not idempotent\n  input: {html:?}");
+    // 2. Stable. Sanitizing the output again must not walk toward something executable -- the
+    //    mutation-XSS class that broke several HTML sanitizers in other languages. Strict
+    //    idempotence is too much: a malformed anchor nested in an anchor comes out nested once and as
+    //    siblings the next time (HTML forbids nesting them), and both are inert. So the second pass
+    //    must be inert too, and the third must change nothing.
+    let again = bf_cook::sanitize(&clean);
+    bf_cook::inert::assert_inert(&again, html);
+    assert_eq!(bf_cook::sanitize(&again), again, "sanitize does not settle\n  input: {html:?}");
 });

@@ -344,3 +344,16 @@ fn a_grid_can_say_how_many_columns() {
     let plain = cook("[grid]\n![a](https://example.org/a.png)\n[/grid]").html;
     assert!(plain.contains("<div class=\"bf-grid\">"), "{plain}");
 }
+
+#[test]
+fn malformed_anchors_settle_after_one_more_pass_and_stay_inert() {
+    // Found by the fuzzer. The parser keeps a second `<a>` inside the first here, and the next parse
+    // makes them siblings (an anchor cannot contain an anchor). Both forms are inert; what must hold is
+    // that the output is stable from the second pass on, and that no pass is executable.
+    let input = "<A\n\0&\u{6}#>b\u{19}\0\0\0/\ts\u{8}=\0\0/\t;/o><\u{4}<marquee>\0\0\0/>&<;/><A\n</\0>\0o";
+    let once = sanitize(input);
+    let twice = sanitize(&once);
+    assert_eq!(sanitize(&twice), twice, "{once:?} -> {twice:?}");
+    inert::assert_inert(&once, input);
+    inert::assert_inert(&twice, input);
+}
