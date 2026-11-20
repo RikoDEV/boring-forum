@@ -357,12 +357,14 @@ pub async fn meta_set(
         "user" => "users",
         _ => "posts",
     };
-    // `table` is one of two constants.
-    let there: bool =
-        sqlx::query_scalar(sqlx::AssertSqlSafe(format!("SELECT EXISTS (SELECT 1 FROM {table} WHERE id = $1)")))
-            .bind(id)
-            .fetch_one(pool)
-            .await?;
+    let query = format!("SELECT EXISTS (SELECT 1 FROM {table} WHERE id = $1)");
+    let there: bool = sqlx::query_scalar(
+        // `table` is one of two constants.
+        sqlx::AssertSqlSafe(query),
+    )
+    .bind(id)
+    .fetch_one(pool)
+    .await?;
     if !there {
         return Ok(false);
     }

@@ -149,7 +149,8 @@ jobs:
         run: |
           budget=60
           [ "${{ github.event_name }}" = "schedule" ] && budget=900
-          cargo fuzz run ${{ matrix.target }} -- -max_total_time=$budget
+          # The repository root is a virtual workspace, which cargo-fuzz cannot find a package in.
+          cargo fuzz run --fuzz-dir fuzz ${{ matrix.target }} -- -max_total_time=$budget
         working-directory: .
       - name: Upload any crash
         if: failure()
@@ -247,4 +248,7 @@ jobs:
           # on every run. Anything not listed there fails the job.
           rules_file_name: .github/zap-rules.tsv
           fail_action: true
+          # The job has read-only permissions and cannot open an issue; the findings are in the
+          # job log and the zap_scan artifact.
+          allow_issue_writing: false
           cmd_options: "-a"

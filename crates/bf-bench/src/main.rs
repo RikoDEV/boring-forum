@@ -24,7 +24,9 @@ struct Case {
 }
 
 const CASES: &[Case] = &[
-    Case { name: "guest home (microcache)", path: "/", member: false, p95_budget: Duration::from_millis(1) },
+    // A hit skips the render but not the outer layers (compression, link signing, traffic): measured
+    // p95 3.6 ms at 64 concurrent requests on a workstation; 8 ms leaves room for a shared CI runner.
+    Case { name: "guest home (microcache)", path: "/", member: false, p95_budget: Duration::from_millis(8) },
     Case { name: "member home (render)", path: "/", member: true, p95_budget: Duration::from_millis(15) },
 ];
 

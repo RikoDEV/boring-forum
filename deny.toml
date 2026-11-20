@@ -19,6 +19,9 @@ ignore = [
     # and verifies remote ones: no RSA decryption, and no endpoint lets a client time a private-key
     # operation on input it chose. Review again by 2027-05-01, or when a fixed release appears.
     { id = "RUSTSEC-2023-0071", reason = "rsa Marvin timing: signing own outbound requests only, no decryption oracle" },
+    # chrono is flagged unmaintained, with no vulnerability: the whole workspace uses it for time, and
+    # jiff (the suggested replacement) is a different API. Review again by 2027-05-01.
+    { id = "RUSTSEC-2026-0543", reason = "chrono unmaintained, no known vulnerability; replacing it is a workspace-wide change" },
 ]
 
 [licenses]
