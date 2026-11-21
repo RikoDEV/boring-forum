@@ -62,12 +62,13 @@ on the first response. Written in Rust and Svelte, with PostgreSQL for storage.
 ## Quick start
 
 1. Start the database and the server with Docker Compose (it pulls the release image; settings are
-   read from `.env`, optional):
+   read from the `.env` beside it, optional):
 
    ```sh
-   git clone https://github.com/RikoDEV/boring-forum.git && cd boring-forum
-   cp .env.example .env
-   docker compose -f deploy/compose.yml up -d --wait
+   mkdir forum && cd forum
+   curl -fsSLO https://raw.githubusercontent.com/RikoDEV/boring-forum/main/deploy/compose.yml
+   curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/.env.example -o .env
+   docker compose up -d --wait
    ```
 
 2. Open <http://127.0.0.1:8080> and register. **The first account on an empty database becomes the

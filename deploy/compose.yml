@@ -1,4 +1,5 @@
-# Runs the published release image (ghcr.io/rikodev/boring-forum), not a build of this checkout.
+# Runs the published release image (ghcr.io/rikodev/boring-forum), not a build of this checkout. The
+# file needs nothing else from the repository: save it with a .env beside it and run `docker compose up -d`.
 # Pin a release with `BF_VERSION=0.0.1`; the default follows the newest one. To build the image
 # from the working tree instead, layer deploy/compose.build.yml:
 #   docker compose -f deploy/compose.yml -f deploy/compose.build.yml up -d --build
@@ -22,11 +23,11 @@ services:
 
   server:
     image: ghcr.io/rikodev/boring-forum:${BF_VERSION:-latest}
-    # Every setting comes from the .env in the repository root (copy .env.example; see
-    # docs/configuration.md). The file is optional. `environment` wins over it and holds only what
-    # must differ inside the compose network.
+    # Every setting comes from the .env next to this file (start from .env.example; see
+    # docs/configuration.md). The file is optional. Compose also reads ${...} below from it, such as
+    # BF_VERSION. `environment` wins over it and holds only what must differ inside the compose network.
     env_file:
-      - path: ../.env
+      - path: .env
         required: false
     environment:
       BF_DATABASE_URL: postgres://forum:forum@db:5432/forum

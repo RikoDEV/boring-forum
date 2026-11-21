@@ -19,24 +19,30 @@ Node.js is only needed to build the front end from source; the container image a
 
 ## With Docker Compose
 
-The repository's `deploy/compose.yml` runs Postgres and the published server image
+`deploy/compose.yml` runs Postgres and the published server image
 (`ghcr.io/rikodev/boring-forum`) together, with volumes for the database, the uploaded files and
 backups. It follows the newest release; set `BF_VERSION` (for example `0.0.1`) to stay on one.
 To build the image from your checkout instead, add `-f deploy/compose.build.yml` and `--build`.
 
+You do not need the repository, only two files in an empty directory:
+
 ```sh
-git clone https://github.com/RikoDEV/boring-forum.git && cd boring-forum
-cp .env.example .env
+mkdir forum && cd forum
+curl -fsSLO https://raw.githubusercontent.com/RikoDEV/boring-forum/main/deploy/compose.yml
+curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/.env.example -o .env
 ```
 
 Edit `.env`: set `BF_BASE_URL` to the address people will use and `BF_SECRET_KEY` to the output of
-`docker compose -f deploy/compose.yml run --rm server secret-key`. Compose passes the whole file to the
-server, so every setting in [Configuration](configuration.md) goes there. It always sets the database
-address and the listen address itself, whatever `.env` says.
+`docker compose run --rm server secret-key`. Compose passes the whole file to the server, so every
+setting in [Configuration](configuration.md) goes there. It always sets the database address and the
+listen address itself, whatever `.env` says. `BF_VERSION=0.0.1` in the same file pins a release.
 
 ```sh
-docker compose -f deploy/compose.yml up -d --wait
+docker compose up -d --wait
 ```
+
+From a checkout of the repository, use `deploy/compose.yml` the same way: put the `.env` in `deploy/`
+and add `-f deploy/compose.yml` to each command.
 
 The server listens on `127.0.0.1:8080` only, so nothing is reachable from outside until you put
 a reverse proxy in front of it (below). Open the address, register, and **the first account on an
