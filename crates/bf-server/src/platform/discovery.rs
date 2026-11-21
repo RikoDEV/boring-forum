@@ -144,7 +144,8 @@ async fn oembed(State(state): State<AppState>, Query(q): Query<OembedQuery>) -> 
         "html": html,
     }))
     .into_response();
+    // No CORS header: oEmbed consumers fetch this from their servers, and CORS stays off by default
+    // (the ZAP baseline fails on a cross-domain misconfiguration).
     res.headers_mut().insert(header::CACHE_CONTROL, HeaderValue::from_static("public, max-age=3600"));
-    res.headers_mut().insert("access-control-allow-origin", HeaderValue::from_static("*"));
     Ok(res)
 }

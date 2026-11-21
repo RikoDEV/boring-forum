@@ -103,7 +103,10 @@ pub async fn layer(State(mc): State<Microcache>, req: Request, next: Next) -> Re
     if !is_guest_get(&req) {
         return next.run(req).await;
     }
-    // Guest pages are translated, so the language is part of the key.
+    // Guest pages are translated, so the language is part of the key. Both inputs are in it: the
+    // cookie wins over the browser's language, but the site may also be set to one language for
+    // everyone, and then a page rendered for one browser must not be served to a visitor whose cookie
+    // asks for another. Only supported languages count, so the number of keys per address stays small.
     let lang_cookie = req
         .headers()
         .get_all(header::COOKIE)
@@ -111,15 +114,11 @@ pub async fn layer(State(mc): State<Microcache>, req: Request, next: Next) -> Re
         .filter_map(|v| v.to_str().ok())
         .flat_map(|v| v.split(';'))
         .find_map(|kv| kv.trim().strip_prefix("bf_lang="))
-        .unwrap_or("")
-        .to_owned();
+        .filter(|c| bf_core::i18n::supported(c))
+        .unwrap_or("");
     let accept = req.headers().get(header::ACCEPT_LANGUAGE).and_then(|v| v.to_str().ok()).unwrap_or("");
-    let lang = if lang_cookie.is_empty() {
-        bf_core::i18n::from_accept_language(accept).unwrap_or("").to_owned()
-    } else {
-        lang_cookie
-    };
-    let key = format!("{}|{lang}", req.uri());
+    let browser = bf_core::i18n::from_accept_language(accept).unwrap_or("");
+    let key = format!("{}|{lang_cookie}|{browser}", req.uri());
     let if_none_match = req.headers().get(header::IF_NONE_MATCH).and_then(|v| v.to_str().ok()).map(str::to_owned);
     let entry = mc
         .cache
@@ -192,6 +191,41 @@ mod tests {
                 }),
             )
             .layer(middleware::from_fn_with_state(mc, layer))
+    }
+
+    /// With the site set to one language for everyone, a browser asking for English gets the site's
+    /// language and is cached under that browser's key; a visitor whose cookie asks for English, but whose
+    /// browser asks for something else, must not be served that page.
+    #[tokio::test]
+    async fn the_language_cookie_and_the_browsers_language_are_both_in_the_key() {
+        use axum::body::to_bytes;
+        use axum::http::Request;
+        let mc = Microcache::new(Duration::from_secs(5));
+        let app = Router::new()
+            .route(
+                "/",
+                get(|headers: axum::http::HeaderMap| async move {
+                    let h = |n: &str| headers.get(n).and_then(|v| v.to_str().ok()).unwrap_or("-").to_owned();
+                    format!("accept={} cookie={}", h("accept-language"), h("cookie"))
+                }),
+            )
+            .layer(middleware::from_fn_with_state(mc, layer));
+        let get_page = |accept: &'static str, cookie: &'static str| {
+            let app = app.clone();
+            async move {
+                let mut req = Request::get("/").header("accept-language", accept);
+                if !cookie.is_empty() {
+                    req = req.header("cookie", cookie);
+                }
+                let res = app.oneshot(req.body(Body::empty()).unwrap()).await.unwrap();
+                String::from_utf8(to_bytes(res.into_body(), usize::MAX).await.unwrap().to_vec()).unwrap()
+            }
+        };
+        let browser_en = get_page("en", "").await;
+        let cookie_en_browser_pl = get_page("pl", "bf_lang=en").await;
+        assert_ne!(browser_en, cookie_en_browser_pl, "one page served to two different visitors");
+        // The same visitor again is served from the cache.
+        assert_eq!(get_page("pl", "bf_lang=en").await, cookie_en_browser_pl);
     }
 
     #[tokio::test]
