@@ -447,7 +447,7 @@ async fn forum(
     };
     let mut res = page(render(&p), set, v.user.is_none() && explicit.is_none() && remembered.is_none());
     if let Some(s) = explicit {
-        let c = format!("{cookie_name}={}; Path=/c/; SameSite=Lax; Max-Age=31536000", s.key());
+        let c = format!("{cookie_name}={}; Path=/c/; HttpOnly; SameSite=Lax; Max-Age=31536000", s.key());
         res.headers_mut().append(header::SET_COOKIE, HeaderValue::from_str(&c).map_err(AppError::internal)?);
     }
     Ok(res)

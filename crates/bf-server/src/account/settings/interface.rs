@@ -64,7 +64,7 @@ pub(super) async fn set_language(
         return Err(AppError::NotFound);
     }
     let mut res = Redirect::to("/").into_response();
-    let c = format!("bf_lang={code}; Path=/; SameSite=Lax; Max-Age=31536000");
+    let c = format!("bf_lang={code}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000");
     res.headers_mut().append(header::SET_COOKIE, HeaderValue::from_str(&c).map_err(AppError::internal)?);
     Ok(res)
 }

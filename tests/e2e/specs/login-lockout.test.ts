@@ -91,7 +91,8 @@ describe("per-address lockout", () => {
     expect(c.jar.has(SESSION)).toBe(false);
     // Everybody else is unaffected.
     expect((await attempt(forum, OWNER, "lockvictim", PASSWORD)).signedIn).toBe(true);
-  });
+    // Fifty logins that must each be checked slowly can take more than the default 30 s on a shared runner.
+  }, 180_000);
 });
 
 describe("account-wide lock from many addresses", () => {
