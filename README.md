@@ -83,7 +83,6 @@ on the first response. Written in Rust and Svelte, with PostgreSQL for storage.
 | Port | Service |
 | --- | --- |
 | 8080 | Web (HTTP, on `127.0.0.1` only until you put a reverse proxy in front) |
-| 5432 | PostgreSQL (`127.0.0.1` only) |
 
 All state lives in three volumes: the database, `/data/uploads` and `/data/backups`. The compose
 database user is a Postgres superuser, which is fine for a trial and logs an error at start. For a

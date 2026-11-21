@@ -14,7 +14,7 @@ not to an issue.
 | `tests/` | The end-to-end suite (Vitest), curl suites and fixtures |
 | `tools/` | The Docker-free dev database, dev seeding and importers for IPS, phpBB and Discourse |
 | `scripts/` | Test runners, backups, checks, translations and screenshots |
-| `deploy/` | Container images, `compose.yml` and database roles |
+| `deploy/` | Container images, `compose.yml` (production), `compose.dev.yml` and database roles |
 | `fuzz/`, `supply-chain/`, `deny.toml` | Fuzz targets, cargo-vet audits and the cargo-deny policy |
 
 ## Setting up
@@ -22,7 +22,7 @@ not to an issue.
 - Rust (the exact version is pinned in `rust-toolchain.toml`; rustup installs it), Node 26 and pnpm 11,
   Docker with Compose.
 - `cp .env.example .env` and set at least `BF_DATABASE_URL`.
-- Database: `docker compose -f deploy/compose.yml up -d --wait db`, or without Docker the
+- Database: `docker compose -f deploy/compose.yml -f deploy/compose.dev.yml up -d --wait db`, or without Docker the
   in-memory PGlite server in `tools/devdb`.
 - Front end: `cd web && pnpm install && pnpm build`.
 - Run: `cargo run -p bf-server`, then open http://127.0.0.1:8080. The first account registered

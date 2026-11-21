@@ -1,0 +1,5 @@
+# Development: opens Postgres on 127.0.0.1:5432 for a server, psql or tests run on the host.
+# Layer over compose.yml: docker compose -f deploy/compose.yml -f deploy/compose.dev.yml up -d --wait db
+services:
+  db:
+    ports: ["127.0.0.1:5432:5432"]

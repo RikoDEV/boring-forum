@@ -105,7 +105,7 @@ jobs:
         run: bash scripts/test.sh
       - name: SQL statements per page stay within their budgets
         run: |
-          docker compose -f deploy/compose.yml up -d --wait db
+          docker compose -f deploy/compose.yml -f deploy/compose.dev.yml up -d --wait db
           cargo build -p bf-server --bin boring-forum
           bash scripts/query-count.sh
 

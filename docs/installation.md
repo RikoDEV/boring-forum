@@ -23,6 +23,7 @@ Node.js is only needed to build the front end from source; the container image a
 (`ghcr.io/rikodev/boring-forum`) together, with volumes for the database, the uploaded files and
 backups. It follows the newest release; set `BF_VERSION` (for example `0.0.1`) to stay on one.
 To build the image from your checkout instead, add `-f deploy/compose.build.yml` and `--build`.
+Postgres is not published to the host. For development, add `-f deploy/compose.dev.yml` to open it on `127.0.0.1:5432`.
 
 You do not need the repository, only two files in an empty directory:
 
