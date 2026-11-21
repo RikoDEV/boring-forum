@@ -29,7 +29,7 @@ You do not need the repository, only two files in an empty directory:
 ```sh
 mkdir forum && cd forum
 curl -fsSLO https://raw.githubusercontent.com/RikoDEV/boring-forum/main/deploy/compose.yml
-curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/.env.example -o .env
+curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/.env.production -o .env
 ```
 
 Edit `.env`: set `BF_BASE_URL` to the address people will use and `BF_SECRET_KEY` to the output of
