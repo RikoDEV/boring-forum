@@ -243,13 +243,12 @@ impl FromRequestParts<AppState> for Viewer {
             if parts.method == axum::http::Method::GET && !parts.uri.path().starts_with("/api/") {
                 // A request extracts a Viewer in several layers and again in the handler; the counts
                 // are the same each time, so they are looked up once and kept on the request.
-                v.review_count = match parts.extensions.get::<ReviewCountMemo>() {
-                    Some(memo) => memo.0,
-                    None => {
-                        let count = review_count(state, pool, &v.actor).await;
-                        parts.extensions.insert(ReviewCountMemo(count));
-                        count
-                    }
+                v.review_count = if let Some(memo) = parts.extensions.get::<ReviewCountMemo>() {
+                    memo.0
+                } else {
+                    let count = review_count(state, pool, &v.actor).await;
+                    parts.extensions.insert(ReviewCountMemo(count));
+                    count
                 };
             }
         }
