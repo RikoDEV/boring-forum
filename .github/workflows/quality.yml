@@ -11,11 +11,20 @@ on:
   schedule:
     - cron: "17 3 * * 1" # Mondays, for the mutation job
 
+concurrency:
+  # A newer push supersedes the run still going for the same ref.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 env:
   CARGO_TERM_COLOR: always
+  # Debug info is never read in CI and makes every compile, link and cache bigger. The same value
+  # in every job keeps their build artifacts interchangeable (the shared `dev` cache).
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  CARGO_PROFILE_TEST_DEBUG: "0"
   # Minimum line coverage of crates/bf-core (permissions, auth, sessions). Measured 90.6% with
   # `cargo llvm-cov nextest -p bf-core` on 2026-11-09; the gate leaves a margin of about 2.5 points
   # so a new untested helper does not fail it, but a deleted test does. Raise it as coverage grows.
@@ -49,6 +58,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with: { toolchain: "1.99.1" }
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with: { shared-key: dev, save-if: false }
       - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
         with: { tool: nextest }
       - run: cargo nextest run --locked --workspace --profile ci
@@ -138,6 +148,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with: { toolchain: "1.99.1" }
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with: { shared-key: dev, save-if: false }
       # The ignored tests of bf-db apply every file in crates/bf-db/migrations to the empty
       # database above.
       # Integration tests only (`--test '*'`): the ignored unit tests in src/ need a hand-made fixture
@@ -191,6 +202,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with: { toolchain: "1.99.1" }
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with: { shared-key: dev, save-if: false }
       - run: cargo test --locked -p bf-server --lib a_backup_restores_to_the_same_rows -- --ignored
 
   mutants:
