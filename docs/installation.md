@@ -19,8 +19,10 @@ Node.js is only needed to build the front end from source; the container image a
 
 ## With Docker Compose
 
-The repository's `deploy/compose.yml` runs Postgres and the server together, with volumes for the
-database, the uploaded files and backups.
+The repository's `deploy/compose.yml` runs Postgres and the published server image
+(`ghcr.io/rikodev/boring-forum`) together, with volumes for the database, the uploaded files and
+backups. It follows the newest release; set `BF_VERSION` (for example `0.0.1`) to stay on one.
+To build the image from your checkout instead, add `-f deploy/compose.build.yml` and `--build`.
 
 ```sh
 git clone https://github.com/RikoDEV/boring-forum.git && cd boring-forum

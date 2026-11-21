@@ -1,6 +1,9 @@
-# Local development: `docker compose -f deploy/compose.yml up -d db`, then
-# `cargo run -p bf-server` with BF_DATABASE_URL from .env.example.
-# `up` without a service name also builds and runs the server image.
+# Runs the published release image (ghcr.io/rikodev/boring-forum), not a build of this checkout.
+# Pin a release with `BF_VERSION=0.0.1`; the default follows the newest one. To build the image
+# from the working tree instead, layer deploy/compose.build.yml:
+#   docker compose -f deploy/compose.yml -f deploy/compose.build.yml up -d --build
+# Development: `docker compose -f deploy/compose.yml up -d db`, then `cargo run -p bf-server` with
+# BF_DATABASE_URL from .env.example.
 services:
   db:
     # Pinned by digest (recorded 2026-11-16); the tag is for humans. Update with
@@ -18,7 +21,7 @@ services:
       retries: 30
 
   server:
-    build: { context: .., dockerfile: deploy/docker/Dockerfile }
+    image: ghcr.io/rikodev/boring-forum:${BF_VERSION:-latest}
     environment:
       BF_DATABASE_URL: postgres://forum:forum@db:5432/forum
       BF_ADMIN_TOKEN: ${BF_ADMIN_TOKEN:-}
