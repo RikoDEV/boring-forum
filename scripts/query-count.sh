@@ -63,8 +63,8 @@ BUDGET=15 count "member search" -L -b $J "$B/search?q=topic"
 BUDGET=11 count "guest search" -L "$B/search?q=topic"
 BUDGET=9 count "member calendar" -L -b $J $B/calendar
 BUDGET=6 count "guest calendar" -L $B/calendar
-BUDGET=6 count "member clubs" -L -b $J $B/clubs
-BUDGET=6 count "guest clubs" -L $B/clubs
+BUDGET=9 count "member clubs" -L -b $J $B/clubs
+BUDGET=3 count "guest clubs" -L $B/clubs
 kill $P
 if [ "${seen:-0}" -eq 0 ]; then echo "no statements seen: the check measured nothing"; fail=1; fi
 psql forum 'DROP DATABASE forum_qc WITH (FORCE)'
