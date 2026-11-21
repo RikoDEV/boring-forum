@@ -47,6 +47,8 @@ pub struct StatusView {
 #[derive(Template)]
 #[template(path = "profile.html")]
 pub struct ProfilePage {
+    /// The outside login owns the avatar (`auth_overrides_avatar`), so the member cannot change it.
+    pub lock_avatar: bool,
     /// The site has an ideas forum, so profiles have a Votes tab.
     pub has_ideas: bool,
     /// The member and staff only.

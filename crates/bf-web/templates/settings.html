@@ -39,7 +39,7 @@
   <div class="bf-set-body">
     <form method="post" action="/settings/profile#s-profile" class="stack">
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-      <div class="bf-field"><input placeholder=" " id="display_name" name="display_name" value="{{ display_name }}" maxlength="40"><label class="bf-field-label" for="display_name">{{ layout.t.t("settings.display_name") }}</label></div>
+      <div class="bf-field"><input placeholder=" " id="display_name" name="display_name" value="{{ display_name }}" maxlength="40"{% if lock_name %} disabled{% endif %}><label class="bf-field-label" for="display_name">{{ layout.t.t("settings.display_name") }}</label></div>
       <label class="check"><input type="checkbox" name="hide_last_seen" value="1"{% if hide_last_seen %} checked{% endif %}> {{ layout.t.t("settings.hide_last_seen") }}</label>
       <div class="composer bf-about-editor">
         <label for="about">{{ layout.t.t("settings.about") }}</label>
@@ -69,11 +69,15 @@
 <section class="bf-box bf-set" id="s-username">
   <div class="bf-set-head"><h2>{{ layout.t.t("settings.username") }}</h2><p class="muted small">{{ layout.t.t("settings.username_hint") }}</p></div>
   <div class="bf-set-body">
+    {% if lock_username %}
+    <p>{{ username }} — <span class="muted">{{ layout.t.msg("Set by your outside login") }}</span></p>
+    {% else %}
     <form method="post" action="/settings/username#s-username" class="row-form">
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       <label class="bf-field"><input placeholder=" " name="username" value="{{ username }}" required minlength="3" maxlength="20"><span class="bf-field-label">{{ layout.t.t("settings.username") }}</span></label>
       <button class="btn">{{ layout.t.t("settings.change_username") }}</button>
     </form>
+    {% endif %}
   </div>
 </section>
 
@@ -81,12 +85,16 @@
   <div class="bf-set-head"><h2>{{ layout.t.t("settings.email") }}</h2><p class="muted small">{{ layout.t.t("settings.email_hint") }}</p></div>
   <div class="bf-set-body">
     <p>{{ email }} — {% if email_verified %}{{ layout.t.t("settings.verified") }}{% else %}<strong>{{ layout.t.t("settings.not_verified") }}</strong>{% endif %}</p>
+    {% if lock_email %}
+    <p class="muted small">{{ layout.t.msg("Set by your outside login") }}</p>
+    {% else %}
     <form method="post" action="/settings/email#s-email" class="stack">
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       <div class="bf-field"><input placeholder=" " id="new-email" name="email" type="email" autocomplete="email" required><label class="bf-field-label" for="new-email">{{ layout.t.t("settings.new_email") }}</label></div>
       <div class="bf-field"><input placeholder=" " id="email-pw" name="password" type="password" autocomplete="current-password" required><label class="bf-field-label" for="email-pw">{{ layout.t.t("settings.current_password") }}</label></div>
       <button class="btn">{{ layout.t.t("settings.change_email") }}</button>
     </form>
+    {% endif %}
     {% if !email_verified %}
     <form method="post" action="/settings/verify-email#s-email" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.t("settings.send_verification") }}</button></form>
     {% endif %}

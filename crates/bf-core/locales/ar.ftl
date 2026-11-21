@@ -2383,6 +2383,20 @@ msg-mark_an_email_address_bad_after_this_many_bounces = وسم عنوان الب
 msg-allow_new_accounts_to_register = السماح بتسجيل حسابات جديدة
 # Require login to view any page
 msg-require_login_to_view_any_page = اشتراط تسجيل الدخول لعرض أي صفحة
+# When signing up through an outside provider, skip the page that asks the new member to confirm the account. Best used alongside the overrides below
+msg-when_signing_up_through_an_outside_provider_skip_the = عند التسجيل عبر مزوّد خارجي، تخطَّ الصفحة التي تطلب من العضو الجديد تأكيد الحساب. يُفضَّل استخدامه مع خيارات الاستبدال أدناه
+# Send guests to the outside login without a click. Only takes effect when Require login to view any page is on and there is exactly one outside login method. Add ?local=1 to /login to reach the password form
+msg-send_guests_to_the_outside_login_without_a_click_only = أرسل الزوار إلى تسجيل الدخول الخارجي دون نقرة. يعمل فقط عند تفعيل اشتراط تسجيل الدخول لعرض أي صفحة ووجود طريقة تسجيل دخول خارجية واحدة بالضبط. أضف ?local=1 إلى /login للوصول إلى نموذج كلمة المرور
+# Replace the local email with the provider's email on every login, and prevent local changes. Applies to members who have an outside login
+msg-replace_the_local_email_with_the_provider_s_email_on = استبدل البريد الإلكتروني المحلي ببريد المزوّد عند كل تسجيل دخول، ومنع التغييرات المحلية. ينطبق على الأعضاء الذين لديهم تسجيل دخول خارجي
+# Replace the local username with the provider's username on every login, and prevent local changes. Applies to members who have an outside login
+msg-replace_the_local_username_with_the_provider_s_username = استبدل اسم المستخدم المحلي باسم مستخدم المزوّد عند كل تسجيل دخول، ومنع التغييرات المحلية. ينطبق على الأعضاء الذين لديهم تسجيل دخول خارجي
+# Replace the local avatar with the provider's picture on every login, and prevent local changes. Applies to members who have an outside login
+msg-replace_the_local_avatar_with_the_provider_s_picture_on = استبدل الصورة الرمزية المحلية بصورة المزوّد عند كل تسجيل دخول، ومنع التغييرات المحلية. ينطبق على الأعضاء الذين لديهم تسجيل دخول خارجي
+# Replace the local display name with the provider's full name on every login, and prevent local changes. Applies to members who have an outside login
+msg-replace_the_local_display_name_with_the_provider_s_full = استبدل الاسم المعروض المحلي بالاسم الكامل من المزوّد عند كل تسجيل دخول، ومنع التغييرات المحلية. ينطبق على الأعضاء الذين لديهم تسجيل دخول خارجي
+# Ask for a click before sending anyone to an outside login through /auth/*. Defence in depth against login CSRF: only turn it off if every enabled login method is protected against it
+msg-ask_for_a_click_before_sending_anyone_to_an_outside = اطلب نقرة قبل إرسال أي شخص إلى تسجيل دخول خارجي عبر /auth/*. حماية إضافية ضد هجمات CSRF على تسجيل الدخول: عطّله فقط إذا كانت كل طرق تسجيل الدخول المفعّلة محمية منه
 # Also check new passwords against Have I Been Pwned (k-anonymity: only 5 hex characters of a hash leave the server)
 msg-also_check_new_passwords_against_have_i_been_pwned_k = فحص كلمات المرور الجديدة أيضًا في Have I Been Pwned (إخفاء الهوية k: لا يغادر الخادم سوى 5 أحرف ست عشرية من التجزئة)
 # security.txt Contact: a mailto: or https: address for vulnerability reports
@@ -2923,6 +2937,18 @@ msg-this_topic_is_too_short_to_summarize = هذا الموضوع قصير جدً
 msg-that_language_is_not_supported = هذه اللغة غير مدعومة.
 # That password has appeared in a data breach, so attackers try it first. Choose another.
 msg-that_password_has_appeared_in_a_data_breach_so = ظهرت كلمة المرور هذه في تسريب بيانات، لذا يجرّبها المهاجمون أولًا. اختر كلمة أخرى.
+# Your login attempt expired. Please try again.
+msg-your_login_attempt_expired_please_try_again = انتهت صلاحية محاولة تسجيل الدخول. حاول مجددًا.
+# This is set by your outside login and cannot be changed here.
+msg-this_is_set_by_your_outside_login_and_cannot_be_changed = هذه القيمة محددة من تسجيل الدخول الخارجي ولا يمكن تغييرها هنا.
+# You are being sent to {n} to sign in there.
+msg-you_are_being_sent_to_n_to_sign_in_there = يجري تحويلك إلى { $n } لتسجيل الدخول هناك.
+# Continue
+msg-continue = متابعة
+# Create your account
+msg-create_your_account = أنشئ حسابك
+# You are signing up with {n}. Check the details and create your account.
+msg-you_are_signing_up_with_n_check_the_details_and_create = أنت تسجّل عبر { $n }. راجع التفاصيل وأنشئ حسابك.
 # Unknown application.
 msg-unknown_application = تطبيق غير معروف.
 # That return address is not registered for this application.
@@ -3006,8 +3032,6 @@ msg-two_factor_code = رمز المصادقة الثنائية
 msg-6_digit_code_or_a_backup_code = رمز من 6 أرقام، أو رمز احتياطي
 # Remember this device for 30 days
 msg-remember_this_device_for_30_days = تذكّر هذا الجهاز لمدة 30 يومًا
-# Continue
-msg-continue = متابعة
 # Start over
 msg-start_over = البدء من جديد
 # Password must be at least {n} characters
@@ -3024,8 +3048,6 @@ msg-no_id_token_from_apple = لا يوجد id_token من Apple
 msg-no_user_id_from_apple = لا يوجد معرّف مستخدم من Apple
 # No user id from provider
 msg-no_user_id_from_provider = لا يوجد معرّف مستخدم من المزوّد
-# Your login attempt expired. Please try again.
-msg-your_login_attempt_expired_please_try_again = انتهت صلاحية محاولة تسجيل الدخول. حاول مجددًا.
 # bad login state
 msg-bad_login_state = حالة تسجيل دخول غير صالحة
 # missing code
@@ -3038,8 +3060,6 @@ msg-the_provider_did_not_share_an_email_address = لم يشارك المزوّد
 msg-please_verify_your_email_address_with_the_provider_first = أكّد عنوان بريدك لدى المزوّد أولًا.
 # Please register with email first; this site checks your age at sign-up.
 msg-please_register_with_email_first_this_site_checks_your = سجّل بالبريد الإلكتروني أولًا؛ يتحقق هذا الموقع من عمرك عند التسجيل.
-# You are being sent to {n} to sign in there.
-msg-you_are_being_sent_to_n_to_sign_in_there = يجري تحويلك إلى { $n } لتسجيل الدخول هناك.
 # Connecting…
 msg-connecting = جارٍ الربط…
 # The provider did not return your profile: {e}
@@ -4901,6 +4921,8 @@ msg-add_a_staff_note = إضافة ملاحظة للطاقم
 msg-only_staff_see_it_not_the_author = يراها الفريق فقط وليس الكاتب
 # Save note
 msg-save_note = حفظ الملاحظة
+# Create account
+msg-create_account = إنشاء الحساب
 # Archive
 msg-archive = أرشفة
 # Unarchive
@@ -5069,6 +5091,8 @@ msg-remove_and_silence = إزالة وإسكات
 msg-similar_in_meaning = مشابه في المعنى
 # Connected logins
 msg-connected_logins = تسجيلات الدخول المرتبطة
+# Set by your outside login
+msg-set_by_your_outside_login = محدد من تسجيل الدخول الخارجي
 # Push
 msg-push = الإشعارات الفورية
 # Remembered devices skip the code for 30 days: {n}
@@ -6329,6 +6353,20 @@ admin-default_language = اللغة الافتراضية
 admin-offline_mode = وضع عدم الاتصال
 # Email sign-in links
 admin-email_sign_in_links = روابط تسجيل الدخول بالبريد
+# Auth skip create confirm
+admin-auth_skip_create_confirm = تخطي تأكيد إنشاء الحساب
+# Auth immediately
+admin-auth_immediately = تسجيل الدخول فورًا
+# Auth overrides email
+admin-auth_overrides_email = استبدال البريد الإلكتروني
+# Auth overrides username
+admin-auth_overrides_username = استبدال اسم المستخدم
+# Auth overrides avatar
+admin-auth_overrides_avatar = استبدال الصورة الرمزية
+# Auth overrides name
+admin-auth_overrides_name = استبدال الاسم
+# Auth require interaction
+admin-auth_require_interaction = اشتراط التفاعل
 # Block temporary email addresses
 admin-block_temporary_email_addresses = حظر عناوين البريد المؤقتة
 # Blocked email domains

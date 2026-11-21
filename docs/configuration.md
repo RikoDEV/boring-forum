@@ -110,6 +110,21 @@ boring-forum rotate-secrets
 
 `rotate-secrets` is safe to re-run and only touches rows that are not already on the current key.
 
+### Outside logins
+
+The providers above are switched on by environment variables. How they behave is set in the admin
+panel under Settings → Sign-up and sign-in:
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `auth_skip_create_confirm` | on | Off asks a new member to confirm their username on a page before the account is made. |
+| `auth_immediately` | off | Sends guests straight to the outside login. Needs `login_required` and exactly one outside method; `/login?local=1` still shows the password form. |
+| `auth_overrides_email`, `_username`, `_name`, `_avatar` | off | The provider's value replaces the local one on every login, and the member cannot change it. Applies to members who have an outside login. The email is only replaced when the provider has verified it; a username or email that another member already has is left alone. |
+| `auth_require_interaction` | on | A visit to `/auth/<provider>` shows a button instead of starting the login, so another site cannot sign a visitor in by sending them there (login CSRF). The login page's buttons are forms and need no extra click. |
+
+The provider's picture is fetched by the server (https only, up to 1 MB) and goes through the same
+checks as an upload. Single sign-on reads `username`, `name` and `avatar_url` from the login site's payload.
+
 ### Database roles
 
 By default the server connects as the owner of its own tables, which means a SQL injection that
@@ -138,7 +153,7 @@ database as well, so the log cannot be edited by the application at all. Audit
 retention runs through two definer functions from the baseline schema.
 
 With the repository's compose files, layer `deploy/compose.roles.yml` over `deploy/compose.yml` to do all of
-this for a development stack: `docker compose -f deploy/compose.yml -f deploy/compose.roles.yml up -d --wait`
+this: `docker compose -f deploy/compose.yml -f deploy/compose.roles.yml up -d --wait`
 creates the roles, migrates as `forum_migrate` and serves as `forum_app`. Its passwords default to
 development values (`BF_APP_DB_PASSWORD`, `BF_MIGRATE_DB_PASSWORD`, `BF_READONLY_DB_PASSWORD` override them).
 CI applies `roles.sql` and checks that `forum_app` cannot drop a table.

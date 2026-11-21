@@ -108,9 +108,13 @@ pub(super) async fn login_callback(
         email: out.get("email").and_then(Value::as_str).map(str::to_owned),
         email_verified: out.get("email_verified").and_then(Value::as_bool).unwrap_or(false),
         name: out.get("name").and_then(Value::as_str).unwrap_or("member").to_owned(),
+        // Optional: the account's handle, full name and picture, for the `auth_overrides_*` settings.
+        username: out.get("username").and_then(Value::as_str).filter(|s| !s.is_empty()).map(str::to_owned),
+        full_name: out.get("full_name").and_then(Value::as_str).filter(|s| !s.is_empty()).map(str::to_owned),
+        avatar_url: out.get("avatar_url").and_then(Value::as_str).filter(|s| !s.is_empty()).map(str::to_owned),
     };
     let provider = format!("plugin-{id}-{key}");
-    crate::auth::oauth::sign_in_external(&state, &v, &provider, &id, &ext).await
+    crate::auth::oauth::sign_in_external(&state, &v, &provider, &id, &ext, None).await
 }
 
 pub(super) fn login_plugin(id: &str, hook: &str) -> Result<Arc<Loaded>, AppError> {

@@ -303,6 +303,34 @@ pub async fn identity_user(pool: &PgPool, provider: &str, subject: &str) -> Resu
         .await
 }
 
+/// Whether the member signs in through any outside provider, so the provider's overrides apply.
+pub async fn has_identity(pool: &PgPool, user_id: UserId) -> Result<bool, Error> {
+    sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_identities WHERE user_id = $1)")
+        .bind(user_id)
+        .fetch_one(pool)
+        .await
+}
+
+/// The picture address the provider gave at the last login, or `None` before any was fetched.
+pub async fn identity_avatar(pool: &PgPool, provider: &str, subject: &str) -> Result<Option<String>, Error> {
+    sqlx::query_scalar("SELECT avatar_url FROM user_identities WHERE provider = $1 AND subject = $2")
+        .bind(provider)
+        .bind(subject)
+        .fetch_optional(pool)
+        .await
+        .map(Option::flatten)
+}
+
+pub async fn set_identity_avatar(pool: &PgPool, provider: &str, subject: &str, url: &str) -> Result<(), Error> {
+    sqlx::query("UPDATE user_identities SET avatar_url = $3 WHERE provider = $1 AND subject = $2")
+        .bind(provider)
+        .bind(subject)
+        .bind(url)
+        .execute(pool)
+        .await
+        .map(|_| ())
+}
+
 pub async fn link_identity(
     pool: &PgPool,
     provider: &str,

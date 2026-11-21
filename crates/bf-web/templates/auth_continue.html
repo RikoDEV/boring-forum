@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{#- The click that starts an outside login (`auth_require_interaction`); `auto` has a script press it. -#}
+{% block content %}
+<section class="bf-box bf-auth">
+  <header class="bf-auth-head">
+    <h1>{{ heading }}</h1>
+    <p class="muted" role="status">{{ message }}</p>
+  </header>
+  <div class="bf-auth-body">
+    <form method="post" action="{{ action }}" class="bf-auth-form"{% if auto %} data-island="autosubmit"{% endif %}>
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <button class="btn primary">{{ button }}</button>
+    </form>
+  </div>
+  <footer class="bf-auth-foot small"><a href="/login?local=1">{{ layout.t.t("nav.login") }}</a></footer>
+</section>
+{% endblock %}

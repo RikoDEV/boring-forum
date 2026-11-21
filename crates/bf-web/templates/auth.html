@@ -50,7 +50,7 @@
     {% if !register || !providers.is_empty() %}
     <div class="bf-auth-alt">
       {% if !register %}<span data-island="passkey-login"></span>{% endif %}
-      {% for (key, label) in providers %}<a class="btn" href="/auth/{{ key }}">{{ layout.t.f("auth.continue_with", [("provider", label.as_str())]) }}</a>{% endfor %}
+      {% for (key, label) in providers %}<form method="post" action="/auth/{{ key }}" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.f("auth.continue_with", [("provider", label.as_str())]) }}</button></form>{% endfor %}
       {% for (u, l) in layout.plugin_links("login") %}<a class="btn" href="{{ u }}">{{ l }}</a>{% endfor %}
     </div>
     {% endif %}

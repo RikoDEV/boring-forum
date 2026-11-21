@@ -1173,6 +1173,9 @@ const islands = {
     deletedQuotes();
   },
   "local-times": () => localTimes(),
+  // The page that asks for a click before an outside login: when the site sends guests straight
+  // there (`auth_immediately`), the page presses its own button.
+  autosubmit: (form) => form.requestSubmit(),
   "edit-layout": editLayout,
   "cookie-consent": cookieConsent,
   lightbox: lazy(topic, "lightbox"),

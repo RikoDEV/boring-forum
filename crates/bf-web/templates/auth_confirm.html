@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{#- A new member from an outside login confirms the account before it is made. -#}
+{% block content %}
+<section class="bf-box bf-auth">
+  <header class="bf-auth-head">
+    <h1>{{ heading }}</h1>
+    <p class="muted" role="status">{{ message }}</p>
+  </header>
+  <div class="bf-auth-body">
+    {% if let Some(e) = error %}<p class="bf-auth-error" role="alert">{{ e }}</p>{% endif %}
+    <form method="post" action="/auth/confirm" class="bf-auth-form">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <div class="bf-field"><input placeholder=" " id="username" name="username" value="{{ username }}" autocomplete="username" required><label class="bf-field-label" for="username">{{ layout.t.t("settings.username") }}</label></div>
+      <p class="small"><span class="muted">{{ layout.t.t("settings.email") }}:</span> {{ email }}</p>
+      {% if !full_name.is_empty() %}<p class="small"><span class="muted">{{ layout.t.t("settings.display_name") }}:</span> {{ full_name }}</p>{% endif %}
+      <button class="btn primary">{{ layout.t.msg("Create account") }}</button>
+    </form>
+  </div>
+  <footer class="bf-auth-foot small"><a href="/login">{{ layout.t.t("nav.login") }}</a></footer>
+</section>
+{% endblock %}

@@ -10,7 +10,7 @@ use crate::http::viewer::Viewer;
 use crate::http::viewer::cookie;
 use crate::http::viewer::csrf_for;
 use crate::state::AppState;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::{get, post};
@@ -134,7 +134,20 @@ pub(crate) async fn auth_page(
     page(body, set, false)
 }
 
-async fn login_form(State(state): State<AppState>, v: Viewer) -> Response {
+#[derive(Deserialize)]
+struct LoginQuery {
+    /// `?local=1` reaches the password form on a site that sends guests to an outside login.
+    #[serde(default)]
+    local: String,
+}
+
+async fn login_form(State(state): State<AppState>, v: Viewer, Query(q): Query<LoginQuery>) -> Response {
+    if v.user.is_none()
+        && q.local.is_empty()
+        && let Some(key) = crate::auth::external::immediate_login(&state)
+    {
+        return axum::response::Redirect::to(&format!("/auth/{key}?auto=1")).into_response();
+    }
     auth_page(&state, &v, false, None, String::new(), String::new(), String::new()).await
 }
 

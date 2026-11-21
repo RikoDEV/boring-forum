@@ -2220,6 +2220,20 @@ msg-mark_an_email_address_bad_after_this_many_bounces = Oznacz adres e-mail jako
 msg-allow_new_accounts_to_register = Pozwól na rejestrację nowych kont
 # Require login to view any page
 msg-require_login_to_view_any_page = Wymagaj logowania do oglądania każdej strony
+# When signing up through an outside provider, skip the page that asks the new member to confirm the account. Best used alongside the overrides below
+msg-when_signing_up_through_an_outside_provider_skip_the = Przy rejestracji przez zewnętrznego dostawcę pomiń stronę, na której nowy członek potwierdza konto. Najlepiej używać razem z poniższymi nadpisaniami
+# Send guests to the outside login without a click. Only takes effect when Require login to view any page is on and there is exactly one outside login method. Add ?local=1 to /login to reach the password form
+msg-send_guests_to_the_outside_login_without_a_click_only = Wysyłaj gości do zewnętrznego logowania bez kliknięcia. Działa tylko wtedy, gdy włączone jest wymaganie logowania do przeglądania stron i jest dokładnie jedna zewnętrzna metoda logowania. Dodaj ?local=1 do /login, aby otworzyć formularz z hasłem
+# Replace the local email with the provider's email on every login, and prevent local changes. Applies to members who have an outside login
+msg-replace_the_local_email_with_the_provider_s_email_on = Zastępuj lokalny adres e-mail adresem od dostawcy przy każdym logowaniu i blokuj zmiany lokalne. Dotyczy członków z zewnętrznym logowaniem
+# Replace the local username with the provider's username on every login, and prevent local changes. Applies to members who have an outside login
+msg-replace_the_local_username_with_the_provider_s_username = Zastępuj lokalną nazwę użytkownika nazwą od dostawcy przy każdym logowaniu i blokuj zmiany lokalne. Dotyczy członków z zewnętrznym logowaniem
+# Replace the local avatar with the provider's picture on every login, and prevent local changes. Applies to members who have an outside login
+msg-replace_the_local_avatar_with_the_provider_s_picture_on = Zastępuj lokalny awatar zdjęciem od dostawcy przy każdym logowaniu i blokuj zmiany lokalne. Dotyczy członków z zewnętrznym logowaniem
+# Replace the local display name with the provider's full name on every login, and prevent local changes. Applies to members who have an outside login
+msg-replace_the_local_display_name_with_the_provider_s_full = Zastępuj lokalną nazwę wyświetlaną pełnym imieniem i nazwiskiem od dostawcy przy każdym logowaniu i blokuj zmiany lokalne. Dotyczy członków z zewnętrznym logowaniem
+# Ask for a click before sending anyone to an outside login through /auth/*. Defence in depth against login CSRF: only turn it off if every enabled login method is protected against it
+msg-ask_for_a_click_before_sending_anyone_to_an_outside = Wymagaj kliknięcia, zanim ktokolwiek zostanie przekierowany do zewnętrznego logowania przez /auth/*. Dodatkowa ochrona przed CSRF logowania: wyłącz tylko wtedy, gdy każda włączona metoda logowania jest przed nim chroniona
 # Also check new passwords against Have I Been Pwned (k-anonymity: only 5 hex characters of a hash leave the server)
 msg-also_check_new_passwords_against_have_i_been_pwned_k = Sprawdzaj też nowe hasła w Have I Been Pwned (k-anonimowość: serwer opuszcza tylko 5 znaków szesnastkowych skrótu)
 # security.txt Contact: a mailto: or https: address for vulnerability reports
@@ -2760,6 +2774,18 @@ msg-this_topic_is_too_short_to_summarize = Ten temat jest za krótki, by go stre
 msg-that_language_is_not_supported = Ten język nie jest obsługiwany.
 # That password has appeared in a data breach, so attackers try it first. Choose another.
 msg-that_password_has_appeared_in_a_data_breach_so = To hasło pojawiło się w wycieku danych, więc atakujący próbują go w pierwszej kolejności. Wybierz inne.
+# Your login attempt expired. Please try again.
+msg-your_login_attempt_expired_please_try_again = Próba logowania wygasła. Spróbuj ponownie.
+# This is set by your outside login and cannot be changed here.
+msg-this_is_set_by_your_outside_login_and_cannot_be_changed = Ta wartość pochodzi z zewnętrznego logowania i nie można jej tu zmienić.
+# You are being sent to {n} to sign in there.
+msg-you_are_being_sent_to_n_to_sign_in_there = Przenosimy Cię do { $n }, aby się tam zalogować.
+# Continue
+msg-continue = Dalej
+# Create your account
+msg-create_your_account = Utwórz konto
+# You are signing up with {n}. Check the details and create your account.
+msg-you_are_signing_up_with_n_check_the_details_and_create = Rejestrujesz się przez { $n }. Sprawdź dane i utwórz konto.
 # Unknown application.
 msg-unknown_application = Nieznana aplikacja.
 # That return address is not registered for this application.
@@ -2843,8 +2869,6 @@ msg-two_factor_code = Kod weryfikacji dwuetapowej
 msg-6_digit_code_or_a_backup_code = 6-cyfrowy kod lub kod zapasowy
 # Remember this device for 30 days
 msg-remember_this_device_for_30_days = Zapamiętaj to urządzenie na 30 dni
-# Continue
-msg-continue = Dalej
 # Start over
 msg-start_over = Zacznij od nowa
 # Password must be at least {n} characters
@@ -2861,8 +2885,6 @@ msg-no_id_token_from_apple = Brak id_token od Apple
 msg-no_user_id_from_apple = Brak identyfikatora użytkownika od Apple
 # No user id from provider
 msg-no_user_id_from_provider = Brak identyfikatora użytkownika od dostawcy
-# Your login attempt expired. Please try again.
-msg-your_login_attempt_expired_please_try_again = Próba logowania wygasła. Spróbuj ponownie.
 # bad login state
 msg-bad_login_state = nieprawidłowy stan logowania
 # missing code
@@ -2875,8 +2897,6 @@ msg-the_provider_did_not_share_an_email_address = Dostawca nie udostępnił adre
 msg-please_verify_your_email_address_with_the_provider_first = Najpierw potwierdź adres e-mail u dostawcy.
 # Please register with email first; this site checks your age at sign-up.
 msg-please_register_with_email_first_this_site_checks_your = Zarejestruj się najpierw przez e-mail; ta witryna sprawdza wiek przy rejestracji.
-# You are being sent to {n} to sign in there.
-msg-you_are_being_sent_to_n_to_sign_in_there = Przenosimy Cię do { $n }, aby się tam zalogować.
 # Connecting…
 msg-connecting = Łączenie…
 # The provider did not return your profile: {e}
@@ -4738,6 +4758,8 @@ msg-add_a_staff_note = Dodaj notatkę personelu
 msg-only_staff_see_it_not_the_author = Widzi ją tylko personel, nie autor
 # Save note
 msg-save_note = Zapisz notatkę
+# Create account
+msg-create_account = Utwórz konto
 # Archive
 msg-archive = Archiwizuj
 # Unarchive
@@ -4906,6 +4928,8 @@ msg-remove_and_silence = Usuń i wycisz
 msg-similar_in_meaning = Podobne znaczeniowo
 # Connected logins
 msg-connected_logins = Połączone logowania
+# Set by your outside login
+msg-set_by_your_outside_login = Ustawione przez zewnętrzne logowanie
 # Push
 msg-push = Push
 # Remembered devices skip the code for 30 days: {n}
@@ -6166,6 +6190,20 @@ admin-default_language = Domyślny język
 admin-offline_mode = Tryb offline
 # Email sign-in links
 admin-email_sign_in_links = Linki logowania przez e-mail
+# Auth skip create confirm
+admin-auth_skip_create_confirm = Pomiń potwierdzenie konta
+# Auth immediately
+admin-auth_immediately = Logowanie natychmiast
+# Auth overrides email
+admin-auth_overrides_email = Nadpisuj e-mail
+# Auth overrides username
+admin-auth_overrides_username = Nadpisuj nazwę użytkownika
+# Auth overrides avatar
+admin-auth_overrides_avatar = Nadpisuj awatar
+# Auth overrides name
+admin-auth_overrides_name = Nadpisuj imię i nazwisko
+# Auth require interaction
+admin-auth_require_interaction = Wymagaj kliknięcia
 # Block temporary email addresses
 admin-block_temporary_email_addresses = Blokuj tymczasowe adresy e-mail
 # Blocked email domains

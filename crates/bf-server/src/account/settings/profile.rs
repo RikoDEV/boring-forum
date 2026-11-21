@@ -101,7 +101,10 @@ pub(super) async fn save_profile(
         None => None,
     };
     crate::moderation::gate::links(&state, &v, user, about_links + usize::from(website.is_some()))?;
-    let display_name = match opt(&f.display_name, 40) {
+    // The provider owns the name: whatever the form says, the saved one stays.
+    let name_managed = crate::auth::external::managed(&state, user.id, crate::auth::external::Managed::Name).await?;
+    let display_name = match opt(&f.display_name, 40).filter(|_| !name_managed) {
+        _ if name_managed => current.display_name.clone(),
         Some(n) => {
             // A display name that passes for staff or a reserved name is how members get trusted
             // they should not be; it is checked as a username's look-alike is.

@@ -96,6 +96,32 @@ pub struct TotpSetup {
     pub qr: Option<String>,
 }
 
+/// The button that starts an outside login.
+#[derive(Template)]
+#[template(path = "auth_continue.html")]
+pub struct AuthContinuePage {
+    pub layout: Layout,
+    pub heading: String,
+    pub message: String,
+    pub action: String,
+    pub button: String,
+    /// A script presses the button when the page opens.
+    pub auto: bool,
+}
+
+/// A new member from an outside login confirms the account before it is made.
+#[derive(Template)]
+#[template(path = "auth_confirm.html")]
+pub struct AuthConfirmPage {
+    pub layout: Layout,
+    pub heading: String,
+    pub message: String,
+    pub error: Option<String>,
+    pub username: String,
+    pub email: String,
+    pub full_name: String,
+}
+
 #[derive(Template)]
 #[template(path = "settings.html")]
 pub struct SettingsPage {
@@ -103,6 +129,10 @@ pub struct SettingsPage {
     pub quiet_start: String,
     pub quiet_end: String,
     pub username: String,
+    /// The outside login owns these (`auth_overrides_*`): their forms are replaced by a note.
+    pub lock_username: bool,
+    pub lock_email: bool,
+    pub lock_name: bool,
     pub message: Option<String>,
     pub error: Option<String>,
     pub email: String,

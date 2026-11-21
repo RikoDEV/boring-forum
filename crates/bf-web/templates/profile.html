@@ -25,7 +25,7 @@
     <div class="bf-avatar-wrap">
       <img class="avatar" src="/avatar/{{ username }}.svg" width="96" height="96" alt="">
       {% if let Some((n, name)) = trust %}<span class="bf-lvl" data-tip="{{ layout.t.msgf("Trust level {n}: {name}", [("n", n.to_string().as_str()), ("name", name.as_str())]) }}">{{ n }}</span>{% endif %}
-      {% if own %}
+      {% if own && !lock_avatar %}
       <form method="post" action="/settings/avatar" enctype="multipart/form-data" class="bf-avatar-edit" data-username="{{ username }}">
         <input type="hidden" name="csrf" value="{{ layout.csrf }}">
         <label data-tip="{{ layout.t.t("profile.change_avatar") }}">{{ layout.icon("camera")|safe }}<span class="visually-hidden">{{ layout.t.t("profile.change_avatar") }}</span><input class="visually-hidden" type="file" name="file" accept="image/png,image/jpeg,image/gif,image/webp" required></label>

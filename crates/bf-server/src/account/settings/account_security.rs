@@ -307,6 +307,9 @@ pub(super) async fn change_email(
     }
     let user = v.require_user()?;
     let pool = state.db()?;
+    if crate::auth::external::managed(&state, user.id, crate::auth::external::Managed::Email).await? {
+        return settings_page(&state, &v, false, None, Some(crate::auth::external::managed_message(&v))).await;
+    }
     let acct = security::account(pool, user.id).await.db()?.ok_or(AppError::NotFound)?;
     let (pw, hash) = (f.password, acct.password_hash.clone().unwrap_or_default());
     if !tokio::task::spawn_blocking(move || auth::verify_password(&pw, &hash)).await.map_err(AppError::internal)? {
@@ -474,6 +477,9 @@ pub(super) async fn change_username(
     let normalized = auth::normalize_username(&f.username);
     let name = normalized.as_str();
     let err = |m: String| async { settings_page(&state, &v, false, None, Some(m)).await };
+    if crate::auth::external::managed(&state, user.id, crate::auth::external::Managed::Username).await? {
+        return err(crate::auth::external::managed_message(&v)).await;
+    }
     if days == 0 {
         return err(v.t().msg("Usernames cannot be changed on this site.")).await;
     }

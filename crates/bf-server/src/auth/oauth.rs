@@ -30,7 +30,7 @@ use std::time::Duration;
 
 pub fn router() -> Router<AppState> {
     Router::new()
-        .route("/auth/{provider}", get(start))
+        .route("/auth/{provider}", get(start).post(start_login))
         .route("/auth/{provider}/link", post(link))
         .route("/auth/{provider}/callback", get(callback).post(form_post))
 }
@@ -161,8 +161,43 @@ fn redirect_uri(state: &AppState, key: &str) -> String {
     format!("{}/auth/{key}/callback", state.config.base_url)
 }
 
-async fn start(State(state): State<AppState>, Path(key): Path<String>) -> Result<Response, AppError> {
-    let (url, cookie) = begin(&state, find(&key)?, None)?;
+#[derive(Deserialize)]
+struct StartQuery {
+    /// A script presses the button on the page it gets (`auth_immediately`).
+    #[serde(default)]
+    auto: String,
+}
+
+/// A visit to `/auth/{provider}`: with `auth_require_interaction` a page with a button, otherwise
+/// the login itself.
+async fn start(
+    State(state): State<AppState>,
+    v: Viewer,
+    Path(key): Path<String>,
+    Query(q): Query<StartQuery>,
+) -> Result<Response, AppError> {
+    let c = find(&key)?;
+    if crate::auth::external::interaction_required(&state) {
+        return Ok(crate::auth::external::continue_page(&state, &v, &key, &c.label, q.auto == "1"));
+    }
+    begin_login(&state, c)
+}
+
+/// The click that starts a login: the login page's buttons and the button on the page above.
+async fn start_login(
+    State(state): State<AppState>,
+    v: Viewer,
+    Path(key): Path<String>,
+    Form(f): Form<CsrfForm>,
+) -> Result<Response, AppError> {
+    v.check_csrf(&f.csrf)?;
+    let c = find(&key)?;
+    let (url, cookie) = begin(&state, c, None)?;
+    send_on(&state, &v, &c.label, &url, cookie, (en("Log in"), "/login"))
+}
+
+fn begin_login(state: &AppState, c: &Configured) -> Result<Response, AppError> {
+    let (url, cookie) = begin(state, c, None)?;
     let mut res = Redirect::to(&url).into_response();
     res.headers_mut().append(header::SET_COOKIE, cookie);
     Ok(res)
@@ -184,19 +219,30 @@ async fn link(
         return Ok(confirm);
     }
     let (url, cookie) = begin(&state, c, Some(me))?;
-    // A page that sends the browser on, not a redirect: a browser holds the redirects answering
-    // a form to the page's `form-action` policy, which allows this site only, and a provider's
-    // own sign-in may pass through several of its hosts.
+    send_on(&state, &v, &c.label, &url, cookie, (en("Account settings"), "/settings"))
+}
+
+/// A page that sends the browser on, not a redirect: a browser holds the redirects answering
+/// a form to the page's `form-action` policy, which allows this site only, and a provider's
+/// own sign-in may pass through several of its hosts. `back` is the way out of the page.
+pub(crate) fn send_on(
+    state: &AppState,
+    v: &Viewer,
+    label: &str,
+    url: &str,
+    cookie: HeaderValue,
+    back: (&'static str, &'static str),
+) -> Result<Response, AppError> {
     let f = Form1 {
         heading: en("Connecting…"),
         action: String::new(),
         fields: vec![],
         button: "",
-        message: Some(v.t().msgf("You are being sent to {n} to sign in there.", &[("n", c.label.as_str())])),
+        message: Some(v.t().msgf("You are being sent to {n} to sign in there.", &[("n", label)])),
         error: None,
-        links: vec![(en("Account settings"), "/settings")],
+        links: vec![back],
     };
-    let mut res = form_page(&state, &v, f, StatusCode::OK);
+    let mut res = form_page(state, v, f, StatusCode::OK);
     res.headers_mut().append(header::SET_COOKIE, cookie);
     res.headers_mut().insert("refresh", HeaderValue::from_str(&format!("0; url={url}")).map_err(AppError::internal)?);
     Ok(res)
@@ -261,14 +307,29 @@ fn apple_user(c: &Configured, token: &Value, name: Option<String>) -> Result<Ext
     let email = str_field(&claims, "email");
     let email_verified = claims["email_verified"] == true || claims["email_verified"] == "true";
     let fallback = email.as_deref().and_then(|e| e.split('@').next()).unwrap_or("member").to_owned();
-    Ok(ExternalUser { subject, email, email_verified, name: name.unwrap_or(fallback) })
+    Ok(ExternalUser {
+        subject,
+        email,
+        email_verified,
+        name: name.clone().unwrap_or(fallback),
+        username: None,
+        full_name: name,
+        avatar_url: None,
+    })
 }
 
 pub(crate) struct ExternalUser {
     pub(crate) subject: String,
     pub(crate) email: Option<String>,
     pub(crate) email_verified: bool,
+    /// What a new account's username is made from: the provider's handle, or failing that a name.
     pub(crate) name: String,
+    /// The provider's own handle for the member, when it has one (`auth_overrides_username`).
+    pub(crate) username: Option<String>,
+    /// The member's full name (`auth_overrides_name`).
+    pub(crate) full_name: Option<String>,
+    /// An https address of the member's picture (`auth_overrides_avatar`).
+    pub(crate) avatar_url: Option<String>,
 }
 
 fn str_field(v: &Value, k: &str) -> Option<String> {
@@ -305,22 +366,39 @@ async fn fetch_user(c: &Configured, access_token: &str) -> Result<ExternalUser, 
             email_verified = true;
         }
     }
-    let name = ["preferred_username", "login", "username", "nickname", "given_name", "name"]
-        .iter()
-        .find_map(|k| str_field(&info, k))
+    let username = ["preferred_username", "login", "username", "nickname"].iter().find_map(|k| str_field(&info, k));
+    let full_name = str_field(&info, "name").or_else(|| {
+        let joined = [str_field(&info, "given_name"), str_field(&info, "family_name")]
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>()
+            .join(" ");
+        (!joined.is_empty()).then_some(joined)
+    });
+    let name = username
+        .clone()
+        .or_else(|| str_field(&info, "given_name"))
+        .or_else(|| full_name.clone())
         .unwrap_or_else(|| "member".into());
-    Ok(ExternalUser { subject, email, email_verified, name })
+    // Google and OIDC send `picture`, GitHub `avatar_url`, Discord a hash to build the address from.
+    let avatar_url = str_field(&info, "picture").or_else(|| str_field(&info, "avatar_url")).or_else(|| {
+        let (id, hash) = (str_field(&info, "id")?, str_field(&info, "avatar")?);
+        (c.provider.key == "discord").then(|| format!("https://cdn.discordapp.com/avatars/{id}/{hash}.png?size=256"))
+    });
+    Ok(ExternalUser { subject, email, email_verified, name, username, full_name, avatar_url })
+}
+
+/// A valid username made from a provider's name, or `None` when nothing usable is left of it.
+pub(crate) fn clean_username(name: &str) -> Option<String> {
+    let s: String =
+        name.chars().filter(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-' | '.')).take(16).collect();
+    let s = s.trim_matches(|c: char| !c.is_ascii_alphanumeric());
+    (s.len() >= 3 && bf_core::auth::validate_username(s).is_ok()).then(|| s.to_owned())
 }
 
 /// A valid username from a provider's display name.
 pub(crate) fn username_base(name: &str) -> String {
-    let mut s: String =
-        name.chars().filter(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-' | '.')).take(16).collect();
-    s = s.trim_matches(|c: char| !c.is_ascii_alphanumeric()).to_owned();
-    if s.len() < 3 || bf_core::auth::validate_username(&s).is_err() {
-        s = format!("member{}", &bf_core::auth::random_token()[..6]);
-    }
-    s
+    clean_username(name).unwrap_or_else(|| format!("member{}", &bf_core::auth::random_token()[..6]))
 }
 
 async fn callback(
@@ -379,6 +457,7 @@ async fn callback(
     let provider = c.provider.key;
 
     let mut res = if let Some(user_id) = security::identity_user(pool, provider, &ext.subject).await.db()? {
+        crate::auth::external::sync_profile(&state, user_id, provider, &ext, false).await;
         let res = crate::auth::mfa::finish_password_login(pool, user_id, &v).await?;
         crate::auth::mfa::logged_in(&state, user_id, provider, res)
     } else if let Some(me) = &v.user {
@@ -403,7 +482,7 @@ async fn callback(
         // Asked to connect, but no longer signed in: not a reason to sign in or register instead.
         return Err(AppError::BadRequest("Your login attempt expired. Please try again.".into()));
     } else {
-        sign_in_external(&state, &v, provider, &c.label, &ext).await?
+        sign_in_external(&state, &v, provider, &c.label, &ext, None).await?
     };
     let clear = format!("{COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0");
     res.headers_mut()
@@ -412,16 +491,19 @@ async fn callback(
 }
 
 /// Signs in someone an outside provider vouches for, creating or linking an account by the rules
-/// below. `provider` is the stored identity's namespace; `label` is its name for people.
+/// below. `provider` is the stored identity's namespace; `label` is its name for people. `chosen` is
+/// the username a new member picked on the confirmation page.
 pub(crate) async fn sign_in_external(
     state: &AppState,
     v: &Viewer,
     provider: &str,
     label: &str,
     ext: &ExternalUser,
+    chosen: Option<&str>,
 ) -> Result<Response, AppError> {
     let pool = state.db()?;
     if let Some(user) = security::identity_user(pool, provider, &ext.subject).await.db()? {
+        crate::auth::external::sync_profile(state, user, provider, ext, false).await;
         let res = crate::auth::mfa::finish_password_login(pool, user, v).await?;
         return Ok(crate::auth::mfa::logged_in(state, user, provider, res));
     }
@@ -463,6 +545,11 @@ pub(crate) async fn sign_in_external(
                     "Please register with email first; this site checks your age at sign-up.".into(),
                 ));
             }
+            // A new member confirms the account first, unless the site skips that. Everything above
+            // refuses before this page, and the confirmation runs it all again.
+            if chosen.is_none() && !s.bool("auth_skip_create_confirm") {
+                return Ok(crate::auth::external::ask_to_confirm(provider, label, ext));
+            }
             // The same caps as password registration: a sign-up farm must not skip them by
             // using a provider.
             crate::http::ratelimit::REGISTER_BY_IP
@@ -474,7 +561,7 @@ pub(crate) async fn sign_in_external(
             if bf_db::accounts::users::email_alias_owner(pool, &alias_local, &alias_domain).await.db()?.is_some() {
                 return Err(AppError::Validation("That email address cannot be used here.".into()));
             }
-            let mut base = username_base(&ext.name);
+            let mut base = chosen.map_or_else(|| username_base(&ext.name), str::to_owned);
             if !crate::moderation::gate::username_ok(&state.forum.get(pool).await?.words, &base)
                 || bf_db::accounts::users::skeleton_taken(pool, &bf_core::auth::username_skeleton(&base), None)
                     .await
@@ -513,6 +600,7 @@ pub(crate) async fn sign_in_external(
         }
     };
     security::link_identity(pool, provider, &ext.subject, user_id, Some(&email)).await.db()?;
+    crate::auth::external::sync_profile(state, user_id, provider, ext, registered).await;
     let mut res = crate::auth::mfa::finish_password_login(pool, user_id, v).await?;
     if registered {
         // New members land on the getting-started page, and find it again in their notifications.

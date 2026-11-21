@@ -307,9 +307,13 @@ describe("likes, listing, edit grace", () => {
 
 describe("OIDC", () => {
   const nextUser = (u: unknown) => fetch(`${forum.oidc}/next-user`, { method: "POST", body: JSON.stringify(u) });
+  // These sign-ins start with a GET, which `auth_require_interaction` (on by default) turns into a page with a button.
   const sso = (c: Client) => c.get("/auth/oidc", { follow: true });
+  beforeAll(async () => {
+    await setting(alice, "auth_require_interaction", false);
+  });
   it("creates and reuses an account", async () => {
-    expect((await guest.get("/login")).text).toContain('href="/auth/oidc"');
+    expect((await guest.get("/login")).text).toContain('action="/auth/oidc"');
     await nextUser({ sub: "ext-1", email: "dave@example.com", email_verified: true, preferred_username: "dave" });
     const d = forum.client();
     expect((await sso(d)).status).toBe(200);

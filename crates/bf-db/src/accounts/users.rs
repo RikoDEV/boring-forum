@@ -774,6 +774,16 @@ pub async fn change_email(pool: &PgPool, user_id: UserId, new_email: &str) -> Re
     Ok(true)
 }
 
+/// Sets the name shown next to the username (the provider's full name, by `auth_overrides_name`).
+pub async fn set_display_name(pool: &PgPool, user_id: UserId, name: &str) -> Result<(), Error> {
+    sqlx::query("UPDATE users SET display_name = $2 WHERE id = $1")
+        .bind(user_id)
+        .bind(name)
+        .execute(pool)
+        .await
+        .map(|_| ())
+}
+
 /// A name someone gave up in the last year: old mentions and links still mean them.
 pub async fn name_reserved(pool: &PgPool, name: &str) -> Result<bool, Error> {
     sqlx::query_scalar(

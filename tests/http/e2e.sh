@@ -362,9 +362,11 @@ MJS=$(grep -oE '/assets/members\.[0-9a-f]+\.js' <<<"$TP" | head -1)
 check "member bundle served" "$(curl -s -o /dev/null -w '%{http_code}' $B$MJS)" 200
 
 # --- OAuth / OIDC (needs tests/support/mock-oidc.mjs on $OIDC)
+# These sign-ins start with a GET, which `auth_require_interaction` (on by default) turns into a page with a button.
+A -o /dev/null -X PUT -d '{"value":false}' $B/api/v1/admin/settings/auth_require_interaction
 if [ -n "${OIDC:-}" ]; then
   next_user() { curl -s -o /dev/null -X POST -d "$1" $OIDC/next-user; }
-  has "login page offers sso" "$(curl -s $B/login)" 'href="/auth/oidc"'
+  has "login page offers sso" "$(curl -s $B/login)" 'action="/auth/oidc"'
   D=$(mktemp)
   next_user '{"sub":"ext-1","email":"dave@example.com","email_verified":true,"preferred_username":"dave"}'
   check "sso creates account" "$(curl -s -L -o /dev/null -w '%{url_effective}' -c $D -b $D $B/auth/oidc)" "$B/"
@@ -845,7 +847,7 @@ fi
 
 # --- new P1 items: Apple, thumbnails, group mentions, infinite scroll, scrubber dates, bounce formats
 if [ -n "${BF_OAUTH_APPLE_ID:-}" ]; then
-  has "login page offers apple" "$(curl -s $B/login)" 'href="/auth/apple"'
+  has "login page offers apple" "$(curl -s $B/login)" 'action="/auth/apple"'
   A=$(mktemp)
   curl -s -o /dev/null -X POST -d '{"sub":"apple-1","email":"apple.user@example.com","email_verified":true}' $OIDC/next-user
   AUTH=$(curl -s -c $A -b $A -o /dev/null -w '%{redirect_url}' $B/auth/apple)
@@ -1205,7 +1207,7 @@ check "read token cannot write" "$(curl -s -o /dev/null -w '%{http_code}' -H "Au
 check "deleting the app revokes" "$(adm -X DELETE $B/api/v1/admin/oauth-clients/$CID)" 204
 check "revoked token refused" "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TOK" $B/oauth/userinfo)" 403
 if [ -n "${BF_SSO_SECRET:-}" ]; then
-  has "sso on login page" "$(curl -s $B/login)" 'href="/auth/sso"'
+  has "sso on login page" "$(curl -s $B/login)" 'action="/auth/sso"'
   S1=$(mktemp)
   check "sso signs in" "$(curl -s -L -o /dev/null -w '%{url_effective}' -c $S1 -b $S1 $B/auth/sso)" "$B/"
   has "sso account made" "$(curl -s -b $S1 $B/settings)" 'sso.user@example.com'

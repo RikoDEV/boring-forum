@@ -60,6 +60,21 @@ fn ts_mac(ts: i64) -> Option<hmac::Hmac<sha2::Sha256>> {
     Some(m)
 }
 
+/// `data` with a signature of ours, for a short-lived cookie that must not be edited: the text of
+/// `data`, then `.` and the signature. `purpose` keeps one use's cookie from standing in for another.
+pub(crate) fn seal(purpose: &str, data: &str) -> String {
+    use hmac::{KeyInit, Mac};
+    let Ok(mut m) = hmac::Hmac::<sha2::Sha256>::new_from_slice(&TS_KEY) else { return String::new() };
+    m.update(format!("{purpose}:{data}").as_bytes());
+    format!("{data}.{}", hex(&m.finalize().into_bytes()))
+}
+
+/// The text `seal` was given, when the signature is ours.
+pub(crate) fn unseal(purpose: &str, sealed: &str) -> Option<String> {
+    let (data, _) = sealed.rsplit_once('.')?;
+    auth::constant_eq(seal(purpose, data).as_bytes(), sealed.as_bytes()).then(|| data.to_owned())
+}
+
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }

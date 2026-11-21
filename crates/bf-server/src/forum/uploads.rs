@@ -641,6 +641,9 @@ fn picture_gate(state: &AppState, v: &Viewer) -> Result<(), AppError> {
 async fn set_avatar(State(state): State<AppState>, v: Viewer, m: Multipart) -> Result<Response, AppError> {
     let user = v.require_user()?;
     picture_gate(&state, &v)?;
+    if crate::auth::external::managed(&state, user.id, crate::auth::external::Managed::Avatar).await? {
+        return Err(AppError::Validation("This is set by your outside login and cannot be changed here.".into()));
+    }
     let (filename, bytes, fields) = read_multipart_max(m, 1024).await?;
     let csrf = fields.iter().find(|(k, _)| k == "csrf").map(|(_, v)| v.as_str()).unwrap_or_default();
     v.check_csrf(csrf)?;
@@ -661,6 +664,9 @@ async fn remove_avatar(
 ) -> Result<Response, AppError> {
     v.check_csrf(&f.csrf)?;
     let user = v.require_user()?;
+    if crate::auth::external::managed(&state, user.id, crate::auth::external::Managed::Avatar).await? {
+        return Err(AppError::Validation("This is set by your outside login and cannot be changed here.".into()));
+    }
     uploads::set_avatar(state.db()?, user.id.get(), None).await.db()?;
     state.microcache.clear();
     Ok(Redirect::to(&bf_core::slug::profile_path(user.id.get(), &user.username)).into_response())

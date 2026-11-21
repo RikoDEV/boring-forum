@@ -242,5 +242,83 @@ pub(super) fn defs() -> Vec<SettingDef> {
             default: json!(false),
             ..def("login_required", Bool, false, en("Require login to view any page"))
         },
+        // Signing in through an outside provider (Google, GitHub, OIDC, single sign-on).
+        SettingDef {
+            default: json!(true),
+            ..def(
+                "auth_skip_create_confirm",
+                Bool,
+                false,
+                en(
+                    "When signing up through an outside provider, skip the page that asks the new member to confirm the account. Best used alongside the overrides below",
+                ),
+            )
+        },
+        SettingDef {
+            default: json!(false),
+            ..def(
+                "auth_immediately",
+                Bool,
+                false,
+                en(
+                    "Send guests to the outside login without a click. Only takes effect when Require login to view any page is on and there is exactly one outside login method. Add ?local=1 to /login to reach the password form",
+                ),
+            )
+        },
+        SettingDef {
+            default: json!(false),
+            ..def(
+                "auth_overrides_email",
+                Bool,
+                false,
+                en(
+                    "Replace the local email with the provider's email on every login, and prevent local changes. Applies to members who have an outside login",
+                ),
+            )
+        },
+        SettingDef {
+            default: json!(false),
+            ..def(
+                "auth_overrides_username",
+                Bool,
+                false,
+                en(
+                    "Replace the local username with the provider's username on every login, and prevent local changes. Applies to members who have an outside login",
+                ),
+            )
+        },
+        SettingDef {
+            default: json!(false),
+            ..def(
+                "auth_overrides_avatar",
+                Bool,
+                false,
+                en(
+                    "Replace the local avatar with the provider's picture on every login, and prevent local changes. Applies to members who have an outside login",
+                ),
+            )
+        },
+        SettingDef {
+            default: json!(false),
+            ..def(
+                "auth_overrides_name",
+                Bool,
+                false,
+                en(
+                    "Replace the local display name with the provider's full name on every login, and prevent local changes. Applies to members who have an outside login",
+                ),
+            )
+        },
+        SettingDef {
+            default: json!(true),
+            ..def(
+                "auth_require_interaction",
+                Bool,
+                false,
+                en(
+                    "Ask for a click before sending anyone to an outside login through /auth/*. Defence in depth against login CSRF: only turn it off if every enabled login method is protected against it",
+                ),
+            )
+        },
     ]
 }

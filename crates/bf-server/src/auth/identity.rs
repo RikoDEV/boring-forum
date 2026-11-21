@@ -31,7 +31,7 @@ pub fn router() -> Router<AppState> {
         .route("/api/v1/admin/notices/{id}", delete(dismiss))
         .route("/settings/api-keys", post(create_key_form))
         .route("/settings/api-keys/{id}/delete", post(delete_key_form))
-        .route("/auth/sso", get(sso_start))
+        .route("/auth/sso", get(sso_visit).post(sso_start))
         .route("/auth/sso/callback", get(sso_callback))
 }
 
@@ -363,7 +363,39 @@ fn hex_signature(secret: &str, payload: &str) -> String {
     bf_core::auth::hmac_sha256_hex(secret, payload.as_bytes())
 }
 
-async fn sso_start(State(state): State<AppState>) -> Result<Response, AppError> {
+#[derive(Deserialize)]
+struct SsoVisit {
+    #[serde(default)]
+    auto: String,
+}
+
+/// A visit to `/auth/sso`: with `auth_require_interaction` a page with a button, otherwise the login.
+async fn sso_visit(
+    State(state): State<AppState>,
+    v: Viewer,
+    Query(q): Query<SsoVisit>,
+) -> Result<Response, AppError> {
+    if !crate::auth::external::interaction_required(&state) {
+        let (url, cookie) = sso_begin(&state).await?;
+        let mut res = Redirect::to(&url).into_response();
+        res.headers_mut().append(header::SET_COOKIE, cookie);
+        return Ok(res);
+    }
+    sso_config().ok_or(AppError::NotFound)?;
+    let label = std::env::var("BF_SSO_NAME").unwrap_or_else(|_| "Single sign-on".into());
+    Ok(crate::auth::external::continue_page(&state, &v, "sso", &label, q.auto == "1"))
+}
+
+/// The click that starts the login (see `sso_visit`).
+async fn sso_start(State(state): State<AppState>, v: Viewer, Form(f): Form<CsrfForm>) -> Result<Response, AppError> {
+    v.check_csrf(&f.csrf)?;
+    let (url, cookie) = sso_begin(&state).await?;
+    let label = std::env::var("BF_SSO_NAME").unwrap_or_else(|_| "Single sign-on".into());
+    crate::auth::oauth::send_on(&state, &v, &label, &url, cookie, (bf_core::i18n::en("Log in"), "/login"))
+}
+
+/// Where to send the browser to sign in at the login site, and the cookie that ties the answer to it.
+async fn sso_begin(state: &AppState) -> Result<(String, HeaderValue), AppError> {
     let (url, secret) = sso_config().ok_or(AppError::NotFound)?;
     let nonce = random_token();
     bf_db::accounts::security::remember_sso_nonce(state.db()?, &bf_core::auth::token_digest(&nonce)).await.db()?;
@@ -374,10 +406,8 @@ async fn sso_start(State(state): State<AppState>) -> Result<Response, AppError> 
     let payload = base64::engine::general_purpose::STANDARD.encode(inner);
     let mut target = url::Url::parse(&url).map_err(AppError::internal)?;
     target.query_pairs_mut().append_pair("sso", &payload).append_pair("sig", &hex_signature(&secret, &payload));
-    let mut res = Redirect::to(target.as_str()).into_response();
     let c = format!("{SSO_COOKIE}={nonce}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600");
-    res.headers_mut().append(header::SET_COOKIE, HeaderValue::from_str(&c).map_err(AppError::internal)?);
-    Ok(res)
+    Ok((target.to_string(), HeaderValue::from_str(&c).map_err(AppError::internal)?))
 }
 
 #[derive(Deserialize)]
@@ -418,8 +448,11 @@ async fn sso_callback(
         // DiscourseConnect says so when the login site has not confirmed the address.
         email_verified: fields.get("require_activation").map(String::as_str) != Some("true"),
         name: fields.get("username").cloned().unwrap_or_else(|| "member".to_owned()),
+        username: fields.get("username").cloned(),
+        full_name: fields.get("name").cloned().filter(|n| !n.trim().is_empty()),
+        avatar_url: fields.get("avatar_url").cloned().filter(|u| !u.is_empty()),
     };
-    let mut res = crate::auth::oauth::sign_in_external(&state, &v, "sso", "SSO", &ext).await?;
+    let mut res = crate::auth::oauth::sign_in_external(&state, &v, "sso", "SSO", &ext, None).await?;
     let clear = format!("{SSO_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0");
     res.headers_mut().append(header::SET_COOKIE, HeaderValue::from_str(&clear).map_err(AppError::internal)?);
     Ok(res)

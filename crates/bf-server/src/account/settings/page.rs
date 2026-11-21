@@ -1,5 +1,6 @@
 //! The settings page itself and the small helpers it draws with.
 
+use crate::auth::external::Managed;
 use crate::http::render::{DbResult, ago, layout, page};
 use crate::http::viewer::Viewer;
 use crate::state::AppState;
@@ -89,6 +90,9 @@ pub(super) async fn settings_page_ex(
     let body = SettingsPage {
         layout: l,
         username: acct.username.clone(),
+        lock_username: crate::auth::external::managed(state, user.id, Managed::Username).await?,
+        lock_email: crate::auth::external::managed(state, user.id, Managed::Email).await?,
+        lock_name: crate::auth::external::managed(state, user.id, Managed::Name).await?,
         message,
         error,
         email: mask_email(&acct.email),

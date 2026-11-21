@@ -6,6 +6,7 @@ use axum::Router;
 
 pub mod altcha;
 pub mod breached;
+pub mod external;
 pub mod identity;
 pub mod login;
 pub mod magic_link;
@@ -20,6 +21,7 @@ pub mod sudo;
 pub fn router() -> Router<AppState> {
     Router::new()
         .merge(altcha::router())
+        .merge(external::router())
         .merge(identity::router())
         .merge(login::router())
         .merge(magic_link::router())
