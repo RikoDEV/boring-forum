@@ -10,23 +10,22 @@
 //! URL scheme. The check is intentionally blunt, because sanitizer bugs usually show up as
 //! *something* on that list surviving rather than as a precisely predictable string.
 
-/// Elements that must never appear. Matched together with the opening `<`, so the escaped text
-/// `&lt;script` inside a code block does not count: escaped text is inert, and producing it is
-/// exactly what the pipeline is for.
-const FORBIDDEN_TAGS: &[(&str, &str)] = &[
-    ("<script", "a script element survived"),
-    ("</script", "a script end tag survived"),
-    ("<iframe", "an iframe survived"),
-    ("<object", "an object element survived"),
-    ("<embed", "an embed element survived"),
-    ("<base", "a base element survived"),
-    ("<meta", "a meta element survived"),
-    ("<link", "a link element survived"),
-    ("<style", "a style element survived"),
-    ("<form", "a form element survived"),
-    ("<keygen", "a keygen element survived"),
-    ("<isindex", "an isindex element survived"),
-    ("<marquee", "a marquee element survived"),
+/// Elements that must never appear, by name. The check reads parsed tags, not raw text: the escaped
+/// text `&lt;script` in a code block is inert (producing it is what the pipeline is for), and so is
+/// `<script` inside a quoted attribute value such as a title.
+const FORBIDDEN_ELEMENTS: &[(&str, &str)] = &[
+    ("script", "a script element survived"),
+    ("iframe", "an iframe survived"),
+    ("object", "an object element survived"),
+    ("embed", "an embed element survived"),
+    ("base", "a base element survived"),
+    ("meta", "a meta element survived"),
+    ("link", "a link element survived"),
+    ("style", "a style element survived"),
+    ("form", "a form element survived"),
+    ("keygen", "a keygen element survived"),
+    ("isindex", "an isindex element survived"),
+    ("marquee", "a marquee element survived"),
 ];
 
 /// Attribute names that must never appear on a tag. Matched against the names only: a heading's
@@ -37,14 +36,12 @@ const FORBIDDEN_ATTRS: &[(&str, &str)] = &[
     ("xlink:href", "an xlink:href survived"),
 ];
 
-/// Text that must never appear anywhere inside a tag, in a name or a value.
-const FORBIDDEN_IN_TAG: &[(&str, &str)] = &[("expression(", "a CSS expression survived")];
-
-/// The attribute names of a tag's contents (`a href="x" srcdoc=y`): quoted and unquoted values are
-/// skipped, so only what a browser would read as a name is returned.
-fn attribute_names(tag: &str) -> Vec<&str> {
+/// The attributes of a tag's contents (`a href="x" srcdoc=y`) as (name, value). What a browser would
+/// read as a name is a name; quoted and unquoted values are values, so text inside one (a heading's
+/// `id="h-srcdoc"`, a code block's `class="language-hexpression("`) is never mistaken for an attribute.
+fn attributes(tag: &str) -> Vec<(&str, &str)> {
     let bytes = tag.as_bytes();
-    let mut names = Vec::new();
+    let mut attrs = Vec::new();
     let mut i = 0;
     // The tag name itself.
     while i < bytes.len() && !bytes[i].is_ascii_whitespace() && bytes[i] != b'/' {
@@ -58,9 +55,8 @@ fn attribute_names(tag: &str) -> Vec<&str> {
         while i < bytes.len() && !bytes[i].is_ascii_whitespace() && bytes[i] != b'=' && bytes[i] != b'/' {
             i += 1;
         }
-        if i > start {
-            names.push(&tag[start..i]);
-        }
+        let name = &tag[start..i];
+        let mut value = "";
         while i < bytes.len() && bytes[i].is_ascii_whitespace() {
             i += 1;
         }
@@ -72,52 +68,103 @@ fn attribute_names(tag: &str) -> Vec<&str> {
             match bytes.get(i) {
                 Some(&q) if q == b'"' || q == b'\'' => {
                     i += 1;
+                    let from = i;
                     while i < bytes.len() && bytes[i] != q {
                         i += 1;
                     }
+                    value = &tag[from..i];
                     i += 1;
                 }
                 _ => {
+                    let from = i;
                     while i < bytes.len() && !bytes[i].is_ascii_whitespace() {
                         i += 1;
                     }
+                    value = &tag[from..i];
                 }
             }
         }
+        if !name.is_empty() {
+            attrs.push((name, value));
+        }
     }
-    names
+    attrs
 }
 
-/// URL schemes that must never begin an attribute value.
+/// URL schemes that must never begin the value of an attribute that holds a URL.
 const FORBIDDEN_SCHEMES: &[&str] = &["javascript:", "vbscript:", "data:text/html"];
 
-/// The contents of each tag, `<` and `>` excluded. Only what is inside a tag can execute: the
-/// same bytes in text content have been escaped. Sanitized output has no comments or CDATA left,
-/// so splitting on the delimiters is enough.
+/// Attributes a browser reads as a URL. A script scheme runs from these; as the text of a `title` or an
+/// `alt` it is only text.
+const URL_ATTRS: &[&str] = &[
+    "href",
+    "src",
+    "srcset",
+    "action",
+    "formaction",
+    "data",
+    "poster",
+    "background",
+    "cite",
+    "longdesc",
+    "ping",
+    "xlink:href",
+    "codebase",
+    "manifest",
+    "icon",
+    "lowsrc",
+    "dynsrc",
+    "usemap",
+    "profile",
+    "classid",
+    "archive",
+];
+
+/// The contents of each tag, `<` and `>` excluded. Only what is inside a tag can execute: the same
+/// bytes in text content have been escaped. A `>` or `<` inside a quoted attribute value belongs to
+/// the value, so the scan follows quotes (a quote opens only right after `=`, as in HTML).
 fn tags(lower: &str) -> Vec<&str> {
+    let bytes = lower.as_bytes();
     let mut out = Vec::new();
-    let mut rest = lower;
-    while let Some(start) = rest.find('<') {
-        rest = &rest[start + 1..];
-        if let Some(end) = rest.find('>') {
-            out.push(&rest[..end]);
-            rest = &rest[end + 1..];
-        } else {
-            out.push(rest);
+    let mut from = 0;
+    while let Some(off) = lower[from..].find('<') {
+        let start = from + off + 1;
+        let mut i = start;
+        let mut quote: Option<u8> = None;
+        let mut expect_value = false;
+        while i < bytes.len() {
+            let b = bytes[i];
+            if let Some(q) = quote {
+                if b == q {
+                    quote = None;
+                }
+            } else if b == b'>' {
+                break;
+            } else if b == b'=' {
+                expect_value = true;
+            } else if expect_value && !b.is_ascii_whitespace() {
+                if b == b'"' || b == 39 {
+                    quote = Some(b);
+                }
+                expect_value = false;
+            }
+            i += 1;
+        }
+        out.push(&lower[start..i]);
+        from = i + 1;
+        if from > lower.len() {
             break;
         }
     }
     out
 }
 
-/// True when `at` begins an attribute value: the text before it ends with `=`, allowing for a
-/// quote and whitespace. This separates `src="javascript:…"`, which executes, from
-/// ``src="`javascript:…"``, which a browser reads as a relative path -- the backtick is part of
-/// the value, so what follows is not a scheme at all.
-fn starts_an_attribute_value(tag: &str, at: usize) -> bool {
-    let before = tag[..at].trim_end();
-    let before = before.strip_suffix('"').or_else(|| before.strip_suffix('\'')).unwrap_or(before);
-    before.trim_end().ends_with('=')
+/// A tag's name, and whether it is an end tag: `/script x` is (`script`, true).
+fn element(tag: &str) -> (&str, bool) {
+    let end_tag = tag.starts_with('/');
+    let body = tag.strip_prefix('/').unwrap_or(tag);
+    let name = body.split(|c: char| c.is_ascii_whitespace() || c == '/').next().unwrap_or("");
+    (name, end_tag)
 }
 
 /// Every way `html` would execute, as readable sentences. Empty means inert.
@@ -125,38 +172,44 @@ pub fn violations(html: &str) -> Vec<String> {
     let lower = html.to_ascii_lowercase();
     let mut found = Vec::new();
 
-    for (needle, why) in FORBIDDEN_TAGS {
-        if lower.contains(needle) {
-            found.push((*why).to_owned());
-        }
-    }
-
     for tag in tags(&lower) {
-        let names = attribute_names(tag);
-        for (name, why) in FORBIDDEN_ATTRS {
-            if names.iter().any(|n| n == name) {
+        let (name, end_tag) = element(tag);
+        for (forbidden, why) in FORBIDDEN_ELEMENTS {
+            if name == *forbidden {
                 found.push((*why).to_owned());
-            }
-        }
-        for (needle, why) in FORBIDDEN_IN_TAG {
-            if tag.contains(needle) {
-                found.push((*why).to_owned());
-            }
-        }
-        for scheme in FORBIDDEN_SCHEMES {
-            for (at, _) in tag.match_indices(scheme) {
-                if starts_an_attribute_value(tag, at) {
-                    found.push(format!("an attribute value starting with {scheme} survived"));
+                if end_tag && name == "script" {
+                    found.push("a script end tag survived".to_owned());
                 }
             }
         }
-        // Any `on…=` is an event handler. Checked by shape rather than by listing the hundreds
-        // of handler names, so one added in a future HTML version is covered too.
-        for (i, _) in tag.match_indices(" on") {
-            let rest = &tag[i + 3..];
-            let name_len = rest.find(|c: char| !c.is_ascii_alphabetic()).unwrap_or(rest.len());
-            if name_len > 0 && rest[name_len..].trim_start().starts_with('=') {
-                found.push(format!("the event handler attribute on{} survived", &rest[..name_len]));
+        let attrs = attributes(tag);
+        for (forbidden, why) in FORBIDDEN_ATTRS {
+            if attrs.iter().any(|(attr, _)| attr == forbidden) {
+                found.push((*why).to_owned());
+            }
+        }
+        for (attr, value) in &attrs {
+            // A CSS expression runs only from a style (the sanitizer keeps none); as text in some other
+            // attribute, such as the class of a code block, it is inert.
+            if *attr == "style" && value.contains("expression(") {
+                found.push("a CSS expression survived".to_owned());
+            }
+            // A browser drops tabs and newlines inside a URL and leading control characters and spaces
+            // before it, so `jav&#9;ascript:` and ` javascript:` are the same scheme.
+            let url: String = value.chars().filter(|c| !matches!(c, '\t' | '\n' | '\r')).collect();
+            let url = url.trim_start_matches(|c: char| c <= ' ');
+            for scheme in FORBIDDEN_SCHEMES {
+                if URL_ATTRS.contains(attr) && url.starts_with(scheme) {
+                    found.push(format!("an attribute value starting with {scheme} survived"));
+                }
+            }
+            // Any `on…=` is an event handler. Checked by shape rather than by listing the hundreds
+            // of handler names, so one added in a future HTML version is covered too.
+            if let Some(handler) = attr.strip_prefix("on")
+                && !handler.is_empty()
+                && handler.chars().all(|c| c.is_ascii_alphabetic())
+            {
+                found.push(format!("the event handler attribute on{handler} survived"));
             }
         }
     }
@@ -194,6 +247,44 @@ mod tests {
             r#"<a title="t" srcdoc='y'>"#,
             "<iframe/srcdoc=x>",
             "<button formaction=x>",
+        ] {
+            assert!(!violations(bad).is_empty(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn a_css_expression_matters_only_in_a_style_attribute() {
+        // Found by the fuzzer: a fenced code block's language ends up in `class`, where the text is inert.
+        assert!(violations(r#"<pre><code class="language-hexpression("></code></pre>"#).is_empty());
+        assert!(violations("<p>expression(</p>").is_empty());
+        for bad in [
+            r#"<div style="width: expression(alert(1))">"#,
+            "<div style='width:expression(1)'>",
+            "<div style=expression(1)>",
+        ] {
+            assert!(!violations(bad).is_empty(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn text_that_looks_like_markup_inside_a_value_is_not_markup() {
+        // Quoted values may hold `<`, `>` and words that would be dangerous as tags or as URLs.
+        for ok in [
+            r#"<a href="https://example.com/" title="<script>alert(1)</script>">x</a>"#,
+            r#"<a href="https://example.com/" title="a one=1 onclick=2">x</a>"#,
+            r#"<a href="https://example.com/" title="javascript:alert(1)">x</a>"#,
+            r#"<img src="https://example.com/a.png" alt="data:text/html,x">"#,
+        ] {
+            assert!(violations(ok).is_empty(), "{ok}: {:?}", violations(ok));
+        }
+        // The same words where they do run.
+        for bad in [
+            r#"<a href="javascript:alert(1)">x</a>"#,
+            "<a href=' jav&#9;ascript:x'>x</a>".replace("&#9;", "	").as_str(),
+            r#"<a title="x" onclick="y">x</a>"#,
+            "<img src=x onerror=alert(1)>",
+            "<SCRIPT>alert(1)</SCRIPT>",
+            "</script>",
         ] {
             assert!(!violations(bad).is_empty(), "{bad}");
         }

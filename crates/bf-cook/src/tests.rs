@@ -357,3 +357,13 @@ fn malformed_anchors_settle_after_one_more_pass_and_stay_inert() {
     inert::assert_inert(&once, input);
     inert::assert_inert(&twice, input);
 }
+
+#[test]
+fn a_code_fence_named_like_a_css_expression_is_inert() {
+    // Found by the fuzzers (bbcode and hidden): the language of a fence becomes the class of the code
+    // element, and "expression(" in a class is only text.
+    for md in ["~~~\u{c}expression(", "```hexpression(\n@~@<\0\n:/1\r-*1\r\r[*~Ɍ\n&a`h\n"] {
+        let html = cook(md).html;
+        inert::assert_inert(&html, md);
+    }
+}
