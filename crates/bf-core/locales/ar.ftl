@@ -2173,10 +2173,12 @@ msg-who_sees_edit_history_everyone_members_author_or_staff = من يرى سجل 
 msg-url_returning_the_latest_version_as_text_empty_turns = عنوان URL يعيد أحدث إصدار كنص؛ الفارغ يوقف الفحص
 # New accounts need an invite code
 msg-new_accounts_need_an_invite_code = تحتاج الحسابات الجديدة إلى رمز دعوة
-# Checks new sign-ups for bots. Needs BF_CAPTCHA_SECRET on the server, or it stays off
-msg-checks_new_sign_ups_for_bots_needs_bf_captcha_secret_on = يتحقق من التسجيلات الجديدة بحثًا عن الروبوتات. يتطلب BF_CAPTCHA_SECRET على الخادم وإلا يبقى متوقفًا
+# Checks new sign-ups for bots. Stays off until the challenge secret is set
+msg-checks_new_sign_ups_for_bots_stays_off_until_the = يتحقق من التسجيلات الجديدة بحثًا عن الروبوتات. يبقى متوقفًا حتى يتم تعيين سر التحدي
 # Public site key from Cloudflare, hCaptcha or Google
 msg-public_site_key_from_cloudflare_hcaptcha_or_google = مفتاح الموقع العام من Cloudflare أو hCaptcha أو Google
+# Secret of the challenge: from the provider, or any long random text for ALTCHA
+msg-secret_of_the_challenge_from_the_provider_or_any_long = سر التحدي: من المزوّد، أو أي نص عشوائي طويل لـ ALTCHA
 # Consent banner text; leave empty unless you add non-essential cookies
 msg-consent_banner_text_leave_empty_unless_you_add_non = نص شريط الموافقة؛ اتركه فارغًا ما لم تضف ملفات تعريف ارتباط غير أساسية
 # Most images in one post; a group limit overrides it
@@ -6333,6 +6335,8 @@ admin-block_temporary_email_addresses = حظر عناوين البريد الم�
 admin-blocked_email_domains = نطاقات البريد المحظورة
 # Registration challenge
 admin-registration_challenge = تحدي التسجيل
+# Challenge secret
+admin-challenge_secret = سر التحدي
 # Minimum sign-up time
 admin-minimum_sign_up_time = أقل مدة للتسجيل
 # Akismet API key

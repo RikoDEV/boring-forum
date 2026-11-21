@@ -991,7 +991,8 @@ has "invite link prefills" "$(curl -s "$B/register?invite=$CODE")" "value=\"$COD
 check "invite works" "$(reg invited1 --data-urlencode "invite=$CODE")" 303
 check "invite is single use" "$(reg invited2 --data-urlencode "invite=$CODE")" 422
 setting invite_only false
-if [ -n "${BF_CAPTCHA_SECRET:-}" ]; then
+if [ -n "${BF_CAPTCHA_VERIFY_URL:-}" ]; then
+  setting captcha_secret '"s"'
   setting captcha_provider '"turnstile"'; setting captcha_site_key '"site-key"'
   settle 1.5
   has "challenge on page" "$(curl -s $B/register)" 'cf-turnstile'
@@ -999,6 +1000,7 @@ if [ -n "${BF_CAPTCHA_SECRET:-}" ]; then
   check "failed challenge refused" "$(reg capt1 --data-urlencode 'cf-turnstile-response=bad')" 422
   check "passed challenge" "$(reg capt2 --data-urlencode 'cf-turnstile-response=good')" 303
   setting captcha_provider '""'
+  setting captcha_secret '""'
 fi
 settle 1.5
 check "save prefs" "$(curl -s -o /dev/null -w '%{http_code}' -b $J --data-urlencode "csrf=$T" -d 'locale=en&text_size=100&density=comfortable&date_format=iso&skin_tone=3&profile_visibility=nobody' $B/settings/interface)" 303

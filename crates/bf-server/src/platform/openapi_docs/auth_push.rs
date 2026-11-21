@@ -40,7 +40,7 @@ pub(super) fn docs() -> Vec<Value> {
         }),
         json!({
             "method": "get", "path": "/api/v1/captcha/altcha", "auth": "anyone",
-            "description": "A fresh self-hosted ALTCHA proof-of-work challenge, never cached (Cache-Control: no-store). The browser finds `number` (0 to maxnumber) whose SHA-256 of salt+number equals `challenge`, and sends the solution base64-encoded with the form. Each challenge works once and expires after 20 minutes. 404 unless the captcha provider setting is `altcha` and BF_CAPTCHA_SECRET is set.",
+            "description": "A fresh self-hosted ALTCHA proof-of-work challenge, never cached (Cache-Control: no-store). The browser finds `number` (0 to maxnumber) whose SHA-256 of salt+number equals `challenge`, and sends the solution base64-encoded with the form. Each challenge works once and expires after 20 minutes. 404 unless the captcha provider setting is `altcha` and the captcha secret setting is set.",
             "response": {
                 "type": "object", "required": ["algorithm", "challenge", "maxnumber", "salt", "signature"],
                 "properties": {

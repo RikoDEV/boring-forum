@@ -15,6 +15,7 @@ pub fn is_secret(key: &str) -> bool {
         "ai_api_key"
             | "ai_embedding_api_key"
             | "akismet_key"
+            | "captcha_secret"
             | "gif_api_key"
             | "mailchimp_webhook_secret"
             | "imgproxy_key"

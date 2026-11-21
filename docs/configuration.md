@@ -57,7 +57,6 @@ environment as the server would and reports errors and doubtful settings without
 | `BF_MAIL_FROM` | none | Sender mailbox, e.g. `Forum <noreply@example.com>`; required with `BF_SMTP_URL` |
 | `BF_MAIL_DIR` | unset | Development: write each mail to a file here instead of sending it |
 | `BF_REPLY_DOMAIN`, `BF_INBOUND_TOKEN`, `BF_BOUNCE_TOKEN` | unset | Reply by email, inbound mail webhook and bounce webhook |
-| `BF_CAPTCHA_SECRET` | unset | Secret for the registration challenge |
 | `BF_CAPTCHA_VERIFY_URL` | the provider's address | Verification endpoint override, used by tests |
 | `BF_SSO_URL`, `BF_SSO_SECRET`, `BF_SSO_NAME` | unset | DiscourseConnect-style single sign-on |
 | `BF_OIDC_NAME`, `BF_OIDC_CLIENT_ID`, `BF_OIDC_CLIENT_SECRET`, `BF_OIDC_AUTHORIZE_URL`, `BF_OIDC_TOKEN_URL`, `BF_OIDC_USERINFO_URL` | unset | A generic OpenID Connect provider; all but the name are required together |

@@ -60,7 +60,7 @@ covers documents and archives, and pictures too with `all`. For a covered file:
 - A link stays the same all window long, so browsers can cache the file. `upload_link_hours` (6)
   is the window; a link works for between one and two of them. A signed file may be cached by
   others for the time that is left; everything else is `private`.
-- The key comes from `BF_SECRET_KEY` (else `BF_CAPTCHA_SECRET`). **Set it when several nodes serve
+- The key comes from `BF_SECRET_KEY`. **Set it when several nodes serve
   one site** (`BF_CLUSTER=1`): without it each process signs with a key of its own and the other
   nodes cannot check the links.
 - Feed readers, link previews, other servers and API consumers that do not sign in must use the

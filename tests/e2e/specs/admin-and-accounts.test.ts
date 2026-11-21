@@ -209,6 +209,8 @@ describe("likes, listing, edit grace", () => {
   it("ALTCHA stops sign-ups without a fresh solution", async () => {
     expect((await forum.client().get("/api/v1/captcha/altcha")).status).toBe(404);
     expect((await setting(alice, "captcha_provider", "altcha")).status).toBe(204);
+    expect((await forum.client().get("/api/v1/captcha/altcha")).status, "no secret, no challenge").toBe(404);
+    expect((await setting(alice, "captcha_secret", "e2e-captcha-secret")).status).toBe(204);
     const solve = async () => {
       const c = JSON.parse((await forum.client().get("/api/v1/captcha/altcha")).text);
       for (let number = 0; number <= c.maxnumber; number++) {
@@ -232,6 +234,7 @@ describe("likes, listing, edit grace", () => {
   });
   it("opens the content policy to a challenge provider on the sign-up form only", async () => {
     await setting(alice, "captcha_site_key", "site-key");
+    await setting(alice, "captcha_secret", "s");
     expect((await setting(alice, "captcha_provider", "recaptcha")).status).toBe(204);
     const form = await forum.client().get("/register");
     expect(form.text).toContain('class="g-recaptcha" data-sitekey="site-key"');

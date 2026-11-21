@@ -20,7 +20,7 @@ export BF_GEO_HEADER=X-Test-Country BF_ASN_HEADER=X-Test-ASN BF_BOUNCE_TOKEN=012
 export OIDC=http://127.0.0.1:9911
 export BF_VAPID_PRIVATE=yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw BF_TICK_SECONDS=1 BF_DELETE_GRACE_DAYS=0 BF_REPLY_DOMAIN=mail.example BF_INBOUND_TOKEN=abcdef0123456789abcdef0123456789
 export BF_WEBHOOK_ALLOW_LOOPBACK=1 BF_SSO_URL=$OIDC/sso BF_SSO_SECRET=0123456789abcdef0123456789abcdef
-export BF_CAPTCHA_SECRET=s BF_CAPTCHA_VERIFY_URL=$OIDC/siteverify
+export BF_CAPTCHA_VERIFY_URL=$OIDC/siteverify
 export BF_OAUTH_APPLE_ID=com.example.forum BF_OAUTH_APPLE_TEAM_ID=TEAM BF_OAUTH_APPLE_KEY_ID=KID BF_OAUTH_APPLE_BASE=$OIDC
 export BF_OAUTH_APPLE_KEY="$(node -e 'console.log(require("crypto").generateKeyPairSync("ec",{namedCurve:"P-256"}).privateKey.export({type:"pkcs8",format:"pem"}))')"
 export BF_OIDC_NAME="Test SSO" BF_OIDC_CLIENT_ID=test-client BF_OIDC_CLIENT_SECRET=test-secret

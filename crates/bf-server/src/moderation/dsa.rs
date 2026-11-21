@@ -127,7 +127,7 @@ pub(crate) async fn record_silent(state: &AppState, r: Restriction<'_>) -> Optio
 }
 
 fn altcha_ready(state: &AppState) -> bool {
-    state.settings().str("captcha_provider") == "altcha" && std::env::var("BF_CAPTCHA_SECRET").is_ok()
+    state.settings().str("captcha_provider") == "altcha" && crate::auth::register::captcha_secret(state).is_some()
 }
 
 fn notice_page(state: &AppState, v: &Viewer, url: String, error: Option<String>, done: Option<String>) -> Response {
@@ -238,8 +238,8 @@ async fn send_notice(
     }
     if altcha_ready(&state) {
         let pool = state.db()?;
-        let ok = match (f.extra.get("altcha"), std::env::var("BF_CAPTCHA_SECRET")) {
-            (Some(payload), Ok(secret)) => {
+        let ok = match (f.extra.get("altcha"), crate::auth::register::captcha_secret(&state)) {
+            (Some(payload), Some(secret)) => {
                 match crate::auth::altcha::verify(&secret, payload, Utc::now().timestamp()) {
                     Some((sig, exp)) => {
                         bf_db::accounts::challenges::spend_captcha(pool, &sig, exp).await.unwrap_or(false)

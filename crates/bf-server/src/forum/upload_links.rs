@@ -11,7 +11,7 @@
 //! is not rewritten. A window is `upload_link_hours`; an address is stable within one, so
 //! browsers can still cache the file, and it works for between one and two windows.
 //!
-//! The key comes from `BF_SECRET_KEY` (or `BF_CAPTCHA_SECRET`): set it where several nodes
+//! The key comes from `BF_SECRET_KEY`: set it where several nodes
 //! serve one site, or each process signs with a key of its own and others cannot check it.
 
 use crate::state::AppState;
@@ -25,12 +25,10 @@ use std::borrow::Cow;
 use std::sync::LazyLock;
 
 static KEY: LazyLock<Vec<u8>> = LazyLock::new(|| {
-    for var in ["BF_SECRET_KEY", "BF_CAPTCHA_SECRET"] {
-        if let Ok(v) = std::env::var(var)
-            && !v.trim().is_empty()
-        {
-            return Sha256::digest(format!("bf-upload-links:{v}")).to_vec();
-        }
+    if let Ok(v) = std::env::var("BF_SECRET_KEY")
+        && !v.trim().is_empty()
+    {
+        return Sha256::digest(format!("bf-upload-links:{v}")).to_vec();
     }
     Sha256::digest(format!("bf-upload-links:{}", bf_core::auth::random_token())).to_vec()
 });

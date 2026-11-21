@@ -85,7 +85,7 @@ async fn altcha_challenge(State(state): State<AppState>) -> Result<Response, App
     if state.settings().str("captcha_provider") != "altcha" {
         return Err(AppError::NotFound);
     }
-    let secret = std::env::var("BF_CAPTCHA_SECRET").map_err(|_| AppError::NotFound)?;
+    let secret = crate::auth::register::captcha_secret(&state).ok_or(AppError::NotFound)?;
     let body = crate::auth::altcha::challenge(&secret, chrono::Utc::now().timestamp()).ok_or(AppError::NotFound)?;
     let mut res = Json(body).into_response();
     res.headers_mut().insert(axum::http::header::CACHE_CONTROL, axum::http::HeaderValue::from_static("no-store"));

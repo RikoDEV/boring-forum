@@ -29,7 +29,7 @@ export BF_MAIL_DIR=$(mktemp -d) BF_UPLOAD_DIR=$(mktemp -d) BF_BOUNCE_TOKEN=01234
 OIDC_PORT=9911
 export OIDC=http://127.0.0.1:$OIDC_PORT
 export BF_WEBHOOK_ALLOW_LOOPBACK=1 BF_SSO_URL=$OIDC/sso BF_SSO_SECRET=0123456789abcdef0123456789abcdef
-export BF_CAPTCHA_SECRET=s BF_CAPTCHA_VERIFY_URL=$OIDC/siteverify
+export BF_CAPTCHA_VERIFY_URL=$OIDC/siteverify
 export BF_OAUTH_APPLE_ID=com.example.forum BF_OAUTH_APPLE_TEAM_ID=TEAM BF_OAUTH_APPLE_KEY_ID=KID BF_OAUTH_APPLE_BASE=$OIDC
 export BF_OAUTH_APPLE_KEY="$(node -e 'console.log(require("crypto").generateKeyPairSync("ec",{namedCurve:"P-256"}).privateKey.export({type:"pkcs8",format:"pem"}))')" BF_OIDC_NAME="Test SSO" BF_OIDC_CLIENT_ID=test-client BF_OIDC_CLIENT_SECRET=test-secret
 export BF_OIDC_AUTHORIZE_URL=$OIDC/authorize BF_OIDC_TOKEN_URL=$OIDC/token BF_OIDC_USERINFO_URL=$OIDC/userinfo

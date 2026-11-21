@@ -19,12 +19,10 @@ use std::time::Duration;
 use tokio::sync::mpsc;
 
 static KEY: LazyLock<Vec<u8>> = LazyLock::new(|| {
-    for var in ["BF_SECRET_KEY", "BF_CAPTCHA_SECRET"] {
-        if let Ok(v) = std::env::var(var)
-            && !v.trim().is_empty()
-        {
-            return Sha256::digest(format!("bf-traffic:{v}")).to_vec();
-        }
+    if let Ok(v) = std::env::var("BF_SECRET_KEY")
+        && !v.trim().is_empty()
+    {
+        return Sha256::digest(format!("bf-traffic:{v}")).to_vec();
     }
     // Without a configured secret it lasts until restart: visitors still count, only a visit
     // split by a restart would count twice.

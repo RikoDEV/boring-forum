@@ -2010,10 +2010,12 @@ msg-who_sees_edit_history_everyone_members_author_or_staff = Kto widzi historię
 msg-url_returning_the_latest_version_as_text_empty_turns = Adres URL zwracający najnowszą wersję jako tekst; puste wyłącza sprawdzanie
 # New accounts need an invite code
 msg-new_accounts_need_an_invite_code = Nowe konta wymagają kodu zaproszenia
-# Checks new sign-ups for bots. Needs BF_CAPTCHA_SECRET on the server, or it stays off
-msg-checks_new_sign_ups_for_bots_needs_bf_captcha_secret_on = Sprawdza nowe rejestracje pod kątem botów. Wymaga BF_CAPTCHA_SECRET na serwerze, inaczej pozostaje wyłączone
+# Checks new sign-ups for bots. Stays off until the challenge secret is set
+msg-checks_new_sign_ups_for_bots_stays_off_until_the = Sprawdza nowe rejestracje pod kątem botów. Pozostaje wyłączone, dopóki nie ustawisz sekretu wyzwania
 # Public site key from Cloudflare, hCaptcha or Google
 msg-public_site_key_from_cloudflare_hcaptcha_or_google = Publiczny klucz strony z Cloudflare, hCaptcha lub Google
+# Secret of the challenge: from the provider, or any long random text for ALTCHA
+msg-secret_of_the_challenge_from_the_provider_or_any_long = Sekret wyzwania: od dostawcy albo dowolny długi losowy tekst dla ALTCHA
 # Consent banner text; leave empty unless you add non-essential cookies
 msg-consent_banner_text_leave_empty_unless_you_add_non = Tekst banera zgody; zostaw puste, jeśli nie dodajesz zbędnych ciasteczek
 # Most images in one post; a group limit overrides it
@@ -6170,6 +6172,8 @@ admin-block_temporary_email_addresses = Blokuj tymczasowe adresy e-mail
 admin-blocked_email_domains = Zablokowane domeny e-mail
 # Registration challenge
 admin-registration_challenge = Wyzwanie przy rejestracji
+# Challenge secret
+admin-challenge_secret = Sekret wyzwania
 # Minimum sign-up time
 admin-minimum_sign_up_time = Minimalny czas rejestracji
 # Akismet API key

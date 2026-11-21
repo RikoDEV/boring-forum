@@ -34,18 +34,21 @@ pub(crate) fn captcha_config(state: &AppState) -> Option<(String, String)> {
     let key = s.str("captcha_site_key");
     // ALTCHA runs on this site, so it has no site key.
     let keyed = matches!(provider, "turnstile" | "hcaptcha" | "recaptcha") && !key.is_empty();
-    let ready = (keyed || provider == "altcha") && std::env::var("BF_CAPTCHA_SECRET").is_ok();
+    let ready = (keyed || provider == "altcha") && captcha_secret(state).is_some();
     ready.then(|| (provider.to_owned(), key.to_owned()))
+}
+
+/// The secret of the registration challenge (the `captcha_secret` setting), when one is set.
+pub(crate) fn captcha_secret(state: &AppState) -> Option<String> {
+    Some(state.settings().str("captcha_secret")).filter(|s| !s.is_empty()).map(str::to_owned)
 }
 
 static TS_KEY: std::sync::LazyLock<Vec<u8>> = std::sync::LazyLock::new(|| {
     use sha2::{Digest, Sha256};
-    for var in ["BF_SECRET_KEY", "BF_CAPTCHA_SECRET"] {
-        if let Ok(v) = std::env::var(var)
-            && !v.trim().is_empty()
-        {
-            return Sha256::digest(format!("bf-register-ts:{v}")).to_vec();
-        }
+    if let Ok(v) = std::env::var("BF_SECRET_KEY")
+        && !v.trim().is_empty()
+    {
+        return Sha256::digest(format!("bf-register-ts:{v}")).to_vec();
     }
     Sha256::digest(format!("bf-register-ts:{}", auth::random_token())).to_vec()
 });
@@ -80,12 +83,16 @@ fn verified_ts(value: &str) -> Option<i64> {
 
 /// Asks the challenge provider whether this registration passed. Fails closed when the
 /// provider cannot be reached: an outage should not open registration to bots.
-async fn captcha_passed(pool: &sqlx::PgPool, provider: &str, f: &AuthForm, ip: Option<std::net::IpAddr>) -> bool {
+async fn captcha_passed(
+    pool: &sqlx::PgPool,
+    provider: &str,
+    secret: &str,
+    f: &AuthForm,
+    ip: Option<std::net::IpAddr>,
+) -> bool {
     if provider == "altcha" {
-        let (Some(payload), Ok(secret)) = (f.extra.get("altcha"), std::env::var("BF_CAPTCHA_SECRET")) else {
-            return false;
-        };
-        let Some((signature, expires)) = crate::auth::altcha::verify(&secret, payload, Utc::now().timestamp()) else {
+        let Some(payload) = f.extra.get("altcha") else { return false };
+        let Some((signature, expires)) = crate::auth::altcha::verify(secret, payload, Utc::now().timestamp()) else {
             return false;
         };
         return bf_db::accounts::challenges::spend_captcha(pool, &signature, expires).await.unwrap_or_else(|e| {
@@ -99,14 +106,13 @@ async fn captcha_passed(pool: &sqlx::PgPool, provider: &str, f: &AuthForm, ip: O
         _ => ("h-captcha-response", "https://hcaptcha.com/siteverify"),
     };
     let Some(response) = f.extra.get(field).filter(|r| !r.is_empty()) else { return false };
-    let Ok(secret) = std::env::var("BF_CAPTCHA_SECRET") else { return false };
     // The override exists for tests and only allows loopback.
     let url = std::env::var("BF_CAPTCHA_VERIFY_URL")
         .ok()
         .filter(|u| u.starts_with("http://127.0.0.1:"))
         .unwrap_or_else(|| default_url.to_owned());
     let ip = ip.map(|i| i.to_string()).unwrap_or_default();
-    let form = [("secret", secret.as_str()), ("response", response.as_str()), ("remoteip", ip.as_str())];
+    let form = [("secret", secret), ("response", response.as_str()), ("remoteip", ip.as_str())];
     let Ok(client) = reqwest::Client::builder().timeout(std::time::Duration::from_secs(5)).build() else {
         return false;
     };
@@ -343,7 +349,7 @@ async fn register_problem(
         return Ok(Some(t.msg("That invite code is not valid.")));
     }
     if let Some((provider, _)) = captcha_config(state)
-        && !captcha_passed(pool, &provider, f, ip).await
+        && !captcha_passed(pool, &provider, &captcha_secret(state).unwrap_or_default(), f, ip).await
     {
         return Ok(Some(t.msg("Please complete the challenge and try again.")));
     }
@@ -351,7 +357,7 @@ async fn register_problem(
     // and says so in the log, instead of opening to bots without anyone noticing.
     if captcha_config(state).is_none() && !state.settings().str("captcha_provider").is_empty() {
         tracing::error!(
-            "captcha_provider is set but not usable (BF_CAPTCHA_SECRET or the site key is missing); registration refused"
+            "captcha_provider is set but not usable (the captcha secret or the site key is missing); registration refused"
         );
         return Ok(Some(t.msg("Sign-ups are not available right now. Please try again later.")));
     }

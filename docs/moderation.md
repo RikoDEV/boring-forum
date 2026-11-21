@@ -54,7 +54,7 @@ edited, not even by the application: the database refuses.
 
 Most of this is on **Admin, Settings, Spam protection**:
 
-- A challenge at sign-up (see `BF_CAPTCHA_SECRET` in [Configuration](configuration.md)) and a
+- A challenge at sign-up (the provider and its secret are site settings in the admin panel) and a
   minimum time a sign-up form must take.
 - Passwords are checked against known breaches.
 - A limit on accounts created from one address within a window.

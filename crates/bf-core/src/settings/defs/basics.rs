@@ -397,12 +397,21 @@ pub(super) fn defs() -> Vec<SettingDef> {
                 "captcha_provider",
                 String,
                 true,
-                en("Checks new sign-ups for bots. Needs BF_CAPTCHA_SECRET on the server, or it stays off"),
+                en("Checks new sign-ups for bots. Stays off until the challenge secret is set"),
             )
         },
         SettingDef {
             default: json!(""),
             ..def("captcha_site_key", String, true, en("Public site key from Cloudflare, hCaptcha or Google"))
+        },
+        SettingDef {
+            default: json!(""),
+            ..def(
+                "captcha_secret",
+                String,
+                false,
+                en("Secret of the challenge: from the provider, or any long random text for ALTCHA"),
+            )
         },
         SettingDef {
             default: json!(""),
