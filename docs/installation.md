@@ -26,8 +26,15 @@ To build the image from your checkout instead, add `-f deploy/compose.build.yml`
 
 ```sh
 git clone https://github.com/RikoDEV/boring-forum.git && cd boring-forum
-export BF_BASE_URL=https://forum.example.com            # the address people will use
-export BF_SECRET_KEY=$(docker compose -f deploy/compose.yml run --rm server secret-key)
+cp .env.example .env
+```
+
+Edit `.env`: set `BF_BASE_URL` to the address people will use and `BF_SECRET_KEY` to the output of
+`docker compose -f deploy/compose.yml run --rm server secret-key`. Compose passes the whole file to the
+server, so every setting in [Configuration](configuration.md) goes there. It always sets the database
+address and the listen address itself, whatever `.env` says.
+
+```sh
 docker compose -f deploy/compose.yml up -d --wait
 ```
 

@@ -61,11 +61,12 @@ on the first response. Written in Rust and Svelte, with PostgreSQL for storage.
 
 ## Quick start
 
-1. Start the database and the server with Docker Compose (the first run builds the image, which
-   takes a few minutes):
+1. Start the database and the server with Docker Compose (it pulls the release image; settings are
+   read from `.env`, optional):
 
    ```sh
    git clone https://github.com/RikoDEV/boring-forum.git && cd boring-forum
+   cp .env.example .env
    docker compose -f deploy/compose.yml up -d --wait
    ```
 

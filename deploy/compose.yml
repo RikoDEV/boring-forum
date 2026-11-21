@@ -22,14 +22,17 @@ services:
 
   server:
     image: ghcr.io/rikodev/boring-forum:${BF_VERSION:-latest}
+    # Every setting comes from the .env in the repository root (copy .env.example; see
+    # docs/configuration.md). The file is optional. `environment` wins over it and holds only what
+    # must differ inside the compose network.
+    env_file:
+      - path: ../.env
+        required: false
     environment:
       BF_DATABASE_URL: postgres://forum:forum@db:5432/forum
-      BF_ADMIN_TOKEN: ${BF_ADMIN_TOKEN:-}
-      # Used in mail links, canonical URLs and as the passkey relying party.
-      BF_BASE_URL: ${BF_BASE_URL:-http://127.0.0.1:8080}
-      # Encryption at rest for TOTP and webhook secrets. `boring-forum secret-key`
-      # prints one; without it those columns are stored in plain text.
-      BF_SECRET_KEY: ${BF_SECRET_KEY:-}
+      # The port mapping below only reaches a server listening on every interface of the container,
+      # while .env.example binds to loopback for running outside Docker.
+      BF_BIND: 0.0.0.0:8080
     ports: ["127.0.0.1:8080:8080"]
     # The image is `scratch` and runs as 65534, and the root filesystem is read-only, so
     # the only writable paths are the uploads and backups volumes and a small tmpfs. A compromised process
