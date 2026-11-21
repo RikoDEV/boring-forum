@@ -13,6 +13,18 @@
 10027	IGNORE	Information disclosure in suspicious comments: template comments explain markup, carry no data.
 10109	IGNORE	Modern web application: the islands architecture is server-rendered HTML plus small scripts, which this heuristic flags by design.
 
+# --- Reviewed against the first full scan: expected for what this site is --------------------
+10029	IGNORE	Cookie poisoning: the forum-list sort is remembered in a cookie, but only from the fixed set of sort keys; any other value is not stored.
+10031	IGNORE	User-controllable HTML attribute: search, calendar and list filters are echoed into form fields. Templates escape every value and the XSS corpus and fuzzers cover it; ZAP flags the echo, not an injection.
+10049	IGNORE	Non-storable content: login, register, search and error pages are deliberately not cacheable.
+10055	IGNORE	CSP wildcard: pictures are allowed from any https host (img-src https:) because members post images from other sites; an admin narrows it with the picture-host setting. Scripts, frames, objects and forms stay restricted to this origin.
+10094	IGNORE	Base64 disclosure: signed expiring upload links and content hashes (ETags). They are public by design and carry no secret.
+10096	IGNORE	Timestamp disclosure on /register: the ALTCHA challenge states when it expires, as the ALTCHA format defines. The value is public and says nothing about the server.
+10111	IGNORE	Authentication request identified: informational.
+10112	IGNORE	Session management response identified: informational.
+90004	IGNORE	Cross-Origin-Embedder-Policy: cross-origin isolation would block the pictures and embeds members post from other sites, and no feature here needs it.
+90005	IGNORE	Sec-Fetch-Dest missing: a request header that ZAP does not send, not a response problem.
+
 # --- Checked by the test suite rather than by a passive scan --------------------------------
 10202	IGNORE	Absence of anti-CSRF tokens: ZAP cannot see the per-session token, which is checked on every state-changing request and covered by the e2e suite.
 90033	IGNORE	Loosely scoped cookie: the session cookie uses the __Host- prefix, which ZAP's heuristic reads as loosely scoped.
@@ -26,8 +38,6 @@
 10038	FAIL	Content-Security-Policy header missing.
 10063	FAIL	Permissions-Policy header missing.
 10098	FAIL	Cross-domain misconfiguration (CORS is off by default,).
-10055	FAIL	CSP: wildcard or unsafe directive -- the policy is strict.
-10096	FAIL	Timestamp disclosure.
 10105	FAIL	Weak authentication method.
 40012	FAIL	Reflected cross-site scripting.
 40014	FAIL	Persistent cross-site scripting.

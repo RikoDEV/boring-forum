@@ -490,6 +490,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/csrf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The CSRF token, for scripts that cannot read its HttpOnly cookie
+         * @description API key: `read`; a key limited to resources cannot reach this route.
+         */
+        get: operations["get_csrf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/drafts": {
         parameters: {
             query?: never;
@@ -4052,6 +4072,58 @@ export interface operations {
             };
             /** @description This `Idempotency-Key` was used for a different request */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_csrf: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description An `ETag` from an earlier response; answers 304 with no body while the data is unchanged. */
+                "If-None-Match"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    /** @description Validator of the JSON body; send it back as `If-None-Match`. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        token: string;
+                    };
+                };
+            };
+            /** @description Not modified: the `If-None-Match` value is current */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not allowed, or the key lacks the scope */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No such item, or not visible to the caller */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

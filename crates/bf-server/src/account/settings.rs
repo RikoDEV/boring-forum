@@ -30,6 +30,19 @@ use self::profile::{save_profile, save_signature};
 
 pub(crate) use self::notification_prefs::{prefs_view, switchable};
 
+/// The CSRF token for a script: the cookie that carries it is HttpOnly, so the admin panel asks for it
+/// here. Only this origin can read the answer (CORS is off), and a page on another site cannot send
+/// the cookie that makes it the same token.
+async fn csrf_token(v: Viewer) -> Response {
+    let (token, set) = csrf_for(&v, true);
+    let mut res = axum::Json(serde_json::json!({ "token": token })).into_response();
+    res.headers_mut().insert(axum::http::header::CACHE_CONTROL, axum::http::HeaderValue::from_static("no-store"));
+    if let Some(cookie) = set {
+        res.headers_mut().append(axum::http::header::SET_COOKIE, cookie);
+    }
+    res
+}
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/settings", get(settings))
@@ -45,6 +58,7 @@ pub fn router() -> Router<AppState> {
         .route("/settings/username", post(change_username))
         .route("/settings/interface", post(save_interface))
         .route("/language/{code}", get(set_language))
+        .route("/api/v1/csrf", get(csrf_token))
         .route("/settings/signature", post(save_signature))
         .route("/settings/dnd", post(set_dnd))
         .route("/settings/quiet", post(set_quiet))

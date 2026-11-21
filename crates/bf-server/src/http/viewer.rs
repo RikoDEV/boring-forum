@@ -312,7 +312,7 @@ pub(crate) fn csrf_for(v: &Viewer, wanted: bool) -> (String, Option<HeaderValue>
         Some(c) if c.len() == 64 => (c.clone(), None),
         _ => {
             let t = auth::random_token();
-            let cookie = format!("{CSRF_COOKIE}={t}; Path=/; Secure; SameSite=Lax");
+            let cookie = format!("{CSRF_COOKIE}={t}; Path=/; HttpOnly; Secure; SameSite=Lax");
             (t, HeaderValue::from_str(&cookie).ok())
         }
     }

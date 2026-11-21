@@ -382,6 +382,10 @@ pub(super) fn docs() -> Vec<Value> {
             "response": d(arr(s()), "The usernames among those given who were seen in the last 15 minutes and do not hide their last-seen time."),
         }),
         json!({
+            "method": "get", "path": "/api/v1/csrf", "auth": "anyone",
+            "response": d(obj(json!({ "token": s() }), &["token"]), "The viewer's CSRF token (64 hex characters), to send in `X-CSRF-Token` on a write. Sets the HttpOnly cookie that holds it when the viewer has none. Not cacheable."),
+        }),
+        json!({
             "method": "get", "path": "/api/v1/live", "auth": "viewer",
             "query": [q("channels", true, "Comma-separated channels, at most 10: global; user (members); conversation:ID (members, participants); chat:ID; item:ID (a readable topic); forums (every readable forum's activity); forum:ID. An unknown or forbidden channel is refused. Send Last-Event-ID to resume.", s())],
             "response": d(s(), "Not JSON: a server-sent events stream (text/event-stream). Each event is named by its type and its data is {\"channel\": string, \"data\": object}; the connection ends when the viewer loses access."),

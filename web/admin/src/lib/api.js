@@ -1,11 +1,11 @@
 // JSON helper for the admin API. The SPA is served from the forum's origin, so the
-// session cookie is sent automatically; writes copy the CSRF cookie into a header.
+// session cookie is sent automatically; writes send the CSRF token in a header.
 //
 // A write that needs the password confirmed again (`sudo-required`) opens the confirmation
 // dialog and, once confirmed, is sent again: callers see only the final answer.
 
 import { confirmSudo } from "./sudo.js";
-import { csrf } from "./csrf.js";
+import { csrf, ensureCsrf } from "./csrf.js";
 import { locale, tr } from "./i18n.js";
 
 export class ApiError extends Error {
@@ -19,7 +19,10 @@ export class ApiError extends Error {
 
 export async function api(method, path, body, retried = false) {
   const headers = { Accept: "application/json" };
-  if (method !== "GET") headers["X-CSRF-Token"] = csrf();
+  if (method !== "GET") {
+    await ensureCsrf();
+    headers["X-CSRF-Token"] = csrf();
+  }
   if (body !== undefined) headers["Content-Type"] = "application/json";
   const res = await fetch(`/api/v1/admin${path}`, {
     method,
@@ -36,6 +39,7 @@ export async function api(method, path, body, retried = false) {
 
 /// A multipart upload (plugin and theme packages) with the same CSRF and sudo handling.
 export async function upload(path, body, retried = false) {
+  await ensureCsrf();
   const res = await fetch(path, {
     method: "POST",
     headers: { "X-CSRF-Token": csrf() },

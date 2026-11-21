@@ -142,6 +142,7 @@ const ROUTES: &[Row] = &[
     ("get", "/api/v1/quotes/deleted", "posts", "Which quoted posts have since been deleted", V, N),
     ("get", "/api/v1/users/{name}/card", "users", "Hover card of a member", V, N),
     ("get", "/api/v1/online", "users", "Members online now", V, N),
+    ("get", "/api/v1/csrf", "me", "The CSRF token, for scripts that cannot read its HttpOnly cookie", V, N),
     ("get", "/api/v1/live", "me", "Server-sent events: new posts, notifications, presence", V, N),
     ("put", "/api/v1/me/infinite-scroll", "me", "Turn infinite scroll on or off for the viewer", U, J),
     ("get", "/api/v1/saved-replies", "me", "The viewer's saved replies", U, N),
