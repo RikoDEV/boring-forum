@@ -1,12 +1,5 @@
-# Runs the server as the least-privilege role `forum_app` instead of the database superuser
-#, using deploy/postgres/roles.sql. Layer it over the default file:
-#
-#   docker compose -f deploy/compose.yml -f deploy/compose.roles.yml up -d --wait
-#
-# A one-shot `db-roles` service creates the roles (idempotent, so it is safe on an existing
-# volume too: it hands over table ownership), then the server migrates as `forum_migrate` and
-# serves as `forum_app`. The passwords default to development values; set them in the
-# environment for anything that is not your own machine.
+# Serves as the least-privilege role forum_app (see deploy/postgres/roles.sql); layer over compose.yml.
+# Set BF_APP_DB_PASSWORD, BF_MIGRATE_DB_PASSWORD and BF_READONLY_DB_PASSWORD outside your own machine.
 services:
   db-roles:
     image: postgres:18-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
