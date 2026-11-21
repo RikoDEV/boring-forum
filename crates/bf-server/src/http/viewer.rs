@@ -44,6 +44,10 @@ pub struct Viewer {
     pub(crate) theme_headers: HeaderMap,
 }
 
+/// The review-badge count, computed once per request (see `Viewer::from_request_parts`).
+#[derive(Clone, Copy)]
+struct ReviewCountMemo(Option<i64>);
+
 /// Was this request made by a page's `<img>`, `<script>`, `<iframe>` and the like, and not by a
 /// person following a link or typing an address? Browsers say so in `Sec-Fetch-Dest`. A GET that
 /// changes something (counts a click, sets a cookie) must refuse these: a post can embed any
@@ -237,7 +241,16 @@ impl FromRequestParts<AppState> for Viewer {
             v.session_digest = Some(digest);
             // Only page views show the badge, so writes and API calls skip the query.
             if parts.method == axum::http::Method::GET && !parts.uri.path().starts_with("/api/") {
-                v.review_count = review_count(state, pool, &v.actor).await;
+                // A request extracts a Viewer in several layers and again in the handler; the counts
+                // are the same each time, so they are looked up once and kept on the request.
+                v.review_count = match parts.extensions.get::<ReviewCountMemo>() {
+                    Some(memo) => memo.0,
+                    None => {
+                        let count = review_count(state, pool, &v.actor).await;
+                        parts.extensions.insert(ReviewCountMemo(count));
+                        count
+                    }
+                };
             }
         }
         Ok(v)
