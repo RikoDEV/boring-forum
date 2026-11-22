@@ -145,7 +145,60 @@ pub fn ip_key(ip: Option<IpAddr>) -> String {
     ip.map_or_else(|| "none".to_owned(), |ip| bf_db::accounts::security::ip_bucket(ip).to_string())
 }
 
-static TRUSTED: std::sync::LazyLock<Vec<IpAddr>> = std::sync::LazyLock::new(|| {
+/// A proxy address, or a network of them (`172.16.0.0/12`): what `BF_TRUSTED_PROXIES` lists.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Net {
+    net: IpAddr,
+    prefix: u8,
+}
+
+impl Net {
+    /// One address.
+    pub fn host(ip: IpAddr) -> Self {
+        let ip = ip.to_canonical();
+        Net { net: ip, prefix: if ip.is_ipv4() { 32 } else { 128 } }
+    }
+
+    /// `10.0.0.1`, `172.16.0.0/12` or `fd00::/8`. A network of every address (`/0`) is refused: it would
+    /// make every visitor a proxy and let anyone claim any address.
+    pub fn parse(text: &str) -> Option<Self> {
+        let (addr, prefix) = match text.split_once('/') {
+            Some((a, p)) => (a, Some(p)),
+            None => (text, None),
+        };
+        let ip = addr.trim().parse::<IpAddr>().ok()?.to_canonical();
+        let max = if ip.is_ipv4() { 32 } else { 128 };
+        let prefix = match prefix {
+            Some(p) => p.trim().parse::<u8>().ok().filter(|p| (1..=max).contains(p))?,
+            None => max,
+        };
+        Some(Net { net: Self::masked(ip, prefix), prefix })
+    }
+
+    fn masked(ip: IpAddr, prefix: u8) -> IpAddr {
+        match ip {
+            IpAddr::V4(v) => {
+                let mask = u32::MAX.checked_shl(32 - u32::from(prefix)).unwrap_or(0);
+                IpAddr::V4((u32::from(v) & mask).into())
+            }
+            IpAddr::V6(v) => {
+                let mask = u128::MAX.checked_shl(128 - u32::from(prefix)).unwrap_or(0);
+                IpAddr::V6((u128::from(v) & mask).into())
+            }
+        }
+    }
+
+    pub fn contains(&self, ip: IpAddr) -> bool {
+        let ip = ip.to_canonical();
+        ip.is_ipv4() == self.net.is_ipv4() && Self::masked(ip, self.prefix) == self.net
+    }
+}
+
+fn is_listed(list: &[Net], ip: IpAddr) -> bool {
+    list.iter().any(|n| n.contains(ip))
+}
+
+static TRUSTED: std::sync::LazyLock<Vec<Net>> = std::sync::LazyLock::new(|| {
     std::env::var("BF_TRUSTED_PROXIES")
         .unwrap_or_default()
         .split(',')
@@ -153,12 +206,13 @@ static TRUSTED: std::sync::LazyLock<Vec<IpAddr>> = std::sync::LazyLock::new(|| {
         .filter(|p| !p.is_empty())
         .filter_map(|p| {
             // An entry that is dropped silently would leave every visitor sharing the proxy's address.
-            p.parse::<IpAddr>()
-                .inspect_err(|_| {
-                    tracing::error!(entry = p, "BF_TRUSTED_PROXIES takes addresses, not networks; entry ignored");
-                })
-                .ok()
-                .map(|ip| ip.to_canonical())
+            Net::parse(p).or_else(|| {
+                tracing::error!(
+                    entry = p,
+                    "BF_TRUSTED_PROXIES takes an address or a network such as 172.16.0.0/12 (not /0); entry ignored"
+                );
+                None
+            })
         })
         .collect()
 });
@@ -173,20 +227,20 @@ pub fn client_ip(peer: IpAddr, headers: &axum::http::HeaderMap) -> IpAddr {
 /// Whether `peer` is a proxy named in `BF_TRUSTED_PROXIES`, i.e. whether its `X-Forwarded-*`
 /// headers may be believed.
 pub fn is_trusted_proxy(peer: IpAddr) -> bool {
-    TRUSTED.contains(&peer.to_canonical())
+    is_listed(&TRUSTED, peer)
 }
 
 /// Reads from the right: each proxy appends what it saw, so the rightmost address that is not
 /// one of ours is the first anyone outside could not have forged.
-fn forwarded_client(peer: IpAddr, header: Option<&str>, trusted: &[IpAddr]) -> IpAddr {
-    if !trusted.contains(&peer) {
+fn forwarded_client(peer: IpAddr, header: Option<&str>, trusted: &[Net]) -> IpAddr {
+    if !is_listed(trusted, peer) {
         return peer;
     }
     let mut last = peer;
     for part in header.unwrap_or_default().rsplit(',') {
         let Ok(ip) = part.trim().parse::<IpAddr>() else { return last };
         last = ip;
-        if !trusted.contains(&ip) {
+        if !is_listed(trusted, ip) {
             return ip;
         }
     }
@@ -230,7 +284,7 @@ mod tests {
     fn forwarded_addresses_count_only_from_trusted_proxies() {
         let (proxy, visitor, evil): (IpAddr, IpAddr, IpAddr) =
             ("10.0.0.1".parse().unwrap(), "203.0.113.5".parse().unwrap(), "198.51.100.9".parse().unwrap());
-        let t = [proxy];
+        let t = [Net::host(proxy)];
         assert_eq!(forwarded_client(visitor, Some("198.51.100.9"), &t), visitor, "not from our proxy");
         assert_eq!(forwarded_client(proxy, Some("203.0.113.5"), &t), visitor);
         assert_eq!(forwarded_client(proxy, Some("198.51.100.9, 203.0.113.5"), &t), visitor, "spoofed left part");
@@ -238,6 +292,37 @@ mod tests {
         assert_eq!(forwarded_client(proxy, Some("junk"), &t), proxy);
         assert_eq!(forwarded_client(proxy, None, &t), proxy);
         let _ = evil;
+    }
+
+    #[test]
+    fn a_network_entry_covers_every_address_in_it() {
+        let docker = Net::parse("172.16.0.0/12").expect("a /12");
+        for inside in ["172.16.0.1", "172.17.0.2", "172.31.255.254"] {
+            assert!(docker.contains(inside.parse().unwrap()), "{inside}");
+        }
+        for outside in ["172.15.255.255", "172.32.0.1", "10.0.0.1", "192.168.1.1", "::1"] {
+            assert!(!docker.contains(outside.parse().unwrap()), "{outside}");
+        }
+        // The address given may be any in the network, and a plain address is one host.
+        assert_eq!(Net::parse("172.20.5.9/12"), Some(docker));
+        let one = Net::parse("10.0.0.1").expect("a host");
+        assert!(one.contains("10.0.0.1".parse().unwrap()) && !one.contains("10.0.0.2".parse().unwrap()));
+        // IPv6, and an IPv4 peer a dual-stack listener reports as ::ffff:a.b.c.d.
+        let v6 = Net::parse("fd00::/8").expect("a v6 network");
+        assert!(v6.contains("fd12:3456::1".parse().unwrap()) && !v6.contains("fe80::1".parse().unwrap()));
+        assert!(Net::parse("192.168.0.0/16").unwrap().contains("::ffff:192.168.4.5".parse().unwrap()));
+        // Not entries: junk, a prefix that is too long, and every address.
+        for bad in ["junk", "10.0.0.1/33", "10.0.0.1/x", "0.0.0.0/0", "::/0", "/8", ""] {
+            assert_eq!(Net::parse(bad), None, "{bad:?}");
+        }
+    }
+
+    #[test]
+    fn forwarded_addresses_trust_a_proxy_inside_a_listed_network() {
+        let t = [Net::parse("172.16.0.0/12").unwrap()];
+        let (proxy, visitor): (IpAddr, IpAddr) = ("172.19.0.5".parse().unwrap(), "203.0.113.5".parse().unwrap());
+        assert_eq!(forwarded_client(proxy, Some("203.0.113.5"), &t), visitor);
+        assert_eq!(forwarded_client(visitor, Some("198.51.100.9"), &t), visitor, "outside the network");
     }
 
     #[test]

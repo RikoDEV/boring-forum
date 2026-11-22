@@ -8,7 +8,7 @@ Set environment variables; see `.env.example`. These enable optional features:
 | `BF_INBOUND_TOKEN` | Turns on `POST /api/v1/webhooks/inbound-mail` (32+ characters) |
 | `BF_BOUNCE_TOKEN` | Turns on the bounce webhook (32+ characters) |
 | `BF_PLUGIN_PUBLIC_KEYS` | Ed25519 keys trusted to sign plugins |
-| `BF_TRUSTED_PROXIES` | Comma-separated proxy addresses whose `X-Forwarded-For` and `X-Forwarded-Proto` are believed. Set this behind a reverse proxy, or every visitor shares one address and `proxied` HTTPS redirects never happen |
+| `BF_TRUSTED_PROXIES` | Comma-separated proxy addresses or networks (`172.17.0.1`, `172.16.0.0/12`) whose `X-Forwarded-For` and `X-Forwarded-Proto` are believed. A network trusts every host in it, so list only ranges that nothing untrusted can use to reach the server. Set this behind a reverse proxy, or every visitor shares one address and `proxied` HTTPS redirects never happen |
 | `BF_TICK_SECONDS` | Maintenance interval; default 600 |
 | `BF_DELETE_GRACE_DAYS` | Days before a requested account deletion runs; default 14 |
 | `BF_VAPID_PRIVATE`, `BF_VAPID_SUBJECT` | Web push; `boring-forum vapid` makes a key, and the subject is a `mailto:` or site address |
@@ -48,7 +48,7 @@ environment as the server would and reports errors and doubtful settings without
 | `BF_MICROCACHE_TTL_MS` | 2000 | Guest page cache lifetime |
 | `BF_RATE_LIMIT_PER_MIN` | 600 | Requests per minute per client address |
 | `BF_LOG_JSON` | false | One JSON object per log line |
-| `BF_TRUSTED_PROXIES` | unset | Proxy addresses whose `X-Forwarded-*` headers are believed |
+| `BF_TRUSTED_PROXIES` | unset | Proxy addresses or networks (CIDR, such as `172.16.0.0/12`) whose `X-Forwarded-*` headers are believed |
 | `BF_GEO_HEADER`, `BF_ASN_HEADER` | unset | Trusted CDN headers with the visitor's country and network number |
 | `BF_TLS_CERT`, `BF_TLS_KEY`, `BF_HTTP_BIND`, `BF_HTTPS_REDIRECT`, `BF_HSTS_PRELOAD` | see above | Built-in TLS, the plain-HTTP redirect listener and HSTS preload |
 | `BF_DRAIN_SECS` | 5 | Seconds between failing `/readyz` and closing listeners on shutdown |

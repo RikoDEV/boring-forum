@@ -94,7 +94,8 @@ manager such as systemd so it restarts. It stops cleanly on `SIGTERM`.
 Either let a proxy terminate TLS, or let the server do it.
 
 **Behind a proxy** (the usual choice). Set `BF_BASE_URL` to the public `https://` address and
-`BF_TRUSTED_PROXIES` to the proxy's address, so the server believes the client address and
+`BF_TRUSTED_PROXIES` to the proxy's address (or a network such as `172.16.0.0/12`, which covers
+Docker's default networks), so the server believes the client address and
 protocol the proxy forwards. Without it every visitor looks like the proxy and the per-address
 rate limit is shared by all of them. With Caddy, for example:
 
