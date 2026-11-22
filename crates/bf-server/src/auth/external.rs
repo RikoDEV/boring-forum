@@ -62,13 +62,7 @@ pub(crate) fn managed_message(v: &Viewer) -> String {
 /// the name and picture fill an account that has neither, whatever the overrides say. On a later
 /// sign-in each field follows the provider only when its override is on. A failure here is logged
 /// and never stops the sign-in.
-pub(crate) async fn sync_profile(
-    state: &AppState,
-    user_id: UserId,
-    provider: &str,
-    ext: &ExternalUser,
-    created: bool,
-) {
+pub(crate) async fn sync_profile(state: &AppState, user_id: UserId, provider: &str, ext: &ExternalUser, created: bool) {
     if let Err(e) = sync(state, user_id, provider, ext, created).await {
         tracing::warn!(error = %e, provider, "copying the provider's profile failed");
     }

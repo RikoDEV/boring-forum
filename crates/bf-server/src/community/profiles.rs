@@ -197,8 +197,7 @@ async fn profile(
     } else {
         None
     };
-    let lock_avatar = own
-        && crate::auth::external::managed(&state, id, crate::auth::external::Managed::Avatar).await?;
+    let lock_avatar = own && crate::auth::external::managed(&state, id, crate::auth::external::Managed::Avatar).await?;
     let page_body = ProfilePage {
         lock_avatar,
         layout: l,

@@ -142,6 +142,7 @@ mod profile_render_tests {
     #[test]
     fn non_ascii_profile_fields_render_verbatim() {
         let p = ProfilePage {
+            lock_avatar: false,
             cover_y: 50,
             trust: None,
             warning_box: None,

@@ -370,11 +370,7 @@ struct SsoVisit {
 }
 
 /// A visit to `/auth/sso`: with `auth_require_interaction` a page with a button, otherwise the login.
-async fn sso_visit(
-    State(state): State<AppState>,
-    v: Viewer,
-    Query(q): Query<SsoVisit>,
-) -> Result<Response, AppError> {
+async fn sso_visit(State(state): State<AppState>, v: Viewer, Query(q): Query<SsoVisit>) -> Result<Response, AppError> {
     if !crate::auth::external::interaction_required(&state) {
         let (url, cookie) = sso_begin(&state).await?;
         let mut res = Redirect::to(&url).into_response();
