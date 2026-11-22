@@ -5,7 +5,7 @@ A release is made by pushing a `vX.Y.Z` tag, and only then. Nothing releases on 
 The tag starts `.github/workflows/release.yml`, which checks that the tagged commit is on `main` and
 that `Cargo.toml` has the same version, then builds the server image from the lockfiles, pushes it to
 `ghcr.io/rikodev/boring-forum` with CycloneDX SBOMs, a keyless Sigstore signature and SLSA
-provenance, and creates the GitHub release with generated notes. That workflow's header shows how to
+provenance, and creates the GitHub release with notes written from the commit prefixes since the previous tag (`scripts/release-notes.sh`: `feat` Added, `fix` Fixed, `security`, `perf`, breaking changes first). That workflow's header shows how to
 verify an image with `cosign` and `gh attestation verify`.
 
 ## Making a release

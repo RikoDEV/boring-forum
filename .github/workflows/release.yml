@@ -97,8 +97,19 @@ jobs:
           subject-name: ${{ env.IMAGE }}
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
-      - name: Attach SBOMs to the GitHub release
+      - name: Publish the GitHub release with notes from the commit prefixes
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${GITHUB_REF_NAME}" sbom-rust.cdx.json sbom-image.cdx.json --clobber || gh release create "${GITHUB_REF_NAME}" sbom-rust.cdx.json sbom-image.cdx.json --verify-tag --generate-notes
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          # Notes come from the conventional-commit prefixes since the previous tag, not from
+          # GitHub's generator, which lists pull requests and so shows nothing for direct pushes.
+          bash scripts/release-notes.sh "${GITHUB_REF_NAME}" > release-notes.md
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release edit "${GITHUB_REF_NAME}" --notes-file release-notes.md
+            gh release upload "${GITHUB_REF_NAME}" sbom-rust.cdx.json sbom-image.cdx.json --clobber
+          else
+            gh release create "${GITHUB_REF_NAME}" sbom-rust.cdx.json sbom-image.cdx.json \
+              --verify-tag --title "${GITHUB_REF_NAME}" --notes-file release-notes.md
+          fi
