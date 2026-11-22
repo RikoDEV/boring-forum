@@ -616,6 +616,8 @@ struct Totals {
     topics: u32,
     posts: u32,
     refused: u32,
+    /// Posts whose author is not in the export, given to the stand-in "imported" account.
+    orphaned: u32,
     tags: u32,
     groups: u32,
     polls: u32,
@@ -696,6 +698,12 @@ pub async fn run(path: &str) -> Result<String, Box<dyn std::error::Error>> {
     .collect();
     if !extras.is_empty() {
         out.push_str(&format!(" Also {}.", extras.join(", ")));
+    }
+    if t.orphaned > 0 {
+        out.push_str(&format!(
+            " {} posts had no author in the export (staged or system accounts, or members deleted at the source) and went to the \"imported\" account.",
+            t.orphaned
+        ));
     }
     if t.refused > 0 {
         out.push_str(&format!(" {} posts were refused by plugins.", t.refused));
@@ -815,7 +823,12 @@ impl Context<'_> {
             Some(id) => importer::mapped(self.pool, "user", id).await?,
             None => None,
         };
-        let Some(owner) = owner.or(importer::import_placeholder(self.pool).await.ok()) else { return Ok(()) };
+        // The stand-in account is made only when a file has no owner here, not for every file.
+        let owner = match owner {
+            Some(id) => Some(id),
+            None => importer::import_placeholder(self.pool).await.ok(),
+        };
+        let Some(owner) = owner else { return Ok(()) };
         let max_kb = self.state.settings().int("max_upload_kb");
         let stored = match crate::forum::uploads::store_from(
             self.state,
@@ -926,7 +939,14 @@ impl Context<'_> {
             Some(a) => importer::mapped(pool, "user", a).await?,
             None => None,
         };
-        let Some(author) = author.or(importer::import_placeholder(pool).await.ok()) else { return Ok(()) };
+        // The stand-in account is made only when a post has no author here, not for every post.
+        let author = if author.is_some() {
+            author
+        } else {
+            self.totals.orphaned += 1;
+            importer::import_placeholder(pool).await.ok()
+        };
+        let Some(author) = author else { return Ok(()) };
         let mut raw = rewrite_uploads(&to_markdown(&p.body, &p.format), &self.files);
         if raw.is_empty() {
             return Ok(());
