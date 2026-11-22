@@ -71,6 +71,23 @@ WORK=${IMPORT_WORK:-/work}
 mkdir -p "$WORK"
 upper=$(echo "$SOURCE" | tr a-z A-Z)
 
+# Reach the forum's database before the long restore and export, and show the real reason when
+# that fails: the server's own error for it is only "pool timed out".
+if [ "$DRY" = 0 ]; then
+  say "Checking the forum database"
+  if ! reply=$(PGCONNECT_TIMEOUT=5 psql "$BF_DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "select current_user" 2>&1); then
+    {
+      echo "Cannot connect to the forum database:"
+      echo "$reply"
+      echo
+      echo "Is the stack running (docker compose up -d --wait), and do .env and compose.yml agree on the"
+      echo "database name and passwords (POSTGRES_*, BF_MIGRATE_DB_PASSWORD)?"
+    } >&2
+    exit 1
+  fi
+  echo "connected as $reply"
+fi
+
 # A table every install of the software has, to read the table prefix from.
 marker_of() {
   case $1 in
