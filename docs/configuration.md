@@ -63,6 +63,7 @@ environment as the server would and reports errors and doubtful settings without
 | `BF_CAPTCHA_VERIFY_URL` | the provider's address | Verification endpoint override, used by tests |
 | `BF_SSO_URL`, `BF_SSO_SECRET`, `BF_SSO_NAME` | unset | DiscourseConnect-style single sign-on |
 | `BF_OIDC_NAME`, `BF_OIDC_CLIENT_ID`, `BF_OIDC_CLIENT_SECRET`, `BF_OIDC_AUTHORIZE_URL`, `BF_OIDC_TOKEN_URL`, `BF_OIDC_USERINFO_URL` | unset | A generic OpenID Connect provider; all but the name are required together |
+| `BF_OAUTH_GOOGLE_ID` / `_SECRET`, `BF_OAUTH_GITHUB_ID` / `_SECRET`, `BF_OAUTH_DISCORD_ID` / `_SECRET`, `BF_OAUTH_MICROSOFT_ID` / `_SECRET` | unset | Sign in with that service: its OAuth client ID and secret, both set. Its redirect address is `<BF_BASE_URL>/auth/<service>/callback` (`/auth/discord/callback`). See [Outside logins](#outside-logins) |
 | `BF_OAUTH_APPLE_ID`, `BF_OAUTH_APPLE_TEAM_ID`, `BF_OAUTH_APPLE_KEY_ID`, `BF_OAUTH_APPLE_KEY` | unset | Sign in with Apple |
 | `BF_OAUTH_APPLE_BASE` | `https://appleid.apple.com` | Apple endpoint override, used by tests |
 | `BF_AI_API_KEY`, `BF_AI_EMBEDDING_API_KEY` | unset | Keys for the AI provider and, when it is another one, the embedding model; they take precedence over the keys in the settings |
@@ -115,8 +116,27 @@ boring-forum rotate-secrets
 
 ### Outside logins
 
-The providers above are switched on by environment variables. How they behave is set in the admin
-panel under Settings → Sign-up and sign-in:
+The providers above are switched on by environment variables. The client ID and secret are secrets,
+so they are not in the admin panel. For Discord, for example:
+
+1. In the [Discord developer portal](https://discord.com/developers/applications) create an
+   application. Under OAuth2, add the redirect `https://your-forum.example/auth/discord/callback`
+   (your `BF_BASE_URL` plus `/auth/discord/callback`), and copy the client ID and client secret.
+2. Put them in `.env` and restart the server:
+
+   ```sh
+   BF_OAUTH_DISCORD_ID=123456789012345678
+   BF_OAUTH_DISCORD_SECRET=…
+   ```
+
+3. The sign-in and sign-up pages now show **Continue with Discord**. Members who already have an
+   account can link it under Settings.
+
+Google, GitHub and Microsoft work the same way (`BF_OAUTH_GOOGLE_ID`, `BF_OAUTH_GITHUB_ID`, …, each with
+`_SECRET`, and the redirect `/auth/google/callback`, `/auth/github/callback`,
+`/auth/microsoft/callback`). Any other OpenID Connect provider uses the `BF_OIDC_*` variables.
+
+How they behave is set in the admin panel under Settings → Sign-up and sign-in:
 
 | Setting | Default | What it does |
 | --- | --- | --- |
