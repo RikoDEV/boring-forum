@@ -30,7 +30,8 @@
 //! image's size so it previews at once. `avatar_of` (a source member) makes the file that member's
 //! avatar. Without `BF_IMPORT_FILES` the section is skipped and those links stay as they were. A file
 //! this site does not accept (its kind, its size) is skipped and counted.
-//! Members may carry `trust_level`, `days_visited` and `topics_read`, where they stood on the old site:
+//! Members may carry `last_seen_at` (when they were last on the old site; only ever moved forward, never
+//! into the future), and `trust_level`, `days_visited` and `topics_read`, where they stood on the old site:
 //! the level is kept (never lowered), and the days and topics count toward the requirements of the levels
 //! here (`users.visit_credit`, `users.read_credit`). When the import ends, the promotion rules run once,
 //! without telling anyone, so members who earned a higher level by that history have it.
@@ -70,6 +71,8 @@ struct User {
     email: String,
     password_hash: Option<String>,
     joined_at: Option<chrono::DateTime<chrono::Utc>>,
+    /// When they were last on the old site.
+    last_seen_at: Option<chrono::DateTime<chrono::Utc>>,
     /// Where they stood on the old site: trust level, days visited, topics read.
     trust_level: Option<i16>,
     days_visited: Option<i32>,
@@ -785,6 +788,10 @@ impl Context<'_> {
             importer::map(self.pool, "user", u.id, id).await?;
             self.totals.users += 1;
             self.totals.renamed += u32::from(rewritten);
+        }
+        // Also for a member imported before: running the import again brings their last visit up to date.
+        if let (Some(id), Some(seen)) = (importer::mapped(self.pool, "user", u.id).await?, u.last_seen_at) {
+            importer::set_last_seen(self.pool, id, seen.min(chrono::Utc::now())).await?;
         }
         // Also for a member imported before: running the import again brings their standing up to date.
         if let Some(id) = importer::mapped(self.pool, "user", u.id).await?

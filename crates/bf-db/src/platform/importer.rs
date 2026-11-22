@@ -86,6 +86,16 @@ pub async fn set_views(pool: &PgPool, item: i64, views: i32) -> Result<(), Error
         .map(|_| ())
 }
 
+/// When a member was last on the old site. Only ever moves forward, so a visit here since is kept.
+pub async fn set_last_seen(pool: &PgPool, user: i64, at: DateTime<Utc>) -> Result<(), Error> {
+    sqlx::query("UPDATE users SET last_seen_at = greatest(coalesce(last_seen_at, $2), $2) WHERE id = $1")
+        .bind(user)
+        .bind(at)
+        .execute(pool)
+        .await
+        .map(|_| ())
+}
+
 /// Where a member stood on the old site: their trust level, and the days they visited and the topics
 /// they read there (credit toward the requirements of the levels here). Only ever raises, so an
 /// account that already has more keeps it.

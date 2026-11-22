@@ -162,7 +162,9 @@ const shownCats = catRows.filter((c) => shownBoards.some((b) => b.id_cat === c.i
 // ---- members and files ----------------------------------------------------------------------------------------------
 const users = await q(`SELECT id_member, member_name, real_name, email_address, date_registered, id_group, additional_groups FROM ${p}members WHERE email_address <> ''`);
 const known = new Set(users.map((u) => u.id_member));
-counts.members = await out.section("users", users.map((u) => ({ id: u.id_member, username: u.real_name || u.member_name, email: u.email_address, password_hash: null, joined_at: iso(u.date_registered) })));
+// When each member was last on the old site (unix time or a date); a table or column this version lacks gives none.
+const seen = new Map((await optional("last visits", () => q(`SELECT id_member AS id, last_login AS t FROM ${p}members`))).map((r) => [r.id, r.t]));
+counts.members = await out.section("users", users.map((u) => ({ id: u.id_member, username: u.real_name || u.member_name, email: u.email_address, password_hash: null, joined_at: iso(u.date_registered), last_seen_at: iso(seen.get(u.id_member) || null) })));
 
 // Files of posts in exported boards (the topic's board is joined in), and the uploaded avatars.
 const attachmentRows = await first("attachments", [

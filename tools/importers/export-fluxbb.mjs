@@ -95,7 +95,9 @@ const CAT = 1_000_000;
 // ---- members --------------------------------------------------------------------------------------------------------
 const users = await q(`SELECT id, group_id, username, email, registered FROM ${p}users WHERE id > 1 AND group_id <> 0 AND email <> ''`);
 const known = new Set(users.map((u) => u.id));
-counts.members = await out.section("users", users.map((u) => ({ id: u.id, username: u.username, email: u.email, password_hash: null, joined_at: iso(u.registered) })));
+// When each member was last on the old site (unix time or a date); a table or column this version lacks gives none.
+const seen = new Map((await optional("last visits", () => q(`SELECT id, last_visit AS t FROM ${p}users`))).map((r) => [r.id, r.t]));
+counts.members = await out.section("users", users.map((u) => ({ id: u.id, username: u.username, email: u.email, password_hash: null, joined_at: iso(u.registered), last_seen_at: iso(seen.get(u.id) || null) })));
 
 // ---- forums, topics, posts ------------------------------------------------------------------------------------------
 counts.forums = await out.section("forums", [

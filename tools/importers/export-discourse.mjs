@@ -38,8 +38,8 @@ const split = (await q(`SELECT to_regclass('user_passwords') AS t`))[0].t !== nu
 const exported = `(u.id > 0 OR EXISTS (SELECT 1 FROM posts bp WHERE bp.user_id = u.id AND bp.post_type = 1 AND bp.deleted_at IS NULL)) AND u.staged = false`;
 const users = await q(
   split
-    ? `SELECT u.id, u.username, coalesce(e.email, u.username || '@import.invalid') AS email, u.created_at, u.trust_level, st.days_visited, st.topics_entered, up.password_hash, up.password_salt AS salt, up.password_algorithm FROM users u LEFT JOIN user_emails e ON e.user_id = u.id AND e.primary LEFT JOIN user_stats st ON st.user_id = u.id LEFT JOIN user_passwords up ON up.user_id = u.id AND up.password_expired_at IS NULL WHERE ${exported}`
-    : `SELECT u.id, u.username, coalesce(e.email, u.username || '@import.invalid') AS email, u.created_at, u.trust_level, st.days_visited, st.topics_entered, u.password_hash, u.salt, u.password_algorithm FROM users u LEFT JOIN user_emails e ON e.user_id = u.id AND e.primary LEFT JOIN user_stats st ON st.user_id = u.id WHERE ${exported}`,
+    ? `SELECT u.id, u.username, coalesce(e.email, u.username || '@import.invalid') AS email, u.created_at, u.last_seen_at, u.trust_level, st.days_visited, st.topics_entered, up.password_hash, up.password_salt AS salt, up.password_algorithm FROM users u LEFT JOIN user_emails e ON e.user_id = u.id AND e.primary LEFT JOIN user_stats st ON st.user_id = u.id LEFT JOIN user_passwords up ON up.user_id = u.id AND up.password_expired_at IS NULL WHERE ${exported}`
+    : `SELECT u.id, u.username, coalesce(e.email, u.username || '@import.invalid') AS email, u.created_at, u.last_seen_at, u.trust_level, st.days_visited, st.topics_entered, u.password_hash, u.salt, u.password_algorithm FROM users u LEFT JOIN user_emails e ON e.user_id = u.id AND e.primary LEFT JOIN user_stats st ON st.user_id = u.id WHERE ${exported}`,
 );
 const known = new Set(users.map((u) => u.id));
 
@@ -49,7 +49,7 @@ const allowed = new Set(cats.map((c) => c.id));
 const topics = (await q(`SELECT t.id, t.category_id, t.title, t.slug, t.views FROM topics t WHERE t.deleted_at IS NULL AND t.archetype = 'regular' AND t.visible AND t.category_id IS NOT NULL`)).filter((t) => allowed.has(t.category_id));
 const shown = new Set(topics.map((t) => t.id));
 
-counts.members = await out.section("users", users.map((u) => ({ id: u.id, username: u.username, email: u.email, password_hash: hash(u), joined_at: iso(u.created_at), trust_level: u.trust_level, days_visited: u.days_visited, topics_read: u.topics_entered })));
+counts.members = await out.section("users", users.map((u) => ({ id: u.id, username: u.username, email: u.email, password_hash: hash(u), joined_at: iso(u.created_at), last_seen_at: iso(u.last_seen_at), trust_level: u.trust_level, days_visited: u.days_visited, topics_read: u.topics_entered })));
 
 // Outside logins the members had, so they sign in the same way here: DiscourseConnect (SSO) records and the
 // OAuth accounts (Google, GitHub, Discord, Microsoft, Twitter/X) Discourse linked. The subject is the provider's own id for the

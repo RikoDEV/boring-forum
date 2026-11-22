@@ -126,7 +126,9 @@ const shownIds = new Set(shownForums.map((f) => f.forumid));
 // ---- members and files ----------------------------------------------------------------------------------------------
 const users = await q(`SELECT userid, username, email, joindate, avatarrevision FROM ${p}user WHERE email <> ''`);
 const known = new Set(users.map((u) => u.userid));
-counts.members = await out.section("users", users.map((u) => ({ id: u.userid, username: u.username, email: u.email, password_hash: null, joined_at: iso(u.joindate) })));
+// When each member was last on the old site (unix time or a date); a table or column this version lacks gives none.
+const seen = new Map((await optional("last visits", () => q(`SELECT userid AS id, lastactivity AS t FROM ${p}user`))).map((r) => [r.id, r.t]));
+counts.members = await out.section("users", users.map((u) => ({ id: u.userid, username: u.username, email: u.email, password_hash: null, joined_at: iso(u.joindate), last_seen_at: iso(seen.get(u.userid) || null) })));
 
 const attachmentRows = await optional("attachments", () =>
   q(

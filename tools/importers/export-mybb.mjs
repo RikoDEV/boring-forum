@@ -106,7 +106,9 @@ const shownIds = new Set(shownForums.map((f) => f.fid));
 // ---- members and files ----------------------------------------------------------------------------------------------
 const users = await q(`SELECT uid, username, email, password, salt, regdate, avatar, avatartype, usergroup, additionalgroups FROM ${p}users WHERE email <> ''`);
 const known = new Set(users.map((u) => u.uid));
-counts.members = await out.section("users", users.map((u) => ({ id: u.uid, username: u.username, email: u.email, password_hash: /^[0-9a-f]{32}$/i.test(u.password) && u.salt ? `ips3$${u.salt}$${u.password}` : null, joined_at: iso(u.regdate) })));
+// When each member was last on the old site (unix time or a date); a table or column this version lacks gives none.
+const seen = new Map((await optional("last visits", () => q(`SELECT uid AS id, lastactive AS t FROM ${p}users`))).map((r) => [r.id, r.t]));
+counts.members = await out.section("users", users.map((u) => ({ id: u.uid, username: u.username, email: u.email, password_hash: /^[0-9a-f]{32}$/i.test(u.password) && u.salt ? `ips3$${u.salt}$${u.password}` : null, joined_at: iso(u.regdate), last_seen_at: iso(seen.get(u.uid) || null) })));
 
 const attachmentRows = await optional("attachments", () => q(`SELECT aid, pid, uid, filename, attachname FROM ${p}attachments WHERE visible = 1 AND pid > 0 ORDER BY aid`));
 const byPost = new Map();

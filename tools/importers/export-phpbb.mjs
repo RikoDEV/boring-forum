@@ -128,7 +128,9 @@ const canRead = (groupId, forumId) => {
 const users = await q(`SELECT user_id, username, user_email, user_password, user_regdate, user_avatar, user_avatar_type FROM ${p}users WHERE user_type <> 2 AND user_email <> ''`);
 const known = new Set(users.map((u) => u.user_id));
 const salt = (await optional("config", () => q(`SELECT config_value FROM ${p}config WHERE config_name = 'avatar_salt'`)))[0]?.config_value;
-counts.members = await out.section("users", users.map((u) => ({ id: u.user_id, username: u.username, email: u.user_email, password_hash: /^\$(2[abxy]\$|H\$|P\$|argon2)/.test(u.user_password) ? u.user_password : null, joined_at: iso(u.user_regdate) })));
+// When each member was last on the old site (unix time or a date); a table or column this version lacks gives none.
+const seen = new Map((await optional("last visits", () => q(`SELECT user_id AS id, user_lastvisit AS t FROM ${p}users`))).map((r) => [r.id, r.t]));
+counts.members = await out.section("users", users.map((u) => ({ id: u.user_id, username: u.username, email: u.user_email, password_hash: /^\$(2[abxy]\$|H\$|P\$|argon2)/.test(u.user_password) ? u.user_password : null, joined_at: iso(u.user_regdate), last_seen_at: iso(seen.get(u.user_id) || null) })));
 
 const attachmentRows = await optional("attachments", () => q(`SELECT attach_id, post_msg_id, poster_id, physical_filename, real_filename FROM ${p}attachments WHERE in_message = 0 AND is_orphan = 0 ORDER BY attach_id`));
 const byPost = new Map();

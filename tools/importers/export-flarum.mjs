@@ -131,7 +131,9 @@ function toMarkdown(content) {
 // ---- members and files ----------------------------------------------------------------------------------------------
 const users = await q(`SELECT id, username, email, password, joined_at, avatar_url FROM ${t("users")} WHERE email <> ''`);
 const known = new Set(users.map((u) => u.id));
-counts.members = await out.section("users", users.map((u) => ({ id: u.id, username: u.username, email: u.email, password_hash: /^\$2[abxy]\$/.test(u.password ?? "") ? u.password : null, joined_at: iso(u.joined_at) })));
+// When each member was last on the old site (unix time or a date); a table or column this version lacks gives none.
+const seen = new Map((await optional("last visits", () => q(`SELECT id, last_seen_at AS t FROM ${t("users")}`))).map((r) => [r.id, r.t]));
+counts.members = await out.section("users", users.map((u) => ({ id: u.id, username: u.username, email: u.email, password_hash: /^\$2[abxy]\$/.test(u.password ?? "") ? u.password : null, joined_at: iso(u.joined_at), last_seen_at: iso(seen.get(u.id) || null) })));
 
 // Uploaded avatars are files in assets/avatars; an address is a picture kept elsewhere and is skipped.
 counts.files = await out.section(

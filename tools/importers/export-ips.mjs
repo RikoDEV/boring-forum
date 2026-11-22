@@ -34,7 +34,9 @@ const hash = (m) => {
   return h || null;
 };
 const members = await q(`SELECT member_id, name, email, members_pass_hash, members_pass_salt, joined, member_group_id, mgroup_others FROM ${p}core_members WHERE email <> ''`);
-counts.members = await out.section("users", members.map((m) => ({ id: m.member_id, username: m.name, email: m.email, password_hash: hash(m), joined_at: iso(m.joined) })));
+// When each member was last on the old site (unix time or a date); a table or column this version lacks gives none.
+const seen = new Map((await optional("last visits", () => q(`SELECT member_id AS id, last_activity AS t FROM ${p}core_members`))).map((r) => [r.id, r.t]));
+counts.members = await out.section("users", members.map((m) => ({ id: m.member_id, username: m.name, email: m.email, password_hash: hash(m), joined_at: iso(m.joined), last_seen_at: iso(seen.get(m.member_id) || null) })));
 
 const forums = await q(`SELECT f.id, f.parent_id, COALESCE(l.word_custom, l.word_default, CONCAT('Forum ', f.id)) AS title
   FROM ${p}forums_forums f LEFT JOIN ${p}core_sys_lang_words l ON l.word_key = CONCAT('forums_forum_', f.id) AND l.lang_id = (SELECT MIN(lang_id) FROM ${p}core_sys_lang)`);

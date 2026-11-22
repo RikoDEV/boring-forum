@@ -120,7 +120,9 @@ for (const r of await optional("passwords", () => q(`SELECT user_id, data FROM $
 }
 const users = await q(`SELECT user_id, username, email, register_date, avatar_date FROM ${p}user WHERE email <> '' AND user_state NOT IN ('rejected', 'disabled')`);
 const known = new Set(users.map((u) => u.user_id));
-counts.members = await out.section("users", users.map((u) => ({ id: u.user_id, username: u.username, email: u.email, password_hash: hashes.get(u.user_id) ?? null, joined_at: iso(u.register_date) })));
+// When each member was last on the old site (unix time or a date); a table or column this version lacks gives none.
+const seen = new Map((await optional("last visits", () => q(`SELECT user_id AS id, last_activity AS t FROM ${p}user`))).map((r) => [r.id, r.t]));
+counts.members = await out.section("users", users.map((u) => ({ id: u.user_id, username: u.username, email: u.email, password_hash: hashes.get(u.user_id) ?? null, joined_at: iso(u.register_date), last_seen_at: iso(seen.get(u.user_id) || null) })));
 
 // ---- who can see which forum ----------------------------------------------------------------------------------------
 const nodes = await q(`SELECT node_id, parent_node_id, title, display_order, node_type_id FROM ${p}node WHERE node_type_id IN ('Category', 'Forum') ORDER BY display_order, node_id`);
