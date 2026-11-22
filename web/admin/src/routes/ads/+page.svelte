@@ -92,6 +92,15 @@
     return adsTxtStatus.run(() => put("/settings/ads_txt", { value: adsTxt }), tr("Saved."));
   };
   const remove = (a) => confirm(tr('Delete the ad "{name}"?', { name: a.name })) && crud.remove(a.id);
+  // An empty date is no limit: a missing start means it runs already, a missing end means forever.
+  const runs = (a) =>
+    a.starts_at && a.ends_at
+      ? `${when(a.starts_at)} – ${when(a.ends_at)}`
+      : a.starts_at
+        ? tr("From {date}, forever", { date: when(a.starts_at) })
+        : a.ends_at
+          ? tr("Until {date}", { date: when(a.ends_at) })
+          : tr("Always");
   const ctr = (a) => (a.impressions ? `${((a.clicks / a.impressions) * 100).toFixed(2)}%` : "—");
 </script>
 
@@ -151,8 +160,8 @@
       />
     </Section>
     <Section legend={tr("When")} grid>
-      <Field label={tr("From")} type="date" bind:value={crud.draft.starts} />
-      <Field label={tr("Until")} type="date" bind:value={crud.draft.ends} />
+      <Field label={tr("From (empty: right away)")} type="date" bind:value={crud.draft.starts} />
+      <Field label={tr("Until (empty: forever)")} type="date" bind:value={crud.draft.ends} />
       <Field label={tr("Weight")} type="number" min="1" max="100" bind:value={crud.draft.weight} />
     </Section>
     <Section legend={tr("Status")} switches>
@@ -179,7 +188,7 @@
         <td>{PLACES[a.placement]}</td><td>{a.impressions}</td><td>{a.url ? a.clicks : "—"}</td><td>
           {a.url ? ctr(a) : "—"}
         </td>
-        <td class="small">{a.starts_at || a.ends_at ? `${when(a.starts_at)} – ${when(a.ends_at)}` : tr("Always")}</td>
+        <td class="small">{runs(a)}</td>
       </tr>
     {:else}
       <tr><td colspan="6" class="muted">{tr("No ads.")}</td></tr>

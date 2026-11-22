@@ -6610,6 +6610,12 @@ admin-saved_name = Zapisano „{ $name }”.
 admin-saved_2 = Zapisano.
 # Delete the ad "{name}"?
 admin-delete_the_ad_name = Usunąć reklamę „{ $name }”?
+# From {date}, forever
+admin-from_date_forever = Od { $date }, bez końca
+# Until {date}
+admin-until_date = Do { $date }
+# Always
+admin-always = Zawsze
 # One ad per place on a page, picked by weight among those the visitor's groups may see. HTML is cleaned when saved: no scripts or embeds. Impressions are saved every few minutes.
 admin-one_ad_per_place_on_a_page_picked_by_weight_among_those = Jedna reklama na miejsce na stronie, wybierana według wagi spośród tych, które grupy odwiedzającego mogą zobaczyć. HTML jest czyszczony przy zapisie: bez skryptów i osadzeń. Wyświetlenia zapisują się co kilka minut.
 # New ad
@@ -6640,10 +6646,10 @@ admin-never_show_to = Nigdy nie pokazuj grupom
 admin-no_one = Nikt
 # When
 admin-when = Kiedy
-# From
-admin-from = Od
-# Until
-admin-until = Do
+# From (empty: right away)
+admin-from_empty_right_away = Od (puste: od razu)
+# Until (empty: forever)
+admin-until_empty_forever = Do (puste: bez końca)
 # Weight
 admin-weight = Waga
 # Status
@@ -6660,8 +6666,6 @@ admin-click_rate = Współczynnik kliknięć
 admin-runs = Okres
 # (off)
 admin-off = (wyłączona)
-# Always
-admin-always = Zawsze
 # No ads.
 admin-no_ads = Brak reklam.
 # The ads.txt file

@@ -6773,6 +6773,12 @@ admin-saved_name = حُفظ “{ $name }”.
 admin-saved_2 = تم الحفظ.
 # Delete the ad "{name}"?
 admin-delete_the_ad_name = حذف الإعلان “{ $name }”؟
+# From {date}, forever
+admin-from_date_forever = من { $date }، للأبد
+# Until {date}
+admin-until_date = حتى { $date }
+# Always
+admin-always = دائمًا
 # One ad per place on a page, picked by weight among those the visitor's groups may see. HTML is cleaned when saved: no scripts or embeds. Impressions are saved every few minutes.
 admin-one_ad_per_place_on_a_page_picked_by_weight_among_those = إعلان واحد لكل مكان في الصفحة، يُختار حسب الوزن من بين ما يُسمح لمجموعات الزائر برؤيته. يُنظَّف HTML عند الحفظ: بلا نصوص برمجية ولا تضمينات. تُحفظ مرات الظهور كل بضع دقائق.
 # New ad
@@ -6803,10 +6809,10 @@ admin-never_show_to = عدم الإظهار أبدًا لـ
 admin-no_one = لا أحد
 # When
 admin-when = متى
-# From
-admin-from = من
-# Until
-admin-until = حتى
+# From (empty: right away)
+admin-from_empty_right_away = من (فارغ: فورًا)
+# Until (empty: forever)
+admin-until_empty_forever = حتى (فارغ: للأبد)
 # Weight
 admin-weight = الوزن
 # Status
@@ -6823,8 +6829,6 @@ admin-click_rate = معدل النقر
 admin-runs = المدة
 # (off)
 admin-off = (متوقف)
-# Always
-admin-always = دائمًا
 # No ads.
 admin-no_ads = لا إعلانات.
 # The ads.txt file
