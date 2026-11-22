@@ -38,20 +38,22 @@ fn text(body: String, max_age: u32) -> Response {
 
 /// IAB ads.txt: the administrator's own lines, served as written. Nothing configured means no
 /// file (404), so a site without ads publishes nothing and an ad network sees no authorisation.
-async fn ads_txt(State(state): State<AppState>) -> Response {
+async fn ads_txt(State(state): State<AppState>) -> Result<Response, AppError> {
     let settings = state.settings();
     let lines: Vec<&str> = settings.str("ads_txt").lines().map(str::trim_end).collect();
     let body = lines.join("\n");
     if body.trim().is_empty() {
-        return StatusCode::NOT_FOUND.into_response();
+        // The site's own 404, like any other address it does not serve: a bare status with no body
+        // and no content type is what strict checkers call an invalid response.
+        return Err(AppError::NotFound);
     }
-    text(format!("{}\n", body.trim()), 3_600)
+    Ok(text(format!("{}\n", body.trim()), 3_600))
 }
 
 /// RFC 9116. `Contact` is required, so without one configured there is no file (404) rather
 /// than a file that sends reports nowhere. `Expires` rolls forward: always 180 days ahead,
 /// because the settings are the source of truth and are current whenever the file is served.
-async fn security_txt(State(state): State<AppState>) -> Response {
+async fn security_txt(State(state): State<AppState>) -> Result<Response, AppError> {
     let s = state.settings();
     let contact = s.str("security_contact").trim();
     let valid = |c: &str| {
@@ -60,7 +62,7 @@ async fn security_txt(State(state): State<AppState>) -> Response {
             || c.strip_prefix("tel:").is_some_and(|n| !n.is_empty())
     };
     if !valid(contact) {
-        return StatusCode::NOT_FOUND.into_response();
+        return Err(AppError::NotFound);
     }
     let base = state.config.base_url.trim_end_matches('/');
     let expires = (chrono::Utc::now() + chrono::Duration::days(180)).format("%Y-%m-%dT%H:%M:%SZ");
@@ -70,7 +72,7 @@ async fn security_txt(State(state): State<AppState>) -> Response {
         body.push_str(&format!("Policy: {policy}\n"));
     }
     body.push_str(&format!("Preferred-Languages: en, pl\nCanonical: {base}/.well-known/security.txt\n"));
-    text(body, 86_400)
+    Ok(text(body, 86_400))
 }
 
 /// Where a password manager sends someone to add or manage a passkey.

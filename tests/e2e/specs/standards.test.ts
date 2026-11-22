@@ -34,7 +34,12 @@ describe("discovery and feeds", () => {
     expect(r.text).toMatch(/^Contact: mailto:security@example.com\nExpires: \d{4}-/);
   });
   it("ads.txt is the configured text, and absent when empty", async () => {
-    expect((await guest.get("/ads.txt")).status).toBe(404);
+    // Not configured: the site's ordinary 404 (a page, or problem+json), with a body and a content type (a bare empty 404
+    // is what ad networks' checkers report as an invalid response).
+    const none = await guest.get("/ads.txt");
+    expect(none.status).toBe(404);
+    expect(none.headers.get("content-type")).toBeTruthy();
+    expect(none.text.length).toBeGreaterThan(0);
     const lines = "google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0\r\n\r\n# a note  \r\nexample.com, 1, RESELLER  \r\n";
     expect((await setting("ads_txt", lines)).status).toBe(204);
     const r = await guest.get("/ads.txt");
