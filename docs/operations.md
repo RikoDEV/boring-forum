@@ -158,9 +158,12 @@ a restore, set the same key before the first start, then run `boring-forum --che
 
 ### With Docker: one command
 
-The compose file has an `importer` service (profile `import`). It starts a throwaway database inside
-its own container, restores your backup into it, exports it and imports it into the forum. Nothing of
-the old forum is touched, and re-running skips what is already there.
+The compose file has an `importer` service (profile `import`, so `up` never starts it). It uses the
+published `ghcr.io/rikodev/boring-forum-importer` image, the same version as the server
+(`BF_VERSION`). It starts a throwaway database inside its own container, restores your backup into
+it, exports it and imports it into the forum, as the schema-owning database role. Nothing of the old
+forum is touched, and re-running skips what is already there. Run the commands below from the
+directory that holds your `compose.yml` and `.env`.
 
 ```sh
 # Discourse: give it the backup .tar.gz (its uploads are inside)

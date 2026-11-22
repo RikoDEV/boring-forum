@@ -5,3 +5,6 @@ services:
     pull_policy: never
   db-roles:
     pull_policy: never
+  importer:
+    build: { context: .., dockerfile: deploy/docker/Dockerfile, target: importer }
+    pull_policy: never

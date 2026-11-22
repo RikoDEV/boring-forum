@@ -66,6 +66,22 @@ services:
       db: { condition: service_healthy }
       db-roles: { condition: service_completed_successfully }
 
+  # Brings another forum's backup in (docs/operations.md): `docker compose --profile import run --rm
+  # importer <source> <backup>`. Not started by `up`. It migrates and writes as the schema owner, once.
+  importer:
+    profiles: [import]
+    image: ghcr.io/rikodev/boring-forum-importer:${BF_VERSION:-latest}
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      BF_DATABASE_URL: postgres://forum_migrate:${BF_MIGRATE_DB_PASSWORD:-${POSTGRES_PASSWORD:-forum}_migrate}@db:5432/${POSTGRES_DB:-forum}
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      db: { condition: service_healthy }
+      db-roles: { condition: service_completed_successfully }
+
 volumes:
   pgdata:
   uploads:
