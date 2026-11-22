@@ -8,7 +8,7 @@ or a leaked `[hide]` block fails the run as loudly as a panic does.
 | Target | What it covers | Property |
 | --- | --- | --- |
 | `cook` | the whole Markdown → HTML pipeline | output is inert, stable under re-sanitize, deterministic; no executable links or markup in mentions |
-| `sanitize` | the ammonia sanitizer alone | output is inert and idempotent for arbitrary markup, not just comrak's |
+| `sanitize` | the ammonia sanitizer alone | output is inert and settles within a few passes for arbitrary markup, not just comrak's |
 | `bbcode` | BBCode → Markdown | converted-then-cooked output is inert; conversion is deterministic |
 | `search_query` | the advanced search parser | no panic from a URL; dates and tags are validated, not passed through |
 | `hidden` | `[hide]` blocks | hidden text never reaches the public HTML; `strip_hidden` agrees with `split_hidden` |
