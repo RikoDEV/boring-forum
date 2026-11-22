@@ -5,12 +5,14 @@ services:
   db:
     image: postgres:18-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
     environment:
-      POSTGRES_USER: forum
-      POSTGRES_PASSWORD: forum
-      POSTGRES_DB: forum
+      POSTGRES_USER: ${POSTGRES_USER:-forum}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forum}
+      POSTGRES_DB: ${POSTGRES_DB:-forum}
     volumes: [pgdata:/var/lib/postgresql]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U forum"]
+      # The user and database come from the container's own environment, so changing them above
+      # (or in .env) cannot leave the check asking for a role that does not exist.
+      test: ["CMD-SHELL", 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
       interval: 2s
       retries: 30
 
@@ -20,7 +22,7 @@ services:
       - path: .env
         required: false
     environment:
-      BF_DATABASE_URL: postgres://forum:forum@db:5432/forum
+      BF_DATABASE_URL: postgres://${POSTGRES_USER:-forum}:${POSTGRES_PASSWORD:-forum}@db:5432/${POSTGRES_DB:-forum}
     ports:
       - 8080
     read_only: true
