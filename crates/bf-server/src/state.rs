@@ -17,6 +17,9 @@ pub struct AppState {
     /// role (`BF_EXPLORER_DATABASE_URL`). `None` disables the Explorer.
     pub explorer_pool: Option<PgPool>,
     settings: Arc<RwLock<Arc<Settings>>>,
+    /// Counts the settings this process changed itself, so a reload that began before such a change
+    /// cannot overwrite it with the older rows it read (see `reload_settings`).
+    settings_epoch: Arc<std::sync::atomic::AtomicU64>,
     pub microcache: Microcache,
     pub rate_limiter: RateLimiter,
     pub hub: bf_realtime::Hub,
@@ -97,6 +100,7 @@ impl AppState {
             pool,
             explorer_pool,
             settings: Arc::new(RwLock::new(Arc::new(settings))),
+            settings_epoch: Arc::default(),
         }
     }
 
@@ -108,14 +112,31 @@ impl AppState {
     }
 
     pub fn replace_settings(&self, s: Settings) {
-        *self.settings.write().unwrap_or_else(std::sync::PoisonError::into_inner) = Arc::new(s);
+        {
+            let mut live = self.settings.write().unwrap_or_else(std::sync::PoisonError::into_inner);
+            self.settings_epoch.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            *live = Arc::new(s);
+        }
         self.microcache.clear();
     }
 
     pub async fn reload_settings(&self) {
         let Some(pool) = &self.pool else { return };
+        let epoch = self.settings_epoch.load(std::sync::atomic::Ordering::SeqCst);
         match bf_db::settings::load(pool).await {
-            Ok(s) => self.replace_settings(s),
+            Ok(s) => {
+                {
+                    let mut live = self.settings.write().unwrap_or_else(std::sync::PoisonError::into_inner);
+                    // This process changed a setting while the rows were being read, so they may be
+                    // older than what it holds. That change sent its own notification, which
+                    // reloads again, so skipping here loses nothing.
+                    if self.settings_epoch.load(std::sync::atomic::Ordering::SeqCst) != epoch {
+                        return;
+                    }
+                    *live = Arc::new(s);
+                }
+                self.microcache.clear();
+            }
             Err(e) => tracing::error!(error = %e, "settings reload failed"),
         }
     }
