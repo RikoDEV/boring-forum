@@ -43,6 +43,28 @@ them yourself with `-H "Cookie: …"` and to the screenshot tool with `--cookie`
 | `web/islands/**` | `pnpm build` in `web/` |
 | `crates/bf-db/migrations/*` | restart the server; the migrations run at startup |
 
+## Run the CI gates your change touches before saying it is done
+
+A red GitHub Action after a push costs the owner a round trip. Every change is checked locally
+against the workflow that would catch it, in `.github/workflows/`, before it is reported done or
+committed. Fix failures yourself; never hand the owner a pushed red build.
+
+| You changed | Run |
+| --- | --- |
+| any Rust | `cargo fmt --check`, `cargo clippy --locked --all-targets -- -D warnings`, `cargo test --locked` |
+| `Cargo.toml` / `Cargo.lock` (add, remove or bump a crate) | `cargo deny check advisories bans licenses sources` **and** `cargo vet --locked` (a new version needs an exemption in `supply-chain/config.toml`), `cargo machete`, `cargo check --workspace --all-targets` |
+| SQL in `bf-db`, migrations, `sqlx::query!` | `cargo sqlx prepare --workspace --check` (sqlx.yml), the ignored `bf-db` tests on a scratch database |
+| user-facing text, catalogs, `keys.json` | `python scripts/i18n.py check`, `python scripts/test_i18n.py`, then Prettier on both `keys.json` copies (`pnpm format:check`) |
+| `web/**` | `pnpm lint`, `pnpm format:check`, `pnpm check`, `pnpm test`, `pnpm build`, `pnpm size` |
+| API types / routes | `pnpm openapi` and `git diff --exit-code web/api/src/schema.d.ts` |
+| `bf-cook` sanitizer, `fuzz/**` | `cargo test -p bf-cook`, plus the `xss_corpus` test |
+| env vars | `sh scripts/check-env-docs.sh` |
+| workflows, `.releaserc.json` | read the workflow end to end; check every action input and tool version it names |
+
+Read `security.yml`, `quality.yml` and `web.yml` for anything not listed: they run on push too.
+If a gate cannot run here (needs Linux-only tooling, nightly, or a network service), say which
+one was skipped and why, instead of calling the work verified.
+
 ## Staff areas are refused on the server, before anything renders
 
 - `/admin/*` (the admin SPA, its HTML and every bundle) is served only to an administrator, by
