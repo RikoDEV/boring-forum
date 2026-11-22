@@ -102,6 +102,37 @@ small {
   text-decoration: none;
 }
 /* The panel's badge is the site's (components/badges.css): a pill, accent unless it says otherwise. */
+/* The reason a message could not be sent, under its status: wraps instead of widening the column. */
+.acp-mail-err {
+  display: block;
+  max-width: 34ch;
+  overflow-wrap: anywhere;
+}
+/* On a phone each message is one stacked entry (who, subject, status, reason) instead of four columns. */
+@media (max-width: 639px) {
+  .acp-mail-log thead {
+    display: none;
+  }
+  .acp-mail-log tr {
+    display: grid;
+    gap: 2px;
+    padding: var(--bf-space-2) var(--bf-space-3);
+    border-bottom: 1px solid var(--bf-color-border);
+  }
+  .acp-mail-log td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  .acp-mail-log td:nth-child(2) {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .acp-mail-err {
+    max-width: none;
+  }
+}
+
 .acp-pill {
   display: inline-flex;
   align-items: center;

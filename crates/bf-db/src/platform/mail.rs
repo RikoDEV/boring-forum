@@ -34,7 +34,7 @@ pub async fn unsent_mail(pool: &PgPool, limit: i64) -> Result<Vec<OutMail>, Erro
     sqlx::query_as(
         "UPDATE mail_outbox m SET not_before = now() + interval '15 minutes'
          WHERE m.id IN (SELECT id FROM mail_outbox
-                        WHERE sent_at IS NULL AND attempts < 8 AND (not_before IS NULL OR not_before <= now())
+                        WHERE sent_at IS NULL AND attempts < 5 AND (not_before IS NULL OR not_before <= now())
                         ORDER BY id LIMIT $1 FOR UPDATE SKIP LOCKED)
          RETURNING m.id, m.to_addr, m.subject, m.body, m.attempts, m.unsubscribe_url, m.reply_key",
     )

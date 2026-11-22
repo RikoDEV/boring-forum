@@ -42,8 +42,8 @@ use self::accounts::{double_option, end_sessions, update_user, users};
 use self::fields::{create_field, delete_field, list_fields, reorder_fields, update_field};
 use self::groups::{create_group, delete_group, groups, set_group_limits, update_group};
 use self::monitoring::{
-    analytics, audit, bad_emails, bounce_webhook, clear_bad_email, failed_logins, mail_log, search_report, stats,
-    traffic,
+    analytics, audit, bad_emails, bounce_webhook, clear_bad_email, failed_logins, mail_log, mail_status, search_report,
+    stats, traffic,
 };
 use self::nodes::{
     copy_permissions, delete_node, moderators, node_text, reorder_nodes, set_moderators, set_node_icon,
@@ -88,6 +88,7 @@ pub fn router() -> Router<AppState> {
         .route("/api/v1/admin/tags/{id}", patch(rename_tag).delete(delete_tag))
         .route("/api/v1/admin/search-report", get(search_report))
         .route("/api/v1/admin/mail", get(mail_log))
+        .route("/api/v1/admin/mail/status", get(mail_status))
         .route("/api/v1/admin/mail/bad", get(bad_emails))
         .route("/api/v1/admin/mail/bad/{id}", axum::routing::delete(clear_bad_email))
         .route("/api/v1/webhooks/bounce", axum::routing::post(bounce_webhook))

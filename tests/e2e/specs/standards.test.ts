@@ -44,6 +44,13 @@ describe("discovery and feeds", () => {
     expect((await setting("ads_txt", "")).status).toBe(204);
     expect((await guest.get("/ads.txt")).status).toBe(404);
   });
+  it("the mail page can tell how mail is sent, and only admins may ask", async () => {
+    expect((await guest.get("/api/v1/admin/mail/status")).status).toBe(403);
+    const r = await admin.get("/api/v1/admin/mail/status");
+    expect(r.status).toBe(200);
+    // The test server writes mail to files; a missing or broken sender would say `error` or `log`.
+    expect(r.json().kind).toBe("dir");
+  });
   it("change-password and passkey endpoints", async () => {
     const r = await guest.get("/.well-known/change-password");
     expect(r.status).toBe(303);

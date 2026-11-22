@@ -9,12 +9,32 @@ use lettre::message::Mailbox;
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use sqlx::PgPool;
 use std::path::PathBuf;
+use std::sync::{LazyLock, RwLock};
 use std::time::Duration;
 
 enum Transport {
     Smtp(Box<AsyncSmtpTransport<Tokio1Executor>>, Mailbox),
     Dir(PathBuf),
     Log,
+}
+
+/// What the sender is doing, for the admin panel's Mail page: `smtp`, `dir` (files, for development),
+/// `log` (nothing is delivered), `error` (misconfigured: mail stays queued) or `starting`.
+#[derive(Clone, serde::Serialize)]
+pub struct SenderStatus {
+    pub kind: &'static str,
+    pub detail: String,
+}
+
+static STATUS: LazyLock<RwLock<SenderStatus>> =
+    LazyLock::new(|| RwLock::new(SenderStatus { kind: "starting", detail: String::new() }));
+
+pub fn sender_status() -> SenderStatus {
+    STATUS.read().unwrap_or_else(std::sync::PoisonError::into_inner).clone()
+}
+
+fn set_status(kind: &'static str, detail: String) {
+    *STATUS.write().unwrap_or_else(std::sync::PoisonError::into_inner) = SenderStatus { kind, detail };
 }
 
 fn transport() -> Result<Transport, String> {
@@ -84,9 +104,15 @@ pub fn spawn(pool: PgPool) {
         Ok(t) => t,
         Err(e) => {
             tracing::error!(error = %e, "mail transport misconfigured; mail stays queued");
+            set_status("error", e);
             return;
         }
     };
+    match &t {
+        Transport::Smtp(..) => set_status("smtp", String::new()),
+        Transport::Dir(dir) => set_status("dir", dir.display().to_string()),
+        Transport::Log => set_status("log", String::new()),
+    }
     tokio::spawn(async move {
         let mut tick = tokio::time::interval(bf_core::scaled(Duration::from_secs(2)));
         loop {

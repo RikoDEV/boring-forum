@@ -35,6 +35,13 @@ admin_get!(audit(state, q: AuditQuery) audit::audit_log(state.db()?, q.action.tr
 
 admin_get!(mail_log(state) audit::mail_log(state.db()?, 200).await.db()?);
 
+// Whether this server can send at all, and why not: a misconfigured sender leaves mail queued with
+// nothing on the messages themselves to say so.
+admin_get!(mail_status(state) {
+    let _ = &state;
+    crate::platform::mail::sender_status()
+});
+
 admin_get!(search_report(state) bf_db::forum::search::search_report(state.db()?)
     .await
     .db()?

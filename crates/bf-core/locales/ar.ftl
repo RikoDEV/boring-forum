@@ -3431,6 +3431,8 @@ msg-staff_groups_cannot_be_granted_in_bulk = لا يمكن منح مجموعات
 msg-the_document_needs_text_at_most_200_kb = يحتاج المستند إلى نص (200 كيلوبايت على الأكثر).
 # Updated terms
 msg-updated_terms = شروط محدَّثة
+# Please review our updated terms
+msg-please_review_our_updated_terms = يرجى مراجعة شروطنا المحدّثة
 # Terms of service
 msg-terms_of_service = شروط الخدمة
 # Privacy policy
@@ -7843,6 +7845,12 @@ admin-templates = القوالب
 admin-bad_addresses = عناوين خاطئة
 # Test delivery
 admin-test_delivery = اختبار التسليم
+# Mail is not being sent: {reason}. Messages stay queued until this is fixed.
+admin-mail_is_not_being_sent_reason_messages_stay_queued = لا يتم إرسال البريد: { $reason }. تبقى الرسائل في قائمة الانتظار إلى أن يُصلَح ذلك.
+# No mail sender is configured (BF_SMTP_URL), so messages show as sent but are never delivered.
+admin-no_mail_sender_is_configured_bf_smtp_url_so_messages = لم يُضبط مرسل بريد (BF_SMTP_URL)، لذا تظهر الرسائل كمُرسَلة لكنها لا تُسلَّم أبدًا.
+# Mail is written to files in {dir}, not delivered.
+admin-mail_is_written_to_files_in_dir_not_delivered = يُكتب البريد إلى ملفات في { $dir } ولا يُسلَّم.
 # Queued
 admin-queued = في الانتظار
 # Subject

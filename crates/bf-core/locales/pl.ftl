@@ -3268,6 +3268,8 @@ msg-staff_groups_cannot_be_granted_in_bulk = Grup obsługi nie można nadawać m
 msg-the_document_needs_text_at_most_200_kb = Dokument potrzebuje treści (najwyżej 200 KB).
 # Updated terms
 msg-updated_terms = Zmieniony regulamin
+# Please review our updated terms
+msg-please_review_our_updated_terms = Zapoznaj się z naszymi zaktualizowanymi warunkami
 # Terms of service
 msg-terms_of_service = Regulamin
 # Privacy policy
@@ -7680,6 +7682,12 @@ admin-templates = Szablony
 admin-bad_addresses = Błędne adresy
 # Test delivery
 admin-test_delivery = Test dostarczania
+# Mail is not being sent: {reason}. Messages stay queued until this is fixed.
+admin-mail_is_not_being_sent_reason_messages_stay_queued = Poczta nie jest wysyłana: { $reason }. Wiadomości czekają w kolejce, dopóki nie zostanie to naprawione.
+# No mail sender is configured (BF_SMTP_URL), so messages show as sent but are never delivered.
+admin-no_mail_sender_is_configured_bf_smtp_url_so_messages = Nie skonfigurowano wysyłki poczty (BF_SMTP_URL), więc wiadomości są oznaczane jako wysłane, ale nigdy nie są dostarczane.
+# Mail is written to files in {dir}, not delivered.
+admin-mail_is_written_to_files_in_dir_not_delivered = Poczta jest zapisywana do plików w { $dir }, a nie dostarczana.
 # Queued
 admin-queued = W kolejce
 # Subject

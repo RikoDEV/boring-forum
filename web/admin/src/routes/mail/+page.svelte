@@ -13,6 +13,10 @@
   let bad = $state([]);
   const loadBad = () => get("/mail/bad").then((r) => (bad = r), status.fail);
   get("/mail").then((r) => (rows = r), status.fail);
+  // Whether the server can send at all. A misconfigured sender leaves every message "Queued", and
+  // one with no transport marks them "Sent" without delivering them: say so above the log.
+  let sender = $state({ kind: "", detail: "" });
+  get("/mail/status").then((r) => (sender = r), status.fail);
   loadBad();
   let testTo = $state("");
   let note = $state("");
@@ -38,8 +42,19 @@
       {label}{#if n !== null}<span class="acp-count">{n}</span>{/if}
     </button>{/each}
 </div>
+{#if sender.kind === "error"}
+  <p class="err" role="alert">
+    {tr("Mail is not being sent: {reason}. Messages stay queued until this is fixed.", { reason: sender.detail })}
+  </p>
+{:else if sender.kind === "log"}
+  <p class="err" role="alert">
+    {tr("No mail sender is configured (BF_SMTP_URL), so messages show as sent but are never delivered.")}
+  </p>
+{:else if sender.kind === "dir"}
+  <p class="muted">{tr("Mail is written to files in {dir}, not delivered.", { dir: sender.detail })}</p>
+{/if}
 {#if tab === "log"}
-  <table>
+  <table class="acp-mail-log">
     <thead><tr><th>{tr("Queued")}</th><th>{tr("To")}</th><th>{tr("Subject")}</th><th>{tr("Status")}</th></tr></thead>
     <tbody>
       {#each rows as m (m.id)}
@@ -48,11 +63,11 @@
           <td>
             {#if m.sent_at}<span class="acp-pill is-ok" title={when(m.sent_at)}>
                 {tr("Sent")}
-              </span>{:else if m.attempts >= 5}<span class="acp-pill is-danger" title={m.last_error}>
-                {tr("Failed")}
-              </span>{:else if m.last_error}<span class="acp-pill is-warn" title={m.last_error}>
+              </span>{:else if m.attempts >= 5}<span class="acp-pill is-danger">{tr("Failed")}</span>
+            {:else if m.last_error}<span class="acp-pill is-warn">
                 {tr("Retrying ({attempts})", { attempts: m.attempts })}
               </span>{:else}<span class="acp-pill is-muted">{tr("Queued")}</span>{/if}
+            {#if !m.sent_at && m.last_error}<small class="muted acp-mail-err">{m.last_error}</small>{/if}
           </td>
         </tr>
       {:else}<tr><td colspan="4" class="muted">{tr("No mail yet.")}</td></tr>{/each}

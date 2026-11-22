@@ -71,7 +71,7 @@ async fn accept_form(State(state): State<AppState>, v: Viewer) -> Result<Respons
         .collect();
     let body = LegalPage {
         layout: l,
-        title: "Please review our updated terms".into(),
+        title: v.t().msg("Please review our updated terms"),
         updated: bf_web::ago::Ago::default(),
         version: 0,
         html,
