@@ -6,7 +6,9 @@
   import Section from "#lib/Section.svelte";
   import Switch from "#lib/Switch.svelte";
   import MultiSelect from "#lib/MultiSelect.svelte";
-  import { get, when } from "#lib/api.js";
+  import Box from "#lib/Box.svelte";
+  import { Status } from "#lib/status.svelte.js";
+  import { get, put, when } from "#lib/api.js";
   import { Crud } from "#lib/crud.svelte.js";
 
   const PLACES = {
@@ -78,6 +80,17 @@
       tr('Saved "{name}".', { name: a.name }),
     );
   }
+  // ads.txt is one site setting rather than an ad, so it has its own small form.
+  let adsTxt = $state("");
+  const adsTxtStatus = new Status();
+  get("/settings").then(
+    (all) => (adsTxt = String(all.find((x) => x.key === "ads_txt")?.value ?? "")),
+    (e) => adsTxtStatus.fail(e),
+  );
+  const saveAdsTxt = (e) => {
+    e.preventDefault();
+    return adsTxtStatus.run(() => put("/settings/ads_txt", { value: adsTxt }), tr("Saved."));
+  };
   const remove = (a) => confirm(tr('Delete the ad "{name}"?', { name: a.name })) && crud.remove(a.id);
   const ctr = (a) => (a.impressions ? `${((a.clicks / a.impressions) * 100).toFixed(2)}%` : "—");
 </script>
@@ -173,3 +186,21 @@
     {/each}
   </tbody>
 </table>
+
+<Box title={tr("The ads.txt file")}>
+  <form class="acp-form" onsubmit={saveAdsTxt}>
+    <Field
+      label={tr("Published at /ads.txt (empty: no file)")}
+      rows="6"
+      class="acp-code"
+      bind:value={adsTxt}
+      wide
+      spellcheck="false"
+    />
+    <div class="acp-actions acp-wide">
+      <button>{tr("Save")}</button>
+      {#if adsTxtStatus.msg}<small class="muted">{adsTxtStatus.msg}</small>{/if}
+      {#if adsTxtStatus.error}<small class="error">{adsTxtStatus.error}</small>{/if}
+    </div>
+  </form>
+</Box>

@@ -83,6 +83,7 @@
     "admin": {
       "(off)": "off",
       ", secret, shown once:": "secret_shown_once",
+      "Ads txt": "ads_txt",
       "Dark": "dark",
       "Delete \"{name}\"?": "delete_name",
       "Delete {name}": "delete_name_3",

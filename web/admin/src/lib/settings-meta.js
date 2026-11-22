@@ -5,6 +5,7 @@ import { tr } from "#lib/i18n.js";
 // Settings managed on their own pages stay out of the settings list.
 export const MANAGED = new Set([
   "nav_links",
+  "ads_txt",
   "default_theme_id",
   "backup_enabled",
   "backup_interval_hours",
@@ -75,7 +76,6 @@ function build() {
         "offline_message",
         "cookie_consent_text",
         "ad_html",
-        "ads_txt",
         "sidebar_links",
         "version_check_url",
       ],
@@ -493,7 +493,6 @@ function build() {
     min_register_seconds: tr("Minimum sign-up time"),
     akismet_key: tr("Akismet API key"),
     ad_html: tr("Advert HTML"),
-    ads_txt: tr("ads.txt"),
     csp_image_hosts: tr("Allowed image hosts"),
     pm_max_participants: tr("Private message participants"),
     pm_per_hour: tr("New private messages per hour"),
@@ -541,7 +540,7 @@ export const humanize = (/** @type {string} */ key) => {
 };
 
 /** Settings kept on a page of their own, and where. */
-export const MANAGED_PAGE = { nav_links: "/navigation", default_theme_id: "/themes" };
+export const MANAGED_PAGE = { nav_links: "/navigation", ads_txt: "/ads", default_theme_id: "/themes" };
 
 /** @type {Map<string, string> | undefined} */
 let known;

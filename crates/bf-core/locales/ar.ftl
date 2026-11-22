@@ -6383,8 +6383,6 @@ admin-minimum_sign_up_time = أقل مدة للتسجيل
 admin-akismet_api_key = مفتاح Akismet API
 # Advert HTML
 admin-advert_html = HTML الإعلان
-# ads.txt
-admin-ads_txt = ads.txt
 # Allowed image hosts
 admin-allowed_image_hosts = مضيفو الصور المسموح بهم
 # Private message participants
@@ -6771,6 +6769,8 @@ admin-in_sidebars = في الأشرطة الجانبية
 admin-above_the_footer = فوق التذييل
 # Saved "{name}".
 admin-saved_name = حُفظ “{ $name }”.
+# Saved.
+admin-saved_2 = تم الحفظ.
 # Delete the ad "{name}"?
 admin-delete_the_ad_name = حذف الإعلان “{ $name }”؟
 # One ad per place on a page, picked by weight among those the visitor's groups may see. HTML is cleaned when saved: no scripts or embeds. Impressions are saved every few minutes.
@@ -6827,6 +6827,10 @@ admin-off = (متوقف)
 admin-always = دائمًا
 # No ads.
 admin-no_ads = لا إعلانات.
+# The ads.txt file
+admin-the_ads_txt_file = ملف ads.txt
+# Published at /ads.txt (empty: no file)
+admin-published_at_ads_txt_empty_no_file = يُنشر على /ads.txt (فارغ: لا ملف)
 # Summaries
 admin-summaries = الملخصات
 # Gists
@@ -7103,8 +7107,6 @@ admin-n_mb = { $n } ميغابايت
 admin-n_kb = { $n } كيلوبايت
 # The restore finished. Sign in again.
 admin-the_restore_finished_sign_in_again = اكتملت الاستعادة. سجّل الدخول مرة أخرى.
-# Saved.
-admin-saved_2 = تم الحفظ.
 # A download link was sent to {email}. It works once, for 15 minutes.
 admin-a_download_link_was_sent_to_email_it_works_once_for_15 = أُرسل رابط التنزيل إلى { $email }. يعمل مرة واحدة خلال 15 دقيقة.
 # Delete the backup {name}?
@@ -9311,6 +9313,8 @@ admin-embed_hosts = مضيفو التضمين
 admin-embed_forum = منتدى التضمين
 # Chat webhook url
 admin-chat_webhook_url = رابط خطاف الدردشة
+# Ads txt
+admin-ads_txt = ads.txt
 # Clubs per member
 admin-clubs_per_member = النوادي لكل عضو
 # Email bounce limit
