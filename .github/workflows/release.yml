@@ -71,6 +71,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # The compiled third-party crates are a cached layer (Dockerfile, `cook`), kept in the
+          # registry between runs; only the workspace crates compile on a release.
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max
           # BuildKit's own SBOM and provenance attestations, in addition to the ones below.
           sbom: true
           provenance: mode=max
@@ -86,6 +90,7 @@ jobs:
           push: true
           tags: ${{ steps.meta_importer.outputs.tags }}
           labels: ${{ steps.meta_importer.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
           sbom: true
           provenance: mode=max
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master

@@ -1,0 +1,47 @@
+# Where does the release build spend its time? Run by hand from the Actions tab: it builds the
+# server in release mode with `cargo build --timings` and uploads the report (an HTML file showing
+# each crate's compile time and the link step). Run it once with `thin` and once with `fat` to see
+# what the link-time optimisation setting costs. Nothing is published.
+
+name: Build timings
+
+on:
+  workflow_dispatch:
+    inputs:
+      lto:
+        description: Link-time optimisation to build with
+        type: choice
+        options: [thin, fat]
+        default: thin
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  timings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with: { package_json_file: web/package.json, version: 11 }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - name: Build the island bundle the server embeds
+        run: pnpm install --frozen-lockfile && pnpm --filter @bf/islands build
+        working-directory: web
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with: { toolchain: "1.99.1" }
+      - name: Build with timings
+        env:
+          CARGO_PROFILE_RELEASE_LTO: ${{ inputs.lto }}
+        run: |
+          start=$(date +%s)
+          cargo build --release --locked --timings -p bf-server --bin boring-forum
+          echo "lto=${{ inputs.lto }}: $(( $(date +%s) - start )) seconds" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cargo-timings-${{ inputs.lto }}
+          path: target/cargo-timings/

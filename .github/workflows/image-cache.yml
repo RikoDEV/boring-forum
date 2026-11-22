@@ -1,0 +1,46 @@
+# Keeps the release build fast. The server image's slow step is compiling the third-party crates;
+# that layer changes only with Cargo.lock, the Dockerfile or the toolchain, so this builds it on
+# main whenever one of them changes and leaves it in the registry cache that release.yml reads.
+# Nothing is pushed except the cache.
+
+name: Image cache
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Cargo.lock
+      - deploy/docker/Dockerfile
+      - rust-toolchain.toml
+  workflow_dispatch:
+
+concurrency:
+  group: image-cache
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/rikodev/boring-forum
+
+jobs:
+  cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: deploy/docker/Dockerfile
+          target: server
+          push: false
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max

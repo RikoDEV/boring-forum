@@ -16,18 +16,31 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile && pnpm --filter @bf/islands build && pnpm --filter @bf/admin build && node scripts/size-check.mjs
 
 # rust:1-alpine
-FROM rust:1-alpine@sha256:2cccd8b212b37dad15a555589c1b6787da4ab913fe24d8a9b2d99d3498869409 AS server
-RUN apk add --no-cache musl-dev ca-certificates
+FROM rust:1-alpine@sha256:2cccd8b212b37dad15a555589c1b6787da4ab913fe24d8a9b2d99d3498869409 AS chef
+RUN apk add --no-cache musl-dev ca-certificates \
+    && cargo install cargo-chef --locked --version 0.1.78
 WORKDIR /src
+
+# The dependency recipe: every manifest and the lockfile, nothing else. The workspace crates' own
+# version is set to 0.0.0 first, so a release's version bump does not change the recipe and the
+# dependencies below stay cached from one release to the next.
+FROM chef AS planner
+COPY . .
+RUN v=$(sed -n '0,/^version = "\(.*\)"/s//\1/p' Cargo.toml) \
+    && sed -i '0,/^version = ".*"/s//version = "0.0.0"/' Cargo.toml \
+    && sed -i -E "/^name = \"bf-/{n;s/^version = \"$v\"/version = \"0.0.0\"/}" Cargo.lock \
+    && cargo chef prepare --recipe-path recipe.json
+
+# Builds only the third-party crates (wasmtime, image, sqlx, ...) from the recipe. This layer is the
+# slow one and changes only when Cargo.lock does; the release workflow keeps it in a registry cache.
+FROM chef AS server
+COPY --from=planner /src/recipe.json recipe.json
+RUN cargo chef cook --release --locked --recipe-path recipe.json -p bf-server --bin boring-forum
 COPY . .
 COPY --from=web /src/web/islands/dist web/islands/dist
-# BuildKit cache mounts keep the registry, git checkouts and incremental build state between
-# builds, so only changed crates recompile. The binary is copied out because the target
-# directory is not part of the image layer.
-RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/usr/local/cargo/git \
-    --mount=type=cache,target=/src/target \
-    cargo build --release --locked -p bf-server --bin boring-forum \
+# Only the workspace crates compile here. The binary is copied out of the target directory because
+# that directory is not part of the final image.
+RUN cargo build --release --locked -p bf-server --bin boring-forum \
     && cp target/release/boring-forum /boring-forum
 # A named volume takes the owner of the directory it is mounted over.
 RUN mkdir -p /data/uploads /data/backups && chown -R 65534:65534 /data

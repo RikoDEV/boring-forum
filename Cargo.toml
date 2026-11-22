@@ -114,8 +114,10 @@ opt-level = 3
 debug = "line-tables-only"
 
 [profile.release]
-lto = true
-codegen-units = 1
+# Thin LTO with the default codegen units: fat LTO in a single unit merges every dependency into one
+# module and optimises it on one thread, which made the release build very slow (see
+# docs/releasing.md). Measure the speed cost with `cargo run --release -p bf-bench`.
+lto = "thin"
 # Unwinding, so a panic in one request is caught (`CatchPanicLayer`) and does not end the process.
 panic = "unwind"
 strip = true

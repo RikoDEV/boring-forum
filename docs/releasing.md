@@ -59,3 +59,21 @@ the Rust toolchain fixed to the version in `rust-toolchain.toml`/the workflow. T
 same tag use the same inputs; byte-identical output is not guaranteed (embedded paths and
 timestamps are not normalised), so compare the SBOM and the provenance attestation, not the image
 hash, when checking a rebuild.
+
+## Build speed
+
+A cold release build compiles hundreds of third-party crates (wasmtime, the image encoders, sqlx) and
+links the whole program. Three things keep it short:
+
+- **Thin LTO.** `[profile.release]` uses `lto = "thin"`. Fat LTO in one codegen unit optimised every
+  dependency on a single thread and was the slowest step. Check the speed cost with
+  `cargo run --release -p bf-bench`.
+- **A cached dependency layer.** The Dockerfile compiles the third-party crates from a recipe of the
+  manifests and `Cargo.lock` (cargo-chef), with the workspace's own version blanked so a release's
+  version bump does not change it. The release workflow keeps that layer in a registry cache
+  (`ghcr.io/rikodev/boring-forum:buildcache`), so a release compiles only the workspace crates.
+- **A warm cache.** `image-cache.yml` rebuilds that layer on `main` whenever `Cargo.lock`, the Dockerfile
+  or the toolchain changes, so the first tag after a dependency update is not the one that pays for it.
+
+To see where the time goes, run **Build timings** from the Actions tab (once with `thin`, once with
+`fat`) and open the uploaded `cargo-timings` report.
