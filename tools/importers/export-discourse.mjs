@@ -51,6 +51,16 @@ const shown = new Set(topics.map((t) => t.id));
 
 counts.members = await out.section("users", users.map((u) => ({ id: u.id, username: u.username, email: u.email, password_hash: hash(u), joined_at: iso(u.created_at), trust_level: u.trust_level, days_visited: u.days_visited, topics_read: u.topics_entered })));
 
+// Outside logins the members had, so they sign in the same way here: DiscourseConnect (SSO) records and the
+// OAuth accounts (Google, GitHub, Discord, Microsoft, Twitter/X) Discourse linked. The subject is the provider's own id for the
+// member. Other providers (Facebook, Twitter, ...) are not offered here and are left out.
+const LOGINS = { google_oauth2: "google", github: "github", discord: "discord", microsoft_office365: "microsoft", twitter: "x" };
+const identities = [
+  ...(await optional("DiscourseConnect records", () => q(`SELECT user_id, external_id, external_email FROM single_sign_on_records WHERE external_id IS NOT NULL`))).map((r) => ({ user_id: r.user_id, provider: "sso", subject: String(r.external_id), email: r.external_email ?? null })),
+  ...(await optional("associated accounts", () => q(`SELECT user_id, provider_name, provider_uid, info FROM user_associated_accounts WHERE provider_uid IS NOT NULL`))).flatMap((r) => (LOGINS[r.provider_name] ? [{ user_id: r.user_id, provider: LOGINS[r.provider_name], subject: String(r.provider_uid), email: (typeof r.info === "string" ? JSON.parse(r.info || "{}") : (r.info ?? {})).email ?? null }] : [])),
+].filter((i) => known.has(i.user_id));
+counts.logins = await out.section("identities", identities);
+
 // Files: the pictures and attachments of the posts that are exported, and the members' avatars. A post names
 // a file by its short name, the SHA-1 written in base62 (digits, then lower case, then upper case, 27 places).
 // The files are in the backup's uploads folder: give it to the importer as BF_IMPORT_FILES.

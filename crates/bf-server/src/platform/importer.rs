@@ -9,6 +9,10 @@
 //! first post first. Optional sections, read after the ones above:
 //! `"tags": [{topic_id, name}]` (a topic may also carry `"tags": ["a", "b"]`),
 //! `"groups": [{id, name, members: [user_id]}]`,
+//! `"identities": [{user_id, provider, subject, email}]` (read right after the users: the outside logins
+//! a member had, so they sign in the same way here. `provider` is the key of a login set up under
+//! Settings, Outside logins: `google`, `github`, `discord`, `microsoft`, `sso`; `subject` is the
+//! provider's id for the member),
 //! `"polls": [{id, topic_id, question, options: ["a", "b"], max_choices, closes_at, votes: [{user_id, option}]}]`
 //! (`option` is the index in `options`; a poll may also say `kind` (`choice`, `ranked`, `rating`: the
 //! options are the numbers), `public`, `results` (`always`, `voted`, `closed`, `staff`),
@@ -201,6 +205,16 @@ fn one() -> i32 {
     1
 }
 
+/// An outside login a member had on the old site.
+#[derive(Deserialize)]
+struct Identity {
+    user_id: i64,
+    provider: String,
+    subject: String,
+    #[serde(default)]
+    email: Option<String>,
+}
+
 #[derive(Deserialize)]
 struct Reaction {
     post_id: i64,
@@ -238,6 +252,7 @@ enum Item {
     Group(Group),
     Poll(Poll),
     Reaction(Reaction),
+    Identity(Identity),
     Conversation(Conversation),
 }
 
@@ -298,6 +313,7 @@ impl<'de> serde::de::Visitor<'de> for Root<'_> {
                 "groups" => map.next_value_seed(Section { tx, wrap: Item::Group })?,
                 "polls" => map.next_value_seed(Section { tx, wrap: Item::Poll })?,
                 "reactions" => map.next_value_seed(Section { tx, wrap: Item::Reaction })?,
+                "identities" => map.next_value_seed(Section { tx, wrap: Item::Identity })?,
                 "messages" => map.next_value_seed(Section { tx, wrap: Item::Conversation })?,
                 _ => {
                     map.next_value::<serde::de::IgnoredAny>()?;
@@ -604,6 +620,7 @@ struct Totals {
     groups: u32,
     polls: u32,
     reactions: u32,
+    identities: u32,
     conversations: u32,
     /// Files stored, files the export named that were not (missing, or not accepted here), and
     /// files not read at all for want of `BF_IMPORT_FILES`.
@@ -669,6 +686,7 @@ pub async fn run(path: &str) -> Result<String, Box<dyn std::error::Error>> {
         (t.groups, "groups"),
         (t.polls, "polls"),
         (t.reactions, "reactions"),
+        (t.identities, "outside logins"),
         (t.conversations, "conversations"),
         (t.uploads, "files"),
     ]
@@ -745,6 +763,7 @@ impl Context<'_> {
             Item::Group(g) => self.group(g).await,
             Item::Poll(p) => self.poll(p).await,
             Item::Reaction(r) => self.reaction(r).await,
+            Item::Identity(i) => self.identity(i).await,
             Item::Conversation(c) => self.conversation(c).await,
         }
     }
@@ -1048,6 +1067,33 @@ impl Context<'_> {
             importer::map(self.pool, "poll", p.id, id).await?;
             self.totals.polls += 1;
         }
+        Ok(())
+    }
+
+    /// Links the member's outside login. One for a member not imported, or with a provider name this
+    /// forum would not store, is left out.
+    async fn identity(&mut self, i: Identity) -> Res<()> {
+        let provider_ok = !i.provider.is_empty()
+            && i.provider.len() <= 32
+            && i.provider.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '_' | '-'));
+        if !provider_ok || i.subject.is_empty() || i.subject.len() > 255 {
+            return Ok(());
+        }
+        let Some(user) = importer::mapped(self.pool, "user", i.user_id).await? else { return Ok(()) };
+        // Already linked (an earlier run, or the same login listed twice): nothing to add or count.
+        if bf_db::accounts::security::identity_user(self.pool, &i.provider, &i.subject).await?.is_some() {
+            return Ok(());
+        }
+        let email = i.email.as_deref().map(str::trim).filter(|e| !e.is_empty());
+        bf_db::accounts::security::link_identity(
+            self.pool,
+            &i.provider,
+            &i.subject,
+            bf_core::ids::UserId::from(user),
+            email,
+        )
+        .await?;
+        self.totals.identities += 1;
         Ok(())
     }
 
