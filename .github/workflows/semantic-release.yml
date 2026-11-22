@@ -3,8 +3,7 @@
 # version, updates CHANGELOG.md, tags vX.Y.Z and creates the GitHub release. The tag then
 # starts release.yml, which builds, signs and publishes the image.
 #
-# Configuration: .releaserc.json. The first release continues from the newest vX.Y.Z tag, so tag
-# the current version once (git tag v0.1.0) before the first run.
+# Configuration: .releaserc.json. Releases continue from the newest vX.Y.Z tag (v0.0.1 now).
 
 name: Semantic release
 
@@ -47,8 +46,10 @@ jobs:
         with:
           semantic_version: 25.0.9
           dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          # The preset stays on 9.x: semantic-release 25 bundles conventional-changelog-writer 8, and
+          # preset 10 needs writer 9 ("Missing helper" when the release notes are written).
           extra_plugins: |
-            conventional-changelog-conventionalcommits@10.4.1
+            conventional-changelog-conventionalcommits@9.3.1
             @semantic-release/changelog@7.0.0
             @semantic-release/exec@7.1.0
             @semantic-release/git@11.0.1
