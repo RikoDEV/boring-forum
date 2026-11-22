@@ -543,10 +543,9 @@ pub(super) async fn sync_all(state: &AppState) {
     // New settings take effect on a copy rebuilt from what is stored, so values saved before
     // the plugin was loaded (or before a restart) are picked up.
     bf_core::settings::set_extra(settings);
-    match bf_db::settings::load(pool).await {
-        Ok(fresh) => state.replace_settings(fresh),
-        Err(e) => tracing::warn!(error = %e, "plugin settings not applied"),
-    }
+    // Through the guarded reload: one that read the rows before a setting changed here must not put
+    // the older values back over it (the listener runs this after every settings notification).
+    state.reload_settings().await;
     synced(rc::sync_api_scopes(pool, &scopes, &ids).await, "plugin API scopes");
     synced(rc::sync_tags(pool, &tags, &ids).await, "plugin tags");
     if synced(rc::sync_nodes(pool, &nodes, &ids).await, "plugin forums") == Some(true) {
