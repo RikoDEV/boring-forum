@@ -61,6 +61,55 @@ const identities = [
 ].filter((i) => known.has(i.user_id));
 counts.logins = await out.section("identities", identities);
 
+// Site settings. Discourse keeps in site_settings only the ones changed from their defaults (booleans are "t" or
+// "f"; a picture is an upload id). They are written under this forum's own setting keys, and an import never
+// overwrites one that was already set here. The OAuth client IDs and secrets work here too once this site's callback
+// address (/auth/google/callback, and so on) is added at the provider.
+const siteRows = await optional("site settings", () => q(`SELECT name, value FROM site_settings`));
+const ss = new Map(siteRows.map((r) => [r.name, r.value ?? ""]));
+const text = (...names) => names.map((n) => String(ss.get(n) ?? "").trim()).find((v) => v) ?? "";
+const yes = (name) => ss.get(name) === "t";
+const settings = {};
+const put = (key, value) => {
+  if (value !== "" && value != null) settings[key] = value;
+};
+put("site_name", text("title"));
+put("site_description", text("site_description", "short_site_description"));
+put("contact_email", text("contact_email"));
+const locale = text("default_locale").split(/[_-]/)[0];
+if (["en", "pl", "ar"].includes(locale)) put("default_locale", locale);
+for (const name of ["login_required", "invite_only", "auth_skip_create_confirm", "auth_immediately", "auth_overrides_email", "auth_overrides_username", "auth_overrides_avatar", "auth_overrides_name"]) {
+  if (ss.has(name)) settings[name] = yes(name);
+}
+// DiscourseConnect (older versions call it sso_*). Its own "overrides" settings are this forum's auth_overrides_*.
+const ssoUrl = text("discourse_connect_url", "sso_url");
+if (ssoUrl) {
+  put("login_sso_url", ssoUrl);
+  put("login_sso_secret", text("discourse_connect_secret", "sso_secret"));
+  settings.login_sso_enabled = yes("enable_discourse_connect") || yes("enable_sso");
+  for (const field of ["email", "username", "name", "avatar"]) {
+    if (yes(`discourse_connect_overrides_${field}`) || yes(`sso_overrides_${field}`)) settings[`auth_overrides_${field}`] = true;
+  }
+}
+for (const [key, on, id, secret] of [
+  ["google", "enable_google_oauth2_logins", "google_oauth2_client_id", "google_oauth2_client_secret"],
+  ["github", "enable_github_logins", "github_client_id", "github_client_secret"],
+  ["discord", "enable_discord_logins", "discord_client_id", "discord_secret"],
+]) {
+  if (!text(id) || !text(secret)) continue;
+  put(`login_${key}_id`, text(id));
+  put(`login_${key}_secret`, text(secret));
+  settings[`login_${key}_enabled`] = yes(on);
+}
+// The site's pictures are uploads: they travel in the uploads section below, marked with the setting they become.
+const BRAND = { logo: "logo_url", logo_dark: "logo_dark_url", logo_small: "logo_small_url", favicon: "favicon_url", large_icon: "large_icon_url", opengraph_image: "og_image_url" };
+const brand = new Map();
+for (const [name, key] of Object.entries(BRAND)) {
+  const id = Number(text(name));
+  if (id > 0) brand.set(id, key);
+}
+counts.settings = await out.object("settings", settings);
+
 // Files: the pictures and attachments of the posts that are exported, and the members' avatars. A post names
 // a file by its short name, the SHA-1 written in base62 (digits, then lower case, then upper case, 27 places).
 // The files are in the backup's uploads folder: give it to the importer as BF_IMPORT_FILES.
@@ -81,8 +130,8 @@ for (const p of await q(`SELECT p.topic_id, p.raw FROM posts p WHERE p.deleted_a
   for (const m of p.raw.matchAll(/\/uploads\/default\/(?:original|optimized)\/[^\s)"'<>\]]*?([0-9a-f]{40})/g)) usedNames.add(m[1]);
 }
 const files = (await optional("uploads", () => q(`SELECT id, user_id, sha1, original_filename, url FROM uploads WHERE id > 0 AND url LIKE '/uploads/%' ORDER BY id`)))
-  .filter((u) => u.sha1 && (usedNames.has(short(u.sha1)) || usedNames.has(u.sha1) || avatars.has(u.id)));
-counts.files = await out.section("uploads", files.map((u) => ({ id: u.id, refs: [short(u.sha1), u.sha1], path: u.url.replace(/^\/uploads\//, ""), name: u.original_filename, user_id: known.has(u.user_id) ? u.user_id : null, avatar_of: known.has(avatars.get(u.id)) ? avatars.get(u.id) : null })));
+  .filter((u) => u.sha1 && (usedNames.has(short(u.sha1)) || usedNames.has(u.sha1) || avatars.has(u.id) || brand.has(u.id)));
+counts.files = await out.section("uploads", files.map((u) => ({ id: u.id, refs: [short(u.sha1), u.sha1], path: u.url.replace(/^\/uploads\//, ""), name: u.original_filename, user_id: known.has(u.user_id) ? u.user_id : null, avatar_of: known.has(avatars.get(u.id)) ? avatars.get(u.id) : null, site_setting: brand.get(u.id) ?? null })));
 
 // Position is the place among the categories of the same parent, as Discourse shows them.
 counts.forums = await out.section("forums", cats.map((c) => ({ id: c.id, parent_id: c.parent_category_id, title: c.name, kind: "forum", position: c.position })));

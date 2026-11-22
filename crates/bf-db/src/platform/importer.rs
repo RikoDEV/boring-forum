@@ -86,6 +86,11 @@ pub async fn set_views(pool: &PgPool, item: i64, views: i32) -> Result<(), Error
         .map(|_| ())
 }
 
+/// The first administrator, who owns the site's own pictures (logo, icons) an import brings in.
+pub async fn first_admin(pool: &PgPool) -> Result<Option<i64>, Error> {
+    sqlx::query_scalar("SELECT id FROM users WHERE primary_group_id = 4 ORDER BY id LIMIT 1").fetch_optional(pool).await
+}
+
 /// When a member was last on the old site. Only ever moves forward, so a visit here since is kept.
 pub async fn set_last_seen(pool: &PgPool, user: i64, at: DateTime<Utc>) -> Result<(), Error> {
     sqlx::query("UPDATE users SET last_seen_at = greatest(coalesce(last_seen_at, $2), $2) WHERE id = $1")

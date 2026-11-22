@@ -20,6 +20,11 @@ export class Out {
     await this.write("]");
     return n;
   }
+  /** A section that is one object, such as the site settings; returns how many entries it has. */
+  async object(name, value) {
+    await this.write(`${this.sections++ ? "," : ""}"${name}":${JSON.stringify(value)}`);
+    return Object.keys(value).length;
+  }
   async end() {
     await this.write("}");
     await new Promise((r) => this.s.end(r));

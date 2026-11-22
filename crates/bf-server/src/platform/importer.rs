@@ -9,6 +9,12 @@
 //! first post first. Optional sections, read after the ones above:
 //! `"tags": [{topic_id, name}]` (a topic may also carry `"tags": ["a", "b"]`),
 //! `"groups": [{id, name, members: [user_id]}]`,
+//! `"settings": {"site_name": "...", ...}`, site settings of the old site under this forum's setting keys
+//! (see `SETTING_KEYS`: the site name and description, contact address, language, sign-in rules and the
+//! outside logins, with their secrets). One is applied only while this site still has the default, so what an
+//! administrator set here is never overwritten. A row of `"uploads"` may name `"site_setting": "logo_url"` (or
+//! `logo_dark_url`, `logo_small_url`, `favicon_url`, `large_icon_url`, `og_image_url`) to make that picture the
+//! site's own logo or icon,
 //! `"identities": [{user_id, provider, subject, email}]` (read right after the users: the outside logins
 //! a member had, so they sign in the same way here. `provider` is the key of a login set up under
 //! Settings, Outside logins: `google`, `github`, `discord`, `microsoft`, `sso`; `subject` is the
@@ -107,6 +113,9 @@ struct UploadRow {
     user_id: Option<i64>,
     /// A source member whose avatar this is.
     avatar_of: Option<i64>,
+    /// A site setting (`logo_url`, `favicon_url`, ...) this picture becomes the value of.
+    #[serde(default)]
+    site_setting: Option<String>,
 }
 
 fn forum_kind() -> String {
@@ -256,8 +265,45 @@ enum Item {
     Poll(Poll),
     Reaction(Reaction),
     Identity(Identity),
+    Settings(serde_json::Map<String, serde_json::Value>),
     Conversation(Conversation),
 }
+
+/// The site settings an import may set: the name and description, how people sign in, the outside logins
+/// (with their secrets) and the site's pictures. Anything else in the file is ignored.
+const SETTING_KEYS: &[&str] = &[
+    "site_name",
+    "site_description",
+    "contact_email",
+    "default_locale",
+    "login_required",
+    "invite_only",
+    "auth_skip_create_confirm",
+    "auth_immediately",
+    "auth_overrides_email",
+    "auth_overrides_username",
+    "auth_overrides_avatar",
+    "auth_overrides_name",
+    "login_sso_enabled",
+    "login_sso_url",
+    "login_sso_secret",
+    "login_sso_name",
+    "login_google_enabled",
+    "login_google_id",
+    "login_google_secret",
+    "login_github_enabled",
+    "login_github_id",
+    "login_github_secret",
+    "login_discord_enabled",
+    "login_discord_id",
+    "login_discord_secret",
+    "logo_url",
+    "logo_dark_url",
+    "logo_small_url",
+    "favicon_url",
+    "large_icon_url",
+    "og_image_url",
+];
 
 type Sender = tokio::sync::mpsc::Sender<Item>;
 
@@ -317,6 +363,10 @@ impl<'de> serde::de::Visitor<'de> for Root<'_> {
                 "polls" => map.next_value_seed(Section { tx, wrap: Item::Poll })?,
                 "reactions" => map.next_value_seed(Section { tx, wrap: Item::Reaction })?,
                 "identities" => map.next_value_seed(Section { tx, wrap: Item::Identity })?,
+                "settings" => {
+                    let m: serde_json::Map<String, serde_json::Value> = map.next_value()?;
+                    tx.blocking_send(Item::Settings(m)).map_err(serde::de::Error::custom)?;
+                }
                 "messages" => map.next_value_seed(Section { tx, wrap: Item::Conversation })?,
                 _ => {
                     map.next_value::<serde::de::IgnoredAny>()?;
@@ -626,6 +676,8 @@ struct Totals {
     polls: u32,
     reactions: u32,
     identities: u32,
+    /// Site settings set from the old site's.
+    settings: u32,
     conversations: u32,
     /// Files stored, files the export named that were not (missing, or not accepted here), and
     /// files not read at all for want of `BF_IMPORT_FILES`.
@@ -692,6 +744,7 @@ pub async fn run(path: &str) -> Result<String, Box<dyn std::error::Error>> {
         (t.polls, "polls"),
         (t.reactions, "reactions"),
         (t.identities, "outside logins"),
+        (t.settings, "site settings"),
         (t.conversations, "conversations"),
         (t.uploads, "files"),
     ]
@@ -775,6 +828,7 @@ impl Context<'_> {
             Item::Poll(p) => self.poll(p).await,
             Item::Reaction(r) => self.reaction(r).await,
             Item::Identity(i) => self.identity(i).await,
+            Item::Settings(m) => self.site_settings(m).await,
             Item::Conversation(c) => self.conversation(c).await,
         }
     }
@@ -830,7 +884,13 @@ impl Context<'_> {
             Some(id) => importer::mapped(self.pool, "user", id).await?,
             None => None,
         };
-        // The stand-in account is made only when a file has no owner here, not for every file.
+        // A picture of the site itself belongs to the first administrator, as one uploaded in the panel
+        // would; the stand-in account is made only when a file has no owner here, not for every file.
+        let owner = match owner {
+            Some(id) => Some(id),
+            None if u.site_setting.is_some() => importer::first_admin(self.pool).await?,
+            None => None,
+        };
         let owner = match owner {
             Some(id) => Some(id),
             None => importer::import_placeholder(self.pool).await.ok(),
@@ -871,6 +931,37 @@ impl Context<'_> {
             }
         }
         self.totals.uploads += 1;
+        if let (Some(key), true) = (u.site_setting.as_deref(), stored.is_image) {
+            let url = serde_json::Value::String(format!("/uploads/{}", stored.upload.storage_key));
+            self.apply_setting(key, url).await?;
+        }
+        Ok(())
+    }
+
+    /// Sets a site setting from the old site, when it is one an import may set, the value fits and this
+    /// site still has the default: what an administrator chose here is kept.
+    async fn apply_setting(&mut self, key: &str, value: serde_json::Value) -> Res<()> {
+        if !SETTING_KEYS.contains(&key) {
+            return Ok(());
+        }
+        let current = self.state.settings();
+        if current.get(key) != bf_core::settings::Settings::default().get(key) {
+            return Ok(());
+        }
+        let mut next = (*current).clone();
+        if next.set(key, value.clone()).is_err() || next.get(key) == current.get(key) {
+            return Ok(());
+        }
+        bf_db::settings::save(self.pool, key, &value).await?;
+        self.state.replace_settings(next);
+        self.totals.settings += 1;
+        Ok(())
+    }
+
+    async fn site_settings(&mut self, map: serde_json::Map<String, serde_json::Value>) -> Res<()> {
+        for (key, value) in map {
+            self.apply_setting(&key, value).await?;
+        }
         Ok(())
     }
 
