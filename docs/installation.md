@@ -36,7 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/.env.prod
 Edit `.env`: set `BF_BASE_URL` to the address people will use and `BF_SECRET_KEY` to the output of
 `docker compose run --rm server secret-key`. Compose passes the whole file to the server, so every
 setting in [Configuration](configuration.md) goes there. It always sets the database address and the
-listen address itself, whatever `.env` says. `BF_VERSION=0.0.1` in the same file pins a release.
+listen address itself, whatever `.env` says. `BF_VERSION=0.0.3` in the same file pins a release.
 
 ```sh
 docker compose up -d --wait
@@ -77,8 +77,14 @@ Build and run the binary directly:
 cargo build --release -p bf-server
 export BF_DATABASE_URL=postgres://forum_app:…@127.0.0.1:5432/forum
 export BF_BASE_URL=https://forum.example.com
+export BF_SECRET_KEY=…                          # make it once: ./target/release/boring-forum secret-key
 ./target/release/boring-forum                   # migrations run at startup
 ```
+
+An `https` site refuses to start without `BF_SECRET_KEY`. `boring-forum secret-key` prints a new one as
+`BF_SECRET_KEY=…`; make it once, store it with your other secrets (a systemd `EnvironmentFile` works)
+and keep a copy off this machine. A new key every start would leave the two-factor and webhook secrets
+already stored unreadable.
 
 The server finds the admin panel in `web/admin/build` (`BF_ADMIN_DIR` changes that) and stores
 uploads and backups under `data/` (`BF_UPLOAD_DIR` and `BF_BACKUP_DIR`). Run it under a process
