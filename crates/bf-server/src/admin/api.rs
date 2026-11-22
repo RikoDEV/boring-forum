@@ -214,6 +214,9 @@ async fn shell(State(state): State<AppState>, Admin(_, v): AdminRead) -> Result<
     let (l, set) = crate::http::render::layout(&state, &v, None);
     let css: Vec<String> = std::iter::once(l.css_url.clone()).chain(l.theme.as_ref().map(|t| t.url.clone())).collect();
     let loader = l.loader.clone();
+    // The site's scripts (the header's menus, the Markdown editor) read the CSRF token from a meta
+    // tag the panel's own page does not have, so it comes with the shell and the panel adds the tag.
+    let csrf = l.csrf.clone();
     // The full Markdown editor, for the panel's own long texts (legal documents).
     let editor = l.editor_url.clone();
     // The header's own layout is in the critical styles, which pages inline rather than link.
@@ -228,7 +231,7 @@ async fn shell(State(state): State<AppState>, Admin(_, v): AdminRead) -> Result<
     let html = axum::body::to_bytes(html.into_body(), usize::MAX).await.map_err(AppError::internal)?;
     let html = String::from_utf8_lossy(&html).into_owned();
     Ok(crate::http::render::page(
-        Json(json!({ "html": html, "critical": critical, "css": css, "loader": loader, "editor": editor,
+        Json(json!({ "html": html, "critical": critical, "css": css, "loader": loader, "editor": editor, "csrf": csrf,
             "messages": messages, "admin_messages": admin_messages, "locale": locale, "dir": dir }))
         .into_response(),
         set,

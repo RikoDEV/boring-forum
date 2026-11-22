@@ -3,6 +3,7 @@
   import { page } from "$app/state";
   import { mount, tick } from "svelte";
   import AdminSearch from "#lib/AdminSearch.svelte";
+  import { publishCsrf } from "#lib/csrf.js";
   import { setEditorUrl } from "#lib/editor.js";
   import { loadShell, tr } from "#lib/i18n.js";
   import "#lib/site.css";
@@ -100,6 +101,8 @@
       host.className = "acp-search-host";
       document.querySelector(".acp-global .header-search")?.replaceWith(host);
       mount(AdminSearch, { target: host, props: { pages: groups } });
+      // The header's islands send the CSRF token they find in a meta tag, as on the site's pages.
+      publishCsrf(s.csrf);
       // The header's islands read their messages from here, as on the site's pages.
       const messages = document.createElement("script");
       messages.type = "application/json";

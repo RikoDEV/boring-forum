@@ -101,4 +101,11 @@ describe("admin panel header", () => {
     expect(body.critical).toContain(".bf-header-bar");
     expect(body.loader).toContain("import(");
   });
+  it("carries the CSRF token the site's scripts need, the same one the panel's API calls use", async () => {
+    // The header's islands and the Markdown editor read it from a meta tag the panel adds; without it
+    // their requests have no token and fail with "Your session expired".
+    const body = JSON.parse((await c.get("/api/v1/admin/shell")).text);
+    expect(body.csrf).toMatch(/^[0-9a-f]{64}$/);
+    expect(body.csrf).toBe(JSON.parse((await c.get("/api/v1/csrf")).text).token);
+  });
 });

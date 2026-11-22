@@ -1,6 +1,8 @@
 // The forum's full Markdown editor, for the panel's long texts. Its address comes with the
 // site shell (see +layout.svelte); until then, or if the shell fails, the plain textarea stays.
 
+import { ensureCsrf, publishCsrf } from "./csrf.js";
+
 let found;
 const url = new Promise((resolve) => (found = resolve));
 
@@ -11,6 +13,8 @@ export function setEditorUrl(u) {
 /// Replaces the textarea with the editor and returns its CodeMirror view. The textarea keeps
 /// the text and fires `input` on every change, so `bind:value` follows it.
 export async function mountEditor(textarea) {
+  // The editor reads its token from the meta tag (see publishCsrf); the shell normally set it already.
+  publishCsrf(await ensureCsrf());
   const m = await import(/* @vite-ignore */ await url);
   return m.mount(textarea);
 }

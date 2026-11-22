@@ -18,6 +18,20 @@ export function ensureCsrf() {
   return loading;
 }
 
+/** Puts the token where the site's own scripts look for it: a `csrf-token` meta tag, as on the site's
+ * pages. The header's menus and the Markdown editor read it from there; without it their requests
+ * go out with no token and the server answers "Your session expired". */
+export function publishCsrf(value) {
+  if (!value || typeof document === "undefined") return;
+  let meta = document.querySelector('meta[name="csrf-token"]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.name = "csrf-token";
+    document.head.append(meta);
+  }
+  meta.content = value;
+}
+
 /** The token loaded by `ensureCsrf` (empty before that). */
 export function csrf() {
   return token;
