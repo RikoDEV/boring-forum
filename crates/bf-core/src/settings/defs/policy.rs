@@ -232,6 +232,15 @@ pub(super) fn defs() -> Vec<SettingDef> {
             default: json!(""),
             ..def("ad_html", String, false, en("Advert shown under the header; scripts are removed"))
         },
+        SettingDef {
+            default: json!(""),
+            ..def(
+                "ads_txt",
+                String,
+                false,
+                en("The lines your ad networks ask you to publish at /ads.txt; leave empty to publish no file"),
+            )
+        },
         int("clubs_per_member", 3, 0, 1000, en("Clubs one member may start")),
         int("email_bounce_limit", 3, 1, 50, en("Mark an email address bad after this many bounces")),
         SettingDef {

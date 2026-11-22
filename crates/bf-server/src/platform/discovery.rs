@@ -23,6 +23,7 @@ pub fn router() -> Router<AppState> {
         .route("/security.txt", get(|| async { Redirect::permanent("/.well-known/security.txt") }))
         .route("/.well-known/change-password", get(|| async { Redirect::to("/settings#s-password") }))
         .route("/.well-known/passkey-endpoints", get(passkey_endpoints))
+        .route("/ads.txt", get(ads_txt))
         .route("/llms.txt", get(llms_txt))
         .route("/oembed", get(oembed))
 }
@@ -33,6 +34,18 @@ fn text(body: String, max_age: u32) -> Response {
         res.headers_mut().insert(header::CACHE_CONTROL, v);
     }
     res
+}
+
+/// IAB ads.txt: the administrator's own lines, served as written. Nothing configured means no
+/// file (404), so a site without ads publishes nothing and an ad network sees no authorisation.
+async fn ads_txt(State(state): State<AppState>) -> Response {
+    let settings = state.settings();
+    let lines: Vec<&str> = settings.str("ads_txt").lines().map(str::trim_end).collect();
+    let body = lines.join("\n");
+    if body.trim().is_empty() {
+        return StatusCode::NOT_FOUND.into_response();
+    }
+    text(format!("{}\n", body.trim()), 3_600)
 }
 
 /// RFC 9116. `Contact` is required, so without one configured there is no file (404) rather

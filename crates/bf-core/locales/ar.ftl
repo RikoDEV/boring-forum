@@ -2375,6 +2375,8 @@ msg-discord_or_slack_incoming_webhook_for_new_posts_in = خطاف ويب وار�
 msg-akismet_api_key_empty_turns_the_spam_check_off = مفتاح Akismet API؛ الفراغ يوقف فحص الرسائل المزعجة
 # Advert shown under the header; scripts are removed
 msg-advert_shown_under_the_header_scripts_are_removed = إعلان أسفل الترويسة؛ تُزال النصوص البرمجية
+# The lines your ad networks ask you to publish at /ads.txt; leave empty to publish no file
+msg-the_lines_your_ad_networks_ask_you_to_publish_at_ads = الأسطر التي تطلب شبكات الإعلانات نشرها على /ads.txt؛ اتركه فارغًا لعدم نشر ملف
 # Clubs one member may start
 msg-clubs_one_member_may_start = عدد النوادي التي يمكن لعضو واحد إنشاؤها
 # Mark an email address bad after this many bounces
@@ -6381,6 +6383,8 @@ admin-minimum_sign_up_time = أقل مدة للتسجيل
 admin-akismet_api_key = مفتاح Akismet API
 # Advert HTML
 admin-advert_html = HTML الإعلان
+# ads.txt
+admin-ads_txt = ads.txt
 # Allowed image hosts
 admin-allowed_image_hosts = مضيفو الصور المسموح بهم
 # Private message participants

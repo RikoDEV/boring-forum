@@ -447,7 +447,14 @@ pub async fn login_gate(State(state): State<AppState>, v: Viewer, req: Request, 
     .any(|p| path.starts_with(p))
         || matches!(
             path,
-            "/healthz" | "/livez" | "/readyz" | "/metrics" | "/robots.txt" | "/manifest.webmanifest" | "/sw.js"
+            "/healthz"
+                | "/livez"
+                | "/readyz"
+                | "/metrics"
+                | "/robots.txt"
+                | "/ads.txt"
+                | "/manifest.webmanifest"
+                | "/sw.js"
         );
     if open {
         return next.run(req).await;

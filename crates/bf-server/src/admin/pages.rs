@@ -43,6 +43,7 @@ const RESERVED: &[&str] = &[
     "about",
     "admin",
     "ads",
+    "ads.txt",
     "ap",
     "api",
     "assets",

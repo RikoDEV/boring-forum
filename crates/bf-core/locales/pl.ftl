@@ -2212,6 +2212,8 @@ msg-discord_or_slack_incoming_webhook_for_new_posts_in = Przychodzący webhook D
 msg-akismet_api_key_empty_turns_the_spam_check_off = Klucz API Akismet; puste wyłącza sprawdzanie spamu
 # Advert shown under the header; scripts are removed
 msg-advert_shown_under_the_header_scripts_are_removed = Reklama pod nagłówkiem; skrypty są usuwane
+# The lines your ad networks ask you to publish at /ads.txt; leave empty to publish no file
+msg-the_lines_your_ad_networks_ask_you_to_publish_at_ads = Linie, które sieci reklamowe każą opublikować pod /ads.txt; zostaw puste, aby nie publikować pliku
 # Clubs one member may start
 msg-clubs_one_member_may_start = Kluby, jakie może założyć jeden użytkownik
 # Mark an email address bad after this many bounces
@@ -6218,6 +6220,8 @@ admin-minimum_sign_up_time = Minimalny czas rejestracji
 admin-akismet_api_key = Klucz API Akismet
 # Advert HTML
 admin-advert_html = HTML reklamy
+# ads.txt
+admin-ads_txt = ads.txt
 # Allowed image hosts
 admin-allowed_image_hosts = Dozwolone hosty obrazów
 # Private message participants

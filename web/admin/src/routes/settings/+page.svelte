@@ -155,6 +155,7 @@
     "review_link_domains",
     "blocked_user_agents",
     "ad_html",
+    "ads_txt",
     "cookie_consent_text",
     "offline_message",
     "blocked_email_domains",

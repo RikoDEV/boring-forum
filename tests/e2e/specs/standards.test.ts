@@ -33,6 +33,17 @@ describe("discovery and feeds", () => {
     expect(r.status).toBe(200);
     expect(r.text).toMatch(/^Contact: mailto:security@example.com\nExpires: \d{4}-/);
   });
+  it("ads.txt is the configured text, and absent when empty", async () => {
+    expect((await guest.get("/ads.txt")).status).toBe(404);
+    const lines = "google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0\r\n\r\n# a note  \r\nexample.com, 1, RESELLER  \r\n";
+    expect((await setting("ads_txt", lines)).status).toBe(204);
+    const r = await guest.get("/ads.txt");
+    expect(r.status).toBe(200);
+    expect(r.headers.get("content-type")).toContain("text/plain");
+    expect(r.text).toBe("google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0\n\n# a note\nexample.com, 1, RESELLER\n");
+    expect((await setting("ads_txt", "")).status).toBe(204);
+    expect((await guest.get("/ads.txt")).status).toBe(404);
+  });
   it("change-password and passkey endpoints", async () => {
     const r = await guest.get("/.well-known/change-password");
     expect(r.status).toBe(303);
