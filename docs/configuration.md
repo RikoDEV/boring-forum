@@ -152,14 +152,13 @@ opens. `forum_app` has no `UPDATE` or `DELETE` on `audit_log`, which is append-o
 database as well, so the log cannot be edited by the application at all. Audit
 retention runs through two definer functions from the baseline schema.
 
-With the repository's compose files, layer `deploy/compose.roles.yml` over `deploy/compose.yml` to do all of
-this: `docker compose -f deploy/compose.yml -f deploy/compose.roles.yml up -d --wait`
-creates the roles, migrates as `forum_migrate` and serves as `forum_app`. Its passwords default to
-development values (`BF_APP_DB_PASSWORD`, `BF_MIGRATE_DB_PASSWORD`, `BF_READONLY_DB_PASSWORD` override them).
-CI applies `roles.sql` and checks that `forum_app` cannot drop a table.
+The repository's `deploy/compose.yml` does all of this itself: a `db-roles` step creates the roles on
+every start, then the server migrates as `forum_migrate` and serves as `forum_app`. Their passwords
+derive from `POSTGRES_PASSWORD`; `BF_APP_DB_PASSWORD`, `BF_MIGRATE_DB_PASSWORD` and
+`BF_READONLY_DB_PASSWORD` override them. CI applies `roles.sql` and checks that `forum_app` cannot drop a table.
 
-Run `deploy/postgres/roles.sql` again after upgrading an existing database, so tables the upgrade
-added get their grants. A backup restore keeps the tables, so it needs no new grants. Installing a plugin that declares tables and the
+Outside Docker Compose, run `deploy/postgres/roles.sql` again after upgrading an existing database, so
+tables the upgrade added get their grants (Compose does it on every `up`). A backup restore keeps the tables, so it needs no new grants. Installing a plugin that declares tables and the
 `rebuild-search` task need schema rights: the server uses `BF_MIGRATE_DATABASE_URL` for them when set.
 
 #### Data Explorer

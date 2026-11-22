@@ -54,18 +54,16 @@ Keep `BF_SECRET_KEY` somewhere other than this machine. It encrypts two-factor s
 secrets, and a restored backup is unreadable in those places without it
 ([Operations](operations.md#the-secret-key-is-part-of-the-backup)).
 
-### Do not run as a database superuser
+### The server does not run as the database owner
 
-The compose file's `forum` database user is a superuser, which is fine on your own machine and
-logs an error at start-up to say so. For a real site run the server as a role that cannot change
-the schema. Layer `deploy/compose.roles.yml` over the compose file; it creates the roles, migrates
-as one and serves as another:
+The compose file creates three least-privilege roles for you, so there is nothing to set up by hand.
+A `db-roles` step runs `deploy/postgres/roles.sql` on every start (it is safe to repeat), and the
+server then migrates as `forum_migrate` and serves as `forum_app`, which can read and write rows but
+cannot change the schema. A SQL injection that got through could not drop a table or reach the
+database host. `forum_readonly` is there for ad-hoc queries.
 
-```sh
-docker compose -f deploy/compose.yml -f deploy/compose.roles.yml up -d --wait
-```
-
-Set `BF_APP_DB_PASSWORD`, `BF_MIGRATE_DB_PASSWORD` and `BF_READONLY_DB_PASSWORD` first. The
+Their passwords derive from `POSTGRES_PASSWORD` in `.env`, so setting that one value is enough.
+`BF_APP_DB_PASSWORD`, `BF_MIGRATE_DB_PASSWORD` and `BF_READONLY_DB_PASSWORD` set them separately. The
 background is in [Configuration](configuration.md#database-roles).
 
 ## Without Docker
@@ -156,5 +154,5 @@ migrated; the container's health check uses `/readyz`.
 Migrations only go forward. If an upgrade goes wrong, deploy the previous version against an
 empty database and restore the backup ([Operations](operations.md#rolling-back-an-upgrade)).
 Release notes are in the [release notes](https://github.com/RikoDEV/boring-forum/releases).
-If you use the least-privilege roles, re-run `deploy/postgres/roles.sql` after an upgrade so the
-new tables get their grants.
+With Docker Compose the roles are re-applied on every `up`. Without it, run `deploy/postgres/roles.sql`
+again after an upgrade so the new tables get their grants.
