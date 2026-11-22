@@ -63,8 +63,8 @@ server then migrates as `forum_migrate` and serves as `forum_app`, which can rea
 cannot change the schema. A SQL injection that got through could not drop a table or reach the
 database host. `forum_readonly` is there for ad-hoc queries.
 
-Their passwords derive from `POSTGRES_PASSWORD` in `.env`, so setting that one value is enough.
-`BF_APP_DB_PASSWORD`, `BF_MIGRATE_DB_PASSWORD` and `BF_READONLY_DB_PASSWORD` set them separately. The
+Set their passwords in `.env` as `BF_APP_DB_PASSWORD`, `BF_MIGRATE_DB_PASSWORD` and
+`BF_READONLY_DB_PASSWORD`; any you leave out derive from `POSTGRES_PASSWORD`. The
 background is in [Configuration](configuration.md#database-roles).
 
 ## Without Docker
