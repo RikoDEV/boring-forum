@@ -165,13 +165,32 @@ it, exports it and imports it into the forum, as the schema-owning database role
 forum is touched, and re-running skips what is already there. Run the commands below from the
 directory that holds your `compose.yml` and `.env`.
 
-```sh
-# Discourse: give it the backup .tar.gz (its uploads are inside)
-docker compose --profile import run --rm -v "$PWD/backup:/in:ro" importer discourse /in/backup.tar.gz
+The importer runs in its own container, so it only sees what you mount into it. Put everything the
+old forum gave you in one folder next to your `compose.yml`, mount that folder at `/in`, and write
+every path after the source name as it is **inside the container**, starting with `/in/`. A bare
+filename is looked for in the container's own folder and not found.
 
-# Everything else: a SQL dump of the old database, and the old site's folder for attachments
-docker compose --profile import run --rm -v "$PWD/old:/in:ro" importer phpbb /in/forum.sql.gz --files /in/phpbb
+```sh
+mkdir -p import
+mv ~/Downloads/backup-2026-11-21.tar.gz import/        # the file from the old forum
+
+docker compose --profile import run --rm -v "$PWD/import:/in:ro" importer \
+  discourse /in/backup-2026-11-21.tar.gz
 ```
+
+`-v "$PWD/import:/in:ro"` is the mount: your `import` folder appears as `/in`, read-only. A Discourse
+backup is one `.tar.gz` and its uploads are inside it. Every other forum needs a SQL dump of its
+database, and its site folder for attachments and avatars (`--files`), also under `/in`:
+
+```sh
+ls import/
+#   forum.sql.gz   phpbb/            <- the dump, and the old site's folder
+
+docker compose --profile import run --rm -v "$PWD/import:/in:ro" importer \
+  phpbb /in/forum.sql.gz --files /in/phpbb
+```
+
+First add `--dry-run` to either command: it exports and counts without writing anything to the forum.
 
 | Source | Backup you give | `--files` (optional: attachments, avatars) |
 | --- | --- | --- |

@@ -54,6 +54,18 @@ if [ "$DRY" = 0 ] && [ -z "${BF_DATABASE_URL:-}" ]; then
   exit 1
 fi
 
+# The importer sees only what is mounted into its container: a path that exists on your machine
+# but not under the mount is "not found" here, which is the usual mistake. Say so.
+missing() {
+  echo "Not found inside the container: $1" >&2
+  echo "The importer only sees folders you mount with -v, and paths are read inside the container." >&2
+  echo "Mount the folder that holds it, for example" >&2
+  echo "  -v \"\$PWD/import:/in:ro\"   and then give   /in/$(basename "$1")" >&2
+  exit 1
+}
+[ -z "$BACKUP" ] || [ -e "$BACKUP" ] || missing "$BACKUP"
+[ -z "$FILES" ] || [ -d "$FILES" ] || missing "$FILES"
+
 say() { printf '\n==> %s\n' "$*"; }
 WORK=${IMPORT_WORK:-/work}
 mkdir -p "$WORK"
