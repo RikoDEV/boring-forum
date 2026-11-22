@@ -21,9 +21,11 @@ fuzz_target!(|data: &[u8]| {
 
     // Whatever was hidden must be absent from what everyone can read. Short fragments are
     // skipped: a one-character hidden block legitimately shares characters with normal text.
+    // So are blocks whose text the public source also holds outside any block (a post may repeat
+    // a sentence both inside and outside a `[hide]`): that copy is public by the writer's choice.
     for block in &hidden {
         let trimmed = block.trim();
-        if trimmed.len() >= 12 {
+        if trimmed.len() >= 12 && !public_source.contains(trimmed) {
             assert!(
                 !public_html.contains(trimmed),
                 "a hidden block leaked into public HTML\n  hidden: {trimmed:?}\n  input:  {raw:?}"
