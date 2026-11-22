@@ -70,9 +70,9 @@ permission property tests, the IDOR suite and short fuzzing runs; see `.github/w
 - **Writing**: comments say why, not what. Plain English in docs and interface text.
 - **Commits**: one change per commit, with a message that says what and why, starting with a
   conventional prefix (`feat:`, `fix:`, `security:`, `perf:`, `docs:`, `refactor:`, `test:`, `chore:`).
-  semantic-release reads them to choose the next version and write the changelog: `feat` is a
-  minor release, `fix`, `perf` and `security` a patch, and `!` after the type (or a
-  `BREAKING CHANGE:` footer) a major one; the other types do not release.
+  They group the release notes and suggest the next version (`feat` is a minor release, `fix`,
+  `perf` and `security` a patch, and `!` after the type or a `BREAKING CHANGE:` footer a major
+  one; the other types do not release). A release itself is made by pushing a tag, not by a commit.
 
 ## Formatting
 

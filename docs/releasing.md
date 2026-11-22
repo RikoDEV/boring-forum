@@ -1,38 +1,35 @@
 # Releasing
 
 
-Releases are automatic. Every push to `main` runs `.github/workflows/semantic-release.yml`
-([semantic-release](https://semantic-release.gitbook.io/), configured in `.releaserc.json`). It reads
-the commit messages since the last tag:
-
-| Commit | Release |
-| --- | --- |
-| `feat: …` | minor |
-| `fix: …`, `perf: …`, `security: …` | patch |
-| `feat!: …` or a `BREAKING CHANGE:` footer | major |
-| `docs:`, `refactor:`, `test:`, `chore:`, `ci:` | none |
-
-When a commit calls for a release, the workflow sets the version in `Cargo.toml` and `Cargo.lock`
-(`scripts/set-version.sh`), writes the notes to `CHANGELOG.md`, commits that as
-`chore(release): X.Y.Z`, tags `vX.Y.Z` and creates the GitHub release. It then starts
-`.github/workflows/release.yml` for the tag, which builds the server image from the lockfiles,
-pushes it to `ghcr.io/rikodev/boring-forum` with CycloneDX SBOMs, a keyless Sigstore signature and
-SLSA provenance. That workflow's header shows how to verify an image with `cosign` and
-`gh attestation verify`.
-
-## Before the first release
-
-- Tag the version the project is at, so semantic-release continues from it instead of starting at
-  1.0.0: `git tag v0.1.0 && git push origin v0.1.0`.
-- Allow the `github-actions` bot to push to `main` if it is protected (the release commit).
-- Try it without releasing: run the workflow by hand from the Actions tab (it defaults to a dry run).
+A release is made by pushing a `vX.Y.Z` tag, and only then. Nothing releases on a push to `main`.
+The tag starts `.github/workflows/release.yml`, which checks that the tagged commit is on `main` and
+that `Cargo.toml` has the same version, then builds the server image from the lockfiles, pushes it to
+`ghcr.io/rikodev/boring-forum` with CycloneDX SBOMs, a keyless Sigstore signature and SLSA
+provenance, and creates the GitHub release with generated notes. That workflow's header shows how to
+verify an image with `cosign` and `gh attestation verify`.
 
 ## Making a release
 
-1. Merge pull requests with conventional commit titles (squash merges use the title).
-2. Watch the Semantic release workflow, then the Release workflow it starts. Verify the image as
-   its header describes.
-3. Migrations run when the new server starts and only go forward, so take a backup first
+1. Pick the version. Run the **Next version preview** workflow from the Actions tab to see what the
+   conventional commits since the last tag suggest (`feat` minor, `fix`/`perf`/`security` patch,
+   `feat!:` or a `BREAKING CHANGE:` footer major; `docs`, `refactor`, `test`, `chore`, `ci` none).
+   It only prints; the number is still your decision.
+2. Set the version and merge it to `main`:
+
+   ```sh
+   scripts/set-version.sh 0.2.0     # Cargo.toml and Cargo.lock
+   git commit -am "chore(release): 0.2.0"
+   ```
+
+3. Tag that commit once it is on `main`, and push the tag:
+
+   ```sh
+   git tag v0.2.0 && git push origin v0.2.0
+   ```
+
+4. Watch the Release workflow and verify the image as its header describes. It refuses a tag that is
+   not on `main` or does not match `Cargo.toml`; fix that and push a new tag.
+5. Migrations run when the new server starts and only go forward, so take a backup first
    (Admin, Backups, or see [Operations](operations.md)) and keep the previous image until the
    new one is healthy (`/readyz`).
 

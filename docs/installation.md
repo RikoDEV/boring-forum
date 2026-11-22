@@ -149,6 +149,6 @@ migrated; the container's health check uses `/readyz`.
 
 Migrations only go forward. If an upgrade goes wrong, deploy the previous version against an
 empty database and restore the backup ([Operations](operations.md#rolling-back-an-upgrade)).
-Release notes are in the [change log](https://github.com/RikoDEV/boring-forum/blob/main/CHANGELOG.md).
+Release notes are in the [release notes](https://github.com/RikoDEV/boring-forum/releases).
 If you use the least-privilege roles, re-run `deploy/postgres/roles.sql` after an upgrade so the
 new tables get their grants.

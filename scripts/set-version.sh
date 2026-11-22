@@ -1,5 +1,5 @@
 #!/bin/sh
-# Sets the workspace version for a release (run by semantic-release before it commits).
+# Sets the workspace version for a release (run by hand before tagging; see docs/releasing.md).
 #   scripts/set-version.sh 1.2.3
 set -eu
 cd "$(dirname "$0")/.."
