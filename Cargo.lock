@@ -497,7 +497,7 @@ dependencies = [
 
 [[package]]
 name = "bf-bench"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "axum",
  "bf-core",
@@ -508,7 +508,7 @@ dependencies = [
 
 [[package]]
 name = "bf-cook"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "ammonia",
  "comrak",
@@ -517,7 +517,7 @@ dependencies = [
 
 [[package]]
 name = "bf-core"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "aes-gcm",
  "argon2",
@@ -548,7 +548,7 @@ dependencies = [
 
 [[package]]
 name = "bf-db"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "bf-core",
  "chrono",
@@ -570,7 +570,7 @@ dependencies = [
 
 [[package]]
 name = "bf-realtime"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "axum",
  "dashmap",
@@ -583,7 +583,7 @@ dependencies = [
 
 [[package]]
 name = "bf-seo"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "chrono",
  "serde_json",
@@ -591,7 +591,7 @@ dependencies = [
 
 [[package]]
 name = "bf-server"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "aes-gcm",
  "axum",
@@ -647,7 +647,7 @@ dependencies = [
 
 [[package]]
 name = "bf-web"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "ammonia",
  "askama",
