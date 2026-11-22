@@ -2014,9 +2014,9 @@ msg-that_sign_in_could_not_be_verified_please_try_again = That sign-in could not
 msg-authorize_application = Authorize application
 msg-api_key_created = API key created
 msg-copy_this_key_now_it_is_not_shown_again_token = Copy this key now; it is not shown again: { $token }
+msg-log_in = Log in
 msg-administrators_cannot_be_impersonated = Administrators cannot be impersonated.
 msg-register = Register
-msg-log_in = Log in
 msg-hi_name_your_account_was_just_signed_in_to_from_a_new =
     Hi { $name },
 

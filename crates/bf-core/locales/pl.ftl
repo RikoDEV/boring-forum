@@ -2806,12 +2806,12 @@ msg-authorize_application = Autoryzuj aplikację
 msg-api_key_created = Utworzono klucz API
 # Copy this key now; it is not shown again: {token}
 msg-copy_this_key_now_it_is_not_shown_again_token = Skopiuj ten klucz teraz; nie zostanie pokazany ponownie: { $token }
+# Log in
+msg-log_in = Zaloguj się
 # Administrators cannot be impersonated.
 msg-administrators_cannot_be_impersonated = Nie można podszywać się pod administratorów.
 # Register
 msg-register = Rejestracja
-# Log in
-msg-log_in = Zaloguj się
 # Hi {name},\n\nYour account was just signed in to from a new address ({ip}).\n\nIf this was not you, change your password and sign out other sessions under Account settings.\n
 msg-hi_name_your_account_was_just_signed_in_to_from_a_new =
     Cześć { $name },
