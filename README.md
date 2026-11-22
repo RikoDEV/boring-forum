@@ -67,6 +67,7 @@ on the first response. Written in Rust and Svelte, with PostgreSQL for storage.
    ```sh
    mkdir forum && cd forum
    curl -fsSLO https://raw.githubusercontent.com/RikoDEV/boring-forum/main/deploy/compose.yml
+   mkdir postgres && curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/deploy/postgres/roles.sql -o postgres/roles.sql
    curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/.env.production -o .env
    # edit .env first: BF_BASE_URL, and BF_SECRET_KEY from `docker compose run --rm server secret-key`
    docker compose up -d --wait

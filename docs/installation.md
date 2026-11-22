@@ -25,11 +25,13 @@ backups. It follows the newest release; set `BF_VERSION` (for example `0.0.1`) t
 To build the image from your checkout instead, add `-f deploy/compose.build.yml` and `--build`.
 Postgres is not published to the host. For development, add `-f deploy/compose.dev.yml` to open it on `127.0.0.1:5432`.
 
-You do not need the repository, only two files in an empty directory:
+You do not need the repository, only three files in an empty directory (`roles.sql` creates the
+database roles the server runs as):
 
 ```sh
 mkdir forum && cd forum
 curl -fsSLO https://raw.githubusercontent.com/RikoDEV/boring-forum/main/deploy/compose.yml
+mkdir postgres && curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/deploy/postgres/roles.sql -o postgres/roles.sql
 curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/.env.production -o .env
 ```
 
