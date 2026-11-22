@@ -36,7 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/.env.prod
 Edit `.env`: set `BF_BASE_URL` to the address people will use and `BF_SECRET_KEY` to the output of
 `docker compose run --rm server secret-key`. Compose passes the whole file to the server, so every
 setting in [Configuration](configuration.md) goes there. It always sets the database address and the
-listen address itself, whatever `.env` says. `BF_VERSION=0.0.3` in the same file pins a release.
+listen address itself, whatever `.env` says. `BF_VERSION=0.0.4` in the same file pins a release.
 
 ```sh
 docker compose up -d --wait
