@@ -58,7 +58,7 @@ committed. Fix failures yourself; never hand the owner a pushed red build.
 | `web/**` | `pnpm lint`, `pnpm format:check`, `pnpm check`, `pnpm test`, `pnpm build`, `pnpm size` |
 | API types / routes | `pnpm openapi` and `git diff --exit-code web/api/src/schema.d.ts` |
 | `bf-cook` sanitizer, `fuzz/**` | `cargo test -p bf-cook`, plus the `xss_corpus` test |
-| env vars | `sh scripts/check-env-docs.sh` |
+| Rust that reads a new `BF_*` / `OTEL_*` variable (even one only a subcommand reads) | `sh scripts/check-env-docs.sh`, then list it in `docs/configuration.md` and `.env.example` |
 | workflows, `.releaserc.json` | read the workflow end to end; check every action input and tool version it names |
 
 Read `security.yml`, `quality.yml` and `web.yml` for anything not listed: they run on push too.

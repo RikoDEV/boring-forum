@@ -20,6 +20,7 @@ Set environment variables; see `.env.example`. These enable optional features:
 | `BF_HTTPS_REDIRECT` | `off`, `proxied` or `always`. Defaults to `always` when terminating TLS, `proxied` for an `https://` base URL, `off` otherwise. `proxied` needs the proxy listed in `BF_TRUSTED_PROXIES`: `X-Forwarded-Proto` is ignored from any other peer |
 | `BF_HSTS_PRELOAD` | Adds `preload` to the HSTS header. Opt-in: a preload submission is effectively permanent |
 | `BF_MIGRATE_DATABASE_URL` | Runs migrations as a separate, schema-owning role; the server then connects with its own, lower-privilege role |
+| `BF_ADMIN_DATABASE_URL`, `BF_APP_DB_PASSWORD`, `BF_MIGRATE_DB_PASSWORD`, `BF_READONLY_DB_PASSWORD` | Read only by `boring-forum provision-roles`, which creates the least-privilege database roles (the compose file runs it before the server): a connection as the database owner, and the three roles' passwords. The server itself never reads them |
 | `BF_EXPLORER_DATABASE_URL` | Enables the Data Explorer, running its queries on a connection that logs in as the restricted `bf_explorer` role. Unset keeps the Explorer off |
 | `BF_STATEMENT_TIMEOUT_MS` | Per-connection statement timeout; default 15000 |
 | `BF_AUDIT_SINK_STDOUT` | `true` writes every audit event to the `audit` tracing target for a log agent to collect |
@@ -36,6 +37,8 @@ environment as the server would and reports errors and doubtful settings without
 |---|---|---|
 | `BF_DATABASE_URL` | none (required) | Postgres connection string; must not be a superuser |
 | `BF_MIGRATE_DATABASE_URL` | unset | Schema-owning role used only for migrations |
+| `BF_ADMIN_DATABASE_URL` | unset | Database owner, for `boring-forum provision-roles` only |
+| `BF_APP_DB_PASSWORD`, `BF_MIGRATE_DB_PASSWORD`, `BF_READONLY_DB_PASSWORD` | unset | Passwords `provision-roles` gives `forum_app`, `forum_migrate` and `forum_readonly` |
 | `BF_DB_POOL_SIZE` | CPU count, at least 2 | Maximum database connections |
 | `BF_STATEMENT_TIMEOUT_MS` | 15000 | Per-connection statement timeout |
 | `BF_BIND` | `127.0.0.1:8080` | Listen address |
