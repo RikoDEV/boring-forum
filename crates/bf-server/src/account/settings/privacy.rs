@@ -34,10 +34,10 @@ pub(super) async fn view(
     passkeys: usize,
 ) -> Result<PrivacyView, AppError> {
     let pool = state.db()?;
-    let labels = crate::auth::oauth::enabled();
+    let labels = crate::auth::oauth::enabled(&state.settings());
     let rows = security::identity_rows(pool, user).await.db()?;
     let identity_removable = has_password || passkeys > 0 || rows.len() > 1;
-    let connectable = crate::auth::oauth::linkable()
+    let connectable = crate::auth::oauth::linkable(&state.settings())
         .into_iter()
         .filter(|(key, _)| !rows.iter().any(|(linked, _, _)| linked.as_str() == *key))
         .map(|(key, label)| (key.to_owned(), label))

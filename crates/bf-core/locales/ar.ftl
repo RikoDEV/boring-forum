@@ -2275,6 +2275,74 @@ msg-referrals_how_many_qualified_referrals_earn_the_group = الإحالات: ع
 msg-mailchimp_audience_list_id_to_sync_newsletter_opt_ins = Mailchimp: معرّف الجمهور (القائمة) لمزامنة اشتراكات النشرة؛ يحتاج إلى BF_MAILCHIMP_API_KEY
 # Mailchimp: secret (16+ characters) in the webhook address /newsletter/mailchimp?secret=…
 msg-mailchimp_secret_16_characters_in_the_webhook_address = Mailchimp: سر (16 حرفًا أو أكثر) في عنوان خطاف الويب /newsletter/mailchimp?secret=…
+# Google sign-in is on (turn it off to hide it without deleting its credentials)
+msg-google_sign_in_is_on_turn_it_off_to_hide_it_without = تسجيل الدخول عبر Google مفعّل (أوقفه لإخفائه دون حذف بياناته)
+# GitHub sign-in is on (turn it off to hide it without deleting its credentials)
+msg-github_sign_in_is_on_turn_it_off_to_hide_it_without = تسجيل الدخول عبر GitHub مفعّل (أوقفه لإخفائه دون حذف بياناته)
+# Discord sign-in is on (turn it off to hide it without deleting its credentials)
+msg-discord_sign_in_is_on_turn_it_off_to_hide_it_without = تسجيل الدخول عبر Discord مفعّل (أوقفه لإخفائه دون حذف بياناته)
+# Microsoft sign-in is on (turn it off to hide it without deleting its credentials)
+msg-microsoft_sign_in_is_on_turn_it_off_to_hide_it_without = تسجيل الدخول عبر Microsoft مفعّل (أوقفه لإخفائه دون حذف بياناته)
+# Twitch sign-in is on (turn it off to hide it without deleting its credentials)
+msg-twitch_sign_in_is_on_turn_it_off_to_hide_it_without = تسجيل الدخول عبر Twitch مفعّل (أوقفه لإخفائه دون حذف بياناته)
+# X sign-in is on (turn it off to hide it without deleting its credentials)
+msg-x_sign_in_is_on_turn_it_off_to_hide_it_without_deleting = تسجيل الدخول عبر X مفعّل (أوقفه لإخفائه دون حذف بياناته)
+# Sign in with Apple is on (turn it off to hide it without deleting its credentials)
+msg-sign_in_with_apple_is_on_turn_it_off_to_hide_it_without = تسجيل الدخول عبر Apple مفعّل (أوقفه لإخفائه دون حذف بياناته)
+# The other OpenID Connect login is on (turn it off to hide it without deleting its credentials)
+msg-the_other_openid_connect_login_is_on_turn_it_off_to = تسجيل دخول OpenID Connect الآخر مفعّل (أوقفه لإخفائه دون حذف بياناته)
+# The DiscourseConnect login is on (turn it off to hide it without deleting its credentials)
+msg-the_discourseconnect_login_is_on_turn_it_off_to_hide_it = تسجيل دخول DiscourseConnect مفعّل (أوقفه لإخفائه دون حذف بياناته)
+# Google sign-in: OAuth client ID. The redirect address is your site's /auth/google/callback
+msg-google_sign_in_oauth_client_id_the_redirect_address_is = تسجيل الدخول عبر Google: معرّف عميل OAuth. عنوان إعادة التوجيه هو /auth/google/callback لموقعك
+# Google sign-in: OAuth client secret
+msg-google_sign_in_oauth_client_secret = تسجيل الدخول عبر Google: السر الخاص بعميل OAuth
+# GitHub sign-in: OAuth client ID. The redirect address is your site's /auth/github/callback
+msg-github_sign_in_oauth_client_id_the_redirect_address_is = تسجيل الدخول عبر GitHub: معرّف عميل OAuth. عنوان إعادة التوجيه هو /auth/github/callback لموقعك
+# GitHub sign-in: OAuth client secret
+msg-github_sign_in_oauth_client_secret = تسجيل الدخول عبر GitHub: السر الخاص بعميل OAuth
+# Discord sign-in: OAuth client ID. The redirect address is your site's /auth/discord/callback
+msg-discord_sign_in_oauth_client_id_the_redirect_address_is = تسجيل الدخول عبر Discord: معرّف عميل OAuth. عنوان إعادة التوجيه هو /auth/discord/callback لموقعك
+# Discord sign-in: OAuth client secret
+msg-discord_sign_in_oauth_client_secret = تسجيل الدخول عبر Discord: السر الخاص بعميل OAuth
+# Microsoft sign-in: application (client) ID. The redirect address is your site's /auth/microsoft/callback
+msg-microsoft_sign_in_application_client_id_the_redirect = تسجيل الدخول عبر Microsoft: معرّف التطبيق (العميل). عنوان إعادة التوجيه هو /auth/microsoft/callback لموقعك
+# Microsoft sign-in: client secret
+msg-microsoft_sign_in_client_secret = تسجيل الدخول عبر Microsoft: سر العميل
+# Twitch sign-in: client ID. The redirect address is your site's /auth/twitch/callback
+msg-twitch_sign_in_client_id_the_redirect_address_is_your = تسجيل الدخول عبر Twitch: معرّف العميل. عنوان إعادة التوجيه هو /auth/twitch/callback لموقعك
+# Twitch sign-in: client secret
+msg-twitch_sign_in_client_secret = تسجيل الدخول عبر Twitch: سر العميل
+# X sign-in: OAuth 2.0 client ID. The redirect address is your site's /auth/x/callback
+msg-x_sign_in_oauth_2_0_client_id_the_redirect_address_is = تسجيل الدخول عبر X: معرّف عميل OAuth 2.0. عنوان إعادة التوجيه هو /auth/x/callback لموقعك
+# X sign-in: OAuth 2.0 client secret
+msg-x_sign_in_oauth_2_0_client_secret = تسجيل الدخول عبر X: سر عميل OAuth 2.0
+# Sign in with Apple: Services ID
+msg-sign_in_with_apple_services_id = تسجيل الدخول عبر Apple: معرّف الخدمات
+# Sign in with Apple: team ID
+msg-sign_in_with_apple_team_id = تسجيل الدخول عبر Apple: معرّف الفريق
+# Sign in with Apple: key ID
+msg-sign_in_with_apple_key_id = تسجيل الدخول عبر Apple: معرّف المفتاح
+# Sign in with Apple: contents of the .p8 private key
+msg-sign_in_with_apple_contents_of_the_p8_private_key = تسجيل الدخول عبر Apple: محتوى المفتاح الخاص p8.
+# Other OpenID Connect provider: name shown on the button
+msg-other_openid_connect_provider_name_shown_on_the_button = مزوّد OpenID Connect آخر: الاسم الظاهر على الزر
+# Other OpenID Connect provider: authorization address
+msg-other_openid_connect_provider_authorization_address = مزوّد OpenID Connect آخر: عنوان التفويض
+# Other OpenID Connect provider: token address
+msg-other_openid_connect_provider_token_address = مزوّد OpenID Connect آخر: عنوان الرمز
+# Other OpenID Connect provider: user info address
+msg-other_openid_connect_provider_user_info_address = مزوّد OpenID Connect آخر: عنوان معلومات المستخدم
+# Other OpenID Connect provider: client ID
+msg-other_openid_connect_provider_client_id = مزوّد OpenID Connect آخر: معرّف العميل
+# Other OpenID Connect provider: client secret
+msg-other_openid_connect_provider_client_secret = مزوّد OpenID Connect آخر: سر العميل
+# DiscourseConnect login site: its address (https)
+msg-discourseconnect_login_site_its_address_https = موقع تسجيل الدخول DiscourseConnect: عنوانه (https)
+# DiscourseConnect login site: shared secret, at least 32 characters
+msg-discourseconnect_login_site_shared_secret_at_least_32 = موقع تسجيل الدخول DiscourseConnect: السر المشترك، 32 حرفًا على الأقل
+# DiscourseConnect login site: name shown on the button
+msg-discourseconnect_login_site_name_shown_on_the_button = موقع تسجيل الدخول DiscourseConnect: الاسم الظاهر على الزر
 # Back up the site automatically
 msg-back_up_the_site_automatically = إنشاء نسخ احتياطية للموقع تلقائيًا
 # Hours between automatic backups
@@ -6089,6 +6157,10 @@ admin-your_site_s_name_language_and_availability = اسم موقعك ولغته 
 admin-sign_up_and_sign_in = التسجيل وتسجيل الدخول
 # Who can join, and how they log in
 admin-who_can_join_and_how_they_log_in = من يمكنه الانضمام وكيف يسجّل الدخول
+# Outside logins
+admin-outside_logins = تسجيلات الدخول الخارجية
+# Let members sign in with Google, GitHub, Discord, Microsoft, Twitch, X, Apple, another OpenID Connect provider or a DiscourseConnect site. A login shows on the sign-in page once its ID and secret are set; how they behave is under Sign-up and sign-in
+admin-let_members_sign_in_with_google_github_discord = اسمح للأعضاء بتسجيل الدخول عبر Google وGitHub وDiscord وMicrosoft وTwitch وX وApple أو مزوّد OpenID Connect آخر أو موقع DiscourseConnect. يظهر تسجيل الدخول في صفحة الدخول بمجرد ضبط معرّفه وسرّه؛ أما سلوكها فيُضبط ضمن التسجيل وتسجيل الدخول
 # Spam protection
 admin-spam_protection = الحماية من الرسائل المزعجة
 # Keep bots and throwaway accounts out
@@ -6371,6 +6443,74 @@ admin-auth_overrides_avatar = استبدال الصورة الرمزية
 admin-auth_overrides_name = استبدال الاسم
 # Auth require interaction
 admin-auth_require_interaction = اشتراط التفاعل
+# Google sign-in
+admin-google_sign_in = تسجيل الدخول عبر Google
+# GitHub sign-in
+admin-github_sign_in = تسجيل الدخول عبر GitHub
+# Discord sign-in
+admin-discord_sign_in = تسجيل الدخول عبر Discord
+# Microsoft sign-in
+admin-microsoft_sign_in = تسجيل الدخول عبر Microsoft
+# Twitch sign-in
+admin-twitch_sign_in = تسجيل الدخول عبر Twitch
+# Twitch client ID
+admin-twitch_client_id = معرّف عميل Twitch
+# Twitch client secret
+admin-twitch_client_secret = سر عميل Twitch
+# X sign-in
+admin-x_sign_in = تسجيل الدخول عبر X
+# X client ID
+admin-x_client_id = معرّف عميل X
+# X client secret
+admin-x_client_secret = سر عميل X
+# Sign in with Apple
+admin-sign_in_with_apple = تسجيل الدخول عبر Apple
+# OpenID Connect sign-in
+admin-openid_connect_sign_in = تسجيل دخول OpenID Connect
+# DiscourseConnect sign-in
+admin-discourseconnect_sign_in = تسجيل دخول DiscourseConnect
+# Google client ID
+admin-google_client_id = معرّف عميل Google
+# Google client secret
+admin-google_client_secret = سر عميل Google
+# GitHub client ID
+admin-github_client_id = معرّف عميل GitHub
+# GitHub client secret
+admin-github_client_secret = سر عميل GitHub
+# Discord client ID
+admin-discord_client_id = معرّف عميل Discord
+# Discord client secret
+admin-discord_client_secret = سر عميل Discord
+# Microsoft client ID
+admin-microsoft_client_id = معرّف عميل Microsoft
+# Microsoft client secret
+admin-microsoft_client_secret = سر عميل Microsoft
+# Apple Services ID
+admin-apple_services_id = معرّف خدمات Apple
+# Apple team ID
+admin-apple_team_id = معرّف فريق Apple
+# Apple key ID
+admin-apple_key_id = معرّف مفتاح Apple
+# Apple private key
+admin-apple_private_key = مفتاح Apple الخاص
+# OpenID Connect button name
+admin-openid_connect_button_name = اسم زر OpenID Connect
+# OpenID Connect authorization address
+admin-openid_connect_authorization_address = عنوان تفويض OpenID Connect
+# OpenID Connect token address
+admin-openid_connect_token_address = عنوان رمز OpenID Connect
+# OpenID Connect user info address
+admin-openid_connect_user_info_address = عنوان معلومات مستخدم OpenID Connect
+# OpenID Connect client ID
+admin-openid_connect_client_id = معرّف عميل OpenID Connect
+# OpenID Connect client secret
+admin-openid_connect_client_secret = سر عميل OpenID Connect
+# DiscourseConnect button name
+admin-discourseconnect_button_name = اسم زر DiscourseConnect
+# DiscourseConnect login site
+admin-discourseconnect_login_site = موقع تسجيل الدخول DiscourseConnect
+# DiscourseConnect secret
+admin-discourseconnect_secret = سر DiscourseConnect
 # Block temporary email addresses
 admin-block_temporary_email_addresses = حظر عناوين البريد المؤقتة
 # Blocked email domains

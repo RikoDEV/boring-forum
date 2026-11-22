@@ -5,6 +5,7 @@ mod ai;
 mod basics;
 mod chat;
 mod integrations;
+mod logins;
 mod policy;
 mod security;
 mod share;
@@ -37,6 +38,7 @@ pub(super) fn builtin() -> Vec<SettingDef> {
         security::defs(),
         share::defs(),
         integrations::defs(),
+        logins::defs(),
         ai::defs(),
         spam::defs(),
     ]

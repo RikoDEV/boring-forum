@@ -361,10 +361,10 @@ check "raw source respects permissions" "$(curl -s -o /dev/null -w '%{http_code}
 MJS=$(grep -oE '/assets/members\.[0-9a-f]+\.js' <<<"$TP" | head -1)
 check "member bundle served" "$(curl -s -o /dev/null -w '%{http_code}' $B$MJS)" 200
 
-# --- OAuth / OIDC (needs tests/support/mock-oidc.mjs on $OIDC)
+# --- OAuth / OIDC (needs tests/support/mock-oidc.mjs on $OIDC and the logins set up as site settings: the vitest suite in tests/e2e covers these flows; set BF_E2E_LOGINS=1 once they are)
 # These sign-ins start with a GET, which `auth_require_interaction` (on by default) turns into a page with a button.
 A -o /dev/null -X PUT -d '{"value":false}' $B/api/v1/admin/settings/auth_require_interaction
-if [ -n "${OIDC:-}" ]; then
+if [ -n "${OIDC:-}" ] && [ -n "${BF_E2E_LOGINS:-}" ]; then
   next_user() { curl -s -o /dev/null -X POST -d "$1" $OIDC/next-user; }
   has "login page offers sso" "$(curl -s $B/login)" 'action="/auth/oidc"'
   D=$(mktemp)

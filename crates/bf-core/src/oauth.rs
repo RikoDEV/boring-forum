@@ -1,4 +1,4 @@
-//! OAuth 2 / OIDC login (Google, GitHub, Discord, generic OIDC): provider
+//! OAuth 2 / OIDC login (Google, GitHub, Discord, Microsoft, Twitch, X, generic OIDC): provider
 //! endpoints, PKCE (RFC 7636) and the authorize URL. The token exchange is an
 //! HTTP call made by the server; this module holds the parts that must be exact.
 
@@ -14,6 +14,8 @@ pub struct Provider {
     pub scope: &'static str,
     /// Apple needs `response_mode=form_post` when asking for the name and email.
     pub form_post: bool,
+    /// X wants the client ID and secret as HTTP Basic credentials at the token endpoint, not in the body.
+    pub basic_auth: bool,
 }
 
 impl Provider {
@@ -25,6 +27,7 @@ impl Provider {
             userinfo_url: u.into(),
             scope,
             form_post: false,
+            basic_auth: false,
         };
         Some(match key {
             "google" => p(
@@ -55,6 +58,27 @@ impl Provider {
                 "https://graph.microsoft.com/oidc/userinfo",
                 "openid email profile",
             ),
+            // Twitch has no userinfo address worth using: the profile is the Helix `users` call, read
+            // with the client ID as a header (see the server's `fetch_user`).
+            "twitch" => p(
+                "twitch",
+                "https://id.twitch.tv/oauth2/authorize",
+                "https://id.twitch.tv/oauth2/token",
+                "https://api.twitch.tv/helix/users",
+                "user:read:email",
+            ),
+            // X (Twitter): OAuth 2.0 with PKCE. It shares no email address, so a new account cannot be
+            // made from it; members connect it from Account settings, or sign up another way first.
+            "x" => Provider {
+                basic_auth: true,
+                ..p(
+                    "x",
+                    "https://x.com/i/oauth2/authorize",
+                    "https://api.x.com/2/oauth2/token",
+                    "https://api.x.com/2/users/me?user.fields=profile_image_url,name,username",
+                    "tweet.read users.read",
+                )
+            },
             _ => return None,
         })
     }
@@ -75,6 +99,7 @@ impl Provider {
             userinfo_url: userinfo_url.into(),
             scope: "openid email profile",
             form_post: false,
+            basic_auth: false,
         })
     }
 
@@ -204,6 +229,21 @@ pub fn state_matches(issued: &str, returned: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn twitch_and_x_are_built_in() {
+        let t = Provider::builtin("twitch").expect("twitch");
+        assert_eq!(t.key, "twitch");
+        assert!(t.authorize_url.starts_with("https://id.twitch.tv/"));
+        assert_eq!(t.scope, "user:read:email");
+        assert!(!t.basic_auth);
+        let x = Provider::builtin("x").expect("x");
+        assert_eq!(x.key, "x");
+        assert!(x.authorize_url.starts_with("https://x.com/"));
+        assert!(x.token_url.starts_with("https://api.x.com/"));
+        assert!(x.basic_auth, "X takes the client credentials as HTTP Basic");
+        assert!(x.scope.contains("users.read"));
+    }
 
     #[test]
     fn pkce_rfc7636_vector() {

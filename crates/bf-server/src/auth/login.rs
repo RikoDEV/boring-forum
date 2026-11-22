@@ -118,7 +118,7 @@ pub(crate) async fn auth_page(
             legal,
             min_age,
             magic: state.settings().bool("allow_magic_link"),
-            providers: crate::auth::oauth::enabled(),
+            providers: crate::auth::oauth::enabled(&state.settings()),
             questions,
             ts: crate::auth::register::signed_ts(Utc::now().timestamp()),
             invite_required: register && state.settings().bool("invite_only"),

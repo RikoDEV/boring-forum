@@ -1,10 +1,8 @@
 //! OAuth 2 / OIDC login: Google, GitHub, Discord and one generic OIDC provider.
 //!
-//! Configuration (each provider is enabled when its id and secret are set):
-//! `BF_OAUTH_{GOOGLE,GITHUB,DISCORD,MICROSOFT}_ID` / `_SECRET`;
-//! `BF_OIDC_NAME`, `BF_OIDC_AUTHORIZE_URL`, `BF_OIDC_TOKEN_URL`, `BF_OIDC_USERINFO_URL`,
-//! `BF_OIDC_CLIENT_ID`, `BF_OIDC_CLIENT_SECRET`;
-//! `BF_OAUTH_APPLE_ID` (Services ID), `_TEAM_ID`, `_KEY_ID`, `_KEY` (`.p8` contents).
+//! Configuration: Settings, Outside logins (`login_*`). A provider is on when its id and secret are
+//! set and its `login_<provider>_enabled` switch is on, so an administrator can turn each off and on
+//! without deleting its credentials.
 //!
 //! After the provider returns: a known identity signs in (two-factor still applies);
 //! a member who started from "Connected logins" in Account settings links it; a
@@ -21,6 +19,7 @@ use axum::routing::{get, post};
 use axum::{Form, Router};
 use bf_core::i18n::en;
 use bf_core::oauth::Provider;
+use bf_core::settings::Settings;
 use bf_core::{AppError, oauth};
 use bf_db::accounts::security;
 use serde::Deserialize;
@@ -75,40 +74,61 @@ fn env(k: &str) -> Option<String> {
     std::env::var(k).ok().filter(|v| !v.is_empty())
 }
 
-static PROVIDERS: LazyLock<Vec<Configured>> = LazyLock::new(|| {
+/// A login's text setting, when it is filled in.
+fn value(s: &Settings, setting: &str) -> Option<String> {
+    Some(s.str(setting).trim().to_owned()).filter(|v| !v.is_empty())
+}
+
+/// The outside logins that are set up and switched on, read from the site settings (Settings, Outside
+/// logins). Built on every use, so a change made in the admin panel applies at once.
+fn providers(s: &Settings) -> Vec<Configured> {
     let mut out = Vec::new();
-    for (key, label) in [("google", "Google"), ("github", "GitHub"), ("discord", "Discord"), ("microsoft", "Microsoft")]
-    {
-        let up = key.to_uppercase();
-        if let (Some(id), Some(secret)) = (env(&format!("BF_OAUTH_{up}_ID")), env(&format!("BF_OAUTH_{up}_SECRET"))) {
+    for (key, label) in [
+        ("google", "Google"),
+        ("github", "GitHub"),
+        ("discord", "Discord"),
+        ("microsoft", "Microsoft"),
+        ("twitch", "Twitch"),
+        ("x", "X"),
+    ] {
+        if !s.bool(&format!("login_{key}_enabled")) {
+            continue;
+        }
+        if let (Some(id), Some(secret)) =
+            (value(s, &format!("login_{key}_id")), value(s, &format!("login_{key}_secret")))
+        {
             let Some(provider) = Provider::builtin(key) else { continue };
             out.push(Configured { provider, label: label.into(), client_id: id, client_secret: secret, apple: None });
         }
     }
-    if let (Some(a), Some(t), Some(u), Some(id), Some(secret)) = (
-        env("BF_OIDC_AUTHORIZE_URL"),
-        env("BF_OIDC_TOKEN_URL"),
-        env("BF_OIDC_USERINFO_URL"),
-        env("BF_OIDC_CLIENT_ID"),
-        env("BF_OIDC_CLIENT_SECRET"),
-    ) {
+    if s.bool("login_oidc_enabled")
+        && let (Some(a), Some(t), Some(u), Some(id), Some(secret)) = (
+            value(s, "login_oidc_authorize_url"),
+            value(s, "login_oidc_token_url"),
+            value(s, "login_oidc_userinfo_url"),
+            value(s, "login_oidc_client_id"),
+            value(s, "login_oidc_client_secret"),
+        )
+    {
         match Provider::oidc(&a, &t, &u) {
             Ok(provider) => out.push(Configured {
                 provider,
-                label: env("BF_OIDC_NAME").unwrap_or_else(|| "Single sign-on".into()),
+                label: value(s, "login_oidc_name").unwrap_or_else(|| "Single sign-on".into()),
                 client_id: id,
                 client_secret: secret,
                 apple: None,
             }),
-            Err(e) => tracing::error!(error = e, "BF_OIDC_* ignored"),
+            Err(e) => tracing::error!(error = e, "the OpenID Connect login settings are ignored"),
         }
     }
-    if let (Some(id), Some(team_id), Some(key_id), Some(pem)) = (
-        env("BF_OAUTH_APPLE_ID"),
-        env("BF_OAUTH_APPLE_TEAM_ID"),
-        env("BF_OAUTH_APPLE_KEY_ID"),
-        env("BF_OAUTH_APPLE_KEY"),
-    ) {
+    if s.bool("login_apple_enabled")
+        && let (Some(id), Some(team_id), Some(key_id), Some(pem)) = (
+            value(s, "login_apple_id"),
+            value(s, "login_apple_team_id"),
+            value(s, "login_apple_key_id"),
+            value(s, "login_apple_key"),
+        )
+    {
         // The override exists for tests; `Provider::apple` allows http on loopback only.
         let base = env("BF_OAUTH_APPLE_BASE").unwrap_or_else(|| "https://appleid.apple.com".into());
         match Provider::apple(&base) {
@@ -123,7 +143,7 @@ static PROVIDERS: LazyLock<Vec<Configured>> = LazyLock::new(|| {
         }
     }
     out
-});
+}
 
 #[expect(
     clippy::expect_used,
@@ -139,22 +159,22 @@ static HTTP: LazyLock<reqwest::Client> = LazyLock::new(|| {
 });
 
 /// (key, label) of enabled providers, for the login page.
-pub(crate) fn enabled() -> Vec<(&'static str, String)> {
-    let mut all: Vec<_> = PROVIDERS.iter().map(|c| (c.provider.key, c.label.clone())).collect();
-    if crate::auth::identity::sso_enabled() {
-        all.push(("sso", std::env::var("BF_SSO_NAME").unwrap_or_else(|_| "Single sign-on".into())));
+pub(crate) fn enabled(s: &Settings) -> Vec<(&'static str, String)> {
+    let mut all: Vec<_> = providers(s).iter().map(|c| (c.provider.key, c.label.clone())).collect();
+    if crate::auth::identity::sso_enabled(s) {
+        all.push(("sso", crate::auth::identity::sso_name(s)));
     }
     all
 }
 
 /// (key, label) of the providers a member can connect from Account settings. The login site of
 /// `/auth/sso` signs in, but is not connected this way.
-pub(crate) fn linkable() -> Vec<(&'static str, String)> {
-    PROVIDERS.iter().map(|c| (c.provider.key, c.label.clone())).collect()
+pub(crate) fn linkable(s: &Settings) -> Vec<(&'static str, String)> {
+    providers(s).iter().map(|c| (c.provider.key, c.label.clone())).collect()
 }
 
-fn find(key: &str) -> Result<&'static Configured, AppError> {
-    PROVIDERS.iter().find(|c| c.provider.key == key).ok_or(AppError::NotFound)
+fn find(s: &Settings, key: &str) -> Result<Configured, AppError> {
+    providers(s).into_iter().find(|c| c.provider.key == key).ok_or(AppError::NotFound)
 }
 
 fn redirect_uri(state: &AppState, key: &str) -> String {
@@ -176,11 +196,11 @@ async fn start(
     Path(key): Path<String>,
     Query(q): Query<StartQuery>,
 ) -> Result<Response, AppError> {
-    let c = find(&key)?;
+    let c = find(&state.settings(), &key)?;
     if crate::auth::external::interaction_required(&state) {
         return Ok(crate::auth::external::continue_page(&state, &v, &key, &c.label, q.auto == "1"));
     }
-    begin_login(&state, c)
+    begin_login(&state, &c)
 }
 
 /// The click that starts a login: the login page's buttons and the button on the page above.
@@ -191,8 +211,8 @@ async fn start_login(
     Form(f): Form<CsrfForm>,
 ) -> Result<Response, AppError> {
     v.check_csrf(&f.csrf)?;
-    let c = find(&key)?;
-    let (url, cookie) = begin(&state, c, None)?;
+    let c = find(&state.settings(), &key)?;
+    let (url, cookie) = begin(&state, &c, None)?;
     send_on(&state, &v, &c.label, &url, cookie, (en("Log in"), "/login"))
 }
 
@@ -214,11 +234,11 @@ async fn link(
 ) -> Result<Response, AppError> {
     v.check_session_csrf(&f.csrf)?;
     let me = v.require_user()?.id.get();
-    let c = find(&key)?;
+    let c = find(&state.settings(), &key)?;
     if let Some(confirm) = v.sudo_redirect("/settings") {
         return Ok(confirm);
     }
-    let (url, cookie) = begin(&state, c, Some(me))?;
+    let (url, cookie) = begin(&state, &c, Some(me))?;
     send_on(&state, &v, &c.label, &url, cookie, (en("Account settings"), "/settings"))
 }
 
@@ -279,8 +299,12 @@ struct FormPost {
 
 /// Apple returns by cross-site POST, on which SameSite=Lax cookies are not sent. This hop
 /// turns it into a top-level GET, so the normal callback sees the login and session cookies.
-async fn form_post(Path(key): Path<String>, Form(f): Form<FormPost>) -> Result<Response, AppError> {
-    let c = find(&key)?;
+async fn form_post(
+    State(state): State<AppState>,
+    Path(key): Path<String>,
+    Form(f): Form<FormPost>,
+) -> Result<Response, AppError> {
+    let c = find(&state.settings(), &key)?;
     if !c.provider.form_post {
         return Err(AppError::NotFound);
     }
@@ -342,19 +366,36 @@ fn str_field(v: &Value, k: &str) -> Option<String> {
 
 async fn fetch_user(c: &Configured, access_token: &str) -> Result<ExternalUser, AppError> {
     let get = |url: String| HTTP.get(url).bearer_auth(access_token).header(header::ACCEPT, "application/json").send();
-    let info: Value = get(c.provider.userinfo_url.clone())
+    let mut profile = HTTP.get(c.provider.userinfo_url.clone()).bearer_auth(access_token);
+    if c.provider.key == "twitch" {
+        // Twitch's API wants the application's client ID with every call.
+        profile = profile.header("Client-Id", &c.client_id);
+    }
+    let mut info: Value = profile
+        .header(header::ACCEPT, "application/json")
+        .send()
         .await
         .and_then(reqwest::Response::error_for_status)
         .map_err(|e| AppError::invalid("The provider did not return your profile: {e}", &[("e", &e)]))?
         .json()
         .await
         .map_err(AppError::internal)?;
+    // Twitch answers `{"data": [user]}` and X `{"data": user}`; the rest send the user itself.
+    if matches!(c.provider.key, "twitch" | "x")
+        && let Some(user) = info.get("data").and_then(|d| d.as_array().and_then(|a| a.first()).or(Some(d))).cloned()
+    {
+        info = user;
+    }
     let subject = str_field(&info, "sub")
         .or_else(|| str_field(&info, "id"))
         .ok_or_else(|| AppError::BadRequest("No user id from provider".into()))?;
     let mut email = str_field(&info, "email");
     let mut email_verified =
         info.get("email_verified").or_else(|| info.get("verified")).and_then(Value::as_bool).unwrap_or(false);
+    // Twitch only lets a member keep a confirmed address, and shares it only with the email scope.
+    if c.provider.key == "twitch" && email.is_some() {
+        email_verified = true;
+    }
     if c.provider.key == "github" {
         // GitHub's profile omits private addresses; ask for the verified primary one.
         if let Ok(r) = get("https://api.github.com/user/emails".into()).await
@@ -367,7 +408,7 @@ async fn fetch_user(c: &Configured, access_token: &str) -> Result<ExternalUser, 
         }
     }
     let username = ["preferred_username", "login", "username", "nickname"].iter().find_map(|k| str_field(&info, k));
-    let full_name = str_field(&info, "name").or_else(|| {
+    let full_name = str_field(&info, "name").or_else(|| str_field(&info, "display_name")).or_else(|| {
         let joined = [str_field(&info, "given_name"), str_field(&info, "family_name")]
             .into_iter()
             .flatten()
@@ -381,10 +422,15 @@ async fn fetch_user(c: &Configured, access_token: &str) -> Result<ExternalUser, 
         .or_else(|| full_name.clone())
         .unwrap_or_else(|| "member".into());
     // Google and OIDC send `picture`, GitHub `avatar_url`, Discord a hash to build the address from.
-    let avatar_url = str_field(&info, "picture").or_else(|| str_field(&info, "avatar_url")).or_else(|| {
-        let (id, hash) = (str_field(&info, "id")?, str_field(&info, "avatar")?);
-        (c.provider.key == "discord").then(|| format!("https://cdn.discordapp.com/avatars/{id}/{hash}.png?size=256"))
-    });
+    let avatar_url = str_field(&info, "picture")
+        .or_else(|| str_field(&info, "avatar_url"))
+        // Twitch and X; X's is a 48 px thumbnail unless asked for the larger one.
+        .or_else(|| str_field(&info, "profile_image_url").map(|u| u.replace("_normal.", "_400x400.")))
+        .or_else(|| {
+            let (id, hash) = (str_field(&info, "id")?, str_field(&info, "avatar")?);
+            (c.provider.key == "discord")
+                .then(|| format!("https://cdn.discordapp.com/avatars/{id}/{hash}.png?size=256"))
+        });
     Ok(ExternalUser { subject, email, email_verified, name, username, full_name, avatar_url })
 }
 
@@ -408,7 +454,7 @@ async fn callback(
     Path(key): Path<String>,
     Query(q): Query<Callback>,
 ) -> Result<Response, AppError> {
-    let c = find(&key)?;
+    let c = find(&state.settings(), &key)?;
     if let Some(e) = q.error {
         return Err(AppError::invalid("The provider refused the login: {e}", &[("e", &e)]));
     }
@@ -431,13 +477,23 @@ async fn callback(
         return Err(AppError::BadRequest("Your login attempt expired. Please try again.".into()));
     }
     let code = q.code.ok_or_else(|| AppError::BadRequest("missing code".into()))?;
-    let body =
-        oauth::token_request_body(&code, verifier, &c.client_id, &c.secret()?, &redirect_uri(&state, c.provider.key));
-    let token: Value = HTTP
+    let secret = c.secret()?;
+    let redirect = redirect_uri(&state, c.provider.key);
+    // X takes the client's credentials as HTTP Basic, and its ID in the body; the others in the body.
+    let (body, basic) = if c.provider.basic_auth {
+        (oauth::token_request_body(&code, verifier, &c.client_id, "", &redirect).replace("&client_secret=", ""), true)
+    } else {
+        (oauth::token_request_body(&code, verifier, &c.client_id, &secret, &redirect), false)
+    };
+    let mut request = HTTP
         .post(&c.provider.token_url)
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
         .header(header::ACCEPT, "application/json")
-        .body(body)
+        .body(body);
+    if basic {
+        request = request.basic_auth(&c.client_id, Some(&secret));
+    }
+    let token: Value = request
         .send()
         .await
         .and_then(reqwest::Response::error_for_status)
@@ -446,12 +502,12 @@ async fn callback(
         .await
         .map_err(AppError::internal)?;
     let ext = if c.apple.is_some() {
-        apple_user(c, &token, q.name)?
+        apple_user(&c, &token, q.name)?
     } else {
         let access = token["access_token"]
             .as_str()
             .ok_or_else(|| AppError::BadRequest("No access token from provider".into()))?;
-        fetch_user(c, access).await?
+        fetch_user(&c, access).await?
     };
     let pool = state.db()?;
     let provider = c.provider.key;

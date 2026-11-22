@@ -21,6 +21,15 @@ pub fn is_secret(key: &str) -> bool {
             | "imgproxy_key"
             | "imgproxy_salt"
             | "chat_webhook_url"
+            | "login_google_secret"
+            | "login_github_secret"
+            | "login_discord_secret"
+            | "login_microsoft_secret"
+            | "login_twitch_secret"
+            | "login_x_secret"
+            | "login_apple_key"
+            | "login_oidc_client_secret"
+            | "login_sso_secret"
     )
 }
 

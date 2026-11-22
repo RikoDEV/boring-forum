@@ -179,6 +179,23 @@ export function useForum(extraEnv: Record<string, string> = {}) {
     f.uploadDir = mkdtempSync(join(tmpdir(), "bf-up-"));
     f.mock = spawn(process.execPath, [join(REPO, "tests/support/mock-oidc.mjs"), String(mockPort)], { stdio: "ignore" });
     const apple = generateKeyPairSync("ec", { namedCurve: "P-256" }).privateKey.export({ type: "pkcs8", format: "pem" }) as string;
+    // The outside logins are site settings (Settings, Outside logins), set here before the server reads them.
+    const logins: Record<string, string> = {
+      login_sso_url: `${f.oidc}/sso`,
+      login_sso_secret: "0123456789abcdef0123456789abcdef",
+      login_apple_id: "com.example.forum",
+      login_apple_team_id: "TEAM",
+      login_apple_key_id: "KID",
+      login_apple_key: apple,
+      login_oidc_name: "Test SSO",
+      login_oidc_client_id: "test-client",
+      login_oidc_client_secret: "test-secret",
+      login_oidc_authorize_url: `${f.oidc}/authorize`,
+      login_oidc_token_url: `${f.oidc}/token`,
+      login_oidc_userinfo_url: `${f.oidc}/userinfo`,
+    };
+    for (const [key, value] of Object.entries(logins))
+      await f.db.query("INSERT INTO site_settings (key, value) VALUES ($1, $2::jsonb)", [key, JSON.stringify(value)]);
     f.server = spawn(inject("bin"), [], {
       stdio: "ignore",
       env: {
@@ -200,20 +217,8 @@ export function useForum(extraEnv: Record<string, string> = {}) {
         BF_REPLY_DOMAIN: "mail.example",
         BF_INBOUND_TOKEN: "abcdef0123456789abcdef0123456789",
         BF_WEBHOOK_ALLOW_LOOPBACK: "1",
-        BF_SSO_URL: `${f.oidc}/sso`,
-        BF_SSO_SECRET: "0123456789abcdef0123456789abcdef",
         BF_CAPTCHA_VERIFY_URL: `${f.oidc}/siteverify`,
-        BF_OAUTH_APPLE_ID: "com.example.forum",
-        BF_OAUTH_APPLE_TEAM_ID: "TEAM",
-        BF_OAUTH_APPLE_KEY_ID: "KID",
         BF_OAUTH_APPLE_BASE: f.oidc,
-        BF_OAUTH_APPLE_KEY: apple,
-        BF_OIDC_NAME: "Test SSO",
-        BF_OIDC_CLIENT_ID: "test-client",
-        BF_OIDC_CLIENT_SECRET: "test-secret",
-        BF_OIDC_AUTHORIZE_URL: `${f.oidc}/authorize`,
-        BF_OIDC_TOKEN_URL: `${f.oidc}/token`,
-        BF_OIDC_USERINFO_URL: `${f.oidc}/userinfo`,
         RUST_LOG: "error",
         NO_COLOR: "1",
         ...extraEnv,

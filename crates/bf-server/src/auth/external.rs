@@ -165,7 +165,7 @@ pub(crate) fn immediate_login(state: &AppState) -> Option<&'static str> {
     if !(s.bool("auth_immediately") && s.bool("login_required")) {
         return None;
     }
-    match oauth::enabled().as_slice() {
+    match oauth::enabled(&s).as_slice() {
         [(key, _)] => Some(key),
         _ => None,
     }

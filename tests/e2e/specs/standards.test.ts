@@ -56,6 +56,55 @@ describe("discovery and feeds", () => {
     // The test server writes mail to files; a missing or broken sender would say `error` or `log`.
     expect(r.json().kind).toBe("dir");
   });
+  it("a login set up in the admin settings shows on the sign-in page, can be switched off, and its secret is never shown back", async () => {
+    const button = 'action="/auth/discord"';
+    expect((await guest.get("/login")).text).not.toContain(button);
+    expect((await setting("login_discord_id", "client-123")).status).toBe(204);
+    // One half is not enough: it needs the ID and the secret.
+    expect((await guest.get("/login")).text).not.toContain(button);
+    expect((await setting("login_discord_secret", "a-very-secret-value")).status).toBe(204);
+    const page = await guest.get("/login");
+    expect(page.text).toContain(button);
+    expect(page.text).not.toContain("a-very-secret-value");
+    // The panel is told that a secret is set, never what it is.
+    const rows = (await admin.get("/api/v1/admin/settings")).json() as { key: string; value: string; set?: boolean }[];
+    const secret = rows.find((r) => r.key === "login_discord_secret")!;
+    expect(secret.set).toBe(true);
+    expect(secret.value).toBe("");
+    // Its switch hides it without losing the credentials, and turns it back on.
+    expect((await setting("login_discord_enabled", false)).status).toBe(204);
+    expect((await guest.get("/login")).text).not.toContain(button);
+    expect((await guest.get("/auth/discord")).status).toBe(404);
+    expect((await setting("login_discord_enabled", true)).status).toBe(204);
+    expect((await guest.get("/login")).text).toContain(button);
+    // Clearing the ID takes the login away again.
+    expect((await setting("login_discord_id", "")).status).toBe(204);
+    expect((await guest.get("/login")).text).not.toContain(button);
+    expect((await admin.api("/api/v1/admin/settings/login_discord_secret", { value: "", clear: true }, { method: "PUT" })).status).toBe(204);
+  });
+  it("Twitch and X appear once their client ID and secret are set", async () => {
+    for (const key of ["twitch", "x"]) {
+      const button = `action="/auth/${key}"`;
+      expect((await guest.get("/login")).text).not.toContain(button);
+      expect((await setting(`login_${key}_id`, "client")).status).toBe(204);
+      expect((await setting(`login_${key}_secret`, "secret-value")).status).toBe(204);
+      expect((await guest.get("/login")).text).toContain(button);
+      // The provider's own page is reached through the interstitial; its address carries PKCE and the scope.
+      const start = await guest.form(`/auth/${key}`, {});
+      expect([200, 303]).toContain(start.status);
+      expect((await setting(`login_${key}_enabled`, false)).status).toBe(204);
+      expect((await guest.get("/login")).text).not.toContain(button);
+    }
+  });
+  it("the test OIDC and DiscourseConnect logins can be switched off and on", async () => {
+    for (const [key, action] of [["login_oidc_enabled", 'action="/auth/oidc"'], ["login_sso_enabled", 'action="/auth/sso"']] as const) {
+      expect((await guest.get("/login")).text).toContain(action);
+      expect((await setting(key, false)).status).toBe(204);
+      expect((await guest.get("/login")).text).not.toContain(action);
+      expect((await setting(key, true)).status).toBe(204);
+      expect((await guest.get("/login")).text).toContain(action);
+    }
+  });
   it("change-password and passkey endpoints", async () => {
     const r = await guest.get("/.well-known/change-password");
     expect(r.status).toBe(303);

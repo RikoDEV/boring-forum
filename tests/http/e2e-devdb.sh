@@ -27,12 +27,12 @@ kill "${pids[@]}"; wait 2>/dev/null; pids=()
 start_db
 export BF_MAIL_DIR=$(mktemp -d) BF_UPLOAD_DIR=$(mktemp -d) BF_BOUNCE_TOKEN=0123456789abcdef0123456789abcdef
 OIDC_PORT=9911
+# The outside logins (SSO, OIDC, Apple) are site settings now: their checks run in the vitest suite
+# (tests/e2e), which sets them up, not here.
 export OIDC=http://127.0.0.1:$OIDC_PORT
-export BF_WEBHOOK_ALLOW_LOOPBACK=1 BF_SSO_URL=$OIDC/sso BF_SSO_SECRET=0123456789abcdef0123456789abcdef
+export BF_WEBHOOK_ALLOW_LOOPBACK=1
 export BF_CAPTCHA_VERIFY_URL=$OIDC/siteverify
-export BF_OAUTH_APPLE_ID=com.example.forum BF_OAUTH_APPLE_TEAM_ID=TEAM BF_OAUTH_APPLE_KEY_ID=KID BF_OAUTH_APPLE_BASE=$OIDC
-export BF_OAUTH_APPLE_KEY="$(node -e 'console.log(require("crypto").generateKeyPairSync("ec",{namedCurve:"P-256"}).privateKey.export({type:"pkcs8",format:"pem"}))')" BF_OIDC_NAME="Test SSO" BF_OIDC_CLIENT_ID=test-client BF_OIDC_CLIENT_SECRET=test-secret
-export BF_OIDC_AUTHORIZE_URL=$OIDC/authorize BF_OIDC_TOKEN_URL=$OIDC/token BF_OIDC_USERINFO_URL=$OIDC/userinfo
+export BF_OAUTH_APPLE_BASE=$OIDC
 node "$ROOT/tests/support/mock-oidc.mjs" $OIDC_PORT >/dev/null &
 pids+=($!)
 BF_DEVDB=1 BF_DB_POOL_SIZE=1 BF_BIND=127.0.0.1:$WEB_PORT BF_DATABASE_URL=$URL BF_ADMIN_DIR="$ROOT/web/admin/build" RUST_LOG=warn "$BIN" &

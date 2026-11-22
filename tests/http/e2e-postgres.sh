@@ -17,14 +17,13 @@ else $W docker compose -f deploy/compose.yml exec -T db psql -q -U forum -d foru
 BIN=$(cargo metadata --format-version 1 --no-deps | sed -n 's/.*"target_directory":"\([^"]*\)".*/\1/p' | sed 's#\\#/#g')/debug/boring-forum
 export BF_MAIL_DIR=$(mktemp -d) BF_UPLOAD_DIR=$(mktemp -d)
 export BF_GEO_HEADER=X-Test-Country BF_ASN_HEADER=X-Test-ASN BF_BOUNCE_TOKEN=0123456789abcdef0123456789abcdef
+# The outside logins (SSO, OIDC, Apple) are site settings now: their checks run in the vitest suite
+# (tests/e2e), which sets them up, not here.
 export OIDC=http://127.0.0.1:9911
 export BF_VAPID_PRIVATE=yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw BF_TICK_SECONDS=1 BF_DELETE_GRACE_DAYS=0 BF_REPLY_DOMAIN=mail.example BF_INBOUND_TOKEN=abcdef0123456789abcdef0123456789
-export BF_WEBHOOK_ALLOW_LOOPBACK=1 BF_SSO_URL=$OIDC/sso BF_SSO_SECRET=0123456789abcdef0123456789abcdef
+export BF_WEBHOOK_ALLOW_LOOPBACK=1
 export BF_CAPTCHA_VERIFY_URL=$OIDC/siteverify
-export BF_OAUTH_APPLE_ID=com.example.forum BF_OAUTH_APPLE_TEAM_ID=TEAM BF_OAUTH_APPLE_KEY_ID=KID BF_OAUTH_APPLE_BASE=$OIDC
-export BF_OAUTH_APPLE_KEY="$(node -e 'console.log(require("crypto").generateKeyPairSync("ec",{namedCurve:"P-256"}).privateKey.export({type:"pkcs8",format:"pem"}))')"
-export BF_OIDC_NAME="Test SSO" BF_OIDC_CLIENT_ID=test-client BF_OIDC_CLIENT_SECRET=test-secret
-export BF_OIDC_AUTHORIZE_URL=$OIDC/authorize BF_OIDC_TOKEN_URL=$OIDC/token BF_OIDC_USERINFO_URL=$OIDC/userinfo
+export BF_OAUTH_APPLE_BASE=$OIDC
 node tests/support/mock-oidc.mjs 9911 >/dev/null & M=$!
 BF_BIND=127.0.0.1:8099 BF_DATABASE_URL="postgres://forum:forum@$DBHOST:5432/forum_e2e?sslmode=disable" BF_ADMIN_DIR="$PWD/web/admin/build" RUST_LOG=warn NO_COLOR=1 "$BIN" >$S/server.log 2>&1 & P=$!
 curl -s --retry 60 --retry-delay 1 --retry-connrefused -o /dev/null http://127.0.0.1:8099/healthz

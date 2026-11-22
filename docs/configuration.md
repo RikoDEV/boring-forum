@@ -61,10 +61,6 @@ environment as the server would and reports errors and doubtful settings without
 | `BF_MAIL_DIR` | unset | Development: write each mail to a file here instead of sending it |
 | `BF_REPLY_DOMAIN`, `BF_INBOUND_TOKEN`, `BF_BOUNCE_TOKEN` | unset | Reply by email, inbound mail webhook and bounce webhook |
 | `BF_CAPTCHA_VERIFY_URL` | the provider's address | Verification endpoint override, used by tests |
-| `BF_SSO_URL`, `BF_SSO_SECRET`, `BF_SSO_NAME` | unset | DiscourseConnect-style single sign-on |
-| `BF_OIDC_NAME`, `BF_OIDC_CLIENT_ID`, `BF_OIDC_CLIENT_SECRET`, `BF_OIDC_AUTHORIZE_URL`, `BF_OIDC_TOKEN_URL`, `BF_OIDC_USERINFO_URL` | unset | A generic OpenID Connect provider; all but the name are required together |
-| `BF_OAUTH_GOOGLE_ID` / `_SECRET`, `BF_OAUTH_GITHUB_ID` / `_SECRET`, `BF_OAUTH_DISCORD_ID` / `_SECRET`, `BF_OAUTH_MICROSOFT_ID` / `_SECRET` | unset | Sign in with that service: its OAuth client ID and secret, both set. Its redirect address is `<BF_BASE_URL>/auth/<service>/callback` (`/auth/discord/callback`). See [Outside logins](#outside-logins) |
-| `BF_OAUTH_APPLE_ID`, `BF_OAUTH_APPLE_TEAM_ID`, `BF_OAUTH_APPLE_KEY_ID`, `BF_OAUTH_APPLE_KEY` | unset | Sign in with Apple |
 | `BF_OAUTH_APPLE_BASE` | `https://appleid.apple.com` | Apple endpoint override, used by tests |
 | `BF_AI_API_KEY`, `BF_AI_EMBEDDING_API_KEY` | unset | Keys for the AI provider and, when it is another one, the embedding model; they take precedence over the keys in the settings |
 | `BF_MAILCHIMP_API_KEY` | unset | Mailchimp key (ends in `-dc`); turns the newsletter sync on |
@@ -116,25 +112,30 @@ boring-forum rotate-secrets
 
 ### Outside logins
 
-The providers above are switched on by environment variables. The client ID and secret are secrets,
-so they are not in the admin panel. For Discord, for example:
+Logins are set up in the admin panel, under **Settings → Outside logins**: a client ID and secret
+for Google, GitHub, Discord, Microsoft, Twitch, X or Apple, the addresses of another OpenID Connect provider, or
+a DiscourseConnect login site. Secrets are stored sealed with `BF_SECRET_KEY` and never shown again.
+A login appears on the sign-in page as soon as its ID and secret are saved and its switch is on,
+with no restart. Each login has its own on/off switch (*Discord sign-in*, *Google sign-in*, and so on),
+so you can hide one without deleting its credentials and turn it back on later. For Discord, for
+example:
 
 1. In the [Discord developer portal](https://discord.com/developers/applications) create an
    application. Under OAuth2, add the redirect `https://your-forum.example/auth/discord/callback`
    (your `BF_BASE_URL` plus `/auth/discord/callback`), and copy the client ID and client secret.
-2. Put them in `.env` and restart the server:
-
-   ```sh
-   BF_OAUTH_DISCORD_ID=123456789012345678
-   BF_OAUTH_DISCORD_SECRET=…
-   ```
-
+2. In **Settings → Outside logins**, paste them into *Discord client ID* and *Discord client secret*.
 3. The sign-in and sign-up pages now show **Continue with Discord**. Members who already have an
    account can link it under Settings.
 
-Google, GitHub and Microsoft work the same way (`BF_OAUTH_GOOGLE_ID`, `BF_OAUTH_GITHUB_ID`, …, each with
-`_SECRET`, and the redirect `/auth/google/callback`, `/auth/github/callback`,
-`/auth/microsoft/callback`). Any other OpenID Connect provider uses the `BF_OIDC_*` variables.
+Google, GitHub, Microsoft, Twitch and X work the same way, with the redirect `/auth/google/callback`,
+`/auth/github/callback`, `/auth/microsoft/callback`, `/auth/twitch/callback` or `/auth/x/callback`.
+For X, create the app in the [X developer portal](https://developer.x.com), turn on OAuth 2.0 with
+the type *Web App* (a confidential client), and paste its OAuth 2.0 client ID and secret. X does not
+share a member's email address, so a new account cannot be made from an X login: members connect X
+under Account settings after they have registered, or sign up with an email first. Twitch shares the
+member's confirmed email, so it can sign people up like Google and Discord. Apple, another OpenID Connect provider and a
+DiscourseConnect login site have their own fields in the same group. The old `BF_OAUTH_*`, `BF_OIDC_*`
+and `BF_SSO_*` variables are no longer read: enter their values in the panel when you upgrade.
 
 How they behave is set in the admin panel under Settings → Sign-up and sign-in:
 

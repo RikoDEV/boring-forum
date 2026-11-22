@@ -343,20 +343,29 @@ async fn delete_key_form(
     Ok(Redirect::to("/settings").into_response())
 }
 
-// --- DiscourseConnect-style SSO: BF_SSO_URL and BF_SSO_SECRET (32+ characters).
+// --- DiscourseConnect-style SSO: Settings, Outside logins (the shared secret needs 32+ characters).
 
 // `__Host-`: a sibling subdomain cannot plant one, as with the session cookie.
 const SSO_COOKIE: &str = "__Host-bf_sso";
 
-fn sso_config() -> Option<(String, String)> {
-    let url =
-        std::env::var("BF_SSO_URL").ok().filter(|u| u.starts_with("https://") || u.starts_with("http://127.0.0.1:"))?;
-    let secret = std::env::var("BF_SSO_SECRET").ok().filter(|s| s.len() >= 32)?;
+/// The login site's address and shared secret: set under Settings, Outside logins, with the login
+/// switched on.
+fn sso_config(s: &bf_core::settings::Settings) -> Option<(String, String)> {
+    if !s.bool("login_sso_enabled") {
+        return None;
+    }
+    let url = Some(s.str("login_sso_url").trim().to_owned())
+        .filter(|u| u.starts_with("https://") || u.starts_with("http://127.0.0.1:"))?;
+    let secret = Some(s.str("login_sso_secret").trim().to_owned()).filter(|v| v.len() >= 32)?;
     Some((url, secret))
 }
 
-pub(crate) fn sso_enabled() -> bool {
-    sso_config().is_some()
+pub(crate) fn sso_enabled(s: &bf_core::settings::Settings) -> bool {
+    sso_config(s).is_some()
+}
+
+pub(crate) fn sso_name(s: &bf_core::settings::Settings) -> String {
+    Some(s.str("login_sso_name").trim().to_owned()).filter(|n| !n.is_empty()).unwrap_or_else(|| "Single sign-on".into())
 }
 
 fn hex_signature(secret: &str, payload: &str) -> String {
@@ -377,8 +386,8 @@ async fn sso_visit(State(state): State<AppState>, v: Viewer, Query(q): Query<Sso
         res.headers_mut().append(header::SET_COOKIE, cookie);
         return Ok(res);
     }
-    sso_config().ok_or(AppError::NotFound)?;
-    let label = std::env::var("BF_SSO_NAME").unwrap_or_else(|_| "Single sign-on".into());
+    sso_config(&state.settings()).ok_or(AppError::NotFound)?;
+    let label = sso_name(&state.settings());
     Ok(crate::auth::external::continue_page(&state, &v, "sso", &label, q.auto == "1"))
 }
 
@@ -386,13 +395,13 @@ async fn sso_visit(State(state): State<AppState>, v: Viewer, Query(q): Query<Sso
 async fn sso_start(State(state): State<AppState>, v: Viewer, Form(f): Form<CsrfForm>) -> Result<Response, AppError> {
     v.check_csrf(&f.csrf)?;
     let (url, cookie) = sso_begin(&state).await?;
-    let label = std::env::var("BF_SSO_NAME").unwrap_or_else(|_| "Single sign-on".into());
+    let label = sso_name(&state.settings());
     crate::auth::oauth::send_on(&state, &v, &label, &url, cookie, (bf_core::i18n::en("Log in"), "/login"))
 }
 
 /// Where to send the browser to sign in at the login site, and the cookie that ties the answer to it.
 async fn sso_begin(state: &AppState) -> Result<(String, HeaderValue), AppError> {
-    let (url, secret) = sso_config().ok_or(AppError::NotFound)?;
+    let (url, secret) = sso_config(&state.settings()).ok_or(AppError::NotFound)?;
     let nonce = random_token();
     bf_db::accounts::security::remember_sso_nonce(state.db()?, &bf_core::auth::token_digest(&nonce)).await.db()?;
     let inner = url::form_urlencoded::Serializer::new(String::new())
@@ -418,7 +427,7 @@ async fn sso_callback(
     headers: HeaderMap,
     Query(q): Query<SsoReturn>,
 ) -> Result<Response, AppError> {
-    let (_, secret) = sso_config().ok_or(AppError::NotFound)?;
+    let (_, secret) = sso_config(&state.settings()).ok_or(AppError::NotFound)?;
     let refused = || AppError::BadRequest("That sign-in could not be verified. Please try again.".into());
     if !bf_core::auth::csrf_matches(Some(&hex_signature(&secret, &q.sso)), Some(&q.sig)) {
         return Err(refused());

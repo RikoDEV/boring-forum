@@ -2112,6 +2112,74 @@ msg-referrals_how_many_qualified_referrals_earn_the_group = Polecenia: ile zakwa
 msg-mailchimp_audience_list_id_to_sync_newsletter_opt_ins = Mailchimp: id odbiorców (listy), z którymi synchronizować zgody na newsletter; wymaga BF_MAILCHIMP_API_KEY
 # Mailchimp: secret (16+ characters) in the webhook address /newsletter/mailchimp?secret=…
 msg-mailchimp_secret_16_characters_in_the_webhook_address = Mailchimp: sekret (16+ znaków) w adresie webhooka /newsletter/mailchimp?secret=…
+# Google sign-in is on (turn it off to hide it without deleting its credentials)
+msg-google_sign_in_is_on_turn_it_off_to_hide_it_without = Logowanie przez Google jest włączone (wyłącz, aby ukryć go bez usuwania danych dostępowych)
+# GitHub sign-in is on (turn it off to hide it without deleting its credentials)
+msg-github_sign_in_is_on_turn_it_off_to_hide_it_without = Logowanie przez GitHub jest włączone (wyłącz, aby ukryć go bez usuwania danych dostępowych)
+# Discord sign-in is on (turn it off to hide it without deleting its credentials)
+msg-discord_sign_in_is_on_turn_it_off_to_hide_it_without = Logowanie przez Discord jest włączone (wyłącz, aby ukryć go bez usuwania danych dostępowych)
+# Microsoft sign-in is on (turn it off to hide it without deleting its credentials)
+msg-microsoft_sign_in_is_on_turn_it_off_to_hide_it_without = Logowanie przez Microsoft jest włączone (wyłącz, aby ukryć go bez usuwania danych dostępowych)
+# Twitch sign-in is on (turn it off to hide it without deleting its credentials)
+msg-twitch_sign_in_is_on_turn_it_off_to_hide_it_without = Logowanie przez Twitch jest włączone (wyłącz, aby ukryć go bez usuwania danych dostępowych)
+# X sign-in is on (turn it off to hide it without deleting its credentials)
+msg-x_sign_in_is_on_turn_it_off_to_hide_it_without_deleting = Logowanie przez X jest włączone (wyłącz, aby ukryć go bez usuwania danych dostępowych)
+# Sign in with Apple is on (turn it off to hide it without deleting its credentials)
+msg-sign_in_with_apple_is_on_turn_it_off_to_hide_it_without = Logowanie przez Apple jest włączone (wyłącz, aby ukryć go bez usuwania danych dostępowych)
+# The other OpenID Connect login is on (turn it off to hide it without deleting its credentials)
+msg-the_other_openid_connect_login_is_on_turn_it_off_to = Drugie logowanie OpenID Connect jest włączone (wyłącz, aby ukryć go bez usuwania danych dostępowych)
+# The DiscourseConnect login is on (turn it off to hide it without deleting its credentials)
+msg-the_discourseconnect_login_is_on_turn_it_off_to_hide_it = Logowanie DiscourseConnect jest włączone (wyłącz, aby ukryć go bez usuwania danych dostępowych)
+# Google sign-in: OAuth client ID. The redirect address is your site's /auth/google/callback
+msg-google_sign_in_oauth_client_id_the_redirect_address_is = Logowanie przez Google: identyfikator klienta OAuth. Adres przekierowania to /auth/google/callback Twojej witryny
+# Google sign-in: OAuth client secret
+msg-google_sign_in_oauth_client_secret = Logowanie przez Google: klucz tajny klienta OAuth
+# GitHub sign-in: OAuth client ID. The redirect address is your site's /auth/github/callback
+msg-github_sign_in_oauth_client_id_the_redirect_address_is = Logowanie przez GitHub: identyfikator klienta OAuth. Adres przekierowania to /auth/github/callback Twojej witryny
+# GitHub sign-in: OAuth client secret
+msg-github_sign_in_oauth_client_secret = Logowanie przez GitHub: klucz tajny klienta OAuth
+# Discord sign-in: OAuth client ID. The redirect address is your site's /auth/discord/callback
+msg-discord_sign_in_oauth_client_id_the_redirect_address_is = Logowanie przez Discord: identyfikator klienta OAuth. Adres przekierowania to /auth/discord/callback Twojej witryny
+# Discord sign-in: OAuth client secret
+msg-discord_sign_in_oauth_client_secret = Logowanie przez Discord: klucz tajny klienta OAuth
+# Microsoft sign-in: application (client) ID. The redirect address is your site's /auth/microsoft/callback
+msg-microsoft_sign_in_application_client_id_the_redirect = Logowanie przez Microsoft: identyfikator aplikacji (klienta). Adres przekierowania to /auth/microsoft/callback Twojej witryny
+# Microsoft sign-in: client secret
+msg-microsoft_sign_in_client_secret = Logowanie przez Microsoft: klucz tajny klienta
+# Twitch sign-in: client ID. The redirect address is your site's /auth/twitch/callback
+msg-twitch_sign_in_client_id_the_redirect_address_is_your = Logowanie przez Twitch: identyfikator klienta. Adres przekierowania to /auth/twitch/callback Twojej witryny
+# Twitch sign-in: client secret
+msg-twitch_sign_in_client_secret = Logowanie przez Twitch: klucz tajny klienta
+# X sign-in: OAuth 2.0 client ID. The redirect address is your site's /auth/x/callback
+msg-x_sign_in_oauth_2_0_client_id_the_redirect_address_is = Logowanie przez X: identyfikator klienta OAuth 2.0. Adres przekierowania to /auth/x/callback Twojej witryny
+# X sign-in: OAuth 2.0 client secret
+msg-x_sign_in_oauth_2_0_client_secret = Logowanie przez X: klucz tajny klienta OAuth 2.0
+# Sign in with Apple: Services ID
+msg-sign_in_with_apple_services_id = Logowanie przez Apple: Services ID
+# Sign in with Apple: team ID
+msg-sign_in_with_apple_team_id = Logowanie przez Apple: identyfikator zespołu
+# Sign in with Apple: key ID
+msg-sign_in_with_apple_key_id = Logowanie przez Apple: identyfikator klucza
+# Sign in with Apple: contents of the .p8 private key
+msg-sign_in_with_apple_contents_of_the_p8_private_key = Logowanie przez Apple: zawartość klucza prywatnego .p8
+# Other OpenID Connect provider: name shown on the button
+msg-other_openid_connect_provider_name_shown_on_the_button = Inny dostawca OpenID Connect: nazwa na przycisku
+# Other OpenID Connect provider: authorization address
+msg-other_openid_connect_provider_authorization_address = Inny dostawca OpenID Connect: adres autoryzacji
+# Other OpenID Connect provider: token address
+msg-other_openid_connect_provider_token_address = Inny dostawca OpenID Connect: adres tokenów
+# Other OpenID Connect provider: user info address
+msg-other_openid_connect_provider_user_info_address = Inny dostawca OpenID Connect: adres danych użytkownika
+# Other OpenID Connect provider: client ID
+msg-other_openid_connect_provider_client_id = Inny dostawca OpenID Connect: identyfikator klienta
+# Other OpenID Connect provider: client secret
+msg-other_openid_connect_provider_client_secret = Inny dostawca OpenID Connect: klucz tajny klienta
+# DiscourseConnect login site: its address (https)
+msg-discourseconnect_login_site_its_address_https = Witryna logowania DiscourseConnect: jej adres (https)
+# DiscourseConnect login site: shared secret, at least 32 characters
+msg-discourseconnect_login_site_shared_secret_at_least_32 = Witryna logowania DiscourseConnect: wspólny klucz tajny, co najmniej 32 znaki
+# DiscourseConnect login site: name shown on the button
+msg-discourseconnect_login_site_name_shown_on_the_button = Witryna logowania DiscourseConnect: nazwa na przycisku
 # Back up the site automatically
 msg-back_up_the_site_automatically = Twórz kopie zapasowe witryny automatycznie
 # Hours between automatic backups
@@ -5926,6 +5994,10 @@ admin-your_site_s_name_language_and_availability = Nazwa strony, język i dostę
 admin-sign_up_and_sign_in = Rejestracja i logowanie
 # Who can join, and how they log in
 admin-who_can_join_and_how_they_log_in = Kto może dołączyć i jak się loguje
+# Outside logins
+admin-outside_logins = Zewnętrzne logowania
+# Let members sign in with Google, GitHub, Discord, Microsoft, Twitch, X, Apple, another OpenID Connect provider or a DiscourseConnect site. A login shows on the sign-in page once its ID and secret are set; how they behave is under Sign-up and sign-in
+admin-let_members_sign_in_with_google_github_discord = Pozwól członkom logować się przez Google, GitHub, Discord, Microsoft, Twitch, X, Apple, innego dostawcę OpenID Connect lub witrynę DiscourseConnect. Logowanie pojawia się na stronie logowania, gdy ustawisz jego identyfikator i klucz tajny; zachowanie logowań ustawisz w sekcji Rejestracja i logowanie
 # Spam protection
 admin-spam_protection = Ochrona przed spamem
 # Keep bots and throwaway accounts out
@@ -6208,6 +6280,74 @@ admin-auth_overrides_avatar = Nadpisuj awatar
 admin-auth_overrides_name = Nadpisuj imię i nazwisko
 # Auth require interaction
 admin-auth_require_interaction = Wymagaj kliknięcia
+# Google sign-in
+admin-google_sign_in = Logowanie przez Google
+# GitHub sign-in
+admin-github_sign_in = Logowanie przez GitHub
+# Discord sign-in
+admin-discord_sign_in = Logowanie przez Discord
+# Microsoft sign-in
+admin-microsoft_sign_in = Logowanie przez Microsoft
+# Twitch sign-in
+admin-twitch_sign_in = Logowanie przez Twitch
+# Twitch client ID
+admin-twitch_client_id = Identyfikator klienta Twitch
+# Twitch client secret
+admin-twitch_client_secret = Klucz tajny klienta Twitch
+# X sign-in
+admin-x_sign_in = Logowanie przez X
+# X client ID
+admin-x_client_id = Identyfikator klienta X
+# X client secret
+admin-x_client_secret = Klucz tajny klienta X
+# Sign in with Apple
+admin-sign_in_with_apple = Logowanie przez Apple
+# OpenID Connect sign-in
+admin-openid_connect_sign_in = Logowanie OpenID Connect
+# DiscourseConnect sign-in
+admin-discourseconnect_sign_in = Logowanie DiscourseConnect
+# Google client ID
+admin-google_client_id = Identyfikator klienta Google
+# Google client secret
+admin-google_client_secret = Klucz tajny klienta Google
+# GitHub client ID
+admin-github_client_id = Identyfikator klienta GitHub
+# GitHub client secret
+admin-github_client_secret = Klucz tajny klienta GitHub
+# Discord client ID
+admin-discord_client_id = Identyfikator klienta Discord
+# Discord client secret
+admin-discord_client_secret = Klucz tajny klienta Discord
+# Microsoft client ID
+admin-microsoft_client_id = Identyfikator klienta Microsoft
+# Microsoft client secret
+admin-microsoft_client_secret = Klucz tajny klienta Microsoft
+# Apple Services ID
+admin-apple_services_id = Apple Services ID
+# Apple team ID
+admin-apple_team_id = Identyfikator zespołu Apple
+# Apple key ID
+admin-apple_key_id = Identyfikator klucza Apple
+# Apple private key
+admin-apple_private_key = Klucz prywatny Apple
+# OpenID Connect button name
+admin-openid_connect_button_name = Nazwa przycisku OpenID Connect
+# OpenID Connect authorization address
+admin-openid_connect_authorization_address = Adres autoryzacji OpenID Connect
+# OpenID Connect token address
+admin-openid_connect_token_address = Adres tokenów OpenID Connect
+# OpenID Connect user info address
+admin-openid_connect_user_info_address = Adres danych użytkownika OpenID Connect
+# OpenID Connect client ID
+admin-openid_connect_client_id = Identyfikator klienta OpenID Connect
+# OpenID Connect client secret
+admin-openid_connect_client_secret = Klucz tajny klienta OpenID Connect
+# DiscourseConnect button name
+admin-discourseconnect_button_name = Nazwa przycisku DiscourseConnect
+# DiscourseConnect login site
+admin-discourseconnect_login_site = Witryna logowania DiscourseConnect
+# DiscourseConnect secret
+admin-discourseconnect_secret = Klucz tajny DiscourseConnect
 # Block temporary email addresses
 admin-block_temporary_email_addresses = Blokuj tymczasowe adresy e-mail
 # Blocked email domains
