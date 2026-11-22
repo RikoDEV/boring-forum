@@ -106,5 +106,6 @@ pub mod federation;
 pub mod forum;
 pub mod moderation;
 pub mod platform;
+pub mod roles;
 pub mod settings;
 mod sql;

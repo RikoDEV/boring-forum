@@ -25,13 +25,11 @@ backups. It follows the newest release; set `BF_VERSION` (for example `0.0.1`) t
 To build the image from your checkout instead, add `-f deploy/compose.build.yml` and `--build`.
 Postgres is not published to the host. For development, add `-f deploy/compose.dev.yml` to open it on `127.0.0.1:5432`.
 
-You do not need the repository, only three files in an empty directory (`roles.sql` creates the
-database roles the server runs as):
+You do not need the repository, only two files in an empty directory:
 
 ```sh
 mkdir forum && cd forum
 curl -fsSLO https://raw.githubusercontent.com/RikoDEV/boring-forum/main/deploy/compose.yml
-mkdir postgres && curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/deploy/postgres/roles.sql -o postgres/roles.sql
 curl -fsSL https://raw.githubusercontent.com/RikoDEV/boring-forum/main/.env.production -o .env
 ```
 
@@ -59,7 +57,8 @@ secrets, and a restored backup is unreadable in those places without it
 ### The server does not run as the database owner
 
 The compose file creates three least-privilege roles for you, so there is nothing to set up by hand.
-A `db-roles` step runs `deploy/postgres/roles.sql` on every start (it is safe to repeat), and the
+A `db-roles` step runs the server image's own `provision-roles` command (it applies
+`deploy/postgres/roles.sql`, built into the binary, and is safe to repeat) on every start, and the
 server then migrates as `forum_migrate` and serves as `forum_app`, which can read and write rows but
 cannot change the schema. A SQL injection that got through could not drop a table or reach the
 database host. `forum_readonly` is there for ad-hoc queries.

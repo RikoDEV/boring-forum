@@ -3,8 +3,9 @@
 # Settings: a .env beside this file (see .env.production).
 #
 # The server never runs as the database owner. `db-roles` creates three least-privilege roles on
-# every start (deploy/postgres/roles.sql, safe to repeat): forum_migrate owns the schema and runs the
-# migrations, forum_app serves with data access only, forum_readonly is for ad-hoc queries. Their
+# every start (deploy/postgres/roles.sql, built into the server image and safe to repeat):
+# forum_migrate owns the schema and runs the migrations, forum_app serves with data access only,
+# forum_readonly is for ad-hoc queries. Their
 # passwords default to one derived from POSTGRES_PASSWORD, so changing that one value changes all;
 # BF_APP_DB_PASSWORD, BF_MIGRATE_DB_PASSWORD and BF_READONLY_DB_PASSWORD set them separately.
 services:
@@ -23,29 +24,14 @@ services:
       retries: 30
 
   db-roles:
-    image: postgres:18-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
+    # The server image applies the roles itself (`boring-forum provision-roles`): no extra file, no psql.
+    image: ghcr.io/rikodev/boring-forum:${BF_VERSION:-latest}
+    command: ["provision-roles"]
     environment:
-      PGPASSWORD: ${POSTGRES_PASSWORD:-forum}
-    volumes:
-      - ./postgres/roles.sql:/roles.sql:ro
-    entrypoint: ["psql"]
-    command:
-      - "-h"
-      - "db"
-      - "-U"
-      - "${POSTGRES_USER:-forum}"
-      - "-d"
-      - "${POSTGRES_DB:-forum}"
-      - "-v"
-      - "ON_ERROR_STOP=1"
-      - "-v"
-      - "app_password='${BF_APP_DB_PASSWORD:-${POSTGRES_PASSWORD:-forum}_app}'"
-      - "-v"
-      - "migrate_password='${BF_MIGRATE_DB_PASSWORD:-${POSTGRES_PASSWORD:-forum}_migrate}'"
-      - "-v"
-      - "readonly_password='${BF_READONLY_DB_PASSWORD:-${POSTGRES_PASSWORD:-forum}_readonly}'"
-      - "-f"
-      - "/roles.sql"
+      BF_ADMIN_DATABASE_URL: postgres://${POSTGRES_USER:-forum}:${POSTGRES_PASSWORD:-forum}@db:5432/${POSTGRES_DB:-forum}
+      BF_APP_DB_PASSWORD: ${BF_APP_DB_PASSWORD:-${POSTGRES_PASSWORD:-forum}_app}
+      BF_MIGRATE_DB_PASSWORD: ${BF_MIGRATE_DB_PASSWORD:-${POSTGRES_PASSWORD:-forum}_migrate}
+      BF_READONLY_DB_PASSWORD: ${BF_READONLY_DB_PASSWORD:-${POSTGRES_PASSWORD:-forum}_readonly}
     restart: "no"
     depends_on:
       db: { condition: service_healthy }

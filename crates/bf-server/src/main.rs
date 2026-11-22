@@ -101,6 +101,15 @@ async fn main() {
         print!("{}", bf_core::secretbox::generate_key());
         return;
     }
+    // `boring-forum provision-roles` creates the least-privilege database roles (roles.sql). Compose
+    // runs it once per start, as the database owner (BF_ADMIN_DATABASE_URL), before the server.
+    if args.first().map(String::as_str) == Some("provision-roles") {
+        if let Err(e) = provision_roles().await {
+            eprintln!("{e}");
+            std::process::exit(1);
+        }
+        return;
+    }
     // `boring-forum rotate-secrets` re-encrypts the sensitive columns with the current key.
     if args.first().map(String::as_str) == Some("rotate-secrets") {
         if let Err(e) = rotate_secrets().await {
@@ -177,6 +186,19 @@ async fn backup_command(args: &[String]) -> Result<(), Box<dyn std::error::Error
     let ddl = bf_db::ddl_pool(&pool).await?;
     let manifest = backup::restore(&ddl, std::path::Path::new(file), &backup::uploads_dir()).await?;
     println!("restored the backup of {} ({} tables)", manifest.created_at, manifest.tables.len());
+    Ok(())
+}
+
+async fn provision_roles() -> Result<(), Box<dyn std::error::Error>> {
+    let var = |name: &str| std::env::var(name).map_err(|_| format!("{name} is not set"));
+    bf_db::roles::provision(
+        &var("BF_ADMIN_DATABASE_URL")?,
+        &var("BF_APP_DB_PASSWORD")?,
+        &var("BF_MIGRATE_DB_PASSWORD")?,
+        &var("BF_READONLY_DB_PASSWORD")?,
+    )
+    .await?;
+    println!("database roles are in place");
     Ok(())
 }
 

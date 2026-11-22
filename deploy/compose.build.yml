@@ -3,3 +3,5 @@ services:
   server:
     build: { context: .., dockerfile: deploy/docker/Dockerfile }
     pull_policy: never
+  db-roles:
+    pull_policy: never
