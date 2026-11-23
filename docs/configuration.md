@@ -48,7 +48,7 @@ environment as the server would and reports errors and doubtful settings without
 | `BF_MICROCACHE_TTL_MS` | 2000 | Guest page cache lifetime |
 | `BF_RATE_LIMIT_PER_MIN` | 600 | Requests per minute per client address |
 | `BF_LOG_JSON` | false | One JSON object per log line |
-| `BF_TRUSTED_PROXIES` | unset | Proxy addresses or networks (CIDR, such as `172.16.0.0/12`) whose `X-Forwarded-*` headers are believed |
+| `BF_TRUSTED_PROXIES` | unset | Proxy addresses or networks (CIDR, such as `172.16.0.0/12`) whose `X-Forwarded-*` headers are believed. Behind Cloudflare, also switch on Settings → General → Cloudflare: real visitor address (below) |
 | `BF_GEO_HEADER`, `BF_ASN_HEADER` | unset | Trusted CDN headers with the visitor's country and network number |
 | `BF_TLS_CERT`, `BF_TLS_KEY`, `BF_HTTP_BIND`, `BF_HTTPS_REDIRECT`, `BF_HSTS_PRELOAD` | see above | Built-in TLS, the plain-HTTP redirect listener and HSTS preload |
 | `BF_DRAIN_SECS` | 5 | Seconds between failing `/readyz` and closing listeners on shutdown |

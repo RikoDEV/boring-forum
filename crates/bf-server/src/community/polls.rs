@@ -535,7 +535,7 @@ pub(crate) async fn poll_html(
         let can_submit = open && eligible && (p.vote_change || !voted);
         let total: i64 = rows.iter().map(|r| r.3).sum();
         html.push_str(&format!(
-            "<section class=\"panel block poll\" id=\"poll-{}\"><h2>{}</h2>",
+            "<section class=\"bf-box block poll\" id=\"poll-{}\"><h2>{}</h2>",
             p.id,
             esc(&p.question)
         ));
@@ -767,7 +767,7 @@ fn manage_controls(
         ));
     }
     h.push_str(&format!(
-        "<form method=\"post\" action=\"/t/{item}/poll/{id}/delete\" class=\"inline\">{csrf_field}<button class=\"link small\">{}</button></form></div>",
+        "<form method=\"post\" action=\"/t/{item}/poll/{id}/delete\" class=\"inline\">{csrf_field}<button class=\"btn bf-btn-danger\">{}</button></form></div>",
         esc(&t.msg("Remove poll"))
     ));
     h

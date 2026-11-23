@@ -1,5 +1,5 @@
 //! A moment on a page: "3 h ago", "Oct 2026", "2026-11-08". In a template it renders as
-//! `<time datetime="…" title="2026-11-08 14:55 UTC" data-format="…">3 h ago</time>`; the islands
+//! `<time datetime="…" data-tip="2026-11-08 14:55 UTC" data-format="…">3 h ago</time>`; the islands
 //! (`localTimes` in main.js, `timeText` in dom.js) then restate the words in the reader's language
 //! and the full date on hover in their own time zone, so the text built here is only the English
 //! fallback. In JSON it is just that text; APIs send the moment beside it (`*_at`).
@@ -109,7 +109,7 @@ impl fmt::Display for Ago {
         match self.at {
             Some(at) => write!(
                 f,
-                r#"<time datetime="{}" title="{}"{}>{}</time>"#,
+                r#"<time datetime="{}" data-tip="{}"{}>{}</time>"#,
                 at.to_rfc3339(),
                 at.format("%Y-%m-%d %H:%M UTC"),
                 self.format.attr(),

@@ -91,3 +91,11 @@
   margin: 0;
   font-size: var(--bf-text-sm);
 }
+
+/* Touch screens: a finger-sized target. */
+@media (pointer: coarse) {
+  .bf-icon-choice {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}

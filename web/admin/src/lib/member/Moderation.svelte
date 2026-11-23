@@ -2,10 +2,11 @@
   /// Warnings and private staff notes about a member, with the dialogs that add them.
   import { tr } from "#lib/i18n.js";
   import { Status } from "#lib/status.svelte.js";
-  import { del, post, when } from "#lib/api.js";
+  import { del, post } from "#lib/api.js";
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
   import UserLink from "#lib/UserLink.svelte";
+  import When from "#lib/When.svelte";
 
   /** @type {{ id: number, ov: any, refresh: (msg: string) => any }} */
   let { id, ov, refresh } = $props();
@@ -50,7 +51,9 @@
               <span class="acp-pill" class:is-muted={!w.active}>{w.active ? tr("Active") : tr("Expired")}</span>
               <br /><small class="muted acp-wrap">{w.reason}</small>
             </div>
-            <small class="muted"><UserLink name={w.moderator} fallback={tr("Staff")} /> · {when(w.created_at)}</small>
+            <small class="muted">
+              <UserLink name={w.moderator} fallback={tr("Staff")} /> · <When iso={w.created_at} />
+            </small>
           </li>
         {/each}
       </ul>
@@ -71,7 +74,7 @@
             <div class="acp-grow">
               <span class="acp-wrap">{n.body}</span>
               <br /><small class="muted">
-                <UserLink name={n.author} fallback={tr("Staff")} /> · {when(n.created_at)}
+                <UserLink name={n.author} fallback={tr("Staff")} /> · <When iso={n.created_at} />
               </small>
             </div>
             <button

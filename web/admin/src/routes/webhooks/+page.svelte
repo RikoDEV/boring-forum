@@ -1,4 +1,5 @@
 <script>
+  import { followTabHash } from "#lib/tabs.svelte.js";
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
   import { Status } from "#lib/status.svelte.js";
@@ -7,7 +8,9 @@
   import MultiSelect from "#lib/MultiSelect.svelte";
   import Field from "#lib/Field.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
+  import Empty from "#lib/Empty.svelte";
   let tab = $state("hooks");
+  followTabHash(["hooks", "log", "apps"], (key) => (tab = key));
   let hooks = $state([]);
   let events = $state([]);
   let log = $state([]);
@@ -15,14 +18,17 @@
   const fresh = $state({ url: "", events: ["*"], node_ids: [] });
   let forums = $state([]);
   let secret = $state("");
-  const load = () => {
-    get("/tree").then((r) => (forums = r.nodes.filter((n) => n.kind === "forum")), status.fail);
-    get("/webhooks").then((r) => {
-      hooks = r.webhooks;
-      events = r.events;
-    }, status.fail);
-    get("/webhook-deliveries").then((r) => (log = r), status.fail);
-  };
+  let loaded = $state(false);
+  let loadedClients = $state(false);
+  const load = () =>
+    Promise.all([
+      get("/tree").then((r) => (forums = r.nodes.filter((n) => n.kind === "forum")), status.fail),
+      get("/webhooks").then((r) => {
+        hooks = r.webhooks;
+        events = r.events;
+      }, status.fail),
+      get("/webhook-deliveries").then((r) => (log = r), status.fail),
+    ]).then(() => (loaded = true));
   let dialog = $state(null);
   function add(e) {
     e.preventDefault();
@@ -39,7 +45,10 @@
   let clients = $state([]);
   let app = $state({ name: "", uri: "" });
   let creds = $state(null);
-  const loadClients = () => get("/oauth-clients").then((r) => (clients = r), status.fail);
+  const loadClients = () =>
+    get("/oauth-clients")
+      .then((r) => (clients = r), status.fail)
+      .finally(() => (loadedClients = true));
   function addClient(e) {
     e.preventDefault();
     post("/oauth-clients", { name: app.name, redirect_uris: [app.uri] }).then((r) => {
@@ -142,7 +151,12 @@
           <button class="is-danger" onclick={() => del(`/webhooks/${h.id}`).then(load, status.fail)}>
             {tr("Delete")}
           </button>
-        </li>{:else}<li class="muted">{tr("No webhooks yet.")}</li>{/each}
+        </li>{:else}<Empty
+          li
+          {loaded}
+          title={tr("No webhooks yet.")}
+          text={tr("Use New webhook above to add one.")}
+        />{/each}
     </ul>
   </div>
 {:else if tab === "log"}
@@ -163,7 +177,12 @@
               {d.status}
             </span>
           </td><td>{d.attempts}</td><td><small>{d.last_error ?? d.last_status ?? ""}</small></td>
-        </tr>{:else}<tr><td colspan="5" class="muted">{tr("None yet.")}</td></tr>{/each}
+        </tr>{:else}<Empty
+          cols={5}
+          {loaded}
+          title={tr("None yet.")}
+          text={tr("Deliveries are listed here once a webhook fires.")}
+        />{/each}
     </tbody>
   </table>
 {:else}
@@ -185,7 +204,12 @@
           <button class="is-danger" onclick={() => del(`/oauth-clients/${c.client_id}`).then(loadClients, status.fail)}>
             {tr("Delete")}
           </button>
-        </li>{:else}<li class="muted">{tr("No applications yet.")}</li>{/each}
+        </li>{:else}<Empty
+          li
+          loaded={loadedClients}
+          title={tr("No applications yet.")}
+          text={tr("Use New application above to add one.")}
+        />{/each}
     </ul>
   </div>
 {/if}

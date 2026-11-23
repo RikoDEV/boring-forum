@@ -5,6 +5,7 @@
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
   import MultiSelect from "#lib/MultiSelect.svelte";
+  import Empty from "#lib/Empty.svelte";
   import { members, tags } from "#lib/suggest.js";
   import { get } from "#lib/api.js";
 
@@ -12,6 +13,7 @@
   let total = $state(0);
   let nodes = $state([]);
   let search = $state("");
+  let loaded = $state(false);
   // The member or tag a permalink points at, as the picker holds it.
   let pick = $state([]);
   const crud = new Crud({ path: "/permalinks", blank: () => blank(), load: () => load() });
@@ -42,6 +44,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
   get("/tree").then(
     (t) => (nodes = t.nodes),
@@ -64,19 +67,22 @@
     e.preventDefault();
     status.clear();
     const d = crud.draft;
-    crud.save({
-      url: d.url,
-      kind: d.kind,
-      target_id: ["forum", "topic", "post"].includes(d.kind) ? Number(d.target_id) || null : null,
-      target: ["forum", "topic", "post"].includes(d.kind)
-        ? null
-        : ["member", "tag"].includes(d.kind)
-          ? (pick[0] ?? "")
-          : d.target,
-    });
+    crud.save(
+      {
+        url: d.url,
+        kind: d.kind,
+        target_id: ["forum", "topic", "post"].includes(d.kind) ? Number(d.target_id) || null : null,
+        target: ["forum", "topic", "post"].includes(d.kind)
+          ? null
+          : ["member", "tag"].includes(d.kind)
+            ? (pick[0] ?? "")
+            : d.target,
+      },
+      tr("Saved."),
+    );
   }
   const remove = () =>
-    confirm(tr("Delete the permalink {url}?", { url: crud.draft.url })) && crud.remove(crud.draft.id);
+    confirm(tr("Delete the permalink {url}?", { url: crud.draft.url })) && crud.remove(crud.draft.id, tr("Deleted."));
 </script>
 
 <PageHead
@@ -145,7 +151,12 @@
         <td class="acp-cell-end"><button class="secondary" onclick={() => edit(p)}>{tr("Edit")}</button></td>
       </tr>
     {:else}
-      <tr><td colspan="3" class="muted">{search.trim() ? tr("Nothing matches.") : tr("No permalinks yet.")}</td></tr>
+      <Empty
+        cols={3}
+        {loaded}
+        title={search.trim() ? tr("Nothing matches.") : tr("No permalinks yet.")}
+        text={search.trim() ? "" : tr("Use Add permalink above to add one.")}
+      />
     {/each}
   </tbody>
 </table>

@@ -26,7 +26,8 @@ pub struct UsersPage {
     pub rows: Vec<MemberRow>,
     pub prev_url: Option<String>,
     pub next_url: Option<String>,
-    pub page: i64,
+    /// The page and its neighbours for the pager: (number, address, current).
+    pub pages: Vec<(i64, String, bool)>,
 }
 
 #[derive(Template)]

@@ -3,6 +3,8 @@
   import { page } from "$app/state";
   import { mount, tick } from "svelte";
   import AdminSearch from "#lib/AdminSearch.svelte";
+  import Crumbs from "#lib/Crumbs.svelte";
+  import { crumbs } from "#lib/crumbs.svelte.js";
   import { publishCsrf } from "#lib/csrf.js";
   import { setEditorUrl } from "#lib/editor.js";
   import { loadShell, tr } from "#lib/i18n.js";
@@ -75,6 +77,20 @@
     ],
   ];
   const current = (p) => page.url.pathname.replace(/\/$/, "") === `${base}${p}`;
+  // Where the open page sits in the menu, then whatever it adds for a detail view it shows itself.
+  const trail = $derived.by(() => {
+    const path = page.url.pathname.replace(/\/$/, "");
+    let hit = null;
+    for (const [group, items] of groups)
+      for (const [p, label] of items)
+        if (p && (path === `${base}${p}` || path.startsWith(`${base}${p}/`))) hit = { group, p, label };
+    if (!hit) return [];
+    /** @type {{ label: string, href?: string, onclick?: () => void }} */
+    const here = { label: hit.label };
+    if (path !== `${base}${hit.p}`) here.href = `${base}${hit.p}/`;
+    else if (crumbs.extra.length && crumbs.back) here.onclick = crumbs.back;
+    return [{ label: tr("Administration"), href: `${base}/` }, { label: hit.group }, here, ...crumbs.extra];
+  });
   let siteName = $state("");
   let shell = $state("");
   // The site's own header, with its styles and islands. The styles go first in <head>, so the
@@ -167,5 +183,8 @@
       {/each}
     {/each}
   </nav>
-  <main class="acp-main">{@render children()}</main>
+  <main class="acp-main">
+    <Crumbs items={trail} />
+    {@render children()}
+  </main>
 </div>

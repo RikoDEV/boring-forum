@@ -291,7 +291,7 @@ pub async fn deliver(
         "WITH t AS (INSERT INTO unsubscribe_tokens (token, user_id, kind, item_id, conversation_id)
                     SELECT gen_random_uuid()::text, unnest($1::bigint[]), $2, $8::bigint, $10::bigint RETURNING token, user_id, reply_key)
          INSERT INTO mail_outbox (to_addr, subject, body, unsubscribe_url, not_before, unless_read_user, unless_read_url, reply_key)
-         SELECT u.email, $3, $4 || E'\\nStop these emails: ' || $5 || '/unsubscribe/' || t.token
+         SELECT u.email, $3, replace($4, $11, u.username) || E'\\nStop these emails: ' || $5 || '/unsubscribe/' || t.token
                 || CASE WHEN $8::bigint IS NOT NULL THEN E'\\nMute this topic: ' || $5 || '/unsubscribe/' || t.token || '/topic' ELSE '' END,
                 $5 || '/unsubscribe/' || t.token,
                 CASE WHEN $6 > 0 OR d.held IS NOT NULL
@@ -314,12 +314,17 @@ pub async fn deliver(
     .bind(&held_until)
     // A private message can be answered by email too.
     .bind(data.get("conversation_id").and_then(serde_json::Value::as_i64))
+    .bind(RECIPIENT)
     .execute(&mut *tx)
     .await?;
     tx.commit().await?;
     // A notification folded into an unread one adds nothing to a live badge.
     Ok(fresh)
 }
+
+/// Stands for the recipient's username in an email body handed to `deliver`; each mail gets its
+/// own recipient's name in its place, so one body can greet every member of a batch.
+pub const RECIPIENT: &str = "\u{1}recipient\u{1}";
 
 /// Members grouped by language, so each reads an email in their own.
 pub async fn recipients_by_locale(pool: &PgPool, ids: &[i64]) -> Result<Vec<(Option<String>, Vec<i64>)>, Error> {

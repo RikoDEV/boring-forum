@@ -9,6 +9,8 @@
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
   import Switch from "#lib/Switch.svelte";
+  import Box from "#lib/Box.svelte";
+  import Empty from "#lib/Empty.svelte";
 
   const LIMITS = [
     ["max_upload_kb", tr("Upload size, KB"), 0],
@@ -27,6 +29,7 @@
 
   let groups = $state([]);
   let find = $state("");
+  let loaded = $state(false);
   let draft = $state(null); // the group being added or changed
   const status = new Status();
   // The preview's text: the group's colour, made readable on what is behind it, as on the site.
@@ -50,7 +53,10 @@
     }
   }
 
-  const load = () => get("/groups").then((r) => (groups = r), status.fail);
+  const load = () =>
+    get("/groups")
+      .then((r) => (groups = r), status.fail)
+      .finally(() => (loaded = true));
   const shown = $derived(groups.filter((g) => `${g.name} ${g.slug}`.toLowerCase().includes(find.trim().toLowerCase())));
   const kind = (g) =>
     g.is_admin
@@ -247,9 +253,9 @@
   </EditDialog>
 {/if}
 
-<div class="acp-settings-head">
-  <input type="search" bind:value={find} placeholder={tr("Find a group")} aria-label={tr("Find a group")} />
-</div>
+<Box title={tr("Find a group")}>
+  <div class="acp-form"><Field label={tr("Find a group")} type="search" bind:value={find} /></div>
+</Box>
 <div class="acp-box">
   <ul class="acp-rows">
     {#each shown as g (g.id)}
@@ -268,7 +274,7 @@
         {#if !g.plugin}<button class="secondary" onclick={() => edit(g)}>{tr("Edit")}</button>{/if}
       </li>
     {:else}
-      <li class="acp-rowitem muted">{tr("No groups match.")}</li>
+      <Empty li {loaded} title={tr("No groups match.")} />
     {/each}
   </ul>
 </div>

@@ -1,6 +1,7 @@
 <script>
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
+  import { trailOf } from "#lib/crumbs.svelte.js";
   import { Status } from "#lib/status.svelte.js";
   import { del, get, post, put } from "#lib/api.js";
   import EditDialog from "#lib/EditDialog.svelte";
@@ -16,6 +17,7 @@
   let defaultLight = $state("");
   let defaultDark = $state("");
   let selected = $state(null);
+  $effect(() => trailOf(selected ? [{ label: selected.name }] : [], close));
   let savedCopy = $state("");
   let adding = $state(false);
   const fresh = $state({ name: "", copy_from: 0 });
@@ -232,22 +234,12 @@
     {/each}
   </ul>
 {:else}
-  <div class="acp-head">
-    <div>
-      <button class="acp-link" onclick={close}>{tr("← All colour schemes")}</button>
-      <h1>{selected.name}</h1>
-    </div>
+  <PageHead title={selected.name} {status}>
     <div class="acp-actions">
-      {#if dirty}<span class="muted"><small>{tr("Unsaved changes")}</small></span>{:else if status.msg}<span
-          class="muted"
-          role="status"
-        >
-          <small>{status.msg}</small>
-        </span>{/if}
+      {#if dirty}<span class="muted"><small>{tr("Unsaved changes")}</small></span>{/if}
       <button onclick={save} disabled={!dirty}>{tr("Save")}</button>
     </div>
-  </div>
-  {#if status.error}<p class="err" role="alert">{status.error}</p>{/if}
+  </PageHead>
   {#each warnings as w}<p class="err" role="status">{w}</p>{/each}
 
   <section class="acp-box">
@@ -305,7 +297,7 @@
                   maxlength="7"
                   spellcheck="false"
                   class:is-bad={!isHex(map[k])}
-                  aria-label="{LABEL[k]}, {i ? tr('dark') : tr('light')}"
+                  aria-label={tr("{label}, {mode}", { label: LABEL[k], mode: i ? tr("dark") : tr("light") })}
                 />
               </span>
             {/each}

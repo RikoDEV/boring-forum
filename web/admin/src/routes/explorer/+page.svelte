@@ -139,7 +139,7 @@
       <div class="acp-actions">
         <button class="secondary" onclick={save} disabled={!name.trim()}>
           {current ? tr("Save changes") : tr("Save query")}
-        </button>{#if current}<button class="secondary" onclick={remove}>{tr("Delete")}</button>{/if}
+        </button>{#if current}<button class="is-danger" onclick={remove}>{tr("Delete")}</button>{/if}
       </div>
     </div>
 

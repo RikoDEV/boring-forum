@@ -1,4 +1,5 @@
 <script>
+  import { followTabHash } from "#lib/tabs.svelte.js";
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
   import { Status } from "#lib/status.svelte.js";
@@ -8,13 +9,16 @@
   import Section from "#lib/Section.svelte";
   import sprite from "../../../../../themes/default/icons.svg?url";
   import EditDialog from "#lib/EditDialog.svelte";
+  import Empty from "#lib/Empty.svelte";
   let tab = $state("reactions");
+  followTabHash(["reactions", "tags", "rules", "news", "reasons"], (key) => (tab = key));
   let reactions = $state([]);
   let groups = $state([]);
   let rules = $state([]);
   let notices = $state([]);
   let reasons = $state([]);
   const status = new Status();
+  let loaded = $state(false);
   const load = () =>
     Promise.all([
       get("/reactions"),
@@ -22,13 +26,15 @@
       get("/promotion-rules"),
       get("/announcements"),
       get("/report-reasons"),
-    ]).then(([a, b, c, d, e]) => {
-      reasons = e;
-      reactions = a;
-      groups = b.map((g) => ({ ...g, tagsText: g.tags.join(", "), nodesText: g.nodes.join(", ") }));
-      rules = c;
-      notices = d;
-    }, status.fail);
+    ])
+      .then(([a, b, c, d, e]) => {
+        reasons = e;
+        reactions = a;
+        groups = b.map((g) => ({ ...g, tagsText: g.tags.join(", "), nodesText: g.nodes.join(", ") }));
+        rules = c;
+        notices = d;
+      }, status.fail)
+      .finally(() => (loaded = true));
   const blankReaction = () => ({ name: "", icon: "", score: 1, enabled: true, position: 10 });
   const blankGroup = () => ({ name: "", one_per_topic: false, tagsText: "", nodesText: "" });
   const blankRule = () => ({
@@ -284,7 +290,7 @@
       <tr>
         <th>{tr("Key")}</th><th>{tr("Label")}</th><th>{tr("Weight")}</th><th>{tr("Needs note")}</th><th>
           {tr("Illegal")}
-        </th><th>{tr("Message only")}</th><th>{tr("Order")}</th><th>{tr("On")}</th><th></th>
+        </th><th>{tr("Message only")}</th><th>{tr("Order")}</th><th>{tr("On")}</th><th class="acp-cell-end"></th>
       </tr>
     </thead>
     <tbody>
@@ -317,7 +323,7 @@
           </td>
           <td><input type="number" bind:value={r.position} aria-label={tr("Order")} style:width="5rem" /></td>
           <td><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} disabled={r.key === "other"} /></td>
-          <td>
+          <td class="acp-cell-end">
             {#if !r.plugin}<button
                 onclick={() =>
                   save(
@@ -326,11 +332,13 @@
               >
                 {tr("Save")}
               </button>
-              {#if r.key !== "other"}<button class="secondary" onclick={() => save(del(`/report-reasons/${r.key}`))}>
+              {#if r.key !== "other"}<button class="is-danger" onclick={() => save(del(`/report-reasons/${r.key}`))}>
                   {tr("Delete")}
                 </button>{/if}{/if}
           </td>
         </tr>
+      {:else}
+        <Empty cols={9} {loaded} title={tr("No report reasons yet.")} text={tr("Use New reason above to add one.")} />
       {/each}
     </tbody>
   </table>
@@ -394,6 +402,8 @@
                 </button>{/if}{/if}
           </td>
         </tr>
+      {:else}
+        <Empty cols={6} {loaded} title={tr("No reactions yet.")} text={tr("Use New reaction above to add one.")} />
       {/each}
     </tbody>
   </table>
@@ -420,6 +430,8 @@
           </div>
         </div>
       </section>
+    {:else}
+      <Empty {loaded} title={tr("No tag groups yet.")} text={tr("Use New tag group above to add one.")} />
     {/each}
   </div>
 {:else if tab === "rules"}
@@ -450,6 +462,8 @@
           </div>
         </div>
       </section>
+    {:else}
+      <Empty {loaded} title={tr("No group rules yet.")} text={tr("Use New group rule above to add one.")} />
     {/each}
   </div>
 {:else}
@@ -473,6 +487,8 @@
           </div>
         </div>
       </section>
+    {:else}
+      <Empty {loaded} title={tr("No announcements yet.")} text={tr("Use New announcement above to add one.")} />
     {/each}
   </div>
 {/if}

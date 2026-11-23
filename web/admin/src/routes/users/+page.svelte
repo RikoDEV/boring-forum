@@ -1,9 +1,15 @@
 <script>
-  import { tn, tr, locale } from "#lib/i18n.js";
+  import { untrack } from "svelte";
+  import { tn, tr } from "#lib/i18n.js";
+  import { followTabHash } from "#lib/tabs.svelte.js";
+  import When from "#lib/When.svelte";
+  import Box from "#lib/Box.svelte";
+  import Field from "#lib/Field.svelte";
+  import Empty from "#lib/Empty.svelte";
   import PageHead from "#lib/PageHead.svelte";
   import { Status } from "#lib/status.svelte.js";
   import { resolve } from "$app/paths";
-  import { get, when } from "#lib/api.js";
+  import { get } from "#lib/api.js";
 
   const base = resolve("/").replace(/\/$/, "");
   const FILTERS = [
@@ -21,23 +27,13 @@
   let page = $state(1);
   let users = $state([]);
   let groups = $state([]);
+  let loaded = $state(false);
   const status = new Status();
 
   const total = $derived(users[0]?.total ?? 0);
   const pages = $derived(Math.max(1, Math.ceil(total / 50)));
   const groupName = (id) => groups.find((g) => g.id === id)?.name ?? id;
   const active = (iso) => iso && new Date(iso) > new Date();
-  const ago = (iso) => {
-    if (!iso) return tr("Never");
-    const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400e3);
-    return days <= 0
-      ? tr("Today")
-      : days === 1
-        ? tr("Yesterday")
-        : days < 60
-          ? tn("count.days_ago", days)
-          : new Date(iso).toLocaleDateString(locale());
-  };
 
   async function load() {
     status.clear();
@@ -47,6 +43,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
   const pick = (s) => {
     filter = s;
@@ -58,6 +55,8 @@
     load();
   };
   load();
+  // `#tab=suspended` opens the list on that filter ("All" is the page without one).
+  followTabHash(FILTERS.map(([key]) => key).filter(Boolean), (key) => untrack(() => filter !== key && pick(key)));
 </script>
 
 <PageHead title={tr("Members")} {status}>
@@ -70,20 +69,21 @@
       {label}
     </button>{/each}
 </div>
-<form
-  class="row"
-  onsubmit={(e) => {
-    e.preventDefault();
-    page = 1;
-    load();
-  }}
->
-  <input type="search" bind:value={q} placeholder={tr("Username or email")} aria-label={tr("Search members")} />
-  <button>{tr("Search")}</button>
-  <label class="bf-field acp-end">
-    <select
-      bind:value={sort}
-      onchange={() => {
+<Box title={tr("Search members")}>
+  <form
+    class="acp-form"
+    onsubmit={(e) => {
+      e.preventDefault();
+      page = 1;
+      load();
+    }}
+  >
+    <Field label={tr("Username or email")} type="search" bind:value={q} />
+    <Field
+      label={tr("Sort by")}
+      value={sort}
+      onchange={(e) => {
+        sort = e.currentTarget.value;
         page = 1;
         load();
       }}
@@ -91,9 +91,10 @@
       <option value="">{tr("Newest")}</option><option value="seen">{tr("Last seen")}</option><option value="posts">
         {tr("Posts")}
       </option><option value="reputation">{tr("Reputation")}</option><option value="name">{tr("Name")}</option>
-    </select><span class="bf-field-label">{tr("Sort by")}</span>
-  </label>
-</form>
+    </Field>
+    <div class="acp-actions"><button>{tr("Search")}</button></div>
+  </form>
+</Box>
 
 <table>
   <thead>
@@ -132,8 +133,12 @@
         <td>{u.topic_count}</td>
         <td>{u.post_count}</td>
         <td>{u.reputation}</td>
-        <td><small title={u.last_seen_at ? when(u.last_seen_at) : undefined}>{ago(u.last_seen_at)}</small></td>
-        <td><small title={when(u.joined_at)}>{ago(u.joined_at)}</small></td>
+        <td>
+          <small>
+            {#if u.last_seen_at}<When iso={u.last_seen_at} />{:else}{tr("Never")}{/if}
+          </small>
+        </td>
+        <td><small><When iso={u.joined_at} /></small></td>
         <td>
           <div class="acp-chips">
             {#if !u.approved}<span class="acp-pill is-warn">{tr("Awaiting approval")}</span>{/if}
@@ -152,7 +157,7 @@
         </td>
       </tr>
     {:else}
-      <tr><td colspan="9" class="muted">{tr("No members match.")}</td></tr>
+      <Empty cols={9} {loaded} title={tr("No members match.")} text={tr("Try another search or filter.")} />
     {/each}
   </tbody>
 </table>

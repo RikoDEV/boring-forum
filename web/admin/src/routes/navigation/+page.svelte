@@ -6,6 +6,7 @@
   import Field from "#lib/Field.svelte";
   import Section from "#lib/Section.svelte";
   import IconButton from "#lib/IconButton.svelte";
+  import Empty from "#lib/Empty.svelte";
   import MultiSelect from "#lib/MultiSelect.svelte";
   import { Status } from "#lib/status.svelte.js";
   import { iconHref } from "#lib/icons.js";
@@ -30,6 +31,7 @@
   const DEFAULTS = ["forums", "latest", "top", "search"].map((key) => ({ key, groups: [] }));
 
   let items = $state([]);
+  let loaded = $state(false);
   let saved = $state("[]"); // what the server has, to count changes against
   let groups = $state([]);
   let enabled = $state({});
@@ -65,6 +67,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
   load();
 
@@ -169,14 +172,10 @@
           </span>{/if}
         {#if item.groups?.length}<span class="acp-pill is-muted">{tr("Some groups")}</span>{/if}
         <IconButton icon="pencil" label={tr("Edit {n}", { n: name(item) })} onclick={() => open(i)} />
-        <IconButton icon="trash-2" label={tr("Remove {n}", { n: name(item) })} onclick={() => remove(i)} />
+        <IconButton icon="trash-2" label={tr("Remove {n}", { n: name(item) })} danger onclick={() => remove(i)} />
       </li>
     {:else}
-      <li class="acp-empty-state">
-        <strong>{tr("No header links")}</strong><span class="muted">
-          {tr("Use Add link to put pages in the header.")}
-        </span>
-      </li>
+      <Empty li {loaded} title={tr("No header links")} text={tr("Use Add link to put pages in the header.")} />
     {/each}
   </ul>
 </Box>

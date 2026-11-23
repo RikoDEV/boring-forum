@@ -2,7 +2,7 @@
 {#- One private conversation: the messages and a reply, with participants and actions beside. -#}
 {% block content %}
 <nav class="crumbs small"><a href="/messages">{{ layout.t.t("nav.messages") }}</a> {{ layout.icon("chevron-right")|safe }} <span>{{ subject }}</span></nav>
-<h1>{{ subject }}</h1>
+<header class="bf-box bf-page-head"><h1>{{ subject }}</h1></header>
 <div class="bf-grid">
   <div>
     {% for m in messages %}
@@ -31,7 +31,7 @@
         {% for p in participants %}
         <li>
           <img class="avatar" src="/avatar/{{ p.username }}.svg" width="32" height="32" alt="" loading="lazy">
-          <div><a href="{{ p.url }}"><strong>{{ p.username }}</strong></a>{% if p.is_self %} <span class="muted small">{{ layout.t.t("conversation.you") }}</span>{% else %}<div class="muted small">{% if p.seen_latest %}{{ layout.t.t("conversation.seen") }}{% else %}{{ layout.t.t("conversation.not_seen") }}{% endif %}</div>{% endif %}</div>
+          <div><strong>{{ layout.user_link(p.username)|safe }}</strong>{% if p.is_self %} <span class="muted small">{{ layout.t.t("conversation.you") }}</span>{% else %}<div class="muted small">{% if p.seen_latest %}{{ layout.t.t("conversation.seen") }}{% else %}{{ layout.t.t("conversation.not_seen") }}{% endif %}</div>{% endif %}</div>
           {% if can_manage && !p.is_self %}
           <form method="post" action="/messages/{{ id }}/remove"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><input type="hidden" name="username" value="{{ p.username }}"><button class="link small">{{ layout.t.t("settings.remove") }}</button></form>
           {% endif %}
@@ -56,7 +56,7 @@
           <label class="bf-field"><input name="folder" placeholder=" "><span class="bf-field-label">{{ layout.t.t("conversation.folder") }}</span></label>
           <button class="btn">{{ layout.t.t("topic.move") }}</button>
         </form>
-        <button type="button" class="btn" data-dialog="report-conversation">{{ layout.icon("flag")|safe }} {{ layout.t.t("post.report") }}</button>
+        <button type="button" class="btn" data-dialog="report-conversation">{{ layout.icon("flag")|safe }} <span class="bf-btn-label">{{ layout.t.t("post.report") }}</span></button>
         <dialog class="bf-dialog" id="report-conversation" aria-labelledby="report-title">
           <header class="bf-dialog-head">
             <h2 id="report-title">{{ layout.t.t("conversation.report") }}</h2>
@@ -71,7 +71,7 @@
             </form>
           </div>
         </dialog>
-        <form method="post" action="/messages/{{ id }}/leave"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("log-out")|safe }} {{ layout.t.t("conversation.leave") }}</button></form>
+        <form method="post" action="/messages/{{ id }}/leave"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("log-out")|safe }} <span class="bf-btn-label">{{ layout.t.t("conversation.leave") }}</span></button></form>
       </div>
     </section>
   </aside>

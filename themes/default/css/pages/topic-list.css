@@ -104,7 +104,7 @@
   display: none;
 }
 
-@media (width <= 640px) {
+@media (width <= 639px) {
   .hide-sm {
     display: none;
   }
@@ -225,8 +225,8 @@ html {
 
 .bf-segments {
   display: inline-flex;
-  gap: 2px;
-  padding: 2px;
+  gap: var(--bf-space-0);
+  padding: var(--bf-space-0);
   border-radius: var(--bf-radius);
   background: var(--bf-color-surface-2);
   /* More tabs than the width holds scroll inside their own bar, not the page. */
@@ -234,7 +234,7 @@ html {
   overflow-x: auto;
   scrollbar-width: none;
 
-  & a {
+  & :is(a, label) {
     flex: none;
     white-space: nowrap;
     padding: var(--bf-space-1) var(--bf-space-3);
@@ -243,15 +243,16 @@ html {
     font-weight: 500;
   }
 
-  & a:hover {
+  & :is(a, label):hover {
     color: var(--bf-color-text);
     text-decoration: none;
   }
 
-  & a[aria-current="true"] {
+  & a[aria-current],
+  & label:has(input:checked) {
     background: var(--bf-color-surface);
     color: var(--bf-color-text);
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+    box-shadow: var(--bf-shadow-sm);
   }
 }
 
@@ -285,7 +286,7 @@ html {
 
 .bf-similar-forum {
   padding-inline: var(--bf-space-1);
-  border-radius: 3px;
+  border-radius: var(--bf-radius-sm);
   background: var(--bf-color-surface-2);
   color: var(--bf-color-muted);
   font-size: var(--bf-text-xs);

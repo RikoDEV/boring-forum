@@ -2,7 +2,7 @@
 
 .bf-toasts {
   position: fixed;
-  z-index: 50;
+  z-index: var(--bf-z-toast);
   inset-block-end: var(--bf-space-4);
   inset-inline-end: var(--bf-space-4);
   display: grid;

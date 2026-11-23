@@ -6,11 +6,13 @@
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
   import Section from "#lib/Section.svelte";
+  import Empty from "#lib/Empty.svelte";
   import { api, get, post } from "#lib/api.js";
 
   let mirrors = $state([]);
   let nodes = $state([]);
   let fresh = $state(null); // the follow being added
+  let loaded = $state(false);
   const status = new Status();
 
   const forumName = (id) => nodes.find((n) => n.id === id)?.title ?? `#${id}`;
@@ -23,6 +25,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
   load();
 
@@ -106,17 +109,24 @@
 {/if}
 
 <table>
-  <thead><tr><th>{tr("Group")}</th><th>{tr("Into")}</th><th>{tr("Status")}</th><th></th></tr></thead>
+  <thead>
+    <tr><th>{tr("Group")}</th><th>{tr("Into")}</th><th>{tr("Status")}</th><th class="acp-cell-end"></th></tr>
+  </thead>
   <tbody>
     {#each mirrors as m (m.node_id + m.actor)}
       <tr>
         <td><a href={m.actor} rel="noopener">{m.handle}</a></td><td>{forumName(m.node_id)}</td><td>
           {m.accepted ? tr("Following") : tr("Waiting for the other server")}
         </td>
-        <td><button class="secondary" onclick={() => remove(m)}>{tr("Stop")}</button></td>
+        <td class="acp-cell-end"><button class="is-danger" onclick={() => remove(m)}>{tr("Stop")}</button></td>
       </tr>
     {:else}
-      <tr><td colspan="4" class="muted">{tr("No forum follows a remote group.")}</td></tr>
+      <Empty
+        cols={4}
+        {loaded}
+        title={tr("No forum follows a remote group.")}
+        text={tr("Use Follow a remote group above to add one.")}
+      />
     {/each}
   </tbody>
 </table>

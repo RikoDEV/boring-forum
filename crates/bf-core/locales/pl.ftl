@@ -62,6 +62,11 @@ count-bots = { $n ->
     [few] { $n } boty
    *[other] { $n } botów
 }
+count-logins = { $n ->
+    [one] { $n } połączone logowanie
+    [few] { $n } połączone logowania
+   *[other] { $n } połączonych logowań
+}
 count-members = { $n ->
     [one] { $n } użytkownik
     [few] { $n } użytkowników
@@ -1264,7 +1269,7 @@ admin-count-days = { $n ->
    *[other] { $n } dni
 }
 
-mail-verify-subject = Potwierdź swój adres e-mail w { $site }
+mail-verify-subject = Potwierdź swój adres e-mail - { $site }
 mail-verify-body =
     Cześć { $username },
 
@@ -1275,7 +1280,7 @@ mail-verify-body =
     Jeśli to nie Ty o to prosiłeś(-aś), zignoruj tę wiadomość.
 
     — { $site }
-mail-reset-subject = Zresetuj hasło w { $site }
+mail-reset-subject = Zresetuj hasło - { $site }
 mail-reset-body =
     Cześć { $username },
 
@@ -1288,6 +1293,8 @@ mail-reset-body =
     — { $site }
 mail-notification-subject = { $by } napisał(a) w „{ $title }” - { $site }
 mail-notification-body =
+    Cześć { $username },
+
     { $by } napisał(a) w „{ $title }”:
 
     { $link }
@@ -1304,7 +1311,7 @@ mail-security-body =
     Jeśli to Ty, nie musisz nic robić. Jeśli nie, zresetuj hasło pod adresem { $link } i skontaktuj się z obsługą.
 
     — { $site }
-mail-backup-subject = Link do pobrania kopii zapasowej { $site }
+mail-backup-subject = Link do pobrania kopii zapasowej - { $site }
 mail-backup-body =
     Cześć { $username },
 
@@ -1315,7 +1322,7 @@ mail-backup-body =
     Jeśli to nie Ty o to prosiłeś, zignoruj tę wiadomość i sprawdź dziennik obsługi.
 
     — { $site }
-mail-digest-subject = Nowości w { $site }
+mail-digest-subject = Nowości - { $site }
 mail-digest-body =
     Cześć { $username },
 
@@ -2008,6 +2015,8 @@ msg-comma_separated_email_domains_when_set_only_these_may = Domeny e-mail oddzie
 msg-who_sees_edit_history_everyone_members_author_or_staff = Kto widzi historię edycji: wszyscy, użytkownicy, autor lub obsługa
 # URL returning the latest version as text; empty turns the check off
 msg-url_returning_the_latest_version_as_text_empty_turns = Adres URL zwracający najnowszą wersję jako tekst; puste wyłącza sprawdzanie
+# Behind Cloudflare: take each visitor's address from the CF-Connecting-IP header. Believed only from Cloudflare's own addresses and from proxies in BF_TRUSTED_PROXIES
+msg-behind_cloudflare_take_each_visitor_s_address_from_the = Za Cloudflare: bierz adres każdego odwiedzającego z nagłówka CF-Connecting-IP. Nagłówek jest uznawany tylko z adresów samego Cloudflare i z serwerów proxy wymienionych w BF_TRUSTED_PROXIES
 # New accounts need an invite code
 msg-new_accounts_need_an_invite_code = Nowe konta wymagają kodu zaproszenia
 # Checks new sign-ups for bots. Stays off until the challenge secret is set
@@ -2278,8 +2287,6 @@ msg-sites_that_may_embed_comments_as_host_names_separated = Strony, które mogą
 msg-discord_or_slack_incoming_webhook_for_new_posts_in = Przychodzący webhook Discorda lub Slacka dla nowych postów na publicznych forach
 # Akismet API key; empty turns the spam check off
 msg-akismet_api_key_empty_turns_the_spam_check_off = Klucz API Akismet; puste wyłącza sprawdzanie spamu
-# Advert shown under the header; scripts are removed
-msg-advert_shown_under_the_header_scripts_are_removed = Reklama pod nagłówkiem; skrypty są usuwane
 # The lines your ad networks ask you to publish at /ads.txt; leave empty to publish no file
 msg-the_lines_your_ad_networks_ask_you_to_publish_at_ads = Linie, które sieci reklamowe każą opublikować pod /ads.txt; zostaw puste, aby nie publikować pliku
 # Clubs one member may start
@@ -2338,36 +2345,44 @@ msg-analytics_plausible_umami_ga4_or_matomo_empty_for_none = Analityka: plausibl
 msg-analytics_the_site_s_domain_plausible_website_id_umami = Analityka: domena strony (Plausible), id witryny (Umami), id pomiaru G-… (GA4) lub id strony (Matomo)
 # Analytics: https address of a self-hosted Plausible, Umami or Matomo
 msg-analytics_https_address_of_a_self_hosted_plausible = Analityka: adres https samodzielnie hostowanego Plausible, Umami lub Matomo
+# A link alone on its line in a post becomes a card with the page's title, description and picture
+msg-a_link_alone_on_its_line_in_a_post_becomes_a_card_with = Link w osobnej linii wpisu zamienia się w kartę z tytułem, opisem i obrazem strony
+# Show the page's picture on a link preview card
+msg-show_the_page_s_picture_on_a_link_preview_card = Pokaż obraz strony na karcie podglądu linku
+# Sites that never get a link preview card, one per line or separated by spaces, like example.com (their subdomains too)
+msg-sites_that_never_get_a_link_preview_card_one_per_line = Serwisy, dla których nigdy nie powstaje karta podglądu linku, po jednym w wierszu lub oddzielone spacjami, np. example.com (razem z subdomenami)
+# Days a link preview card is kept before the page is fetched again
+msg-days_a_link_preview_card_is_kept_before_the_page_is = Liczba dni przechowywania karty podglądu linku, zanim strona zostanie pobrana ponownie
 # Draw a share picture for pages that have none, from the page's title and the site's look
-msg-draw_a_share_picture_for_pages_that_have_none_from_the = Generuj grafikę podglądu linku dla stron, które jej nie mają, na podstawie tytułu strony i wyglądu serwisu
+msg-draw_a_share_picture_for_pages_that_have_none_from_the = Generuj grafikę udostępniania dla stron, które jej nie mają, na podstawie tytułu strony i wyglądu serwisu
 # Layout of the share picture: classic (text on the left), centered, or poster (a picture behind the text)
-msg-layout_of_the_share_picture_classic_text_on_the_left = Układ grafiki podglądu linku: klasyczny (tekst po lewej), wyśrodkowany lub plakat (obraz za tekstem)
+msg-layout_of_the_share_picture_classic_text_on_the_left = Układ grafiki udostępniania: klasyczny (tekst po lewej), wyśrodkowany lub plakat (obraz za tekstem)
 # Pages that get a drawn share picture: home, topic, forum, tag, profile, page and other, separated by commas
-msg-pages_that_get_a_drawn_share_picture_home_topic_forum = Strony z generowaną grafiką podglądu linku: home, topic, forum, tag, profile, page i other, oddzielone przecinkami
+msg-pages_that_get_a_drawn_share_picture_home_topic_forum = Strony z generowaną grafiką udostępniania: home, topic, forum, tag, profile, page i other, oddzielone przecinkami
 # Share picture: background colour
-msg-share_picture_background_colour = Grafika podglądu linku: kolor tła
+msg-share_picture_background_colour = Grafika udostępniania: kolor tła
 # Share picture: second background colour for a gradient; empty keeps the first colour
-msg-share_picture_second_background_colour_for_a_gradient = Grafika podglądu linku: drugi kolor tła dla gradientu; puste zostawia pierwszy kolor
+msg-share_picture_second_background_colour_for_a_gradient = Grafika udostępniania: drugi kolor tła dla gradientu; puste zostawia pierwszy kolor
 # Share picture: text colour
-msg-share_picture_text_colour = Grafika podglądu linku: kolor tekstu
+msg-share_picture_text_colour = Grafika udostępniania: kolor tekstu
 # Share picture: accent colour of the stripe and the page label
-msg-share_picture_accent_colour_of_the_stripe_and_the_page = Grafika podglądu linku: kolor akcentu paska i etykiety strony
+msg-share_picture_accent_colour_of_the_stripe_and_the_page = Grafika udostępniania: kolor akcentu paska i etykiety strony
 # Share picture: a picture behind the text, from the site's uploads (1200×630px shows best)
-msg-share_picture_a_picture_behind_the_text_from_the_site_s = Grafika podglądu linku: obraz za tekstem, z przesłanych plików serwisu (najlepiej 1200×630 px)
+msg-share_picture_a_picture_behind_the_text_from_the_site_s = Grafika udostępniania: obraz za tekstem, z przesłanych plików serwisu (najlepiej 1200×630 px)
 # Share picture: how much the background picture is darkened, in percent
-msg-share_picture_how_much_the_background_picture_is = Grafika podglądu linku: jak mocno przyciemnić obraz w tle, w procentach
+msg-share_picture_how_much_the_background_picture_is = Grafika udostępniania: jak mocno przyciemnić obraz w tle, w procentach
 # Share picture: show the site's logo
-msg-share_picture_show_the_site_s_logo = Grafika podglądu linku: pokaż logo serwisu
+msg-share_picture_show_the_site_s_logo = Grafika udostępniania: pokaż logo serwisu
 # Share picture: show the site's name
-msg-share_picture_show_the_site_s_name = Grafika podglądu linku: pokaż nazwę serwisu
+msg-share_picture_show_the_site_s_name = Grafika udostępniania: pokaż nazwę serwisu
 # Share picture: label the kind of page (Topic, Forum, Profile…)
-msg-share_picture_label_the_kind_of_page_topic_forum_profile = Grafika podglądu linku: oznacz rodzaj strony (Temat, Forum, Profil…)
+msg-share_picture_label_the_kind_of_page_topic_forum_profile = Grafika udostępniania: oznacz rodzaj strony (Temat, Forum, Profil…)
 # Share picture: show the page's description under the title
-msg-share_picture_show_the_page_s_description_under_the = Grafika podglądu linku: pokaż opis strony pod tytułem
+msg-share_picture_show_the_page_s_description_under_the = Grafika udostępniania: pokaż opis strony pod tytułem
 # Share picture: text size in percent
-msg-share_picture_text_size_in_percent = Grafika podglądu linku: rozmiar tekstu w procentach
+msg-share_picture_text_size_in_percent = Grafika udostępniania: rozmiar tekstu w procentach
 # Share picture: line at the bottom; empty shows the site's address
-msg-share_picture_line_at_the_bottom_empty_shows_the_site_s = Grafika podglądu linku: linia na dole; puste pokazuje adres serwisu
+msg-share_picture_line_at_the_bottom_empty_shows_the_site_s = Grafika udostępniania: linia na dole; puste pokazuje adres serwisu
 # Hours to silence a new member whose post is hidden by spam reports or marked spam by AI; 0 never silences
 msg-hours_to_silence_a_new_member_whose_post_is_hidden_by = Na ile godzin wyciszyć nowego członka, którego wpis ukryły zgłoszenia spamu lub oznaczyło AI; 0 oznacza, że nigdy
 # Only members up to this trust level are silenced automatically for spam
@@ -2426,11 +2441,15 @@ msg-choose_two_different_accounts = Wybierz dwa różne konta.
 msg-an_administrator_cannot_be_merged_into_another_account = Administratora nie można scalić z innym kontem.
 # These uploads are not in this archive (size limit, or the file is missing):
 msg-these_uploads_are_not_in_this_archive_size_limit_or_the = Tych plików nie ma w archiwum (limit rozmiaru lub brak pliku):
-# Your account on {site} will be deleted in {days} days.\n\nIf you did not ask for this, sign in and cancel it under Account settings: {link}\n
-msg-your_account_on_site_will_be_deleted_in_days_days_if =
+# Hi {name},\n\nYour account on {site} will be deleted in {days} days.\n\nIf you did not ask for this, log in and cancel it under Account settings: {link}\n\n— {site}\n
+msg-hi_name_your_account_on_site_will_be_deleted_in_days =
+    Cześć { $name },
+
     Twoje konto w { $site } zostanie usunięte za { $days } dni.
 
-    Jeśli to nie Ty o to prosiłeś, zaloguj się i anuluj to w ustawieniach konta: { $link }
+    Jeśli to nie Ty o to prosiłeś(-aś), zaloguj się i anuluj usunięcie w ustawieniach konta: { $link }
+
+    — { $site }
 # Your account will be deleted - {site}
 msg-your_account_will_be_deleted_site = Twoje konto zostanie usunięte - { $site }
 # bad secret
@@ -2478,8 +2497,8 @@ msg-hi_name_confirm_email_as_the_new_address_for_your =
     Jeśli to nie Ty o to prosiłeś(-aś), zignoruj tę wiadomość.
 
     — { $site }
-# Confirm your new email for {site}
-msg-confirm_your_new_email_for_site = Potwierdź nowy adres e-mail w { $site }
+# Confirm your new email - {site}
+msg-confirm_your_new_email_site = Potwierdź nowy adres e-mail - { $site }
 # Check {email} for a confirmation link.
 msg-check_email_for_a_confirmation_link = Sprawdź skrzynkę { $email } — wysłaliśmy link potwierdzający.
 # This confirmation link was already used or has expired.
@@ -2528,6 +2547,8 @@ msg-no_expiry = bez wygasania
 msg-expired = wygasł
 # expires {date}
 msg-expires_date = wygasa { $date }
+# never
+msg-never_2 = nigdy
 # unknown choice
 msg-unknown_choice = nieznany wybór
 # You cannot ignore yourself.
@@ -2802,10 +2823,20 @@ msg-about = O stronie
 msg-clubs = Kluby
 # Live Q&A
 msg-live_q_a = Q&A na żywo
-# No status updates yet.
-msg-no_status_updates_yet = Nie ma jeszcze statusów.
+# Signed-in members active in the last 15 minutes
+msg-signed_in_members_active_in_the_last_15_minutes = Zalogowani członkowie aktywni w ciągu ostatnich 15 minut
+# Visitors who are not signed in
+msg-visitors_who_are_not_signed_in = Odwiedzający, którzy nie są zalogowani
+# Search engines and other crawlers
+msg-search_engines_and_other_crawlers = Wyszukiwarki i inne roboty indeksujące
 # Nobody right now.
 msg-nobody_right_now = Nikogo w tej chwili.
+# A crawler, not a person
+msg-a_crawler_not_a_person = Robot indeksujący, nie człowiek
+# Nobody has posted yet.
+msg-nobody_has_posted_yet = Nikt jeszcze nic nie napisał.
+# No status updates yet.
+msg-no_status_updates_yet = Nie ma jeszcze statusów.
 # Nothing coming up.
 msg-nothing_coming_up = Nic w najbliższym czasie.
 # Kind must be one of {n}; area is a page's top, side or bottom (pages: {m}).
@@ -2882,53 +2913,55 @@ msg-log_in = Zaloguj się
 msg-administrators_cannot_be_impersonated = Nie można podszywać się pod administratorów.
 # Register
 msg-register = Rejestracja
-# Hi {name},\n\nYour account was just signed in to from a new address ({ip}).\n\nIf this was not you, change your password and sign out other sessions under Account settings.\n
-msg-hi_name_your_account_was_just_signed_in_to_from_a_new =
+# Hi {name},\n\nYour account was just logged in to from a new address ({ip}).\n\nIf this was not you, change your password and log out other sessions under Account settings.\n\n— {site}\n
+msg-hi_name_your_account_was_just_logged_in_to_from_a_new =
     Cześć { $name },
 
-    Na twoje konto właśnie zalogowano się z nowego adresu ({ $ip }).
+    Właśnie zalogowano się na Twoje konto z nowego adresu ({ $ip }).
 
-    Jeśli to nie ty, zmień hasło i wyloguj inne sesje w ustawieniach konta.
-# New sign-in to your account
-msg-new_sign_in_to_your_account = Nowe logowanie na twoje konto
-# Too many failed attempts. Try again after {time} UTC, or reset your password.
-msg-too_many_failed_attempts_try_again_after_time_utc_or = Za dużo nieudanych prób. Spróbuj ponownie po { $time } UTC albo zresetuj hasło.
-# Hi {name},\n\nThere were 5 failed attempts to sign in to your account, so it is locked for {minutes} minutes.\n\nIf this was not you, consider changing your password: {link}\n\n— {site}\n
-msg-hi_name_there_were_5_failed_attempts_to_sign_in_to_your =
-    Cześć { $name },
-
-    Było 5 nieudanych prób zalogowania na twoje konto, więc jest ono zablokowane na { $minutes } min.
-
-    Jeśli to nie ty, rozważ zmianę hasła: { $link }
+    Jeśli to nie Ty, zmień hasło i wyloguj inne sesje w ustawieniach konta.
 
     — { $site }
-# Sign-in attempts on {site}
-msg-sign_in_attempts_on_site = Próby logowania w { $site }
-# Wrong username or password.
-msg-wrong_username_or_password = Nieprawidłowa nazwa użytkownika lub hasło.
-# If an account uses that address, a sign-in link is on its way.
-msg-if_an_account_uses_that_address_a_sign_in_link_is_on = Jeśli jakieś konto używa tego adresu, wysłaliśmy na niego link do logowania.
-# Hi {name},\n\nSign in to {site} with this link within 15 minutes:\n\n{link}\n\nIf you did not ask for this, ignore this email.\n
-msg-hi_name_sign_in_to_site_with_this_link_within_15 =
+# New log-in to your account - {site}
+msg-new_log_in_to_your_account_site = Nowe logowanie na Twoje konto - { $site }
+# Too many failed attempts. Try again after {time} UTC, or reset your password.
+msg-too_many_failed_attempts_try_again_after_time_utc_or = Za dużo nieudanych prób. Spróbuj ponownie po { $time } UTC albo zresetuj hasło.
+# Hi {name},\n\nThere were 5 failed attempts to log in to your account, so it is locked for {minutes} minutes.\n\nIf this was not you, consider changing your password: {link}\n\n— {site}\n
+msg-hi_name_there_were_5_failed_attempts_to_log_in_to_your =
     Cześć { $name },
 
-    Zaloguj się do { $site } tym linkiem w ciągu 15 minut:
+    Wykonano 5 nieudanych prób zalogowania na Twoje konto, więc zostało zablokowane na { $minutes } min.
+
+    Jeśli to nie Ty, rozważ zmianę hasła: { $link }
+
+    — { $site }
+# Too many failed log-in attempts - {site}
+msg-too_many_failed_log_in_attempts_site = Zbyt wiele nieudanych prób logowania - { $site }
+# Wrong username or password.
+msg-wrong_username_or_password = Nieprawidłowa nazwa użytkownika lub hasło.
+# If an account uses that address, a log-in link is on its way.
+msg-if_an_account_uses_that_address_a_log_in_link_is_on_its = Jeśli konto używa tego adresu, link do logowania jest już w drodze.
+# Hi {name},\n\nLog in to {site} with this link within 15 minutes:\n\n{link}\n\nIf you did not ask for this, ignore this email.\n\n— {site}\n
+msg-hi_name_log_in_to_site_with_this_link_within_15_minutes =
+    Cześć { $name },
+
+    Zaloguj się w { $site } tym linkiem w ciągu 15 minut:
 
     { $link }
 
-    Jeśli to nie Ty o to prosiłeś, zignoruj tę wiadomość.
-# Your sign-in link for {site}
-msg-your_sign_in_link_for_site = Twój link do logowania w { $site }
-# Email me a sign-in link
-msg-email_me_a_sign_in_link = Wyślij mi link do logowania
+    Jeśli to nie Ty o to prosiłeś(-aś), zignoruj tę wiadomość.
+
+    — { $site }
+# Your log-in link - {site}
+msg-your_log_in_link_site = Twój link do logowania - { $site }
+# Email me a log-in link
+msg-email_me_a_log_in_link = Wyślij mi link do logowania
 # Email
 msg-email = E-mail
 # Send link
 msg-send_link = Wyślij link
 # Back to log in
 msg-back_to_log_in = Wróć do logowania
-# Sign in
-msg-sign_in = Zaloguj się
 # Two-factor sign-in is unavailable right now. Please contact the site administrator.
 msg-two_factor_sign_in_is_unavailable_right_now_please = Logowanie dwuetapowe jest teraz niedostępne. Skontaktuj się z administratorem witryny.
 # That code is not valid. Try the current one.
@@ -3036,8 +3069,8 @@ msg-hi_name_someone_just_tried_to_register_on_site_with =
     Jeśli nie, zignoruj tę wiadomość.
 
     — { $site }
-# You already have an account on {site}
-msg-you_already_have_an_account_on_site = Masz już konto w serwisie { $site }
+# You already have an account - {site}
+msg-you_already_have_an_account_site = Masz już konto - { $site }
 # If this address can be used, an email is on its way with what to do next.
 msg-if_this_address_can_be_used_an_email_is_on_its_way_with = Jeśli ten adres może zostać użyty, wysłaliśmy wiadomość z dalszymi krokami.
 # Too many accounts were created from your network lately. Please try again later.
@@ -3228,6 +3261,8 @@ msg-you_have_sent_several_messages_recently_try_again_later = Wysłałeś(-aś) 
 msg-too_many_messages_were_sent_recently_try_again_later = Ostatnio wysłano zbyt wiele wiadomości. Spróbuj później.
 # Contact us
 msg-contact_us = Kontakt
+# Contact form message - {site}
+msg-contact_form_message_site = Wiadomość z formularza kontaktowego - { $site }
 # Thank you
 msg-thank_you_2 = Dziękujemy
 # Your email
@@ -3330,6 +3365,8 @@ msg-unknown_level = nieznany poziom
 msg-you_cannot_follow_yourself = Nie możesz obserwować samego siebie.
 # Following
 msg-following = Obserwowane
+# Nothing yet. Follow members from their profiles.
+msg-nothing_yet_follow_members_from_their_profiles = Na razie nic. Obserwuj użytkowników z ich profili.
 # Staff groups cannot be granted in bulk.
 msg-staff_groups_cannot_be_granted_in_bulk = Grup obsługi nie można nadawać masowo.
 # The document needs text (at most 200 KB).
@@ -3567,18 +3604,16 @@ msg-your_link = Twój link
 msg-share_this_anyone_who_signs_up_within_30_days_of = Udostępnij go. Każdy, kto zarejestruje się w ciągu 30 dni od jego otwarcia, liczy się jako Twój.
 # Your referral link
 msg-your_referral_link = Twój link polecający
-# Yes
-msg-yes = Tak
-# Once they reach trust level 1
-msg-once_they_reach_trust_level_1 = Gdy osiągną poziom zaufania 1
-# Referrals ({n})
-msg-referrals_n = Polecenia ({ $n })
-# Joined
-msg-joined = Dołączył(a)
+# Copy
+msg-copy = Kopiuj
 # Counts
 msg-counts = Liczy się
+# Once they reach trust level 1
+msg-once_they_reach_trust_level_1 = Gdy osiągną poziom zaufania 1
 # No one yet.
 msg-no_one_yet = Jeszcze nikt.
+# Referrals ({n})
+msg-referrals_n = Polecenia ({ $n })
 # This status is locked.
 msg-this_status_is_locked = Ten status jest zablokowany.
 # You cannot reply to this status.
@@ -3649,6 +3684,8 @@ msg-a_channel_name_is_1_to_60_characters = Nazwa kanału ma od 1 do 60 znaków.
 msg-access_must_be_open_groups_or_invite = Dostęp to open, groups lub invite.
 # Choose at least one group.
 msg-choose_at_least_one_group = Wybierz co najmniej jedną grupę.
+# Only a channel open to all members can add everyone.
+msg-only_a_channel_open_to_all_members_can_add_everyone = Tylko kanał otwarty dla wszystkich członków może dodawać wszystkich.
 # You cannot message that member.
 msg-you_cannot_message_that_member = Nie możesz napisać do tego użytkownika.
 # Choose 1 to {max} people.
@@ -3809,6 +3846,8 @@ msg-ask = Zadaj
 msg-your_question = Twoje pytanie
 # Ask a question
 msg-ask_a_question = Zadaj pytanie
+# Sign in
+msg-sign_in = Zaloguj się
 # to ask a question.
 msg-to_ask_a_question = aby zadać pytanie.
 # End now
@@ -3852,7 +3891,7 @@ msg-relevance = Trafność
 # Newest
 msg-newest = Najnowsze
 # Oldest
-msg-oldest = najstarsze
+msg-oldest = Najstarsze
 # Most liked
 msg-most_liked = Najbardziej lubiane
 # Most replies
@@ -3888,8 +3927,8 @@ msg-your_email_subject_to_site_was_not_posted_reason_reason =
     Powód: { $reason }
 
     — { $site }
-# Your email to {site} was not posted
-msg-your_email_to_site_was_not_posted = Twój e-mail do { $site } nie został opublikowany
+# Your email was not posted - {site}
+msg-your_email_was_not_posted_site = Twój e-mail nie został opublikowany - { $site }
 # Send a mail to
 msg-send_a_mail_to = Wyślij e-mail na
 # , with FORUM as the forum's number in its address. The subject becomes the title. Anyone with this address can post as you, so keep it private. Asking again replaces it.
@@ -4136,13 +4175,15 @@ msg-that_appeal_was_already_decided_or_you_made_the = To odwołanie zostało ju�
 msg-report_illegal_content = Zgłoś nielegalne treści
 # Thank you. Your notice was received.
 msg-thank_you_your_notice_was_received = Dziękujemy. Twoje zgłoszenie dotarło.
-# We received your notice (number {id}) about:\n\n{url}\n\nWe will review it and tell you our decision.\n\n— {site}\n
-msg-we_received_your_notice_number_id_about_url_we_will =
-    Otrzymaliśmy twoje zgłoszenie (numer { $id }) dotyczące:
+# Hello,\n\nWe received your notice (number {id}) about:\n\n{url}\n\nWe will review it and tell you our decision.\n\n— {site}\n
+msg-hello_we_received_your_notice_number_id_about_url_we =
+    Dzień dobry,
+
+    Otrzymaliśmy Twoje zgłoszenie (numer { $id }) dotyczące:
 
     { $url }
 
-    Rozpatrzymy je i poinformujemy cię o decyzji.
+    Rozpatrzymy je i poinformujemy Cię o decyzji.
 
     — { $site }
 # Your notice {id} - {site}
@@ -4151,6 +4192,33 @@ msg-your_notice_id_site = Twoje zgłoszenie { $id } - { $site }
 msg-statement_of_reasons = Uzasadnienie decyzji
 # Legal notices and appeals
 msg-legal_notices_and_appeals = Zgłoszenia prawne i odwołania
+# The decision is recorded and the notifier is told.
+msg-the_decision_is_recorded_and_the_notifier_is_told = Decyzja została zapisana, a zgłaszający został powiadomiony.
+# The appeal is accepted: the decision is reversed.
+msg-the_appeal_is_accepted_the_decision_is_reversed = Odwołanie przyjęte: decyzja została cofnięta.
+# The appeal is rejected: the decision stands.
+msg-the_appeal_is_rejected_the_decision_stands = Odwołanie odrzucone: decyzja pozostaje w mocy.
+# We have acted on it.
+msg-we_have_acted_on_it = Podjęliśmy działania.
+# We have decided not to act on it.
+msg-we_have_decided_not_to_act_on_it = Postanowiliśmy nie podejmować działań.
+# Hello,\n\nWe have reviewed your notice {id} about:\n\n{url}\n\n{outcome}\n\nReasons: {reason}\n\nIf you disagree, you may turn to a certified out-of-court dispute settlement body or to the courts.\n\n— {site}\n
+msg-hello_we_have_reviewed_your_notice_id_about_url_outcome =
+    Dzień dobry,
+
+    Rozpatrzyliśmy Twoje zgłoszenie { $id } dotyczące:
+
+    { $url }
+
+    { $outcome }
+
+    Powody: { $reason }
+
+    Jeśli się nie zgadzasz, możesz zwrócić się do certyfikowanego organu pozasądowego rozstrzygania sporów lub do sądu.
+
+    — { $site }
+# Decision on your notice {id} - {site}
+msg-decision_on_your_notice_id_site = Decyzja w sprawie Twojego zgłoszenia { $id } - { $site }
 # Transparency report
 msg-transparency_report = Raport przejrzystości
 # Illegal or harmful speech (hate speech, defamation)
@@ -4409,8 +4477,6 @@ msg-the_ban_is_lifted = Blokadę zniesiono.
 msg-suspended = Zawieszeni
 # Silenced
 msg-silenced = Wyciszeni
-# never
-msg-never_2 = nigdy
 # Please say what is wrong with this post.
 msg-please_say_what_is_wrong_with_this_post = Napisz, co jest nie tak z tym postem.
 # Only a visible or hidden post can be changed here.
@@ -4431,6 +4497,26 @@ msg-other_is_the_fallback_reason_and_files_a_normal_report = „other” to pow�
 msg-other_is_the_fallback_reason_and_stays_on = „other” to powód zapasowy i pozostaje włączony.
 # Someone has already decided this item.
 msg-someone_has_already_decided_this_item = Ktoś już rozstrzygnął ten element.
+# Thanks! Your post will appear once a moderator approves it.
+msg-thanks_your_post_will_appear_once_a_moderator_approves = Dziękujemy! Twój wpis pojawi się po zatwierdzeniu przez moderatora.
+# The post stays and the item is closed.
+msg-the_post_stays_and_the_item_is_closed = Wpis zostaje, a zgłoszenie zostaje zamknięte.
+# The post is removed.
+msg-the_post_is_removed = Wpis został usunięty.
+# The post is removed and its author is silenced.
+msg-the_post_is_removed_and_its_author_is_silenced = Wpis został usunięty, a jego autor wyciszony.
+# The account is approved.
+msg-the_account_is_approved = Konto zostało zatwierdzone.
+# The account is rejected.
+msg-the_account_is_rejected = Konto zostało odrzucone.
+# The held text is approved.
+msg-the_held_text_is_approved = Wstrzymany tekst został zatwierdzony.
+# The held text is rejected.
+msg-the_held_text_is_rejected = Wstrzymany tekst został odrzucony.
+# The report is closed.
+msg-the_report_is_closed = Zgłoszenie zostało zamknięte.
+# The message is removed from the chat.
+msg-the_message_is_removed_from_the_chat = Wiadomość została usunięta z czatu.
 # That file could not be uploaded.
 msg-that_file_could_not_be_uploaded = Nie udało się przesłać tego pliku.
 # Only an administrator can make an administrator or a moderator the author.
@@ -4792,14 +4878,10 @@ msg-this_sign_in_link_has_expired_please_try_again = Ten link do logowania wygas
 msg-that_sign_in_did_not_succeed = Logowanie się nie powiodło.
 # Advertisement
 msg-advertisement = Reklama
+# Under maintenance
+msg-under_maintenance = Przerwa techniczna
 # Signed-in members on this page in the last 15 minutes
 msg-signed_in_members_on_this_page_in_the_last_15_minutes = Zalogowani członkowie na tej stronie w ostatnich 15 minutach
-# Visitors who are not signed in
-msg-visitors_who_are_not_signed_in = Odwiedzający, którzy nie są zalogowani
-# Search engines and other crawlers
-msg-search_engines_and_other_crawlers = Wyszukiwarki i inne roboty indeksujące
-# A crawler, not a person
-msg-a_crawler_not_a_person = Robot indeksujący, nie człowiek
 # First column
 msg-first_column = Pierwsza kolumna
 # Second column
@@ -4830,6 +4912,10 @@ msg-add_a_staff_note = Dodaj notatkę personelu
 msg-only_staff_see_it_not_the_author = Widzi ją tylko personel, nie autor
 # Save note
 msg-save_note = Zapisz notatkę
+# Similar in meaning
+msg-similar_in_meaning = Podobne znaczeniowo
+# {n} more matching posts in this topic
+msg-n_more_matching_posts_in_this_topic = Jeszcze { $n } pasujących postów w tym temacie
 # Create account
 msg-create_account = Utwórz konto
 # Archive
@@ -4898,6 +4984,8 @@ msg-abuse = obraza
 msg-part_of_a_name = Fragment nazwy
 # Find
 msg-find = Szukaj
+# Joined
+msg-joined = Dołączył(a)
 # Last seen
 msg-last_seen = Ostatnio widziany
 # Posts
@@ -4960,6 +5048,8 @@ msg-address = Adres
 msg-reason = Powód
 # Lasts (days, empty: until lifted)
 msg-lasts_days_empty_until_lifted = Czas trwania (dni, puste: do odwołania)
+# Visitors using it are refused until the ban is lifted.
+msg-visitors_using_it_are_refused_until_the_ban_is_lifted = Odwiedzający z tego adresu są odrzucani do czasu zniesienia blokady.
 # A network can be at most a /24 (IPv4) or /48 (IPv6). Wider bans are for administrators.
 msg-a_network_can_be_at_most_a_24_ipv4_or_48_ipv6_wider = Sieć może mieć co najwyżej maskę /24 (IPv4) lub /48 (IPv6). Szersze blokady są dla administratorów.
 # Added
@@ -4970,6 +5060,8 @@ msg-expires = Wygasa
 msg-never = Nigdy
 # Lift
 msg-lift = Zdejmij
+# Visitors using it are let in again.
+msg-visitors_using_it_are_let_in_again = Odwiedzający z tego adresu znów mogą wejść.
 # No bans.
 msg-no_bans = Brak blokad.
 # Moderator log
@@ -4980,6 +5072,8 @@ msg-points = Punkty
 msg-given_by = Wydał(a)
 # Given
 msg-given = Wydano
+# You have no notifications.
+msg-you_have_no_notifications = Nie masz powiadomień.
 # Trust level {n}
 msg-trust_level_n = Poziom zaufania { $n }
 # Text to publish (used with the approve button; the author is told it was edited)
@@ -4996,8 +5090,36 @@ msg-spammer_delete_all = Spamer: usuń wszystko
 msg-remove_the_post_and_silence_its_author = Usuń wpis i wycisz jego autora
 # Remove and silence
 msg-remove_and_silence = Usuń i wycisz
-# Similar in meaning
-msg-similar_in_meaning = Podobne znaczeniowo
+# The author is told.
+msg-the_author_is_told = Autor został powiadomiony.
+# Showing results for
+msg-showing_results_for = Wyniki dla
+# Search instead for {q}
+msg-search_instead_for_q = Szukaj zamiast tego: { $q }
+# Did you mean
+msg-did_you_mean = Czy chodziło Ci o
+# No exact matches. These topics have similar titles.
+msg-no_exact_matches_these_topics_have_similar_titles = Brak dokładnych dopasowań. Te tematy mają podobne tytuły.
+# Recommended
+msg-recommended = Polecane
+# Narrow down
+msg-narrow_down = Zawęź wyniki
+# Forums
+msg-forums = Fora
+# Tags
+msg-tags = Tagi
+# Year
+msg-year = Rok
+# One result per topic. Click to list every matching post.
+msg-one_result_per_topic_click_to_list_every_matching_post = Jeden wynik na temat. Kliknij, aby wyświetlić każdy pasujący post.
+# Every matching post. Click to show one result per topic.
+msg-every_matching_post_click_to_show_one_result_per_topic = Każdy pasujący post. Kliknij, aby pokazać jeden wynik na temat.
+# Grouped by topic
+msg-grouped_by_topic = Pogrupowane według tematów
+# All posts
+msg-all_posts = Wszystkie posty
+# Sort results
+msg-sort_results = Sortuj wyniki
 # Connected logins
 msg-connected_logins = Połączone logowania
 # Set by your outside login
@@ -5008,18 +5130,28 @@ msg-push = Push
 msg-remembered_devices_skip_the_code_for_30_days_n = Zapamiętane urządzenia pomijają kod przez 30 dni: { $n }
 # Forget all devices
 msg-forget_all_devices = Zapomnij wszystkie urządzenia
+# Add a passkey
+msg-add_a_passkey = Dodaj klucz dostępu
 # Sign-in accounts linked to this one. You can unlink one while you have another way to sign in.
 msg-sign_in_accounts_linked_to_this_one_you_can_unlink_one = Konta logowania powiązane z tym kontem. Możesz odłączyć jedno, gdy masz inny sposób logowania.
-# linked
-msg-linked = połączono
-# Unlink
-msg-unlink = Odłącz
-# Your only way to sign in
-msg-your_only_way_to_sign_in = Twój jedyny sposób logowania
 # No linked logins.
 msg-no_linked_logins = Brak połączonych logowań.
+# Set a password or add a passkey to be able to unlink it
+msg-set_a_password_or_add_a_passkey_to_be_able_to_unlink_it = Ustaw hasło lub dodaj klucz dostępu, aby móc je odłączyć
+# Your only way to sign in
+msg-your_only_way_to_sign_in = Twój jedyny sposób logowania
+# Connected
+msg-connected = Połączono
+# Unlink
+msg-unlink = Odłącz
+# Add a login
+msg-add_a_login = Dodaj logowanie
 # Connect {provider}
 msg-connect_provider = Połącz z { $provider }
+# No API keys yet.
+msg-no_api_keys_yet = Brak kluczy API.
+# New API key
+msg-new_api_key = Nowy klucz API
 # Download with files (ZIP)
 msg-download_with_files_zip = Pobierz z plikami (ZIP)
 # Who can message me
@@ -5040,10 +5172,10 @@ msg-their_posts_are_hidden_from_you_and_they_cannot_message = Ich posty są prze
 msg-unmuted = Wyciszenie cofnięte
 # Undo
 msg-undo = Cofnij
-# Unmute
-msg-unmute = Wyłącz wyciszenie
 # You have not muted anyone.
 msg-you_have_not_muted_anyone = Nikogo nie wyciszyłeś(-aś).
+# Unmute
+msg-unmute = Wyłącz wyciszenie
 # What happens to your posts
 msg-what_happens_to_your_posts = Co stanie się z Twoimi postami
 # Keep them, without my name
@@ -5862,6 +5994,8 @@ admin-search_pages_and_settings = Szukaj stron i ustawień
 admin-search_results = Wyniki wyszukiwania
 # Page · {section}
 admin-page_section = Strona · { $section }
+# Tab · {page}
+admin-tab_page = Karta · { $page }
 # Settings could not be loaded.
 admin-settings_could_not_be_loaded = Nie udało się wczytać ustawień.
 # Nothing matches “{q}”.
@@ -5876,6 +6010,8 @@ admin-view_as_table = Pokaż jako tabelę
 admin-slot = Przedział
 # Day
 admin-day = Dzień
+# Breadcrumb
+admin-breadcrumb = Ścieżka nawigacji
 # Close
 admin-close = Zamknij
 # Save
@@ -5983,9 +6119,13 @@ admin-branding = Wizerunek
 # Logo, icons and the picture for shared links
 admin-logo_icons_and_the_picture_for_shared_links = Logo, ikony i obraz dla udostępnianych linków
 # Share pictures
-admin-share_pictures = Podgląd linków
+admin-share_pictures = Grafiki udostępniania
 # A picture drawn for every page that is shared, from its title and your colours
 admin-a_picture_drawn_for_every_page_that_is_shared_from_its = Grafika generowana dla każdej udostępnianej strony, z jej tytułu i Twoich kolorów
+# Link previews
+admin-link_previews = Podgląd linków
+# The cards a link on its own line in a post becomes
+admin-the_cards_a_link_on_its_own_line_in_a_post_becomes = Karty, w które zamienia się link w osobnej linii wpisu
 # General
 admin-general = Ogólne
 # Your site's name, language and availability
@@ -6229,7 +6369,7 @@ admin-app_icon = Ikona aplikacji
 # Share image
 admin-share_image = Obraz do udostępniania
 # Draw share pictures
-admin-draw_share_pictures = Generuj grafiki podglądu linków
+admin-draw_share_pictures = Generuj grafiki udostępniania
 # Layout
 admin-layout = Układ
 # Pages
@@ -6360,10 +6500,18 @@ admin-challenge_secret = Sekret wyzwania
 admin-minimum_sign_up_time = Minimalny czas rejestracji
 # Akismet API key
 admin-akismet_api_key = Klucz API Akismet
-# Advert HTML
-admin-advert_html = HTML reklamy
 # Allowed image hosts
 admin-allowed_image_hosts = Dozwolone hosty obrazów
+# Show link previews
+admin-show_link_previews = Pokazuj podgląd linków
+# Show the picture on link previews
+admin-show_the_picture_on_link_previews = Pokazuj obraz w podglądzie linków
+# Sites without link previews
+admin-sites_without_link_previews = Serwisy bez podglądu linków
+# Days a link preview is kept
+admin-days_a_link_preview_is_kept = Dni przechowywania podglądu linków
+# Cloudflare: real visitor address
+admin-cloudflare_real_visitor_address = Cloudflare: prawdziwy adres odwiedzającego
 # Private message participants
 admin-private_message_participants = Uczestnicy wiadomości prywatnej
 # New private messages per hour
@@ -6414,6 +6562,64 @@ admin-checking = Sprawdzanie…
 admin-that_did_not_work_try_again = Nie udało się. Spróbuj ponownie.
 # Could not reach the server. Try again.
 admin-could_not_reach_the_server_try_again = Nie udało się połączyć z serwerem. Spróbuj ponownie.
+# Channels
+admin-channels = Kanały
+# Flags
+admin-flags = Zgłoszenia
+# Reactions
+admin-reactions = Reakcje
+# Tag groups
+admin-tag_groups = Grupy tagów
+# Group rules
+admin-group_rules = Reguły grup
+# Announcements
+admin-announcements = Ogłoszenia
+# Report reasons
+admin-report_reasons = Powody zgłoszeń
+# Log
+admin-log = Dziennik
+# Templates
+admin-templates = Szablony
+# Bad addresses
+admin-bad_addresses = Błędne adresy
+# Test delivery
+admin-test_delivery = Test dostarczania
+# Tags
+admin-tags = Tagi
+# Custom emoji
+admin-custom_emoji = Własne emoji
+# Invites
+admin-invites = Zaproszenia
+# Top searches
+admin-top_searches = Najczęstsze wyszukiwania
+# Webhooks
+admin-webhooks = Webhooki
+# Deliveries
+admin-deliveries = Dostarczenia
+# Applications
+admin-applications = Aplikacje
+# Icon
+admin-icon = Ikona
+# Posting
+admin-posting = Pisanie
+# Permissions
+admin-permissions = Uprawnienia
+# Moderators
+admin-moderators = Moderatorzy
+# SEO
+admin-seo = SEO
+# New
+admin-new = Nowi
+# Staff
+admin-staff = Obsługa
+# Awaiting approval
+admin-awaiting_approval = Czeka na zatwierdzenie
+# Suspended
+admin-suspended = Zawieszeni
+# Silenced
+admin-silenced = Wyciszeni
+# Unverified
+admin-unverified = Niezweryfikowani
 # Likes received
 admin-likes_received = Otrzymane polubienia
 # Likes given
@@ -6450,8 +6656,6 @@ admin-points = Punkty
 admin-active = Aktywna
 # Expired
 admin-expired = Wygasło
-# Staff
-admin-staff = Obsługa
 # No warnings.
 admin-no_warnings = Brak ostrzeżeń.
 # Staff notes
@@ -6598,8 +6802,6 @@ admin-settings = Ustawienia
 admin-backups = Kopie zapasowe
 # Plugins
 admin-plugins = Wtyczki
-# Webhooks
-admin-webhooks = Webhooki
 # Federation
 admin-federation = Federacja
 # Mail log
@@ -6614,6 +6816,8 @@ admin-data_explorer = Eksplorator danych
 admin-logs = Logi
 # Maintenance
 admin-maintenance = Konserwacja
+# Administration
+admin-administration = Administracja
 # Admin - {site}
 admin-admin_site = Administracja - { $site }
 # Forum
@@ -6752,12 +6956,6 @@ admin-saved_name = Zapisano „{ $name }”.
 admin-saved_2 = Zapisano.
 # Delete the ad "{name}"?
 admin-delete_the_ad_name = Usunąć reklamę „{ $name }”?
-# From {date}, forever
-admin-from_date_forever = Od { $date }, bez końca
-# Until {date}
-admin-until_date = Do { $date }
-# Always
-admin-always = Zawsze
 # One ad per place on a page, picked by weight among those the visitor's groups may see. HTML is cleaned when saved: no scripts or embeds. Impressions are saved every few minutes.
 admin-one_ad_per_place_on_a_page_picked_by_weight_among_those = Jedna reklama na miejsce na stronie, wybierana według wagi spośród tych, które grupy odwiedzającego mogą zobaczyć. HTML jest czyszczony przy zapisie: bez skryptów i osadzeń. Wyświetlenia zapisują się co kilka minut.
 # New ad
@@ -6808,8 +7006,16 @@ admin-click_rate = Współczynnik kliknięć
 admin-runs = Okres
 # (off)
 admin-off = (wyłączona)
+# From {date}, forever
+admin-from_date_forever = Od { $date }, bez końca
+# Until {date}
+admin-until_date = Do { $date }
+# Always
+admin-always = Zawsze
 # No ads.
 admin-no_ads = Brak reklam.
+# Use New ad above to add one.
+admin-use_new_ad_above_to_add_one = Użyj przycisku Nowa reklama powyżej, aby dodać pierwszą.
 # The ads.txt file
 admin-the_ads_txt_file = Plik ads.txt
 # Published at /ads.txt (empty: no file)
@@ -6900,8 +7106,10 @@ admin-negative = Negatywne
 admin-abusive = Obraźliwe
 # Spam
 admin-spam = Spam
-# No posts have been judged yet. Turn on the mood record in the settings.
-admin-no_posts_have_been_judged_yet_turn_on_the_mood_record = Żaden wpis nie został jeszcze oceniony. Włącz zapis nastroju w ustawieniach.
+# No posts have been judged yet.
+admin-no_posts_have_been_judged_yet = Żaden wpis nie został jeszcze oceniony.
+# Turn on the mood record in the settings.
+admin-turn_on_the_mood_record_in_the_settings = Włącz rejestr nastroju w ustawieniach.
 # Posts the AI doubted
 admin-posts_the_ai_doubted = Wpisy, które wzbudziły wątpliwości AI
 # spam {spam}, abuse {toxicity}
@@ -6946,26 +7154,28 @@ admin-edit = Edytuj
 admin-turn_off = Wyłącz
 # Turn on
 admin-turn_on = Włącz
-# No personas yet. Turn on “Personas answer when mentioned” in the settings, then add one.
-admin-no_personas_yet_turn_on_personas_answer_when_mentioned = Brak person. Włącz „Persony odpowiadają po wspomnieniu” w ustawieniach, a potem dodaj jedną.
+# No personas yet.
+admin-no_personas_yet = Brak person.
+# Turn on “Personas answer when mentioned” in the settings, then add one.
+admin-turn_on_personas_answer_when_mentioned_in_the_settings = Włącz w ustawieniach opcję „Persony odpowiadają po wspomnieniu”, a następnie dodaj personę.
 # Staff action log
 admin-staff_action_log = Dziennik działań obsługi
-# Action prefix, e.g. topic.
-admin-action_prefix_e_g_topic = Początek akcji, np. topic.
-# Action
-admin-action = Akcja
-# Staff username
-admin-staff_username = Nazwa osoby z obsługi
-# Staff member
-admin-staff_member = Osoba z obsługi
 # Filter
 admin-filter = Filtruj
+# Action prefix, e.g. topic.
+admin-action_prefix_e_g_topic = Początek akcji, np. topic.
+# Staff username
+admin-staff_username = Nazwa osoby z obsługi
 # Who
 admin-who = Kto
+# Action
+admin-action = Akcja
 # Target
 admin-target = Cel
 # No entries.
 admin-no_entries = Brak wpisów.
+# Staff actions are recorded here as they happen.
+admin-staff_actions_are_recorded_here_as_they_happen = Działania zespołu są tu zapisywane na bieżąco.
 # Older
 admin-older = Starsze
 # A topic is started
@@ -7068,6 +7278,8 @@ admin-enabled = Włączona
 admin-last_run = Ostatnie uruchomienie
 # No rules yet.
 admin-no_rules_yet = Nie ma jeszcze reguł.
+# Use New rule above to add one.
+admin-use_new_rule_above_to_add_one = Użyj przycisku Nowa reguła powyżej, aby dodać pierwszą.
 # Backing up
 admin-backing_up = Tworzenie kopii zapasowej
 # Restoring
@@ -7130,8 +7342,8 @@ admin-restore = Przywróć
 admin-delete_name_3 = Usuń { $name }
 # No backups yet.
 admin-no_backups_yet = Brak kopii zapasowych.
-# Loading…
-admin-loading = Wczytywanie…
+# Use Back up now above to make one.
+admin-use_back_up_now_above_to_make_one = Użyj przycisku Utwórz kopię teraz powyżej, aby ją wykonać.
 # Restore this backup?
 admin-restore_this_backup = Przywrócić tę kopię zapasową?
 # Everything on the site is replaced by what {name} holds: members, posts, settings and uploaded files. Whatever happened after it was made is lost. The site goes offline while it runs, and you will have to sign in again.
@@ -7170,8 +7382,6 @@ admin-translate_them_in_site_text = Przetłumacz je w Tekstach strony
 admin-colour = Kolor
 # Colour {n}
 admin-colour_n = Kolor { $n }
-# Icon
-admin-icon = Ikona
 # When this badge is earned is built into the forum and can't be changed.
 admin-when_this_badge_is_earned_is_built_into_the_forum_and = Kiedy ta odznaka jest przyznawana, jest wbudowane w forum i nie można tego zmienić.
 # Earned at (any one is enough to start; all you set must be met)
@@ -7182,6 +7392,10 @@ admin-reputation = Reputacja
 admin-accepted_answers = Zaakceptowane odpowiedzi
 # Find a badge
 admin-find_a_badge = Znajdź odznakę
+# No badges match.
+admin-no_badges_match = Żadna odznaka nie pasuje.
+# Use New badge above to add one.
+admin-use_new_badge_above_to_add_one = Użyj przycisku Nowa odznaka powyżej, aby dodać pierwszą.
 # All members
 admin-all_members = Wszyscy użytkownicy
 # Chosen groups
@@ -7198,6 +7412,8 @@ admin-channels_flagged_messages_and_forum_activity_sent_to = Kanały, zgłoszone
 admin-new_channel = Nowy kanał
 # New integration
 admin-new_integration = Nowa integracja
+# Edit channel
+admin-edit_channel = Edytuj kanał
 # Add channel
 admin-add_channel = Dodaj kanał
 # Who can see it
@@ -7206,6 +7422,8 @@ admin-who_can_see_it = Kto go widzi
 admin-invite_only_you_add_people_from_the_channel = Tylko na zaproszenie: osoby dodajesz z poziomu kanału
 # No groups
 admin-no_groups = Brak grup
+# Add everyone: every member joins this channel, and so does each new account
+admin-add_everyone_every_member_joins_this_channel_and_so = Dodaj wszystkich: każdy członek dołącza do tego kanału, podobnie jak każde nowe konto
 # Service
 admin-service = Usługa
 # watch
@@ -7224,16 +7442,18 @@ admin-channel_chat_or_room = Kanał, czat lub pokój
 admin-forum_id_empty_for_all = ID forum (puste = wszystkie)
 # Tag (empty for all)
 admin-tag_empty_for_all = Tag (puste = wszystkie)
-# Channels
-admin-channels = Kanały
-# Flags
-admin-flags = Zgłoszenia
 # Messages
 admin-messages = Wiadomości
 # (archived)
 admin-archived = (zarchiwizowany)
+# Everyone joins
+admin-everyone_joins = Wszyscy dołączają
 # Archive
 admin-archive = Archiwizuj
+# No channels yet.
+admin-no_channels_yet = Brak kanałów.
+# Use New channel above to add one.
+admin-use_new_channel_above_to_add_one = Użyj przycisku Nowy kanał powyżej, aby dodać pierwszy.
 # Only topics guests can read are sent.
 admin-only_topics_guests_can_read_are_sent = Wysyłane są tylko tematy, które mogą czytać goście.
 # Follow
@@ -7256,6 +7476,10 @@ admin-scope = Zakres
 admin-all_forums = Wszystkie fora
 # Test
 admin-test = Testuj
+# No integrations yet.
+admin-no_integrations_yet = Brak integracji.
+# Use New integration above to send forum activity to another service.
+admin-use_new_integration_above_to_send_forum_activity_to = Użyj przycisku Nowa integracja powyżej, aby wysyłać aktywność forum do innej usługi.
 # Message
 admin-message = Wiadomość
 # By
@@ -7266,6 +7490,8 @@ admin-flagged_by = Zgłoszone przez
 admin-keep = Zostaw
 # Nothing flagged.
 admin-nothing_flagged = Nic nie zgłoszono.
+# Messages members report appear here.
+admin-messages_members_report_appear_here = Wiadomości zgłoszone przez użytkowników pojawią się tutaj.
 # Page background
 admin-page_background = Tło strony
 # Cards and panels
@@ -7314,8 +7540,6 @@ admin-hidden = Ukryty
 admin-make_default = Ustaw jako domyślny
 # More for {name}
 admin-more_for_name = Więcej dla { $name }
-# ← All colour schemes
-admin-all_colour_schemes = ← Wszystkie schematy kolorów
 # Unsaved changes
 admin-unsaved_changes = Niezapisane zmiany
 # Members can choose this scheme
@@ -7330,6 +7554,8 @@ admin-label_mode_picker = { $label }, { $mode }, próbnik
 admin-dark_2 = ciemny
 # light
 admin-light_2 = jasny
+# {label}, {mode}
+admin-label_mode = { $label }, { $mode }
 # Preview
 admin-preview = Podgląd
 # Delete the reaction "{name}"? What members reacted with it disappears from posts.
@@ -7366,24 +7592,12 @@ admin-add_reaction = Dodaj reakcję
 admin-emoji = Emoji
 # Add group
 admin-add_group = Dodaj grupę
-# Tags
-admin-tags = Tagi
 # Forum ids
 admin-forum_ids = ID forów
 # One per topic
 admin-one_per_topic = Jeden na temat
 # Add announcement
 admin-add_announcement = Dodaj ogłoszenie
-# Reactions
-admin-reactions = Reakcje
-# Tag groups
-admin-tag_groups = Grupy tagów
-# Group rules
-admin-group_rules = Reguły grup
-# Announcements
-admin-announcements = Ogłoszenia
-# Report reasons
-admin-report_reasons = Powody zgłoszeń
 # A report adds the reporter's track record times the reason's weight to the post's score; at the "hide after reports" setting the post is hidden until a moderator looks. "Illegal" reasons are recorded as illegal content in DSA statements.
 admin-a_report_adds_the_reporter_s_track_record_times_the = Zgłoszenie dodaje do wyniku posta historię zgłaszającego pomnożoną przez wagę powodu; po osiągnięciu ustawienia „ukryj po zgłoszeniach” post jest ukrywany, dopóki nie obejrzy go moderator. Powody „nielegalne” są zapisywane jako nielegalne treści w uzasadnieniach DSA.
 # Key
@@ -7402,12 +7616,32 @@ admin-needs_a_note = Wymaga notatki
 admin-illegal_content = Nielegalna treść
 # Send the note to the author instead of filing a report
 admin-send_the_note_to_the_author_instead_of_filing_a_report = Wyślij notatkę autorowi zamiast zgłaszać
+# No report reasons yet.
+admin-no_report_reasons_yet = Brak powodów zgłoszeń.
+# Use New reason above to add one.
+admin-use_new_reason_above_to_add_one = Użyj przycisku Nowy powód powyżej, aby dodać pierwszy.
 # Move {name}. Alt and the arrow keys also move it.
 admin-move_name_alt_and_the_arrow_keys_also_move_it = Przenieś { $name }. Można też użyć Alt i klawiszy strzałek.
+# No reactions yet.
+admin-no_reactions_yet = Brak reakcji.
+# Use New reaction above to add one.
+admin-use_new_reaction_above_to_add_one = Użyj przycisku Nowa reakcja powyżej, aby dodać pierwszą.
 # Tags are slugs. Forums are ids; leave empty to allow everywhere.
 admin-tags_are_slugs_forums_are_ids_leave_empty_to_allow = Tagi to slugi. Fora to identyfikatory; zostaw puste, by zezwolić wszędzie.
+# No tag groups yet.
+admin-no_tag_groups_yet = Brak grup tagów.
+# Use New tag group above to add one.
+admin-use_new_tag_group_above_to_add_one = Użyj przycisku Nowa grupa tagów powyżej, aby dodać pierwszą.
 # Checked every ten minutes. A group rule adds members to a group when they meet its conditions, and cannot grant staff groups. Trust levels have their own requirements under Settings, Trust and warnings.
 admin-checked_every_ten_minutes_a_group_rule_adds_members_to = Sprawdzane co dziesięć minut. Reguła grupy dodaje członków do grupy, gdy spełnią jej warunki, i nie może nadawać grup obsługi. Poziomy zaufania mają własne wymagania w Ustawieniach, w sekcji Zaufanie i ostrzeżenia.
+# No group rules yet.
+admin-no_group_rules_yet = Brak reguł grup.
+# Use New group rule above to add one.
+admin-use_new_group_rule_above_to_add_one = Użyj przycisku Nowa reguła grupy powyżej, aby dodać pierwszą.
+# No announcements yet.
+admin-no_announcements_yet = Brak ogłoszeń.
+# Use New announcement above to add one.
+admin-use_new_announcement_above_to_add_one = Użyj przycisku Nowe ogłoszenie powyżej, aby dodać pierwsze.
 # Delete "{name}"?
 admin-delete_name = Usunąć „{ $name }”?
 # Read-only SQL over forum data. Queries see the views listed below, never passwords, 2FA secrets, tokens, IP addresses or private messages. Each run is written to the audit log.
@@ -7458,6 +7692,8 @@ admin-waiting_for_the_other_server = Czeka na drugi serwer
 admin-stop = Zatrzymaj
 # No forum follows a remote group.
 admin-no_forum_follows_a_remote_group = Żadne forum nie obserwuje zdalnej grupy.
+# Use Follow a remote group above to add one.
+admin-use_follow_a_remote_group_above_to_add_one = Użyj przycisku Obserwuj zdalną grupę powyżej, aby dodać pierwszą.
 # Short text
 admin-short_text = Krótki tekst
 # One line: a name, a place, a handle.
@@ -7594,14 +7830,12 @@ admin-category = Kategoria
 admin-inside = W
 # Top level
 admin-top_level = Najwyższy poziom
-# Posting
-admin-posting = Pisanie
-# Permissions
-admin-permissions = Uprawnienia
+# No forums yet.
+admin-no_forums_yet = Brak for.
+# Use New category or forum above to add one.
+admin-use_new_category_or_forum_above_to_add_one = Użyj przycisku Nowa kategoria lub forum powyżej, aby dodać pierwsze.
 # Prefixes and moderators
 admin-prefixes_and_moderators = Prefiksy i moderatorzy
-# Moderators
-admin-moderators = Moderatorzy
 # List style
 admin-list_style = Styl listy
 # Table
@@ -7620,8 +7854,8 @@ admin-most_replies = Najwięcej odpowiedzi
 admin-most_views = Najwięcej wyświetleń
 # Most liked
 admin-most_liked = Najbardziej lubiane
-# Or one emoji
-admin-or_one_emoji = Albo jedno emoji
+# Or one emoji, such as 🎮
+admin-or_one_emoji_such_as = Albo jedno emoji, np. 🎮
 # Or a picture
 admin-or_a_picture = Albo obraz
 # Takes priority; square works best
@@ -7666,16 +7900,12 @@ admin-save_permissions = Zapisz uprawnienia
 admin-changes_to_the_parent_s_permissions_apply_here_too = Zmiany uprawnień nadrzędnego działu obowiązują także tutaj. Wyłącz przełącznik, aby ustawić własne.
 # Guests can never post or moderate, whatever is ticked here.
 admin-guests_can_never_post_or_moderate_whatever_is_ticked = Goście nigdy nie mogą pisać ani moderować, niezależnie od tego, co tu zaznaczono.
-# Question, Solved, Bug
-admin-question_solved_bug = Pytanie, Rozwiązane, Błąd
-# Topic prefixes
-admin-topic_prefixes = Prefiksy tematów
-# Separated by commas
-admin-separated_by_commas = Oddzielone przecinkami
+# Topic prefixes, separated by commas: Question, Solved, Bug
+admin-topic_prefixes_separated_by_commas_question_solved_bug = Prefiksy tematów, oddzielone przecinkami: Pytanie, Rozwiązane, Błąd
 # Save prefixes
 admin-save_prefixes = Zapisz prefiksy
-# Usernames, separated by commas
-admin-usernames_separated_by_commas = Nazwy użytkowników, oddzielone przecinkami
+# Moderators: usernames, separated by commas
+admin-moderators_usernames_separated_by_commas = Moderatorzy: nazwy użytkowników oddzielone przecinkami
 # Save moderators
 admin-save_moderators = Zapisz moderatorów
 # SEO title
@@ -7814,14 +8044,6 @@ admin-queued_for_testto = W kolejce do { $testTo }
 admin-mail = Poczta
 # Outgoing email, newest first. Failed messages are retried up to 5 times.
 admin-outgoing_email_newest_first_failed_messages_are_retried = Wychodzące e-maile, od najnowszych. Nieudane wiadomości są ponawiane do 5 razy.
-# Log
-admin-log = Dziennik
-# Templates
-admin-templates = Szablony
-# Bad addresses
-admin-bad_addresses = Błędne adresy
-# Test delivery
-admin-test_delivery = Test dostarczania
 # Mail is not being sent: {reason}. Messages stay queued until this is fixed.
 admin-mail_is_not_being_sent_reason_messages_stay_queued = Poczta nie jest wysyłana: { $reason }. Wiadomości czekają w kolejce, dopóki nie zostanie to naprawione.
 # No mail sender is configured (BF_SMTP_URL), so messages show as sent but are never delivered.
@@ -7838,6 +8060,8 @@ admin-sent = Wysłano
 admin-retrying_attempts = Ponawianie ({ $attempts })
 # No mail yet.
 admin-no_mail_yet = Nie ma jeszcze poczty.
+# Messages the forum sends are listed here.
+admin-messages_the_forum_sends_are_listed_here = Wiadomości wysyłane przez forum są wyświetlane tutaj.
 # Email texts
 admin-email_texts = Teksty e-maili
 # Each email's subject and body is a text in Site text, translated into every language there, like the rest of the site.
@@ -7854,6 +8078,8 @@ admin-address = Adres
 admin-clear = Wyczyść
 # No bad addresses.
 admin-no_bad_addresses = Brak błędnych adresów.
+# Addresses that keep bouncing are listed here.
+admin-addresses_that_keep_bouncing_are_listed_here = Adresy, na które wiadomości wciąż wracają, są wyświetlane tutaj.
 # Send a test email to
 admin-send_a_test_email_to = Wyślij testowy e-mail do
 # you@example.com
@@ -7972,6 +8198,8 @@ admin-only_confirmed_email_addresses = Tylko potwierdzone adresy e-mail
 admin-sent_messages = Wysłane wiadomości
 # Nothing sent yet.
 admin-nothing_sent_yet = Nic jeszcze nie wysłano.
+# Messages you send to members are listed here.
+admin-messages_you_send_to_members_are_listed_here = Wiadomości wysłane do użytkowników są wyświetlane tutaj.
 # Lock the topic
 admin-lock_the_topic = Zablokuj temat
 # Unlock the topic
@@ -8008,6 +8236,8 @@ admin-add_a_step = Dodaj krok
 admin-steps = Kroki
 # No saved actions yet.
 admin-no_saved_actions_yet = Brak zapisanych akcji.
+# A saved action is a set of steps a moderator runs on a topic in one click.
+admin-a_saved_action_is_a_set_of_steps_a_moderator_runs_on_a = Zapisana akcja to zestaw kroków, które moderator wykonuje na temacie jednym kliknięciem.
 # Latest
 admin-latest = Najnowsze
 # Top
@@ -8098,6 +8328,8 @@ admin-three_columns = Trzy kolumny
 admin-three_equal_columns_for_features_teasers_or_links = Trzy równe kolumny: na funkcje, zajawki lub linki.
 # Page created. Open it and use "Edit layout" to add blocks.
 admin-page_created_open_it_and_use_edit_layout_to_add_blocks = Strona utworzona. Otwórz ją i użyj „Edytuj układ”, aby dodać bloki.
+# Delete the page "{title}"?
+admin-delete_the_page_title = Usunąć stronę „{ $title }”?
 # Pages you build from blocks. Pick a layout, then arrange blocks with "Edit layout" on the page. Add one to the header from
 admin-pages_you_build_from_blocks_pick_a_layout_then_arrange = Strony budowane z bloków. Wybierz układ, a potem układaj bloki przez „Edytuj układ” na stronie. Dodaj stronę do nagłówka w
 # using its address.
@@ -8120,14 +8352,16 @@ admin-about = /o-nas
 admin-published = Opublikowana
 # Blocks in an area the new layout lacks move to its first column.
 admin-blocks_in_an_area_the_new_layout_lacks_move_to_its = Bloki w obszarze, którego nowy układ nie ma, trafiają do jego pierwszej kolumny.
-# · updated {n}
-admin-updated_n = · zaktualizowano { $n }
+# updated
+admin-updated = zaktualizowano
 # Draft
 admin-draft = Szkic
 # Design
 admin-design = Projektuj
 # No pages yet.
 admin-no_pages_yet = Nie ma jeszcze stron.
+# Use New page above to add one.
+admin-use_new_page_above_to_add_one = Użyj przycisku Nowa strona powyżej, aby dodać pierwszą.
 # Forum or category
 admin-forum_or_category = Forum lub kategoria
 # Post
@@ -8166,6 +8400,8 @@ admin-missing = Brak celu
 admin-nothing_matches = Nic nie pasuje.
 # No permalinks yet.
 admin-no_permalinks_yet = Brak permalinków.
+# Use Add permalink above to add one.
+admin-use_add_permalink_above_to_add_one = Użyj przycisku Dodaj permalink powyżej, aby dodać pierwszy.
 # The first {n} of {total} are shown: search for the rest.
 admin-the_first_n_of_total_are_shown_search_for_the_rest = Pokazano pierwsze { $n } z { $total }: resztę znajdziesz wyszukiwaniem.
 # Its server code may contact {host}
@@ -8252,8 +8488,6 @@ admin-approve_and_enable = Zatwierdź i włącz
 admin-this_version_asks_for_more_than_you_approved_before_the = Ta wersja prosi o więcej, niż zatwierdzono wcześniej. Nowe pozycje są oznaczone.
 # This plugin asks to:
 admin-this_plugin_asks_to = Ta wtyczka prosi o możliwość:
-# New
-admin-new = Nowi
 # Outside the sandbox
 admin-outside_the_sandbox = Poza piaskownicą
 # Nothing: it can only react to events.
@@ -8411,7 +8645,7 @@ admin-preview_as = Podgląd jako
 # Shows the saved settings; save your changes to see them here.
 admin-shows_the_saved_settings_save_your_changes_to_see_them = Pokazuje zapisane ustawienia; zapisz zmiany, aby zobaczyć je tutaj.
 # Share picture preview
-admin-share_picture_preview = Podgląd grafiki podglądu linku
+admin-share_picture_preview = Podgląd grafiki udostępniania
 # No settings in this group.
 admin-no_settings_in_this_group = Brak ustawień w tej grupie.
 # Delete tag "{name}" from {topics}?
@@ -8436,26 +8670,26 @@ admin-invite_link = Link zaproszenia
 admin-copy_it_now_it_is_not_shown_again = Skopiuj go teraz; nie zostanie pokazany ponownie.
 # Copy
 admin-copy = Kopiuj
-# Custom emoji
-admin-custom_emoji = Własne emoji
-# Invites
-admin-invites = Zaproszenia
-# Top searches
-admin-top_searches = Najczęstsze wyszukiwania
 # Rename
 admin-rename = Zmień nazwę
-# No tags yet. Add one, or they appear here once a topic uses them.
-admin-no_tags_yet_add_one_or_they_appear_here_once_a_topic = Brak tagów. Dodaj pierwszy albo pojawią się tu, gdy użyje ich jakiś temat.
+# No tags yet.
+admin-no_tags_yet = Brak tagów.
+# Add one, or they appear here once a topic uses them.
+admin-add_one_or_they_appear_here_once_a_topic_uses_them = Dodaj tag albo pojawią się tu, gdy użyje ich jakiś temat.
 # No custom emoji yet.
 admin-no_custom_emoji_yet = Nie ma jeszcze własnych emoji.
+# Use New emoji above to add one.
+admin-use_new_emoji_above_to_add_one = Użyj przycisku Nowe emoji powyżej, aby dodać pierwsze.
 # Invite #{id}
 admin-invite_id = Zaproszenie #{ $id }
 # Used by
 admin-used_by = Użyte przez
-# Expires {n}
-admin-expires_n = Wygasa { $n }
+# Expires
+admin-expires = Wygasa
 # No invites yet.
 admin-no_invites_yet = Nie ma jeszcze zaproszeń.
+# Use Create invite link above to make one.
+admin-use_create_invite_link_above_to_make_one = Użyj przycisku Utwórz link zaproszenia powyżej, aby go wygenerować.
 # Last 30 days.
 admin-last_30_days_2 = Ostatnie 30 dni.
 # Term
@@ -8478,10 +8712,10 @@ admin-built_in_for_this_language = Wbudowany dla tego języka
 admin-your_text = Twój tekst
 # Write a variable as { $name }, as in the English text above. For plurals use { $n -> [one] … *[other] … }.
 admin-write_a_variable_as_name_as_in_the_english_text_above = Zmienną zapisz jako { "{" } $name { "}" }, tak jak w angielskim tekście powyżej. Liczbę mnogą zapisz jako { "{" } $n -> [one] … *[other] … { "}" }.
-# Language
-admin-language = Język
 # Search text
 admin-search_text = Szukaj tekstu
+# Language
+admin-language = Język
 # Only my changes
 admin-only_my_changes = Tylko moje zmiany
 # Changed
@@ -8548,10 +8782,10 @@ admin-comes_with_the_forum = Dołączony do forum
 admin-components = Komponenty
 # Small additions that apply on top of whichever theme is in use.
 admin-small_additions_that_apply_on_top_of_whichever_theme_is = Małe dodatki, działające na każdym używanym motywie.
-# ← All themes
-admin-all_themes = ← Wszystkie motywy
 # Colour tweaks
 admin-colour_tweaks = Poprawki kolorów
+# CSS
+admin-css = CSS
 # Template slots
 admin-template_slots = Miejsca szablonów
 # Theme is the site's default, for everyone who has not chosen one
@@ -8662,34 +8896,22 @@ admin-a_level_can_only_be_earned_when_the_level_below_it_is = Poziom można zdob
 admin-everyone_starts_at_this_level_so_it_has_no_requirements = Każdy zaczyna na tym poziomie, więc nie ma on wymagań.
 # All
 admin-all = Wszyscy
-# Awaiting approval
-admin-awaiting_approval = Czeka na zatwierdzenie
-# Suspended
-admin-suspended = Zawieszeni
-# Silenced
-admin-silenced = Wyciszeni
-# Unverified
-admin-unverified = Niezweryfikowani
-# Never
-admin-never = Nigdy
-# Today
-admin-today = Dzisiaj
-# Yesterday
-admin-yesterday = Wczoraj
 # Open one to moderate or change their account.
 admin-open_one_to_moderate_or_change_their_account = Otwórz kogoś, aby moderować lub zmienić jego konto.
-# Username or email
-admin-username_or_email = Nazwa użytkownika lub e-mail
 # Search members
 admin-search_members = Szukaj użytkowników
-# Last seen
-admin-last_seen = Ostatnio widziany
+# Username or email
+admin-username_or_email = Nazwa użytkownika lub e-mail
 # Sort by
 admin-sort_by = Sortuj według
+# Last seen
+admin-last_seen = Ostatnio widziany
 # Trust
 admin-trust = Zaufanie
 # Joined
 admin-joined = Dołączył(a)
+# Never
+admin-never = Nigdy
 # Account suspended
 admin-account_suspended = Konto zawieszone
 # Account silenced
@@ -8702,6 +8924,8 @@ admin-not_verified = Niezweryfikowany
 admin-active_account = Aktywne konto
 # No members match.
 admin-no_members_match = Żaden użytkownik nie pasuje.
+# Try another search or filter.
+admin-try_another_search_or_filter = Spróbuj innego wyszukiwania lub filtra.
 # ← Previous
 admin-previous = ← Poprzednia
 # Page {page} of {pages}
@@ -8724,8 +8948,6 @@ admin-location = Lokalizacja
 admin-website = Strona internetowa
 # Groups changed
 admin-groups_changed = Grupy zmienione
-# ← Members
-admin-members_2 = ← Użytkownicy
 # Suspended until {n}
 admin-suspended_until_n = Zawieszony do { $n }
 # Silenced until {n}
@@ -8906,10 +9128,6 @@ admin-add_application = Dodaj aplikację
 admin-app_name = Nazwa aplikacji
 # Redirect address
 admin-redirect_address = Adres przekierowania
-# Deliveries
-admin-deliveries = Dostarczenia
-# Applications
-admin-applications = Aplikacje
 # Each delivery is a signed POST: verify the
 admin-each_delivery_is_a_signed_post_verify_the = Każde dostarczenie to podpisany POST: sprawdź nagłówek
 # header, an HMAC-SHA256 of the body with the secret. Failures retry with growing delays, up to 8 times.
@@ -8918,12 +9136,16 @@ admin-header_an_hmac_sha256_of_the_body_with_the_secret = , HMAC-SHA256 treści 
 admin-secret_shown_once_2 = Sekret, pokazany raz:
 # No webhooks yet.
 admin-no_webhooks_yet = Nie ma jeszcze webhooków.
+# Use New webhook above to add one.
+admin-use_new_webhook_above_to_add_one = Użyj przycisku Nowy webhook powyżej, aby dodać pierwszy.
 # Event
 admin-event = Wydarzenie
 # Attempts
 admin-attempts = Próby
 # Last result
 admin-last_result = Ostatni wynik
+# Deliveries are listed here once a webhook fires.
+admin-deliveries_are_listed_here_once_a_webhook_fires = Dostarczenia pojawią się tutaj, gdy webhook zostanie uruchomiony.
 # Other apps can sign members in through this forum:
 admin-other_apps_can_sign_members_in_through_this_forum = Inne aplikacje mogą logować użytkowników przez to forum:
 # (code flow with S256 PKCE),
@@ -8934,6 +9156,8 @@ admin-client_id = ID klienta
 admin-secret_shown_once = , sekret, pokazany raz:
 # No applications yet.
 admin-no_applications_yet = Nie ma jeszcze aplikacji.
+# Use New application above to add one.
+admin-use_new_application_above_to_add_one = Użyj przycisku Nowa aplikacja powyżej, aby dodać pierwszą.
 # Top of the page
 admin-top_of_the_page = Góra strony
 # Main column
@@ -9076,6 +9300,8 @@ admin-no_file_chosen = Nie wybrano pliku.
 admin-word = Słowo
 # No watched words.
 admin-no_watched_words = Brak obserwowanych słów.
+# Use New watched word above to add one.
+admin-use_new_watched_word_above_to_add_one = Użyj przycisku Nowe obserwowane słowo powyżej, aby dodać pierwsze.
 # Posts per page
 admin-posts_per_page = Postów na stronę
 # Topics per page
@@ -9201,7 +9427,7 @@ admin-translator_groups = Grupy tłumaczy
 # Live topics enabled
 admin-live_topics_enabled = Tematy na żywo włączone
 # Referrals enabled
-admin-referrals_enabled = Polecenia włączone
+admin-referrals_enabled = Program poleceń włączony
 # Referral reward groups
 admin-referral_reward_groups = Grupy nagrody za polecenia
 # Referral reward count

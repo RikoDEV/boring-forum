@@ -224,7 +224,8 @@ async fn api_key_rows(
                 } else {
                     format!("{} + {}", k.scope, k.plugin_scopes.join(", "))
                 },
-                k.last_used_at.map_or_else(|| bf_web::ago::Ago::plain("never"), crate::http::render::ago),
+                k.last_used_at
+                    .map_or_else(|| bf_web::ago::Ago::plain(crate::http::i18n::tr("never")), crate::http::render::ago),
                 expires,
             )
         })

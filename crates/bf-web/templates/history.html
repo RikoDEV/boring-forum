@@ -12,9 +12,9 @@
   {% endif %}
 </div>
 <p><a href="{{ post_url }}">{{ layout.t.t("history.back") }}</a></p>
-<section class="panel block"><h2>{{ layout.t.t("history.current") }}</h2><pre class="raw">{{ current }}</pre></section>
+<section class="bf-box block"><h2>{{ layout.t.t("history.current") }}</h2><pre class="raw">{{ current }}</pre></section>
 {% for r in revisions %}
-<section class="panel block">
+<section class="bf-box block">
   <h2>{{ layout.t.f("history.edit_n", [("n", r.n.to_string().as_str())]) }}</h2>
   <p class="small muted">{{ layout.t.t("forum.last_by") }} {{ layout.user_link(r.editor)|safe }}, {{ r.when }}{% if let Some(reason) = r.reason %} — “{{ reason }}”{% endif %}</p>
   {% if r.hidden && !staff %}

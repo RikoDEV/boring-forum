@@ -68,7 +68,7 @@ textarea {
 select {
   &:not([multiple]) {
     appearance: none;
-    padding-inline-end: 2rem;
+    padding-inline-end: var(--bf-space-8);
     background-image:
       linear-gradient(45deg, transparent 50%, var(--bf-color-muted) 50%),
       linear-gradient(135deg, var(--bf-color-muted) 50%, transparent 50%);
@@ -284,7 +284,7 @@ label {
   align-items: center;
   gap: var(--bf-space-1);
   min-height: var(--bf-control-height);
-  padding: 2px var(--bf-space-2);
+  padding: var(--bf-space-0) var(--bf-space-2);
   border: 1px solid var(--bf-color-border-strong);
   border-radius: var(--bf-radius-input);
   background: var(--bf-color-surface);
@@ -318,7 +318,7 @@ label {
   font-weight: 500;
 
   & button {
-    padding: 0 2px;
+    padding: 0 var(--bf-space-0);
     border: 0;
     background: none;
     color: inherit;
@@ -428,7 +428,7 @@ label {
   border: 0;
   background: none;
   color: var(--bf-color-muted);
-  font-size: 1.1rem;
+  font-size: var(--bf-text-lg);
   line-height: 1;
   cursor: pointer;
   transform: translateY(-50%);

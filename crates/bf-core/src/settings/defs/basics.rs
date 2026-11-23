@@ -382,12 +382,23 @@ pub(super) fn defs() -> Vec<SettingDef> {
             "Purge older revisions, keeping the first and last; 0 keeps all",
         ),
         SettingDef {
-            default: json!(""),
+            default: json!("https://raw.githubusercontent.com/RikoDEV/boring-forum/main/VERSION"),
             ..def(
                 "version_check_url",
                 String,
                 false,
                 en("URL returning the latest version as text; empty turns the check off"),
+            )
+        },
+        SettingDef {
+            default: json!(false),
+            ..def(
+                "cloudflare_real_ip",
+                Bool,
+                false,
+                en(
+                    "Behind Cloudflare: take each visitor's address from the CF-Connecting-IP header. Believed only from Cloudflare's own addresses and from proxies in BF_TRUSTED_PROXIES",
+                ),
             )
         },
         SettingDef { default: json!(false), ..def("invite_only", Bool, true, en("New accounts need an invite code")) },

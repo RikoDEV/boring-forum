@@ -17,6 +17,16 @@
     max-width: var(--bf-measure);
   }
 
+  /* A rule and a quote span the whole post, not just the reading width the text keeps (code blocks
+     already do). */
+  & > :is(hr, blockquote) {
+    max-width: none;
+  }
+
+  & > hr {
+    margin-block: var(--bf-space-5);
+  }
+
   & > :first-child {
     margin-block-start: 0;
   }

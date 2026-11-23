@@ -59,8 +59,8 @@
 }
 
 .lb-count {
-  padding: 0.125rem var(--bf-space-3);
-  border-radius: 999px;
+  padding: var(--bf-space-0) var(--bf-space-3);
+  border-radius: var(--bf-radius-pill);
   background: var(--lb-glass);
   color: var(--lb-muted);
   font-size: var(--bf-text-sm);
@@ -81,7 +81,7 @@
   height: 2.5rem;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   background: var(--lb-glass);
   color: var(--lb-ink);
   cursor: pointer;
@@ -169,7 +169,7 @@
   max-height: 100%;
   object-fit: contain;
   border-radius: var(--bf-radius);
-  box-shadow: 0 12px 48px rgb(0 0 0 / 0.55);
+  box-shadow: var(--bf-shadow-lg);
   cursor: zoom-in;
   user-select: none;
 
@@ -292,7 +292,7 @@
   }
 }
 
-@media (width <= 640px) {
+@media (width <= 639px) {
   .lb-top {
     padding: var(--bf-space-2) var(--bf-space-3);
   }

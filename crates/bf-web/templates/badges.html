@@ -19,6 +19,6 @@
   </div>
 </section>
 {% else %}
-<p class="muted">{{ layout.t.t("profile.no_badges") }}</p>
+<div class="bf-box"><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("award")|safe }}</span><p>{{ layout.t.t("profile.no_badges") }}</p></div></div>
 {% endfor %}
 {% endblock %}

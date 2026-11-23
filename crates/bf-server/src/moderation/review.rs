@@ -63,7 +63,7 @@ pub(crate) fn awaiting_approval(state: &AppState, v: &Viewer) -> Response {
     let p = ErrorPage {
         layout: l,
         status: 202,
-        message: "Thanks! Your post will appear once a moderator approves it.".into(),
+        message: v.t().msg("Thanks! Your post will appear once a moderator approves it."),
     };
     page((StatusCode::ACCEPTED, render(&p)).into_response(), set, false)
 }
@@ -102,6 +102,9 @@ struct ReviewQuery {
     forum: String,
     #[serde(default)]
     sort: String,
+    /// What was just done (set by the redirect after an action).
+    #[serde(default)]
+    done: String,
 }
 
 async fn review(State(state): State<AppState>, v: Viewer, Query(q): Query<ReviewQuery>) -> Result<Response, AppError> {
@@ -211,6 +214,19 @@ async fn review(State(state): State<AppState>, v: Viewer, Query(q): Query<Review
             kind: q.kind,
             sort: q.sort,
             staff: is_staff(&v),
+            notice: match q.done.as_str() {
+                "keep" | "chat_keep" => v.t().msg("The post stays and the item is closed."),
+                "remove" => v.t().msg("The post is removed."),
+                "silence" => v.t().msg("The post is removed and its author is silenced."),
+                "spammer" => v.t().msg("The spammer's posts are deleted and the account is suspended."),
+                "approve_user" => v.t().msg("The account is approved."),
+                "reject_user" => v.t().msg("The account is rejected."),
+                "approve_held" => v.t().msg("The held text is approved."),
+                "reject_held" => v.t().msg("The held text is rejected."),
+                "closed" => v.t().msg("The report is closed."),
+                "chat_remove" => v.t().msg("The message is removed from the chat."),
+                _ => String::new(),
+            },
         }),
         set,
         false,
@@ -398,7 +414,11 @@ async fn resolve(
         }
     }
     crate::moderation::topics::refresh(&state);
-    Ok(Redirect::to("/review").into_response())
+    let done = match f.decision.as_str() {
+        d @ ("keep" | "remove" | "silence" | "spammer") => d,
+        _ => "keep",
+    };
+    Ok(Redirect::to(&format!("/review?done={done}")).into_response())
 }
 
 /// (DSA Art. 17): removing a member's post from the queue records a statement of reasons;
@@ -476,7 +496,8 @@ async fn decide_user(
     }
     state.sessions.invalidate_all();
     state.microcache.clear();
-    Ok(Redirect::to("/review").into_response())
+    let done = if f.decision == "approve" { "approve_user" } else { "reject_user" };
+    Ok(Redirect::to(&format!("/review?done={done}")).into_response())
 }
 
 #[derive(Deserialize)]
@@ -536,5 +557,5 @@ async fn close_member_report(
     if !review::close_member_report(state.db()?, id, user.id.get()).await.db()? {
         return Err(AppError::NotFound);
     }
-    Ok(Redirect::to("/review").into_response())
+    Ok(Redirect::to("/review?done=closed").into_response())
 }

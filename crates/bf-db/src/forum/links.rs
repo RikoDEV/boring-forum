@@ -29,6 +29,29 @@ pub async fn record_links(pool: &PgPool, item_id: i64, number: i32, links: &[Str
     .map(|_| ())
 }
 
+/// Records links for many posts at once, by post id: `links[i]` belongs to `ids[i]`. Only adds (the
+/// re-cook job uses it, and the text it cooks is the text already stored).
+pub async fn add_links_for_posts(pool: &PgPool, ids: &[i64], links: &[Vec<String>]) -> Result<(), Error> {
+    let (mut post_ids, mut urls) = (Vec::new(), Vec::new());
+    for (id, list) in ids.iter().zip(links) {
+        for url in list {
+            post_ids.push(*id);
+            urls.push(url.clone());
+        }
+    }
+    if post_ids.is_empty() {
+        return Ok(());
+    }
+    sqlx::query(
+        "INSERT INTO post_links (post_id, url) SELECT * FROM unnest($1::bigint[], $2::text[]) ON CONFLICT DO NOTHING",
+    )
+    .bind(&post_ids)
+    .bind(&urls)
+    .execute(pool)
+    .await
+    .map(|_| ())
+}
+
 /// Where these URLs were already posted, in forums the viewer can read: (url, item, slug, title, number).
 pub async fn links_seen(
     pool: &PgPool,
@@ -100,13 +123,14 @@ pub async fn is_posted_link(pool: &PgPool, url: &str, nodes: &[i64]) -> Result<b
     .await
 }
 
-/// A good preview is kept for a week, a failed attempt for a day.
-pub async fn cached(pool: &PgPool, url: &str) -> Result<Option<Preview>, Error> {
+/// A good preview is kept for `days`, a failed attempt for a day.
+pub async fn cached(pool: &PgPool, url: &str, days: i32) -> Result<Option<Preview>, Error> {
     sqlx::query_as(
         "SELECT ok, title, description, image, site FROM link_previews
-         WHERE url = $1 AND fetched_at > now() - CASE WHEN ok THEN interval '7 days' ELSE interval '1 day' END",
+         WHERE url = $1 AND fetched_at > now() - CASE WHEN ok THEN make_interval(days => $2) ELSE interval '1 day' END",
     )
     .bind(url)
+    .bind(days)
     .fetch_optional(pool)
     .await
 }

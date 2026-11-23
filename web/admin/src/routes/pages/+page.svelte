@@ -2,12 +2,15 @@
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
   import { Status } from "#lib/status.svelte.js";
-  import { del, get, post, put, when } from "#lib/api.js";
+  import { del, get, post, put } from "#lib/api.js";
+  import When from "#lib/When.svelte";
+  import Empty from "#lib/Empty.svelte";
   import Field from "#lib/Field.svelte";
   import Switch from "#lib/Switch.svelte";
   import Section from "#lib/Section.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
   let pages = $state([]);
+  let loaded = $state(false);
   let draft = $state(null);
   const status = new Status();
   const blank = () => ({
@@ -29,7 +32,10 @@
   ];
   const layoutName = (k) => LAYOUTS.find((l) => l[0] === k)?.[1] ?? k;
   const address = (p) => p.path || `/page/${p.slug}`;
-  const load = () => get("/pages").then((r) => (pages = r), status.fail);
+  const load = () =>
+    get("/pages")
+      .then((r) => (pages = r), status.fail)
+      .finally(() => (loaded = true));
   async function save(e) {
     e.preventDefault();
     status.clear();
@@ -51,14 +57,8 @@
       status.fail(err);
     }
   }
-  let arming = $state(0);
-  const remove = (p) => {
-    if (arming !== p.id) return (arming = p.id);
-    del(`/pages/${p.id}`).then(() => {
-      arming = 0;
-      load();
-    }, status.fail);
-  };
+  const remove = (p) =>
+    confirm(tr('Delete the page "{title}"?', { title: p.title })) && del(`/pages/${p.id}`).then(load, status.fail);
   load();
 </script>
 
@@ -119,16 +119,14 @@
       <li class="acp-rowitem">
         <div class="acp-grow">
           <strong>{p.title}</strong><br /><a href={address(p)}><small>{address(p)}</small></a>
-          <small class="muted">· {layoutName(p.template)} {tr("· updated {n}", { n: when(p.updated_at) })}</small>
+          <small class="muted">· {layoutName(p.template)} · {tr("updated")} <When iso={p.updated_at} /></small>
         </div>
         <span class="acp-pill {p.published ? 'is-ok' : 'is-muted'}">{p.published ? tr("Published") : tr("Draft")}</span>
         <span class="acp-pill is-muted">{VIS[p.visibility]}</span>
         <a class="acp-btnlink" href={`${address(p)}?edit_layout=1`}>{tr("Design")}</a>
         <button class="secondary" onclick={() => (draft = { ...p })}>{tr("Edit")}</button>
-        <button class="is-danger" onclick={() => remove(p)}>
-          {arming === p.id ? tr("Click again") : tr("Delete")}
-        </button>
+        <button class="is-danger" onclick={() => remove(p)}>{tr("Delete")}</button>
       </li>
-    {:else}<li class="muted">{tr("No pages yet.")}</li>{/each}
+    {:else}<Empty li {loaded} title={tr("No pages yet.")} text={tr("Use New page above to add one.")} />{/each}
   </ul>
 </div>

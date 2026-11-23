@@ -1,12 +1,12 @@
 {% extends "layout.html" %}
 {#- Staff: posts deleted lately, with their text, to restore. -#}
 {% block content %}
-<div class="head-row">
+<header class="bf-box bf-page-head bf-head-row">
   <h1>{{ layout.t.t("deleted.title") }}</h1>
   <div class="bf-head-actions">
     <a class="btn" href="/review">{{ layout.icon("list-checks")|safe }} <span class="bf-btn-label">{{ layout.t.t("modcp.queue") }}</span></a>
   </div>
-</div>
+</header>
 {% for d in items %}
 <article class="bf-box bf-review">
   <header class="bf-review-head">
@@ -23,6 +23,6 @@
   <div class="bf-review-body"><p class="bf-deleted-text bf-prewrap">{{ d.excerpt }}</p></div>
 </article>
 {% else %}
-<p class="panel muted">{{ layout.t.t("deleted.none") }}</p>
+<div class="bf-box bf-box-body"><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("circle-check")|safe }}</span><p>{{ layout.t.t("deleted.none") }}</p></div></div>
 {% endfor %}
 {% endblock %}

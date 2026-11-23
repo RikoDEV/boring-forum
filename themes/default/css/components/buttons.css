@@ -64,8 +64,7 @@ summary.link {
   font-weight: 400;
 }
 
-.row-form,
-.mod-form {
+.row-form {
   display: flex;
   flex-wrap: wrap;
   gap: var(--bf-space-2);
@@ -86,10 +85,10 @@ summary.link {
   display: inline-block;
   min-width: 1.125rem;
   padding-inline: var(--bf-space-1);
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   background: var(--bf-color-danger);
   color: var(--bf-color-surface);
-  font-size: 0.6875rem;
+  font-size: var(--bf-text-2xs);
   font-weight: 700;
   line-height: 1.125rem;
   text-align: center;
@@ -181,7 +180,7 @@ summary.link {
     text-decoration: none;
   }
 
-  & a.current {
+  & a:is(.current, [aria-current="page"], [aria-current="true"]) {
     background: var(--bf-color-accent-soft);
     color: var(--bf-color-accent);
   }
@@ -198,9 +197,88 @@ summary.link {
   cursor: not-allowed;
 }
 
+/* A danger button: outlined in the danger colour, soft red on hover. */
+.btn.bf-btn-danger {
+  border-color: var(--bf-color-danger);
+  color: var(--bf-color-danger);
+
+  &:hover {
+    background: var(--bf-color-danger-soft);
+    color: var(--bf-color-danger);
+  }
+}
+
+.link.bf-btn-danger {
+  color: var(--bf-color-danger);
+}
+
+/* Segmented switch (a row of links, one active). The active link is `[aria-current]` (page or
+   true) or `.current`. It scrolls inside itself when the tabs do not fit. */
+.bf-segments {
+  display: inline-flex;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  & :is(a, label) {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  & a:is(.current, [aria-current="page"], [aria-current="true"]),
+  & label:has(input:checked) {
+    background: var(--bf-color-surface);
+    color: var(--bf-color-text);
+  }
+
+  /* A switch made of radio buttons: the input is hidden, its label is the segment. */
+  & label {
+    position: relative;
+    cursor: pointer;
+  }
+
+  & label > input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  & label:has(input:focus-visible) {
+    outline: 2px solid var(--bf-color-focus);
+    outline-offset: 1px;
+  }
+}
+
+/* A switch that stands on its own above a list, not inside a toolbar or box: room above and below. */
+.bf-segments.is-bar {
+  margin-block: var(--bf-space-3);
+}
+
 /* Tab bars of links keep one row on a phone and scroll inside themselves. */
 
 @media (width <= 639px) {
+  .list-controls {
+    max-width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    & a {
+      flex: none;
+      white-space: nowrap;
+    }
+  }
+
   .list-controls.bf-list-bar {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -210,5 +288,25 @@ summary.link {
       flex: none;
       white-space: nowrap;
     }
+  }
+}
+
+/* Touch screens: controls get a finger-sized target. */
+@media (pointer: coarse) {
+  :root {
+    --bf-control-height-sm: 2.5rem;
+  }
+
+  .bf-um-tab,
+  .bf-um-pic {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+  }
+
+  .list-controls a,
+  .bf-segments a {
+    min-height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
   }
 }

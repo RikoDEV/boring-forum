@@ -22,7 +22,7 @@
   & th {
     padding: var(--bf-space-2);
     font-size: var(--bf-text-xs);
-    color: var(--bf-color-text-muted);
+    color: var(--bf-color-muted);
     text-align: start;
   }
 
@@ -35,13 +35,13 @@
   }
 
   & td.is-other {
-    background: var(--bf-color-surface-sunken, transparent);
-    color: var(--bf-color-text-muted);
+    background: var(--bf-color-surface-2);
+    color: var(--bf-color-muted);
   }
 
   & td.is-today .bf-cal-day {
     background: var(--bf-color-accent);
-    color: #fff;
+    color: var(--bf-color-accent-text);
   }
 
   & ul {
@@ -60,13 +60,13 @@
 .bf-cal-day {
   display: inline-block;
   min-width: 1.5rem;
-  padding-inline: 0.25rem;
-  border-radius: 999px;
+  padding-inline: var(--bf-space-1);
+  border-radius: var(--bf-radius-pill);
   font-size: var(--bf-text-sm);
   text-align: center;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 639px) {
   .bf-cal,
   .bf-cal tbody,
   .bf-cal tr,
@@ -89,12 +89,12 @@
   .bf-cal td::before {
     content: attr(data-wd);
     margin-inline-end: var(--bf-space-2);
-    color: var(--bf-color-text-muted);
+    color: var(--bf-color-muted);
     font-size: var(--bf-text-sm);
   }
 
   .bf-cal td .bf-cal-day {
-    padding-inline: 0.5rem;
+    padding-inline: var(--bf-space-2);
   }
 
   .bf-cal li {
@@ -123,17 +123,17 @@
 
   & th {
     padding-block: var(--bf-space-1);
-    color: var(--bf-color-text-muted);
+    color: var(--bf-color-muted);
     font-size: var(--bf-text-xs);
     font-weight: 500;
   }
 
   & td {
-    padding: 2px;
+    padding: var(--bf-space-0);
   }
 
   & td.is-other {
-    color: var(--bf-color-text-muted);
+    color: var(--bf-color-muted);
     opacity: 0.55;
   }
 
@@ -143,7 +143,7 @@
     place-items: center;
     min-inline-size: 1.75rem;
     block-size: 1.75rem;
-    border-radius: 999px;
+    border-radius: var(--bf-radius-pill);
   }
 
   & td.has-events > a {
@@ -155,7 +155,7 @@
   & td.is-today > a,
   & td.is-today:not(:has(a)) {
     background: var(--bf-color-accent);
-    color: #fff;
+    color: var(--bf-color-accent-text);
   }
 
   & ul {

@@ -3,8 +3,9 @@
   /// with the bans, revocations and export an administrator can do from here.
   import { tr } from "#lib/i18n.js";
   import { Status } from "#lib/status.svelte.js";
-  import { del, post, when } from "#lib/api.js";
+  import { del, post } from "#lib/api.js";
   import UserLink from "#lib/UserLink.svelte";
+  import When from "#lib/When.svelte";
 
   /** @type {{ id: number, ov: any, refresh: (msg: string) => any }} */
   let { id, ov, refresh } = $props();
@@ -56,7 +57,7 @@
                 <code>{row.ip}</code>
                 {#if row.banned}<span class="acp-pill is-danger">{tr("Banned")}</span>{/if}
                 {#if row.others > 0}<span class="acp-pill is-warn">{tr("Other accounts")}: {row.others}</span>{/if}
-                <br /><small class="muted">{tr("Last used")}: {when(row.last_used)}</small>
+                <br /><small class="muted">{tr("Last used")}: <When iso={row.last_used} /></small>
               </div>
               {#if !row.banned}
                 <button
@@ -87,7 +88,7 @@
             <li class="acp-rowitem">
               <div class="acp-grow">
                 <UserLink name={o.username} /> · <a href="?id={o.id}">{tr("Details")}</a>
-                <br /><small class="muted"><code>{o.ip}</code> · {when(o.last_used)}</small>
+                <br /><small class="muted"><code>{o.ip}</code> · <When iso={o.last_used} /></small>
               </div>
             </li>
           {/each}
@@ -106,7 +107,7 @@
           <li class="acp-rowitem">
             <div class="acp-grow">
               <strong>{c.provider}</strong>
-              <br /><small class="muted">{c.email ?? ""} · {when(c.created_at)}</small>
+              <br /><small class="muted">{c.email ?? ""} · <When iso={c.created_at} /></small>
             </div>
             <button
               class="secondary"
@@ -122,7 +123,7 @@
             <div class="acp-grow">
               <strong>{tr("Passkey")}: {k.name}</strong>
               <br /><small class="muted">
-                {k.last_used_at ? `${tr("Last used")}: ${when(k.last_used_at)}` : tr("Never used")}
+                {#if k.last_used_at}{tr("Last used")}: <When iso={k.last_used_at} />{:else}{tr("Never used")}{/if}
               </small>
             </div>
           </li>
@@ -132,7 +133,9 @@
             <div class="acp-grow">
               <strong>{k.oauth_client ? `${tr("App")}: ${k.oauth_client}` : `${tr("API key")}: ${k.name}`}</strong>
               <br /><small class="muted">
-                {k.scope} · {k.last_used_at ? `${tr("Last used")}: ${when(k.last_used_at)}` : tr("Never used")}
+                {k.scope} · {#if k.last_used_at}{tr("Last used")}: <When iso={k.last_used_at} />{:else}{tr(
+                    "Never used",
+                  )}{/if}
               </small>
             </div>
             <button
@@ -158,7 +161,7 @@
               <div class="acp-grow">
                 <small class="acp-wrap">{agent(s.user_agent)}</small>
                 <br /><small class="muted">
-                  {s.ip ?? "—"}{s.country ? ` · ${s.country}` : ""} · {when(s.last_used_at)}
+                  {s.ip ?? "—"}{s.country ? ` · ${s.country}` : ""} · <When iso={s.last_used_at} />
                 </small>
               </div>
             </li>
@@ -185,7 +188,9 @@
                 <span class="acp-wrap">{m.subject}</span>
                 {#if m.last_error}<br /><small class="err acp-wrap">{m.last_error}</small>{/if}
               </div>
-              <small class="muted">{m.sent_at ? when(m.sent_at) : tr("Waiting to be sent")}</small>
+              <small class="muted">
+                {#if m.sent_at}<When iso={m.sent_at} />{:else}{tr("Waiting to be sent")}{/if}
+              </small>
             </li>
           {/each}
         </ul>

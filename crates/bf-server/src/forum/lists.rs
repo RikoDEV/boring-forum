@@ -142,7 +142,7 @@ async fn scheduled(State(state): State<AppState>, v: Viewer) -> Result<Response,
     let items: String = rows
         .iter()
         .map(|(_, title, at)| {
-            format!("<li>{} <span class=\"muted small\">{}</span></li>", esc(title), at.format("%Y-%m-%d %H:%M UTC"))
+            format!("<li>{} <span class=\"muted small\">{}</span></li>", esc(title), crate::http::render::ago(*at))
         })
         .collect();
     Ok(simple_page(&state, &v, &v.t().msg("Scheduled topics"), &format!("<ul class=\"activity\">{items}</ul>"), false))

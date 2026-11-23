@@ -1,4 +1,5 @@
 <script>
+  import { followTabHash } from "#lib/tabs.svelte.js";
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
   import { Status } from "#lib/status.svelte.js";
@@ -7,13 +8,16 @@
   import MultiSelect from "#lib/MultiSelect.svelte";
   import Field from "#lib/Field.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
+  import Switch from "#lib/Switch.svelte";
+  import Empty from "#lib/Empty.svelte";
   let tab = $state("channels");
+  followTabHash(["channels", "rules", "flags"], (key) => (tab = key));
   const status = new Status();
   let channels = $state([]);
   let rules = $state([]);
   let providers = $state([]);
   let flags = $state([]);
-  const blank = () => ({ name: "", description: "", access: "open", group_ids: [] });
+  const blank = () => ({ name: "", description: "", access: "open", group_ids: [], auto_join: false });
   let channel = $state(blank());
   let groups = $state([]);
   const ACCESS = { open: tr("All members"), groups: tr("Chosen groups"), invite: tr("Invite only") };
@@ -21,20 +25,39 @@
   let rule = $state({ provider: "slack", url: "", token: "", channel: "", filter: "watch", node_id: "", tag: "" });
   let dialog = $state(null);
   const num = (v) => (v === "" || v === null ? null : Number(v));
-  const load = () => {
-    get("/chat/channels").then((r) => (channels = r), status.fail);
-    get("/groups").then((r) => (groups = r), status.fail);
-    get("/chat/rules").then((r) => {
-      rules = r.rules;
-      providers = r.providers;
-    }, status.fail);
-    get("/chat/flags").then((r) => (flags = r), status.fail);
+  let loaded = $state(false);
+  const load = () =>
+    Promise.all([
+      get("/chat/channels").then((r) => (channels = r), status.fail),
+      get("/groups").then((r) => (groups = r), status.fail),
+      get("/chat/rules").then((r) => {
+        rules = r.rules;
+        providers = r.providers;
+      }, status.fail),
+      get("/chat/flags").then((r) => (flags = r), status.fail),
+    ]).then(() => (loaded = true));
+  // The channel being edited, or null while a new one is made.
+  let editing = $state(null);
+  const edit = (c) => {
+    status.clear();
+    editing = c.id;
+    channel = {
+      name: c.name,
+      description: c.description,
+      access: c.access,
+      group_ids: [...c.group_ids],
+      auto_join: c.auto_join,
+      archived: c.archived,
+    };
+    dialog = "channel";
   };
-  function addChannel(e) {
+  function saveChannel(e) {
     e.preventDefault();
     status.clear();
-    post("/chat/channels", channel).then(() => {
+    const body = { ...channel, auto_join: channel.access === "open" && channel.auto_join };
+    (editing ? put(`/chat/channels/${editing}`, body) : post("/chat/channels", body)).then(() => {
       channel = blank();
+      editing = null;
       dialog = null;
       load();
     }, status.fail);
@@ -45,6 +68,7 @@
       description: c.description,
       access: c.access,
       group_ids: c.group_ids,
+      auto_join: c.auto_join,
       archived: !c.archived,
     }).then(load, status.fail);
   const removeChannel = (c) =>
@@ -78,6 +102,8 @@
   {#if tab === "channels"}<button
       onclick={() => {
         status.clear();
+        editing = null;
+        channel = blank();
         dialog = "channel";
       }}
     >
@@ -93,11 +119,11 @@
 </PageHead>
 {#if dialog === "channel"}
   <EditDialog
-    title={tr("New channel")}
+    title={editing ? tr("Edit channel") : tr("New channel")}
     onclose={() => (dialog = null)}
-    onsubmit={addChannel}
+    onsubmit={saveChannel}
     {status}
-    save={tr("Add channel")}
+    save={editing ? tr("Save") : tr("Add channel")}
   >
     <div class="acp-form">
       <Field label={tr("Name")} bind:value={channel.name} required />
@@ -117,6 +143,14 @@
             bind:value={channel.group_ids}
           />
         </div>{/if}
+      {#if channel.access === "open"}
+        <Switch
+          check
+          wide
+          label={tr("Add everyone: every member joins this channel, and so does each new account")}
+          bind:checked={channel.auto_join}
+        />
+      {/if}
     </div>
   </EditDialog>
 {:else if dialog === "rule"}
@@ -148,26 +182,35 @@
       aria-selected={tab === k}
       onclick={() => (tab = String(k))}
     >
-      {label} ({n})
+      {label}<span class="acp-count">{n}</span>
     </button>{/each}
 </div>
 
 {#if tab === "channels"}
   <table class="acp-table">
     <thead>
-      <tr><th>{tr("Name")}</th><th>{tr("Who can see it")}</th><th>{tr("Messages")}</th><th></th></tr>
+      <tr>
+        <th>{tr("Name")}</th><th>{tr("Who can see it")}</th><th>{tr("Messages")}</th><th class="acp-cell-end"></th>
+      </tr>
     </thead><tbody>
       {#each channels as c}<tr>
           <td>
             {c.name}{#if c.archived}
-              {tr("(archived)")}{/if}
+              {tr("(archived)")}{/if}{#if c.auto_join}&nbsp;
+              <span class="bf-badge is-accent">{tr("Everyone joins")}</span>{/if}
           </td><td>
             {ACCESS[c.access]}{#if c.access === "groups"}: {groupNames(c)}{/if}
-          </td><td>{c.messages}</td><td>
-            <button class="btn" onclick={() => archive(c)}>{c.archived ? tr("Restore") : tr("Archive")}</button>
-            <button class="btn" onclick={() => removeChannel(c)}>{tr("Delete")}</button>
+          </td><td>{c.messages}</td><td class="acp-cell-end">
+            <button class="secondary" onclick={() => edit(c)}>{tr("Edit")}</button>
+            <button class="secondary" onclick={() => archive(c)}>{c.archived ? tr("Restore") : tr("Archive")}</button>
+            <button class="is-danger" onclick={() => removeChannel(c)}>{tr("Delete")}</button>
           </td>
-        </tr>{/each}
+        </tr>{:else}<Empty
+          cols={4}
+          {loaded}
+          title={tr("No channels yet.")}
+          text={tr("Use New channel above to add one.")}
+        />{/each}
     </tbody>
   </table>
 {:else if tab === "rules"}
@@ -184,32 +227,50 @@
   </p>
   <table class="acp-table">
     <thead>
-      <tr><th>{tr("Service")}</th><th>{tr("Sends to")}</th><th>{tr("Filter")}</th><th>{tr("Scope")}</th><th></th></tr>
+      <tr>
+        <th>{tr("Service")}</th><th>{tr("Sends to")}</th><th>{tr("Filter")}</th><th>{tr("Scope")}</th><th
+          class="acp-cell-end"
+        ></th>
+      </tr>
     </thead><tbody>
       {#each rules as r}<tr>
           <td>{r.provider}</td><td>{r.host} {r.channel}</td><td>{r.filter}</td><td>
             {r.node_id ?? tr("All forums")}{#if r.tag}
               · {r.tag}{/if}
-          </td><td>
-            <button class="btn" onclick={() => testRule(r)}>{tr("Test")}</button>
-            <button class="btn" onclick={() => removeRule(r)}>{tr("Delete")}</button>
+          </td><td class="acp-cell-end">
+            <button class="secondary" onclick={() => testRule(r)}>{tr("Test")}</button>
+            <button class="is-danger" onclick={() => removeRule(r)}>{tr("Delete")}</button>
           </td>
-        </tr>{/each}
+        </tr>{:else}<Empty
+          cols={5}
+          {loaded}
+          title={tr("No integrations yet.")}
+          text={tr("Use New integration above to send forum activity to another service.")}
+        />{/each}
     </tbody>
   </table>
 {:else}
   <table class="acp-table">
     <thead>
-      <tr><th>{tr("Message")}</th><th>{tr("By")}</th><th>{tr("Flagged by")}</th><th>{tr("Reason")}</th><th></th></tr>
+      <tr>
+        <th>{tr("Message")}</th><th>{tr("By")}</th><th>{tr("Flagged by")}</th><th>{tr("Reason")}</th><th
+          class="acp-cell-end"
+        ></th>
+      </tr>
     </thead><tbody>
       {#each flags as f}<tr>
           <td><a href="/chat/{f.channel_id}">{f.raw}</a></td><td><UserLink name={f.author} /></td><td>
             <UserLink name={f.flagged_by} />
-          </td><td>{f.reason}</td><td>
-            <button class="btn" onclick={() => dismiss(f)}>{tr("Keep")}</button>
-            <button class="btn" onclick={() => removeFlagged(f)}>{tr("Remove")}</button>
+          </td><td>{f.reason}</td><td class="acp-cell-end">
+            <button class="secondary" onclick={() => dismiss(f)}>{tr("Keep")}</button>
+            <button class="is-danger" onclick={() => removeFlagged(f)}>{tr("Remove")}</button>
           </td>
-        </tr>{:else}<tr><td colspan="5" class="muted">{tr("Nothing flagged.")}</td></tr>{/each}
+        </tr>{:else}<Empty
+          cols={5}
+          {loaded}
+          title={tr("Nothing flagged.")}
+          text={tr("Messages members report appear here.")}
+        />{/each}
     </tbody>
   </table>
 {/if}

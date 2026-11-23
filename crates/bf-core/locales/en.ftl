@@ -60,6 +60,10 @@ count-bots = { $n ->
     [one] { $n } bot
    *[other] { $n } bots
 }
+count-logins = { $n ->
+    [one] { $n } connected login
+   *[other] { $n } connected logins
+}
 count-members = { $n ->
     [one] { $n } member
    *[other] { $n } members
@@ -1206,7 +1210,7 @@ admin-count-days = { $n ->
 
 # Emails. Each mail is two messages, its subject and its body; an administrator rewrites one
 # in Site text like any other text, one language at a time.
-mail-verify-subject = Confirm your email for { $site }
+mail-verify-subject = Confirm your email - { $site }
 mail-verify-body =
     Hi { $username },
 
@@ -1217,7 +1221,7 @@ mail-verify-body =
     If you did not ask for this, ignore this email.
 
     — { $site }
-mail-reset-subject = Reset your { $site } password
+mail-reset-subject = Reset your password - { $site }
 mail-reset-body =
     Hi { $username },
 
@@ -1230,6 +1234,8 @@ mail-reset-body =
     — { $site }
 mail-notification-subject = { $by } posted in “{ $title }” - { $site }
 mail-notification-body =
+    Hi { $username },
+
     { $by } posted in “{ $title }”:
 
     { $link }
@@ -1246,7 +1252,7 @@ mail-security-body =
     If this was you, there is nothing to do. If it was not, reset your password at { $link } and contact the staff.
 
     — { $site }
-mail-backup-subject = Download link for a { $site } backup
+mail-backup-subject = Download link for a backup - { $site }
 mail-backup-body =
     Hi { $username },
 
@@ -1257,7 +1263,7 @@ mail-backup-body =
     If you did not ask for this, ignore this email and look at the staff log.
 
     — { $site }
-mail-digest-subject = New on { $site }
+mail-digest-subject = What is new - { $site }
 mail-digest-body =
     Hi { $username },
 
@@ -1609,6 +1615,7 @@ msg-comma_separated_usernames_nobody_may_register_end_a = Comma-separated userna
 msg-comma_separated_email_domains_when_set_only_these_may = Comma-separated email domains; when set, only these may sign up or be used on an account
 msg-who_sees_edit_history_everyone_members_author_or_staff = Who sees edit history: everyone, members, author or staff
 msg-url_returning_the_latest_version_as_text_empty_turns = URL returning the latest version as text; empty turns the check off
+msg-behind_cloudflare_take_each_visitor_s_address_from_the = Behind Cloudflare: take each visitor's address from the CF-Connecting-IP header. Believed only from Cloudflare's own addresses and from proxies in BF_TRUSTED_PROXIES
 msg-new_accounts_need_an_invite_code = New accounts need an invite code
 msg-checks_new_sign_ups_for_bots_stays_off_until_the = Checks new sign-ups for bots. Stays off until the challenge secret is set
 msg-public_site_key_from_cloudflare_hcaptcha_or_google = Public site key from Cloudflare, hCaptcha or Google
@@ -1744,7 +1751,6 @@ msg-contact_form_messages_accepted_per_hour_site_wide = Contact form messages ac
 msg-sites_that_may_embed_comments_as_host_names_separated = Sites that may embed comments, as host names separated by commas
 msg-discord_or_slack_incoming_webhook_for_new_posts_in = Discord or Slack incoming webhook for new posts in public forums
 msg-akismet_api_key_empty_turns_the_spam_check_off = Akismet API key; empty turns the spam check off
-msg-advert_shown_under_the_header_scripts_are_removed = Advert shown under the header; scripts are removed
 msg-the_lines_your_ad_networks_ask_you_to_publish_at_ads = The lines your ad networks ask you to publish at /ads.txt; leave empty to publish no file
 msg-clubs_one_member_may_start = Clubs one member may start
 msg-mark_an_email_address_bad_after_this_many_bounces = Mark an email address bad after this many bounces
@@ -1774,6 +1780,10 @@ msg-count_page_views_for_the_dashboard_s_site_traffic_no = Count page views for 
 msg-analytics_plausible_umami_ga4_or_matomo_empty_for_none = Analytics: plausible, umami, ga4 or matomo; empty for none. GA4 and Matomo wait for cookie consent when a cookie notice is set
 msg-analytics_the_site_s_domain_plausible_website_id_umami = Analytics: the site's domain (Plausible), website id (Umami), measurement id G-… (GA4) or site id (Matomo)
 msg-analytics_https_address_of_a_self_hosted_plausible = Analytics: https address of a self-hosted Plausible, Umami or Matomo
+msg-a_link_alone_on_its_line_in_a_post_becomes_a_card_with = A link alone on its line in a post becomes a card with the page's title, description and picture
+msg-show_the_page_s_picture_on_a_link_preview_card = Show the page's picture on a link preview card
+msg-sites_that_never_get_a_link_preview_card_one_per_line = Sites that never get a link preview card, one per line or separated by spaces, like example.com (their subdomains too)
+msg-days_a_link_preview_card_is_kept_before_the_page_is = Days a link preview card is kept before the page is fetched again
 msg-draw_a_share_picture_for_pages_that_have_none_from_the = Draw a share picture for pages that have none, from the page's title and the site's look
 msg-layout_of_the_share_picture_classic_text_on_the_left = Layout of the share picture: classic (text on the left), centered, or poster (a picture behind the text)
 msg-pages_that_get_a_drawn_share_picture_home_topic_forum = Pages that get a drawn share picture: home, topic, forum, tag, profile, page and other, separated by commas
@@ -1818,10 +1828,14 @@ msg-type_your_username_to_confirm = Type your username to confirm.
 msg-choose_two_different_accounts = Choose two different accounts.
 msg-an_administrator_cannot_be_merged_into_another_account = An administrator cannot be merged into another account.
 msg-these_uploads_are_not_in_this_archive_size_limit_or_the = These uploads are not in this archive (size limit, or the file is missing):
-msg-your_account_on_site_will_be_deleted_in_days_days_if =
+msg-hi_name_your_account_on_site_will_be_deleted_in_days =
+    Hi { $name },
+
     Your account on { $site } will be deleted in { $days } days.
 
-    If you did not ask for this, sign in and cancel it under Account settings: { $link }{ "\u000A" }
+    If you did not ask for this, log in and cancel it under Account settings: { $link }
+
+    — { $site }{ "\u000A" }
 msg-your_account_will_be_deleted_site = Your account will be deleted - { $site }
 msg-bad_secret = bad secret
 msg-turn_on_two_factor_authentication_first = Turn on two-factor authentication first.
@@ -1850,7 +1864,7 @@ msg-hi_name_confirm_email_as_the_new_address_for_your =
     If you did not ask for this, ignore this email.
 
     — { $site }{ "\u000A" }
-msg-confirm_your_new_email_for_site = Confirm your new email for { $site }
+msg-confirm_your_new_email_site = Confirm your new email - { $site }
 msg-check_email_for_a_confirmation_link = Check { $email } for a confirmation link.
 msg-this_confirmation_link_was_already_used_or_has_expired = This confirmation link was already used or has expired.
 msg-the_email_address_of_your_account_was_changed_to_email = The email address of your account was changed to { $email }
@@ -1875,6 +1889,7 @@ msg-choose_up_to_a_year = Choose up to a year.
 msg-no_expiry = no expiry
 msg-expired = expired
 msg-expires_date = expires { $date }
+msg-never_2 = never
 msg-unknown_choice = unknown choice
 msg-you_cannot_ignore_yourself = You cannot ignore yourself.
 msg-that_login_was_unlinked = That login was unlinked.
@@ -2012,8 +2027,13 @@ msg-leaderboard = Leaderboard
 msg-about = About
 msg-clubs = Clubs
 msg-live_q_a = Live Q&A
-msg-no_status_updates_yet = No status updates yet.
+msg-signed_in_members_active_in_the_last_15_minutes = Signed-in members active in the last 15 minutes
+msg-visitors_who_are_not_signed_in = Visitors who are not signed in
+msg-search_engines_and_other_crawlers = Search engines and other crawlers
 msg-nobody_right_now = Nobody right now.
+msg-a_crawler_not_a_person = A crawler, not a person
+msg-nobody_has_posted_yet = Nobody has posted yet.
+msg-no_status_updates_yet = No status updates yet.
 msg-nothing_coming_up = Nothing coming up.
 msg-kind_must_be_one_of_n_area_is_a_page_s_top_side_or = Kind must be one of { $n }; area is a page's top, side or bottom (pages: { $m }).
 msg-turn_on_ai_and_enter_the_provider_s_address_first = Turn on AI and enter the provider's address first.
@@ -2052,39 +2072,42 @@ msg-copy_this_key_now_it_is_not_shown_again_token = Copy this key now; it is not
 msg-log_in = Log in
 msg-administrators_cannot_be_impersonated = Administrators cannot be impersonated.
 msg-register = Register
-msg-hi_name_your_account_was_just_signed_in_to_from_a_new =
+msg-hi_name_your_account_was_just_logged_in_to_from_a_new =
     Hi { $name },
 
-    Your account was just signed in to from a new address ({ $ip }).
+    Your account was just logged in to from a new address ({ $ip }).
 
-    If this was not you, change your password and sign out other sessions under Account settings.{ "\u000A" }
-msg-new_sign_in_to_your_account = New sign-in to your account
+    If this was not you, change your password and log out other sessions under Account settings.
+
+    — { $site }{ "\u000A" }
+msg-new_log_in_to_your_account_site = New log-in to your account - { $site }
 msg-too_many_failed_attempts_try_again_after_time_utc_or = Too many failed attempts. Try again after { $time } UTC, or reset your password.
-msg-hi_name_there_were_5_failed_attempts_to_sign_in_to_your =
+msg-hi_name_there_were_5_failed_attempts_to_log_in_to_your =
     Hi { $name },
 
-    There were 5 failed attempts to sign in to your account, so it is locked for { $minutes } minutes.
+    There were 5 failed attempts to log in to your account, so it is locked for { $minutes } minutes.
 
     If this was not you, consider changing your password: { $link }
 
     — { $site }{ "\u000A" }
-msg-sign_in_attempts_on_site = Sign-in attempts on { $site }
+msg-too_many_failed_log_in_attempts_site = Too many failed log-in attempts - { $site }
 msg-wrong_username_or_password = Wrong username or password.
-msg-if_an_account_uses_that_address_a_sign_in_link_is_on = If an account uses that address, a sign-in link is on its way.
-msg-hi_name_sign_in_to_site_with_this_link_within_15 =
+msg-if_an_account_uses_that_address_a_log_in_link_is_on_its = If an account uses that address, a log-in link is on its way.
+msg-hi_name_log_in_to_site_with_this_link_within_15_minutes =
     Hi { $name },
 
-    Sign in to { $site } with this link within 15 minutes:
+    Log in to { $site } with this link within 15 minutes:
 
     { $link }
 
-    If you did not ask for this, ignore this email.{ "\u000A" }
-msg-your_sign_in_link_for_site = Your sign-in link for { $site }
-msg-email_me_a_sign_in_link = Email me a sign-in link
+    If you did not ask for this, ignore this email.
+
+    — { $site }{ "\u000A" }
+msg-your_log_in_link_site = Your log-in link - { $site }
+msg-email_me_a_log_in_link = Email me a log-in link
 msg-email = Email
 msg-send_link = Send link
 msg-back_to_log_in = Back to log in
-msg-sign_in = Sign in
 msg-two_factor_sign_in_is_unavailable_right_now_please = Two-factor sign-in is unavailable right now. Please contact the site administrator.
 msg-that_code_is_not_valid_try_the_current_one = That code is not valid. Try the current one.
 msg-two_factor_code = Two-factor code
@@ -2143,7 +2166,7 @@ msg-hi_name_someone_just_tried_to_register_on_site_with =
     If not, you can ignore this email.
 
     — { $site }{ "\u000A" }
-msg-you_already_have_an_account_on_site = You already have an account on { $site }
+msg-you_already_have_an_account_site = You already have an account - { $site }
 msg-if_this_address_can_be_used_an_email_is_on_its_way_with = If this address can be used, an email is on its way with what to do next.
 msg-too_many_accounts_were_created_from_your_network_lately = Too many accounts were created from your network lately. Please try again later.
 msg-registration_failed_please_try_again = Registration failed. Please try again.
@@ -2239,6 +2262,7 @@ msg-give_your_email_and_a_message_of_up_to_5000_characters = Give your email and
 msg-you_have_sent_several_messages_recently_try_again_later = You have sent several messages recently. Try again later.
 msg-too_many_messages_were_sent_recently_try_again_later = Too many messages were sent recently. Try again later.
 msg-contact_us = Contact us
+msg-contact_form_message_site = Contact form message - { $site }
 msg-thank_you_2 = Thank you
 msg-your_email = Your email
 msg-message = Message
@@ -2290,6 +2314,7 @@ msg-date = Date
 msg-unknown_level = unknown level
 msg-you_cannot_follow_yourself = You cannot follow yourself.
 msg-following = Following
+msg-nothing_yet_follow_members_from_their_profiles = Nothing yet. Follow members from their profiles.
 msg-staff_groups_cannot_be_granted_in_bulk = Staff groups cannot be granted in bulk.
 msg-the_document_needs_text_at_most_200_kb = The document needs text (at most 200 KB).
 msg-updated_terms = Updated terms
@@ -2412,12 +2437,11 @@ msg-bring_n_members_who_stay_and_post_and_you_join_groups = Bring { $n } members
 msg-your_link = Your link
 msg-share_this_anyone_who_signs_up_within_30_days_of = Share this. Anyone who signs up within 30 days of opening it counts as yours.
 msg-your_referral_link = Your referral link
-msg-yes = Yes
-msg-once_they_reach_trust_level_1 = Once they reach trust level 1
-msg-referrals_n = Referrals ({ $n })
-msg-joined = Joined
+msg-copy = Copy
 msg-counts = Counts
+msg-once_they_reach_trust_level_1 = Once they reach trust level 1
 msg-no_one_yet = No one yet.
+msg-referrals_n = Referrals ({ $n })
 msg-this_status_is_locked = This status is locked.
 msg-you_cannot_reply_to_this_status = You cannot reply to this status.
 msg-a_status_or_reply_must_be_1_to_max_len_characters = A status or reply must be 1 to { $MAX_LEN } characters.
@@ -2453,6 +2477,7 @@ msg-this_needs_trust_level_need_need_name_you_are_at_level = This needs trust le
 msg-a_channel_name_is_1_to_60_characters = A channel name is 1 to 60 characters.
 msg-access_must_be_open_groups_or_invite = Access must be open, groups or invite.
 msg-choose_at_least_one_group = Choose at least one group.
+msg-only_a_channel_open_to_all_members_can_add_everyone = Only a channel open to all members can add everyone.
 msg-you_cannot_message_that_member = You cannot message that member.
 msg-choose_1_to_max_people = Choose 1 to { $max } people.
 msg-only_invite_only_channels_have_a_member_list_to_manage = Only invite-only channels have a member list to manage.
@@ -2533,6 +2558,7 @@ msg-questions_appear_once_a_host_or_moderator_approves_them = Questions appear o
 msg-ask = Ask
 msg-your_question = Your question
 msg-ask_a_question = Ask a question
+msg-sign_in = Sign in
 msg-to_ask_a_question = to ask a question.
 msg-end_now = End now
 msg-session_settings = Session settings
@@ -2575,7 +2601,7 @@ msg-your_email_subject_to_site_was_not_posted_reason_reason =
     Reason: { $reason }
 
     — { $site }{ "\u000A" }
-msg-your_email_to_site_was_not_posted = Your email to { $site } was not posted
+msg-your_email_was_not_posted_site = Your email was not posted - { $site }
 msg-send_a_mail_to = Send a mail to
 msg-with_forum_as_the_forum_s_number_in_its_address_the = , with FORUM as the forum's number in its address. The subject becomes the title. Anyone with this address can post as you, so keep it private. Asking again replaces it.
 msg-this_topic_is_in_slow_mode_try_again_in_s_seconds = This topic is in slow mode. Try again in { $s } seconds.
@@ -2700,7 +2726,9 @@ msg-only_an_administrator_can_decide_this_appeal = Only an administrator can dec
 msg-that_appeal_was_already_decided_or_you_made_the = That appeal was already decided, or you made the original decision.
 msg-report_illegal_content = Report illegal content
 msg-thank_you_your_notice_was_received = Thank you. Your notice was received.
-msg-we_received_your_notice_number_id_about_url_we_will =
+msg-hello_we_received_your_notice_number_id_about_url_we =
+    Hello,
+
     We received your notice (number { $id }) about:
 
     { $url }
@@ -2711,6 +2739,26 @@ msg-we_received_your_notice_number_id_about_url_we_will =
 msg-your_notice_id_site = Your notice { $id } - { $site }
 msg-statement_of_reasons = Statement of reasons
 msg-legal_notices_and_appeals = Legal notices and appeals
+msg-the_decision_is_recorded_and_the_notifier_is_told = The decision is recorded and the notifier is told.
+msg-the_appeal_is_accepted_the_decision_is_reversed = The appeal is accepted: the decision is reversed.
+msg-the_appeal_is_rejected_the_decision_stands = The appeal is rejected: the decision stands.
+msg-we_have_acted_on_it = We have acted on it.
+msg-we_have_decided_not_to_act_on_it = We have decided not to act on it.
+msg-hello_we_have_reviewed_your_notice_id_about_url_outcome =
+    Hello,
+
+    We have reviewed your notice { $id } about:
+
+    { $url }
+
+    { $outcome }
+
+    Reasons: { $reason }
+
+    If you disagree, you may turn to a certified out-of-court dispute settlement body or to the courts.
+
+    — { $site }{ "\u000A" }
+msg-decision_on_your_notice_id_site = Decision on your notice { $id } - { $site }
 msg-transparency_report = Transparency report
 msg-illegal_or_harmful_speech_hate_speech_defamation = Illegal or harmful speech (hate speech, defamation)
 msg-violence_or_incitement = Violence or incitement
@@ -2840,7 +2888,6 @@ msg-the_ban_is_added = The ban is added.
 msg-the_ban_is_lifted = The ban is lifted.
 msg-suspended = Suspended
 msg-silenced = Silenced
-msg-never_2 = never
 msg-please_say_what_is_wrong_with_this_post = Please say what is wrong with this post.
 msg-only_a_visible_or_hidden_post_can_be_changed_here = Only a visible or hidden post can be changed here.
 msg-the_note_is_empty = The note is empty.
@@ -2851,6 +2898,16 @@ msg-a_reason_needs_a_key_a_z_0_9_a_label_of_up_to_60 = A reason needs a key (a-z
 msg-other_is_the_fallback_reason_and_files_a_normal_report = "other" is the fallback reason and files a normal report.
 msg-other_is_the_fallback_reason_and_stays_on = "other" is the fallback reason and stays on.
 msg-someone_has_already_decided_this_item = Someone has already decided this item.
+msg-thanks_your_post_will_appear_once_a_moderator_approves = Thanks! Your post will appear once a moderator approves it.
+msg-the_post_stays_and_the_item_is_closed = The post stays and the item is closed.
+msg-the_post_is_removed = The post is removed.
+msg-the_post_is_removed_and_its_author_is_silenced = The post is removed and its author is silenced.
+msg-the_account_is_approved = The account is approved.
+msg-the_account_is_rejected = The account is rejected.
+msg-the_held_text_is_approved = The held text is approved.
+msg-the_held_text_is_rejected = The held text is rejected.
+msg-the_report_is_closed = The report is closed.
+msg-the_message_is_removed_from_the_chat = The message is removed from the chat.
 msg-that_file_could_not_be_uploaded = That file could not be uploaded.
 msg-only_an_administrator_can_make_an_administrator_or_a = Only an administrator can make an administrator or a moderator the author.
 msg-a_topic_cannot_be_merged_into_itself = A topic cannot be merged into itself.
@@ -3034,10 +3091,8 @@ msg-this_sign_in_option_is_not_working = This sign-in option is not working.
 msg-this_sign_in_link_has_expired_please_try_again = This sign-in link has expired. Please try again.
 msg-that_sign_in_did_not_succeed = That sign-in did not succeed.
 msg-advertisement = Advertisement
+msg-under_maintenance = Under maintenance
 msg-signed_in_members_on_this_page_in_the_last_15_minutes = Signed-in members on this page in the last 15 minutes
-msg-visitors_who_are_not_signed_in = Visitors who are not signed in
-msg-search_engines_and_other_crawlers = Search engines and other crawlers
-msg-a_crawler_not_a_person = A crawler, not a person
 msg-first_column = First column
 msg-second_column = Second column
 msg-third_column = Third column
@@ -3053,6 +3108,8 @@ msg-translate_with_ai = Translate with AI
 msg-add_a_staff_note = Add a staff note
 msg-only_staff_see_it_not_the_author = Only staff see it, not the author
 msg-save_note = Save note
+msg-similar_in_meaning = Similar in meaning
+msg-n_more_matching_posts_in_this_topic = { $n } more matching posts in this topic
 msg-create_account = Create account
 msg-archive = Archive
 msg-unarchive = Unarchive
@@ -3087,6 +3144,7 @@ msg-spam = spam
 msg-abuse = abuse
 msg-part_of_a_name = Part of a name
 msg-find = Find
+msg-joined = Joined
 msg-last_seen = Last seen
 msg-posts = Posts
 msg-warning_points = Warning points
@@ -3118,16 +3176,19 @@ msg-kind = Kind
 msg-address = Address
 msg-reason = Reason
 msg-lasts_days_empty_until_lifted = Lasts (days, empty: until lifted)
+msg-visitors_using_it_are_refused_until_the_ban_is_lifted = Visitors using it are refused until the ban is lifted.
 msg-a_network_can_be_at_most_a_24_ipv4_or_48_ipv6_wider = A network can be at most a /24 (IPv4) or /48 (IPv6). Wider bans are for administrators.
 msg-added = Added
 msg-expires = Expires
 msg-never = Never
 msg-lift = Lift
+msg-visitors_using_it_are_let_in_again = Visitors using it are let in again.
 msg-no_bans = No bans.
 msg-moderator_log = Moderator log
 msg-points = Points
 msg-given_by = Given by
 msg-given = Given
+msg-you_have_no_notifications = You have no notifications.
 msg-trust_level_n = Trust level { $n }
 msg-text_to_publish_used_with_the_approve_button_the_author = Text to publish (used with the approve button; the author is told it was edited)
 msg-edit_the_text_then_approve = Edit the text, then approve
@@ -3136,18 +3197,37 @@ msg-remove_the_post_delete_everything_this_new_member = Remove the post, delete 
 msg-spammer_delete_all = Spammer: delete all
 msg-remove_the_post_and_silence_its_author = Remove the post and silence its author
 msg-remove_and_silence = Remove and silence
-msg-similar_in_meaning = Similar in meaning
+msg-the_author_is_told = The author is told.
+msg-showing_results_for = Showing results for
+msg-search_instead_for_q = Search instead for { $q }
+msg-did_you_mean = Did you mean
+msg-no_exact_matches_these_topics_have_similar_titles = No exact matches. These topics have similar titles.
+msg-recommended = Recommended
+msg-narrow_down = Narrow down
+msg-forums = Forums
+msg-tags = Tags
+msg-year = Year
+msg-one_result_per_topic_click_to_list_every_matching_post = One result per topic. Click to list every matching post.
+msg-every_matching_post_click_to_show_one_result_per_topic = Every matching post. Click to show one result per topic.
+msg-grouped_by_topic = Grouped by topic
+msg-all_posts = All posts
+msg-sort_results = Sort results
 msg-connected_logins = Connected logins
 msg-set_by_your_outside_login = Set by your outside login
 msg-push = Push
 msg-remembered_devices_skip_the_code_for_30_days_n = Remembered devices skip the code for 30 days: { $n }
 msg-forget_all_devices = Forget all devices
+msg-add_a_passkey = Add a passkey
 msg-sign_in_accounts_linked_to_this_one_you_can_unlink_one = Sign-in accounts linked to this one. You can unlink one while you have another way to sign in.
-msg-linked = linked
-msg-unlink = Unlink
-msg-your_only_way_to_sign_in = Your only way to sign in
 msg-no_linked_logins = No linked logins.
+msg-set_a_password_or_add_a_passkey_to_be_able_to_unlink_it = Set a password or add a passkey to be able to unlink it
+msg-your_only_way_to_sign_in = Your only way to sign in
+msg-connected = Connected
+msg-unlink = Unlink
+msg-add_a_login = Add a login
 msg-connect_provider = Connect { $provider }
+msg-no_api_keys_yet = No API keys yet.
+msg-new_api_key = New API key
 msg-download_with_files_zip = Download with files (ZIP)
 msg-who_can_message_me = Who can message me
 msg-staff_can_always_reach_you = Staff can always reach you.
@@ -3158,8 +3238,8 @@ msg-muted_members = Muted members
 msg-their_posts_are_hidden_from_you_and_they_cannot_message = Their posts are hidden from you and they cannot message you.
 msg-unmuted = Unmuted
 msg-undo = Undo
-msg-unmute = Unmute
 msg-you_have_not_muted_anyone = You have not muted anyone.
+msg-unmute = Unmute
 msg-what_happens_to_your_posts = What happens to your posts
 msg-keep_them_without_my_name = Keep them, without my name
 msg-delete_them_too = Delete them too
@@ -3572,6 +3652,7 @@ js-removed = Removed.
 admin-search_pages_and_settings = Search pages and settings
 admin-search_results = Search results
 admin-page_section = Page · { $section }
+admin-tab_page = Tab · { $page }
 admin-settings_could_not_be_loaded = Settings could not be loaded.
 admin-nothing_matches_q = Nothing matches “{ $q }”.
 admin-title_total_at_most_max_in_a_column = { $title }: { $total }, at most { $max } in a column
@@ -3579,6 +3660,7 @@ admin-title_total_in_the_last_length_days_at_most_max_in_a_day = { $title }: { $
 admin-view_as_table = View as table
 admin-slot = Slot
 admin-day = Day
+admin-breadcrumb = Breadcrumb
 admin-close = Close
 admin-save = Save
 admin-delete = Delete
@@ -3634,6 +3716,8 @@ admin-branding = Branding
 admin-logo_icons_and_the_picture_for_shared_links = Logo, icons and the picture for shared links
 admin-share_pictures = Share pictures
 admin-a_picture_drawn_for_every_page_that_is_shared_from_its = A picture drawn for every page that is shared, from its title and your colours
+admin-link_previews = Link previews
+admin-the_cards_a_link_on_its_own_line_in_a_post_becomes = The cards a link on its own line in a post becomes
 admin-general = General
 admin-your_site_s_name_language_and_availability = Your site's name, language and availability
 admin-sign_up_and_sign_in = Sign-up and sign-in
@@ -3821,8 +3905,12 @@ admin-registration_challenge = Registration challenge
 admin-challenge_secret = Challenge secret
 admin-minimum_sign_up_time = Minimum sign-up time
 admin-akismet_api_key = Akismet API key
-admin-advert_html = Advert HTML
 admin-allowed_image_hosts = Allowed image hosts
+admin-show_link_previews = Show link previews
+admin-show_the_picture_on_link_previews = Show the picture on link previews
+admin-sites_without_link_previews = Sites without link previews
+admin-days_a_link_preview_is_kept = Days a link preview is kept
+admin-cloudflare_real_visitor_address = Cloudflare: real visitor address
 admin-private_message_participants = Private message participants
 admin-new_private_messages_per_hour = New private messages per hour
 admin-trust_level_to_start_private_messages = Trust level to start private messages
@@ -3848,6 +3936,35 @@ admin-confirm_it_s_you = Confirm it's you
 admin-checking = Checking…
 admin-that_did_not_work_try_again = That did not work. Try again.
 admin-could_not_reach_the_server_try_again = Could not reach the server. Try again.
+admin-channels = Channels
+admin-flags = Flags
+admin-reactions = Reactions
+admin-tag_groups = Tag groups
+admin-group_rules = Group rules
+admin-announcements = Announcements
+admin-report_reasons = Report reasons
+admin-log = Log
+admin-templates = Templates
+admin-bad_addresses = Bad addresses
+admin-test_delivery = Test delivery
+admin-tags = Tags
+admin-custom_emoji = Custom emoji
+admin-invites = Invites
+admin-top_searches = Top searches
+admin-webhooks = Webhooks
+admin-deliveries = Deliveries
+admin-applications = Applications
+admin-icon = Icon
+admin-posting = Posting
+admin-permissions = Permissions
+admin-moderators = Moderators
+admin-seo = SEO
+admin-new = New
+admin-staff = Staff
+admin-awaiting_approval = Awaiting approval
+admin-suspended = Suspended
+admin-silenced = Silenced
+admin-unverified = Unverified
 admin-likes_received = Likes received
 admin-likes_given = Likes given
 admin-solved_answers = Solved answers
@@ -3866,7 +3983,6 @@ admin-warn = Warn
 admin-points = Points
 admin-active = Active
 admin-expired = Expired
-admin-staff = Staff
 admin-no_warnings = No warnings.
 admin-staff_notes = Staff notes
 admin-add_note = Add note
@@ -3940,7 +4056,6 @@ admin-system = System
 admin-settings = Settings
 admin-backups = Backups
 admin-plugins = Plugins
-admin-webhooks = Webhooks
 admin-federation = Federation
 admin-mail_log = Mail log
 admin-staff_log = Staff log
@@ -3948,6 +4063,7 @@ admin-automation = Automation
 admin-data_explorer = Data Explorer
 admin-logs = Logs
 admin-maintenance = Maintenance
+admin-administration = Administration
 admin-admin_site = Admin - { $site }
 admin-forum = Forum
 admin-admin = Admin
@@ -4017,9 +4133,6 @@ admin-above_the_footer = Above the footer
 admin-saved_name = Saved "{ $name }".
 admin-saved_2 = Saved.
 admin-delete_the_ad_name = Delete the ad "{ $name }"?
-admin-from_date_forever = From { $date }, forever
-admin-until_date = Until { $date }
-admin-always = Always
 admin-one_ad_per_place_on_a_page_picked_by_weight_among_those = One ad per place on a page, picked by weight among those the visitor's groups may see. HTML is cleaned when saved: no scripts or embeds. Impressions are saved every few minutes.
 admin-new_ad = New ad
 admin-edit_ad = Edit ad
@@ -4045,7 +4158,11 @@ admin-clicks = Clicks
 admin-click_rate = Click rate
 admin-runs = Runs
 admin-off = (off)
+admin-from_date_forever = From { $date }, forever
+admin-until_date = Until { $date }
+admin-always = Always
 admin-no_ads = No ads.
+admin-use_new_ad_above_to_add_one = Use New ad above to add one.
 admin-the_ads_txt_file = The ads.txt file
 admin-published_at_ads_txt_empty_no_file = Published at /ads.txt (empty: no file)
 admin-summaries = Summaries
@@ -4091,7 +4208,8 @@ admin-neutral = Neutral
 admin-negative = Negative
 admin-abusive = Abusive
 admin-spam = Spam
-admin-no_posts_have_been_judged_yet_turn_on_the_mood_record = No posts have been judged yet. Turn on the mood record in the settings.
+admin-no_posts_have_been_judged_yet = No posts have been judged yet.
+admin-turn_on_the_mood_record_in_the_settings = Turn on the mood record in the settings.
 admin-posts_the_ai_doubted = Posts the AI doubted
 admin-spam_spam_abuse_toxicity = spam { $spam }, abuse { $toxicity }
 admin-topics_indexed = Topics indexed
@@ -4114,16 +4232,17 @@ admin-looks_up_what_the_forum_already_says_needs_an_embedding = Looks up what th
 admin-edit = Edit
 admin-turn_off = Turn off
 admin-turn_on = Turn on
-admin-no_personas_yet_turn_on_personas_answer_when_mentioned = No personas yet. Turn on “Personas answer when mentioned” in the settings, then add one.
+admin-no_personas_yet = No personas yet.
+admin-turn_on_personas_answer_when_mentioned_in_the_settings = Turn on “Personas answer when mentioned” in the settings, then add one.
 admin-staff_action_log = Staff action log
-admin-action_prefix_e_g_topic = Action prefix, e.g. topic.
-admin-action = Action
-admin-staff_username = Staff username
-admin-staff_member = Staff member
 admin-filter = Filter
+admin-action_prefix_e_g_topic = Action prefix, e.g. topic.
+admin-staff_username = Staff username
 admin-who = Who
+admin-action = Action
 admin-target = Target
 admin-no_entries = No entries.
+admin-staff_actions_are_recorded_here_as_they_happen = Staff actions are recorded here as they happen.
 admin-older = Older
 admin-a_topic_is_started = A topic is started
 admin-a_reply_is_posted = A reply is posted
@@ -4175,6 +4294,7 @@ admin-add_an_action = Add an action
 admin-enabled = Enabled
 admin-last_run = Last run
 admin-no_rules_yet = No rules yet.
+admin-use_new_rule_above_to_add_one = Use New rule above to add one.
 admin-backing_up = Backing up
 admin-restoring = Restoring
 admin-reading_the_database = reading the database
@@ -4206,7 +4326,7 @@ admin-email_me_a_download_link = Email me a download link
 admin-restore = Restore
 admin-delete_name_3 = Delete { $name }
 admin-no_backups_yet = No backups yet.
-admin-loading = Loading…
+admin-use_back_up_now_above_to_make_one = Use Back up now above to make one.
 admin-restore_this_backup = Restore this backup?
 admin-everything_on_the_site_is_replaced_by_what_name_holds = Everything on the site is replaced by what { $name } holds: members, posts, settings and uploaded files. Whatever happened after it was made is lost. The site goes offline while it runs, and you will have to sign in again.
 admin-type_restore_to_confirm = Type restore to confirm
@@ -4226,12 +4346,13 @@ admin-the_name_description_and_group_show_as_written_here_in = The name, descrip
 admin-translate_them_in_site_text = Translate them in Site text
 admin-colour = Colour
 admin-colour_n = Colour { $n }
-admin-icon = Icon
 admin-when_this_badge_is_earned_is_built_into_the_forum_and = When this badge is earned is built into the forum and can't be changed.
 admin-earned_at_any_one_is_enough_to_start_all_you_set_must = Earned at (any one is enough to start; all you set must be met)
 admin-reputation = Reputation
 admin-accepted_answers = Accepted answers
 admin-find_a_badge = Find a badge
+admin-no_badges_match = No badges match.
+admin-use_new_badge_above_to_add_one = Use New badge above to add one.
 admin-all_members = All members
 admin-chosen_groups = Chosen groups
 admin-invite_only = Invite only
@@ -4240,10 +4361,12 @@ admin-sent_check_the_other_service = Sent. Check the other service.
 admin-channels_flagged_messages_and_forum_activity_sent_to = Channels, flagged messages, and forum activity sent to other chat services.
 admin-new_channel = New channel
 admin-new_integration = New integration
+admin-edit_channel = Edit channel
 admin-add_channel = Add channel
 admin-who_can_see_it = Who can see it
 admin-invite_only_you_add_people_from_the_channel = Invite only: you add people from the channel
 admin-no_groups = No groups
+admin-add_everyone_every_member_joins_this_channel_and_so = Add everyone: every member joins this channel, and so does each new account
 admin-service = Service
 admin-watch = watch
 admin-follow_2 = follow
@@ -4253,11 +4376,12 @@ admin-token = Token
 admin-channel_chat_or_room = Channel, chat or room
 admin-forum_id_empty_for_all = Forum id (empty for all)
 admin-tag_empty_for_all = Tag (empty for all)
-admin-channels = Channels
-admin-flags = Flags
 admin-messages = Messages
 admin-archived = (archived)
+admin-everyone_joins = Everyone joins
 admin-archive = Archive
+admin-no_channels_yet = No channels yet.
+admin-use_new_channel_above_to_add_one = Use New channel above to add one.
 admin-only_topics_guests_can_read_are_sent = Only topics guests can read are sent.
 admin-follow = Follow
 admin-sends_new_topics = sends new topics,
@@ -4269,11 +4393,14 @@ admin-sends_to = Sends to
 admin-scope = Scope
 admin-all_forums = All forums
 admin-test = Test
+admin-no_integrations_yet = No integrations yet.
+admin-use_new_integration_above_to_send_forum_activity_to = Use New integration above to send forum activity to another service.
 admin-message = Message
 admin-by = By
 admin-flagged_by = Flagged by
 admin-keep = Keep
 admin-nothing_flagged = Nothing flagged.
+admin-messages_members_report_appear_here = Messages members report appear here.
 admin-page_background = Page background
 admin-cards_and_panels = Cards and panels
 admin-secondary_text = Secondary text
@@ -4298,7 +4425,6 @@ admin-default_dark = Default, dark
 admin-hidden = Hidden
 admin-make_default = Make default
 admin-more_for_name = More for { $name }
-admin-all_colour_schemes = ← All colour schemes
 admin-unsaved_changes = Unsaved changes
 admin-members_can_choose_this_scheme = Members can choose this scheme
 admin-its_light_palette_is_the_site_s_default_in_light_mode = Its light palette is the site's default in light mode
@@ -4306,6 +4432,7 @@ admin-its_dark_palette_is_the_site_s_default_in_dark_mode = Its dark palette is 
 admin-label_mode_picker = { $label }, { $mode }, picker
 admin-dark_2 = dark
 admin-light_2 = light
+admin-label_mode = { $label }, { $mode }
 admin-preview = Preview
 admin-delete_the_reaction_name_what_members_reacted_with_it = Delete the reaction "{ $name }"? What members reacted with it disappears from posts.
 admin-new_reason = New reason
@@ -4324,15 +4451,9 @@ admin-label = Label
 admin-add_reaction = Add reaction
 admin-emoji = Emoji
 admin-add_group = Add group
-admin-tags = Tags
 admin-forum_ids = Forum ids
 admin-one_per_topic = One per topic
 admin-add_announcement = Add announcement
-admin-reactions = Reactions
-admin-tag_groups = Tag groups
-admin-group_rules = Group rules
-admin-announcements = Announcements
-admin-report_reasons = Report reasons
 admin-a_report_adds_the_reporter_s_track_record_times_the = A report adds the reporter's track record times the reason's weight to the post's score; at the "hide after reports" setting the post is hidden until a moderator looks. "Illegal" reasons are recorded as illegal content in DSA statements.
 admin-key = Key
 admin-needs_note = Needs note
@@ -4342,9 +4463,19 @@ admin-order = Order
 admin-needs_a_note = Needs a note
 admin-illegal_content = Illegal content
 admin-send_the_note_to_the_author_instead_of_filing_a_report = Send the note to the author instead of filing a report
+admin-no_report_reasons_yet = No report reasons yet.
+admin-use_new_reason_above_to_add_one = Use New reason above to add one.
 admin-move_name_alt_and_the_arrow_keys_also_move_it = Move { $name }. Alt and the arrow keys also move it.
+admin-no_reactions_yet = No reactions yet.
+admin-use_new_reaction_above_to_add_one = Use New reaction above to add one.
 admin-tags_are_slugs_forums_are_ids_leave_empty_to_allow = Tags are slugs. Forums are ids; leave empty to allow everywhere.
+admin-no_tag_groups_yet = No tag groups yet.
+admin-use_new_tag_group_above_to_add_one = Use New tag group above to add one.
 admin-checked_every_ten_minutes_a_group_rule_adds_members_to = Checked every ten minutes. A group rule adds members to a group when they meet its conditions, and cannot grant staff groups. Trust levels have their own requirements under Settings, Trust and warnings.
+admin-no_group_rules_yet = No group rules yet.
+admin-use_new_group_rule_above_to_add_one = Use New group rule above to add one.
+admin-no_announcements_yet = No announcements yet.
+admin-use_new_announcement_above_to_add_one = Use New announcement above to add one.
 admin-delete_name = Delete "{ $name }"?
 admin-read_only_sql_over_forum_data_queries_see_the_views = Read-only SQL over forum data. Queries see the views listed below, never passwords, 2FA secrets, tokens, IP addresses or private messages. Each run is written to the audit log.
 admin-the = The
@@ -4370,6 +4501,7 @@ admin-following = Following
 admin-waiting_for_the_other_server = Waiting for the other server
 admin-stop = Stop
 admin-no_forum_follows_a_remote_group = No forum follows a remote group.
+admin-use_follow_a_remote_group_above_to_add_one = Use Follow a remote group above to add one.
 admin-short_text = Short text
 admin-one_line_a_name_a_place_a_handle = One line: a name, a place, a handle.
 admin-long_text = Long text
@@ -4438,10 +4570,9 @@ admin-kind = Kind
 admin-category = Category
 admin-inside = Inside
 admin-top_level = Top level
-admin-posting = Posting
-admin-permissions = Permissions
+admin-no_forums_yet = No forums yet.
+admin-use_new_category_or_forum_above_to_add_one = Use New category or forum above to add one.
 admin-prefixes_and_moderators = Prefixes and moderators
-admin-moderators = Moderators
 admin-list_style = List style
 admin-table = Table
 admin-list = List
@@ -4451,7 +4582,7 @@ admin-newest = Newest
 admin-most_replies = Most replies
 admin-most_views = Most views
 admin-most_liked = Most liked
-admin-or_one_emoji = Or one emoji
+admin-or_one_emoji_such_as = Or one emoji, such as 🎮
 admin-or_a_picture = Or a picture
 admin-takes_priority_square_works_best = Takes priority; square works best
 admin-remove_picture = Remove picture
@@ -4474,11 +4605,9 @@ admin-use_the_permissions_of_parent = Use the permissions of “{ $parent }”
 admin-save_permissions = Save permissions
 admin-changes_to_the_parent_s_permissions_apply_here_too = Changes to the parent's permissions apply here too. Untick the switch to set your own.
 admin-guests_can_never_post_or_moderate_whatever_is_ticked = Guests can never post or moderate, whatever is ticked here.
-admin-question_solved_bug = Question, Solved, Bug
-admin-topic_prefixes = Topic prefixes
-admin-separated_by_commas = Separated by commas
+admin-topic_prefixes_separated_by_commas_question_solved_bug = Topic prefixes, separated by commas: Question, Solved, Bug
 admin-save_prefixes = Save prefixes
-admin-usernames_separated_by_commas = Usernames, separated by commas
+admin-moderators_usernames_separated_by_commas = Moderators: usernames, separated by commas
 admin-save_moderators = Save moderators
 admin-seo_title = SEO title
 admin-seo_description = SEO description
@@ -4548,10 +4677,6 @@ admin-ip = IP
 admin-queued_for_testto = Queued for { $testTo }
 admin-mail = Mail
 admin-outgoing_email_newest_first_failed_messages_are_retried = Outgoing email, newest first. Failed messages are retried up to 5 times.
-admin-log = Log
-admin-templates = Templates
-admin-bad_addresses = Bad addresses
-admin-test_delivery = Test delivery
 admin-mail_is_not_being_sent_reason_messages_stay_queued = Mail is not being sent: { $reason }. Messages stay queued until this is fixed.
 admin-no_mail_sender_is_configured_bf_smtp_url_so_messages = No mail sender is configured (BF_SMTP_URL), so messages show as sent but are never delivered.
 admin-mail_is_written_to_files_in_dir_not_delivered = Mail is written to files in { $dir }, not delivered.
@@ -4560,6 +4685,7 @@ admin-subject = Subject
 admin-sent = Sent
 admin-retrying_attempts = Retrying ({ $attempts })
 admin-no_mail_yet = No mail yet.
+admin-messages_the_forum_sends_are_listed_here = Messages the forum sends are listed here.
 admin-email_texts = Email texts
 admin-each_email_s_subject_and_body_is_a_text_in_site_text = Each email's subject and body is a text in Site text, translated into every language there, like the rest of the site.
 admin-edit_email_texts = Edit email texts
@@ -4568,6 +4694,7 @@ admin-member = Member
 admin-address = Address
 admin-clear = Clear
 admin-no_bad_addresses = No bad addresses.
+admin-addresses_that_keep_bouncing_are_listed_here = Addresses that keep bouncing are listed here.
 admin-send_a_test_email_to = Send a test email to
 admin-you_example_com = you@example.com
 admin-send_test = Send test
@@ -4627,6 +4754,7 @@ admin-at_least_this_many_posts = At least this many posts
 admin-only_confirmed_email_addresses = Only confirmed email addresses
 admin-sent_messages = Sent messages
 admin-nothing_sent_yet = Nothing sent yet.
+admin-messages_you_send_to_members_are_listed_here = Messages you send to members are listed here.
 admin-lock_the_topic = Lock the topic
 admin-unlock_the_topic = Unlock the topic
 admin-pin_the_topic = Pin the topic
@@ -4645,6 +4773,7 @@ admin-remove_step_n = Remove step { $n }
 admin-add_a_step = Add a step
 admin-steps = Steps
 admin-no_saved_actions_yet = No saved actions yet.
+admin-a_saved_action_is_a_set_of_steps_a_moderator_runs_on_a = A saved action is a set of steps a moderator runs on a topic in one click.
 admin-latest = Latest
 admin-top = Top
 admin-search = Search
@@ -4690,6 +4819,7 @@ admin-two_equal_columns_under_a_full_width_top = Two equal columns under a full-
 admin-three_columns = Three columns
 admin-three_equal_columns_for_features_teasers_or_links = Three equal columns, for features, teasers or links.
 admin-page_created_open_it_and_use_edit_layout_to_add_blocks = Page created. Open it and use "Edit layout" to add blocks.
+admin-delete_the_page_title = Delete the page "{ $title }"?
 admin-pages_you_build_from_blocks_pick_a_layout_then_arrange = Pages you build from blocks. Pick a layout, then arrange blocks with "Edit layout" on the page. Add one to the header from
 admin-using_its_address = using its address.
 admin-new_page = New page
@@ -4701,10 +4831,11 @@ admin-own_address_instead_of_page_optional = Own address, instead of /page/… (
 admin-about = /about
 admin-published = Published
 admin-blocks_in_an_area_the_new_layout_lacks_move_to_its = Blocks in an area the new layout lacks move to its first column.
-admin-updated_n = · updated { $n }
+admin-updated = updated
 admin-draft = Draft
 admin-design = Design
 admin-no_pages_yet = No pages yet.
+admin-use_new_page_above_to_add_one = Use New page above to add one.
 admin-forum_or_category = Forum or category
 admin-post = Post
 admin-tag = Tag
@@ -4724,6 +4855,7 @@ admin-destination = Destination
 admin-missing = Missing
 admin-nothing_matches = Nothing matches.
 admin-no_permalinks_yet = No permalinks yet.
+admin-use_add_permalink_above_to_add_one = Use Add permalink above to add one.
 admin-the_first_n_of_total_are_shown_search_for_the_rest = The first { $n } of { $total } are shown: search for the rest.
 admin-its_server_code_may_contact_host = Its server code may contact { $host }
 admin-its_browser_code_may_send_requests_to_origin = Its browser code may send requests to { $origin }
@@ -4767,7 +4899,6 @@ admin-approve_name = Approve { $name }
 admin-approve_and_enable = Approve and enable
 admin-this_version_asks_for_more_than_you_approved_before_the = This version asks for more than you approved before. The new ones are marked.
 admin-this_plugin_asks_to = This plugin asks to:
-admin-new = New
 admin-outside_the_sandbox = Outside the sandbox
 admin-nothing_it_can_only_react_to_events = Nothing: it can only react to events.
 admin-settings_of_name = Settings of { $name }
@@ -4859,16 +4990,16 @@ admin-picture = Picture
 admin-invite_link = Invite link
 admin-copy_it_now_it_is_not_shown_again = Copy it now; it is not shown again.
 admin-copy = Copy
-admin-custom_emoji = Custom emoji
-admin-invites = Invites
-admin-top_searches = Top searches
 admin-rename = Rename
-admin-no_tags_yet_add_one_or_they_appear_here_once_a_topic = No tags yet. Add one, or they appear here once a topic uses them.
+admin-no_tags_yet = No tags yet.
+admin-add_one_or_they_appear_here_once_a_topic_uses_them = Add one, or they appear here once a topic uses them.
 admin-no_custom_emoji_yet = No custom emoji yet.
+admin-use_new_emoji_above_to_add_one = Use New emoji above to add one.
 admin-invite_id = Invite #{ $id }
 admin-used_by = Used by
-admin-expires_n = Expires { $n }
+admin-expires = Expires
 admin-no_invites_yet = No invites yet.
+admin-use_create_invite_link_above_to_make_one = Use Create invite link above to make one.
 admin-last_30_days_2 = Last 30 days.
 admin-term = Term
 admin-average_results = Average results
@@ -4880,8 +5011,8 @@ admin-english = English
 admin-built_in_for_this_language = Built in for this language
 admin-your_text = Your text
 admin-write_a_variable_as_name_as_in_the_english_text_above = Write a variable as { "{" } $name { "}" }, as in the English text above. For plurals use { "{" } $n -> [one] … *[other] … { "}" }.
-admin-language = Language
 admin-search_text = Search text
+admin-language = Language
 admin-only_my_changes = Only my changes
 admin-changed = Changed
 admin-showing_the_first_n_of_total_search_to_narrow_the_list = Showing the first { $n } of { $total }. Search to narrow the list.
@@ -4915,8 +5046,8 @@ admin-boring_forum = Boring Forum
 admin-comes_with_the_forum = Comes with the forum
 admin-components = Components
 admin-small_additions_that_apply_on_top_of_whichever_theme_is = Small additions that apply on top of whichever theme is in use.
-admin-all_themes = ← All themes
 admin-colour_tweaks = Colour tweaks
+admin-css = CSS
 admin-template_slots = Template slots
 admin-theme_is_the_site_s_default_for_everyone_who_has_not = Theme is the site's default, for everyone who has not chosen one
 admin-theme_is_on = Theme is on
@@ -4972,26 +5103,21 @@ admin-posts_to_keep_the_level = Posts to keep the level
 admin-a_level_can_only_be_earned_when_the_level_below_it_is = A level can only be earned when the level below it is earned too.
 admin-everyone_starts_at_this_level_so_it_has_no_requirements = Everyone starts at this level, so it has no requirements.
 admin-all = All
-admin-awaiting_approval = Awaiting approval
-admin-suspended = Suspended
-admin-silenced = Silenced
-admin-unverified = Unverified
-admin-never = Never
-admin-today = Today
-admin-yesterday = Yesterday
 admin-open_one_to_moderate_or_change_their_account = Open one to moderate or change their account.
-admin-username_or_email = Username or email
 admin-search_members = Search members
-admin-last_seen = Last seen
+admin-username_or_email = Username or email
 admin-sort_by = Sort by
+admin-last_seen = Last seen
 admin-trust = Trust
 admin-joined = Joined
+admin-never = Never
 admin-account_suspended = Account suspended
 admin-account_silenced = Account silenced
 admin-warning_points_warning_pts = { $warning_points } warning pts
 admin-not_verified = Not verified
 admin-active_account = Active account
 admin-no_members_match = No members match.
+admin-try_another_search_or_filter = Try another search or filter.
 admin-previous = ← Previous
 admin-page_page_of_pages = Page { $page } of { $pages }
 admin-next = Next →
@@ -5003,7 +5129,6 @@ admin-signature = Signature
 admin-location = Location
 admin-website = Website
 admin-groups_changed = Groups changed
-admin-members_2 = ← Members
 admin-suspended_until_n = Suspended until { $n }
 admin-silenced_until_n = Silenced until { $n }
 admin-email_not_verified = Email not verified
@@ -5094,20 +5219,21 @@ admin-all_events = All events
 admin-add_application = Add application
 admin-app_name = App name
 admin-redirect_address = Redirect address
-admin-deliveries = Deliveries
-admin-applications = Applications
 admin-each_delivery_is_a_signed_post_verify_the = Each delivery is a signed POST: verify the
 admin-header_an_hmac_sha256_of_the_body_with_the_secret = header, an HMAC-SHA256 of the body with the secret. Failures retry with growing delays, up to 8 times.
 admin-secret_shown_once_2 = Secret, shown once:
 admin-no_webhooks_yet = No webhooks yet.
+admin-use_new_webhook_above_to_add_one = Use New webhook above to add one.
 admin-event = Event
 admin-attempts = Attempts
 admin-last_result = Last result
+admin-deliveries_are_listed_here_once_a_webhook_fires = Deliveries are listed here once a webhook fires.
 admin-other_apps_can_sign_members_in_through_this_forum = Other apps can sign members in through this forum:
 admin-code_flow_with_s256_pkce = (code flow with S256 PKCE),
 admin-client_id = Client ID
 admin-secret_shown_once = , secret, shown once:
 admin-no_applications_yet = No applications yet.
+admin-use_new_application_above_to_add_one = Use New application above to add one.
 admin-top_of_the_page = Top of the page
 admin-main_column = Main column
 admin-sidebar = Sidebar
@@ -5179,6 +5305,7 @@ admin-name_n_words_found = { $name }: { $n } words found
 admin-no_file_chosen = No file chosen.
 admin-word = Word
 admin-no_watched_words = No watched words.
+admin-use_new_watched_word_above_to_add_one = Use New watched word above to add one.
 admin-posts_per_page = Posts per page
 admin-topics_per_page = Topics per page
 admin-min_post_length = Min post length

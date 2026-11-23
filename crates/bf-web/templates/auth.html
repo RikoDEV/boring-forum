@@ -7,30 +7,30 @@
     <p class="muted">{% if register %}{{ layout.t.f("auth.lead_register", [("site", layout.site_name.as_str())]) }}{% else %}{{ layout.t.f("auth.lead_login", [("site", layout.site_name.as_str())]) }}{% endif %}</p>
   </header>
   <div class="bf-auth-body">
-    {% if let Some(e) = error %}<p class="bf-auth-error" role="alert">{{ e }}</p>{% endif %}
+    {% if let Some(e) = error %}<p class="bf-alert is-error" role="alert">{{ layout.icon("circle-alert")|safe }} {{ e }}</p>{% endif %}
     <form method="post" action="{% if register %}/register{% else %}/login{% endif %}" class="bf-auth-form"{% if register %} data-track="sign-up"{% endif %}>
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       {% if register %}
       <input type="hidden" name="ts" value="{{ ts }}">
       <div class="hp" aria-hidden="true"><label for="website_url">{{ layout.t.t("auth.honeypot") }}</label><input id="website_url" name="website_url" tabindex="-1" autocomplete="off"></div>
-      <div class="bf-field"><input placeholder=" " id="username" name="username" value="{{ username }}" autocomplete="username" required><label class="bf-field-label" for="username">{{ layout.t.t("settings.username") }}</label></div>
-      <div class="bf-field"><input placeholder=" " id="email" name="email" type="email" value="{{ email }}" autocomplete="email" required><label class="bf-field-label" for="email">{{ layout.t.t("settings.email") }}</label></div>
-      <div class="bf-field"><input placeholder=" " id="password" name="password" type="password" autocomplete="new-password" minlength="8" required><label class="bf-field-label" for="password">{{ layout.t.t("settings.password") }}</label></div>
+      <label class="bf-field"><input placeholder=" " id="username" name="username" value="{{ username }}" autocomplete="username" required><span class="bf-field-label">{{ layout.t.t("settings.username") }}</span></label>
+      <label class="bf-field"><input placeholder=" " id="email" name="email" type="email" value="{{ email }}" autocomplete="email" required><span class="bf-field-label">{{ layout.t.t("settings.email") }}</span></label>
+      <label class="bf-field"><input placeholder=" " id="password" name="password" type="password" autocomplete="new-password" minlength="8" required><span class="bf-field-label">{{ layout.t.t("settings.password") }}</span></label>
       {% for q in questions %}{% include "_field_input.html" %}{% endfor %}
       {% if min_age > 0 %}
-      <div class="bf-field"><input id="birth_date" name="birth_date" type="date" required><label class="bf-field-label" for="birth_date">{{ layout.t.t("auth.birth_date") }}</label></div>
+      <label class="bf-field"><input id="birth_date" name="birth_date" type="date" required><span class="bf-field-label">{{ layout.t.t("auth.birth_date") }}</span></label>
       <p class="small muted">{{ layout.t.f("auth.min_age", [("age", min_age.to_string().as_str())]) }}</p>
       {% endif %}
       {% if newsletter %}<label class="check"><input type="checkbox" name="newsletter" value="1"> {{ layout.t.t("settings.newsletter") }}</label>{% endif %}
       {% if !legal.is_empty() %}
-      <label class="check"><input type="checkbox" name="accept" value="1" required> {{ layout.t.t("auth.accept") }} {% for (kind, title) in legal %}<a href="/legal/{{ kind }}" target="_blank">{{ title }}</a>{% if !loop.last %} {{ layout.t.t("auth.and") }} {% endif %}{% endfor %}</label>
+      <label class="check"><input type="checkbox" name="accept" value="1" required> {{ layout.t.t("auth.accept") }} {% for (kind, title) in legal %}<a href="/legal/{{ kind }}" target="_blank" rel="noopener">{{ title }}</a>{% if !loop.last %} {{ layout.t.t("auth.and") }} {% endif %}{% endfor %}</label>
       {% endif %}
       {% else %}
-      <div class="bf-field"><input placeholder=" " id="login" name="login" value="{{ username }}" autocomplete="username webauthn" required><label class="bf-field-label" for="login">{{ layout.t.t("auth.login_field") }}</label></div>
-      <div class="bf-field"><input placeholder=" " id="password" name="password" type="password" autocomplete="current-password" required><label class="bf-field-label" for="password">{{ layout.t.t("settings.password") }}</label></div>
+      <label class="bf-field"><input placeholder=" " id="login" name="login" value="{{ username }}" autocomplete="username webauthn" required><span class="bf-field-label">{{ layout.t.t("auth.login_field") }}</span></label>
+      <label class="bf-field"><input placeholder=" " id="password" name="password" type="password" autocomplete="current-password" required><span class="bf-field-label">{{ layout.t.t("settings.password") }}</span></label>
       {% endif %}
       {% if register && invite_required %}
-      <div class="bf-field"><input placeholder=" " id="invite" name="invite" value="{{ invite }}" autocomplete="off" required><label class="bf-field-label" for="invite">{{ layout.t.t("auth.invite_code") }}</label></div>
+      <label class="bf-field"><input placeholder=" " id="invite" name="invite" value="{{ invite }}" autocomplete="off" required><span class="bf-field-label">{{ layout.t.t("auth.invite_code") }}</span></label>
       {% endif %}
 
       {#- The registration challenge; its scripts are allowed by the sign-up page's policy. #}

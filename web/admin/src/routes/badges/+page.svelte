@@ -8,6 +8,8 @@
   import IconPicker from "#lib/IconPicker.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
+  import Box from "#lib/Box.svelte";
+  import Empty from "#lib/Empty.svelte";
 
   const COLORS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const TIERS = [
@@ -36,8 +38,12 @@
   const crud = new Crud({ path: "/badges", blank: () => blank(), load: () => load() }); // draft: the badge being added or changed
   const status = crud.status;
   let find = $state("");
+  let loaded = $state(false);
 
-  const load = () => get("/badges").then((r) => (badges = r), status.fail);
+  const load = () =>
+    get("/badges")
+      .then((r) => (badges = r), status.fail)
+      .finally(() => (loaded = true));
   const levelText = (n) => (n >= 1000 && n % 1000 === 0 ? `${n / 1000}k` : String(n));
   const shown = $derived(
     badges.filter((b) => `${b.name} ${b.category}`.toLowerCase().includes(find.trim().toLowerCase())),
@@ -151,9 +157,9 @@
   </EditDialog>
 {/if}
 
-<div class="acp-settings-head">
-  <input type="search" bind:value={find} placeholder={tr("Find a badge")} aria-label={tr("Find a badge")} />
-</div>
+<Box title={tr("Find a badge")}>
+  <div class="acp-form"><Field label={tr("Find a badge")} type="search" bind:value={find} /></div>
+</Box>
 {#each categories as category}
   <h2>{category}</h2>
   <div class="acp-box">
@@ -179,3 +185,10 @@
     </ul>
   </div>
 {/each}
+{#if !categories.length}
+  <Empty
+    {loaded}
+    title={find.trim() ? tr("No badges match.") : tr("No badges yet.")}
+    text={find.trim() ? "" : tr("Use New badge above to add one.")}
+  />
+{/if}

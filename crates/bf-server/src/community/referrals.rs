@@ -2,9 +2,10 @@
 //! they are that member's referral. Members see their link and referrals at `/referrals`, and
 //! qualified referrals (trust level 1 reached) can earn groups.
 
-use crate::http::i18n::{trf, trh};
+use crate::community::people;
+use crate::http::i18n::{tr, trf, trh};
 use crate::http::render::DbResult;
-use crate::http::ui::{Shell, begin, finish, table_box, when};
+use crate::http::ui::{Shell, begin, finish, when};
 use crate::http::viewer::{Viewer, cookie};
 use crate::state::AppState;
 use axum::Router;
@@ -91,27 +92,28 @@ async fn page(State(state): State<AppState>, v: Viewer) -> Result<Response, AppE
         )
     };
     let mut html = format!(
-        "<section class=\"bf-box block\"><h2>{tr1}</h2><p>{tr2}</p><p><input readonly value=\"{}\" aria-label=\"{tr3}\" class=\"bf-ref-link\"></p>{reward}</section>",
-        esc(&link),
+        "<section class=\"bf-box block\"><h2>{tr1}</h2><p>{tr2}</p><div class=\"bf-side-form\"><label class=\"bf-field\"><input readonly value=\"{link}\" placeholder=\" \"><span class=\"bf-field-label\">{tr3}</span></label><button type=\"button\" class=\"btn\" data-copy=\"{link}\">{tr4}</button></div>{reward}</section>",
+        link = esc(&link),
         tr1 = trh("Your link"),
         tr2 = trh("Share this. Anyone who signs up within 30 days of opening it counts as yours."),
-        tr3 = trh("Your referral link")
+        tr3 = trh("Your referral link"),
+        tr4 = trh("Copy")
     );
-    let table_rows: Vec<Vec<String>> = rows
+    let items: Vec<String> = rows
         .iter()
-        .map(|(id, name, joined, ok)| {
-            vec![
-                format!("<a href=\"{}\">{}</a>", esc(&profile_path(*id, name)), esc(name)),
-                when(*joined),
-                if *ok { trh("Yes") } else { trh("Once they reach trust level 1") },
-            ]
+        .map(|(_, name, joined, ok)| {
+            let badge = if *ok {
+                format!("<span class=\"bf-badge is-ok\">{}</span>", trh("Counts"))
+            } else {
+                format!("<span class=\"bf-badge is-warn\">{}</span>", trh("Once they reach trust level 1"))
+            };
+            people::row(name, &format!("<span class=\"muted small\">{}</span>{badge}", when(*joined)))
         })
         .collect();
-    html.push_str(&table_box(
-        &trf("Referrals ({n})", &[("n", &rows.len().to_string())]),
-        &["Member", "Joined", "Counts"],
-        &table_rows,
-        "No one yet.",
+    let body = if items.is_empty() { people::empty("users", &tr("No one yet.")) } else { people::list(&items) };
+    html.push_str(&format!(
+        "<section class=\"bf-box\"><div class=\"bf-box-head\"><h2>{}</h2></div>{body}</section>",
+        trf("Referrals ({n})", &[("n", &rows.len().to_string())]).replace('&', "&amp;").replace('<', "&lt;")
     ));
     let shell = Shell { title: v.t().msg("Referrals"), noindex: true, ..Shell::default() };
     Ok(finish(&state, &v, ctx, shell, html))

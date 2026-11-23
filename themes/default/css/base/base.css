@@ -75,6 +75,14 @@ a {
   outline-offset: 2px;
 }
 
+/* A horizontal rule: one thin line in the border colour, not the browser's inset groove. */
+hr {
+  height: 0;
+  margin-block: var(--bf-space-4);
+  border: 0;
+  border-block-start: 1px solid var(--bf-color-border);
+}
+
 code,
 pre {
   font-family: var(--bf-font-mono);
@@ -137,7 +145,7 @@ h2 {
   &:focus {
     inset-inline-start: var(--bf-space-4);
     inset-block-start: var(--bf-space-2);
-    z-index: 50;
+    z-index: var(--bf-z-toast);
     background: var(--bf-color-surface);
     padding: var(--bf-space-2);
   }

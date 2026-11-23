@@ -131,8 +131,8 @@ body.bf-layout-editing [data-widget] {
   inset-block-start: var(--bf-space-1);
   inset-inline-end: var(--bf-space-1);
   display: flex;
-  gap: 2px;
-  padding: 2px;
+  gap: var(--bf-space-0);
+  padding: var(--bf-space-0);
   background: var(--bf-color-surface);
   border: 1px solid var(--bf-color-border);
   border-radius: var(--bf-radius-input);
@@ -243,10 +243,160 @@ aside {
   }
 
   & p {
-    margin: 2px 0 0;
+    margin: var(--bf-space-0) 0 0;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
   }
+}
+
+/* The "Who's online" block shares the look of "Recently browsing" (topic.css); its counts start
+   at the left, under the widget's title. */
+.bf-whos-online {
+  & .bf-browsing-counts {
+    justify-content: flex-start;
+    margin-block-end: var(--bf-space-3);
+  }
+
+  & .bf-browsing-empty {
+    margin: 0;
+  }
+}
+
+/* The "Top posters" block: a ranked list. Each row is a rank (the first three are medals), the
+   member's picture, their name over a bar of their posts against the leader's, and the count. */
+.bf-top {
+  display: grid;
+  gap: var(--bf-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bf-top-row {
+  display: grid;
+  grid-template-columns: 1.75rem 2.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-1) 0;
+}
+
+.bf-top-rank {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: var(--bf-color-surface-2);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+
+  &.is-gold,
+  &.is-silver,
+  &.is-bronze {
+    background: color-mix(in srgb, var(--medal) 30%, transparent);
+    border-color: color-mix(in srgb, var(--medal) 75%, transparent);
+    color: var(--bf-color-text);
+  }
+
+  &.is-gold {
+    --medal: var(--bf-clr-yellow);
+  }
+
+  &.is-silver {
+    --medal: var(--bf-clr-gray);
+  }
+
+  &.is-bronze {
+    --medal: var(--bf-clr-orange);
+  }
+}
+
+.bf-top-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+}
+
+.bf-top-who {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+
+  & > a {
+    overflow: hidden;
+    font-size: var(--bf-text-list);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* The track; the fill is its ::after, as wide as the class says (a tenth of the leader's count per step). */
+.bf-top-bar {
+  position: relative;
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--bf-radius-pill);
+  background: var(--bf-color-surface-2);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: var(--w, 0%);
+    border-radius: inherit;
+    background: var(--bf-color-accent);
+  }
+}
+
+.bf-w-1 {
+  --w: 10%;
+}
+
+.bf-w-2 {
+  --w: 20%;
+}
+
+.bf-w-3 {
+  --w: 30%;
+}
+
+.bf-w-4 {
+  --w: 40%;
+}
+
+.bf-w-5 {
+  --w: 50%;
+}
+
+.bf-w-6 {
+  --w: 60%;
+}
+
+.bf-w-7 {
+  --w: 70%;
+}
+
+.bf-w-8 {
+  --w: 80%;
+}
+
+.bf-w-9 {
+  --w: 90%;
+}
+
+.bf-w-10 {
+  --w: 100%;
+}
+
+.bf-top-count {
+  font-size: var(--bf-text-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 /* Layout editor: drag preview */
@@ -304,7 +454,7 @@ body.bf-layout-editing [data-widget].is-lifted {
 
 .bf-wel-hero h1 {
   margin: 0 0 var(--bf-space-2);
-  font-size: 1.75rem;
+  font-size: var(--bf-text-2xl);
   overflow-wrap: anywhere;
 }
 
@@ -338,7 +488,7 @@ body.bf-layout-editing [data-widget].is-lifted {
   & span {
     flex: 1;
     height: 0.375rem;
-    border-radius: 999px;
+    border-radius: var(--bf-radius-pill);
     background: var(--bf-color-border-strong);
   }
 
@@ -381,7 +531,7 @@ body.bf-layout-editing [data-widget].is-lifted {
   border-radius: 50%;
   background: var(--bf-color-surface-2);
   color: var(--bf-color-muted);
-  font-size: 1.125rem;
+  font-size: var(--bf-text-lg);
 }
 
 .bf-wel-step.is-next .bf-wel-step-icon {
@@ -404,7 +554,7 @@ body.bf-layout-editing [data-widget].is-lifted {
   }
 
   & p {
-    margin: 2px 0 0;
+    margin: var(--bf-space-0) 0 0;
     color: var(--bf-color-muted);
     font-size: var(--bf-text-sm);
   }
@@ -450,7 +600,7 @@ body.bf-layout-editing [data-widget].is-lifted {
 .bf-wel-card-icon {
   flex: none;
   color: var(--bf-color-accent);
-  font-size: 1.125rem;
+  font-size: var(--bf-text-lg);
 }
 
 .bf-wel-card strong {
@@ -460,7 +610,7 @@ body.bf-layout-editing [data-widget].is-lifted {
 
 .bf-wel-card-text {
   display: block;
-  margin-block-start: 2px;
+  margin-block-start: var(--bf-space-0);
   color: var(--bf-color-muted);
   font-size: var(--bf-text-sm);
 }

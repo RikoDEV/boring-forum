@@ -1,22 +1,30 @@
 {% extends "layout.html" %}
 {#- OAuth: may this app use the member's account? -#}
 {% block content %}
-<section class="panel narrow">
-  <h1>{{ layout.t.f("consent.title", [("app", app.as_str())]) }}</h1>
-  <p>{% if let Some(u) = layout.user %}{{ layout.t.f("consent.lead_named", [("app", app.as_str()), ("name", u.as_str())]) }}{% else %}{{ layout.t.f("consent.lead", [("app", app.as_str())]) }}{% endif %}</p>
-  <ul>
-    <li>{{ layout.t.t("consent.see_name") }}</li>
-    <li>{{ layout.t.t("consent.read") }}</li>
-    {% if write %}<li>{{ layout.t.t("consent.write") }}</li>{% endif %}
-  </ul>
-  <form method="post" action="/oauth/authorize" class="row-form">
-    <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-    <input type="hidden" name="client_id" value="{{ client_id }}">
-    <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
-    <input type="hidden" name="scope" value="{{ scope }}">
-    <input type="hidden" name="state" value="{{ state }}">
-    <input type="hidden" name="code_challenge" value="{{ code_challenge }}">
-    <button class="btn primary">{{ layout.t.t("consent.allow") }}</button> <button class="btn" name="deny" value="1">{{ layout.t.t("consent.deny") }}</button>
-  </form>
+<section class="bf-box bf-auth">
+  <header class="bf-auth-head">
+    <h1>{{ layout.t.f("consent.title", [("app", app.as_str())]) }}</h1>
+    <p class="muted">{% if let Some(u) = layout.user %}{{ layout.t.f("consent.lead_named", [("app", app.as_str()), ("name", u.as_str())]) }}{% else %}{{ layout.t.f("consent.lead", [("app", app.as_str())]) }}{% endif %}</p>
+  </header>
+  <div class="bf-auth-body">
+    <ul>
+      <li>{{ layout.t.t("consent.see_name") }}</li>
+      <li>{{ layout.t.t("consent.read") }}</li>
+      {% if write %}<li>{{ layout.t.t("consent.write") }}</li>{% endif %}
+    </ul>
+    <form method="post" action="/oauth/authorize" class="bf-auth-form">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <input type="hidden" name="client_id" value="{{ client_id }}">
+      <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
+      <input type="hidden" name="scope" value="{{ scope }}">
+      <input type="hidden" name="state" value="{{ state }}">
+      <input type="hidden" name="code_challenge" value="{{ code_challenge }}">
+      {#- Allow comes first in the markup so Enter allows nothing by accident of order; the row is shown reversed: the primary action last. -#}
+      <div class="bf-auth-actions">
+        <button class="btn primary">{{ layout.t.t("consent.allow") }}</button>
+        <button class="btn" name="deny" value="1">{{ layout.t.t("consent.deny") }}</button>
+      </div>
+    </form>
+  </div>
 </section>
 {% endblock %}

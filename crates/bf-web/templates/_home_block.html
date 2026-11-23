@@ -16,7 +16,7 @@
     </ul>{% endif %}
   </section>
   {% else %}
-  <section class="panel block"><p>{{ layout.t.t("home.no_forums") }} {{ layout.t.t("home.no_forums_hint") }}</p></section>
+  <section class="bf-box block"><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("folder")|safe }}</span><p>{{ layout.t.t("home.no_forums") }} {{ layout.t.t("home.no_forums_hint") }}</p></div></section>
   {% endfor %}
   {% if beside_latest %}
   </div>
@@ -33,7 +33,7 @@
         <span class="bf-cats-replies small muted" data-tip="{{ layout.t.t("list.replies") }}">{{ t.replies }}</span>
       </li>
       {% else %}
-      <li class="muted">{{ layout.t.t("list.empty") }}</li>
+      <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("message-square")|safe }}</span><p>{{ layout.t.t("list.empty") }}</p></div></li>
       {% endfor %}
     </ul>
   </section>
@@ -58,7 +58,7 @@
         </div>
       </li>
       {% else %}
-      <li class="muted">{{ layout.t.t("list.empty") }}</li>
+      <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("message-square")|safe }}</span><p>{{ layout.t.t("list.empty") }}</p></div></li>
       {% endfor %}
     </ul>
   </section>

@@ -81,7 +81,6 @@ pub struct Browsing {
 }
 
 pub struct Layout {
-    pub ad_source: Option<String>,
     /// Content translation is on: posts offer a "Translate" link to those who may edit them.
     pub translations: bool,
     /// AI features that add buttons or blocks to pages (each needs `ai_enabled` too).
@@ -95,6 +94,8 @@ pub struct Layout {
     /// counter and offers the math tools.
     pub post_max: i64,
     pub math: bool,
+    /// Link previews (cards for bare links in posts) are on.
+    pub link_previews: bool,
     /// The GIF picker's settings when it is on and has a key. The browser asks the provider itself.
     pub gifs: Option<GifConfig>,
     /// Optional modules that are on: (url, label), listed in the footer so each is always reachable.
@@ -267,6 +268,12 @@ impl Layout {
         }
         let href = bf_core::html::esc(&bf_core::slug::profile_path(0, name));
         format!(r#"<a class="bf-user-link" href="{href}">{shown}</a>"#)
+    }
+
+    /// The address of a member's profile, escaped for an attribute (for an avatar that links there
+    /// next to a name made by `user_link`).
+    pub fn profile_href(&self, name: &str) -> String {
+        bf_core::html::esc(&bf_core::slug::profile_path(0, name))
     }
 
     /// The neighbouring pages of a paginated list for the head's `rel=prev` and `rel=next` links;
@@ -460,8 +467,7 @@ impl Layout {
 
     /// The site's advert, without scripts.
     pub fn ad(&self) -> String {
-        let legacy = self.ad_source.as_deref().map(crate::theme::clean_html).unwrap_or_default();
-        format!("{legacy}{}", self.ad_slot("header"))
+        self.ad_slot("header")
     }
 
     /// The ad for one place on the page, if any.
@@ -639,7 +645,6 @@ impl Layout {
             plugins: Some(crate::theme::plugin_output()),
             custom: Some(crate::custom_code::from_settings(settings)).filter(|c| !c.is_empty()),
             area: None,
-            ad_source: Some(settings.str("ad_html")).filter(|a| !a.trim().is_empty()).map(str::to_owned),
             ad_groups: vec![1],
             translations: settings.bool("content_translation_enabled"),
             ai_summaries: settings.bool("ai_enabled") && settings.bool("ai_summaries_enabled"),
@@ -650,6 +655,7 @@ impl Layout {
             ai_helper: settings.bool("ai_enabled") && settings.bool("ai_helper_enabled"),
             post_max: settings.int("max_post_length"),
             math: settings.bool("math_enabled"),
+            link_previews: settings.bool("onebox_enabled"),
             gifs: gif_config(settings),
             ai_related: settings.bool("ai_enabled")
                 && settings.bool("ai_related_topics_enabled")

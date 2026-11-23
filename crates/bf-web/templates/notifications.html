@@ -1,18 +1,18 @@
 {% extends "layout.html" %}
 {#- All of a member's notifications, by kind. -#}
 {% block content %}
-<div class="head-row">
+<header class="bf-box bf-page-head bf-head-row">
   <h1>{{ layout.t.t("nav.notifications") }}</h1>
   <form method="post" action="/notifications/read" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.t("home.mark_all_read") }}</button></form>
-</div>
-<nav class="small list-controls" aria-label="{{ layout.t.t("notifications.filter") }}">
-  {%- for (label, url, active) in tabs %}<a href="{{ url }}"{% if *active %} class="current" aria-current="true"{% endif %}>{{ label }}</a> {% endfor -%}
+</header>
+<nav class="bf-segments is-bar small" aria-label="{{ layout.t.t("notifications.filter") }}">
+  {%- for (label, url, active) in tabs %}<a href="{{ url }}"{% if *active %} aria-current="page"{% endif %}>{{ label }}</a> {% endfor -%}
 </nav>
 <ul class="panel notes">
   {% for n in items %}
   <li{% if !n.read %} class="unread"{% endif %}><a href="{{ n.url }}">{{ n.text }}</a> <span class="muted small">{{ n.when }}</span></li>
   {% else %}
-  <li class="muted">{{ layout.t.t("menu.empty") }}</li>
+  <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("bell")|safe }}</span><p>{{ layout.t.msg("You have no notifications.") }}</p></div></li>
   {% endfor %}
 </ul>
 {% endblock %}

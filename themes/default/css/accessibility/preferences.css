@@ -41,8 +41,7 @@
   }
 
   .badge,
-  .bf-badge,
-  .unread-count {
+  .bf-badge {
     border: 1px solid CanvasText;
   }
 }

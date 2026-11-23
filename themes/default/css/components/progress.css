@@ -7,7 +7,7 @@
   inline-size: 100%;
   block-size: 0.5rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   background: var(--bf-color-border);
   color: var(--bf-color-accent);
   overflow: hidden;
@@ -17,12 +17,12 @@
   }
 
   &::-webkit-progress-value {
-    border-radius: 999px;
+    border-radius: var(--bf-radius-pill);
     background: var(--bf-color-accent);
   }
 
   &::-moz-progress-bar {
-    border-radius: 999px;
+    border-radius: var(--bf-radius-pill);
     background: var(--bf-color-accent);
   }
 

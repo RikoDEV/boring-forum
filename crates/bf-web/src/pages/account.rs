@@ -174,12 +174,12 @@ pub struct SettingsPage {
     pub newsletter: Option<bool>,
     /// (id, name, created, last used)
     pub passkeys: Vec<(String, String, crate::ago::Ago, crate::ago::Ago)>,
-    /// Linked logins: (provider key, label, email, linked).
-    pub identities: Vec<(String, String, Option<String>, crate::ago::Ago)>,
+    /// Linked logins.
+    pub identities: Vec<LinkedLogin>,
     /// False when the account has no other way to sign in, so a linked login cannot be removed.
     pub identity_removable: bool,
-    /// Sign-in providers that can still be connected: (provider key, label).
-    pub connectable: Vec<(String, String)>,
+    /// Sign-in providers that can still be connected.
+    pub connectable: Vec<LoginProvider>,
     /// `everyone`, `following` or `nobody`.
     pub allow_pm_from: String,
     /// Members this one has muted: (id, username).
@@ -191,6 +191,22 @@ pub struct SettingsPage {
     /// (code, name) of available languages.
     pub locales: Vec<(&'static str, &'static str)>,
     pub sessions: Vec<SessionView>,
+}
+
+/// A sign-in provider as the settings page draws it.
+pub struct LoginProvider {
+    /// The address segment (`/auth/{key}/link`).
+    pub key: String,
+    pub label: String,
+    /// A `brand-*` logo when the sprite has one, else a generic icon.
+    pub icon: String,
+}
+
+/// A login linked to the account.
+pub struct LinkedLogin {
+    pub provider: LoginProvider,
+    pub email: Option<String>,
+    pub linked: crate::ago::Ago,
 }
 
 /// One entry on the getting-started checklist.

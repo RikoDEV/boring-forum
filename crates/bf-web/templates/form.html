@@ -1,14 +1,15 @@
 {% extends "layout.html" %}
-{#- A small form page (password reset, sign-in link, two-factor code…): the text comes from the handler. -#}
+{#- A small form page (password reset, log-in link, two-factor code…): the text comes from the handler. -#}
 {% block content %}
 <section class="bf-box bf-auth">
   <header class="bf-auth-head">
     <h1>{{ heading }}</h1>
-    {% if let Some(m) = message %}<p class="muted" role="status">{{ m }}</p>{% endif %}
+    {% if !button.is_empty() %}{% if let Some(m) = message %}<p class="muted">{{ m }}</p>{% endif %}{% endif %}
   </header>
-  {% if error.is_some() || !button.is_empty() %}
+  {% if error.is_some() || !button.is_empty() || message.is_some() %}
   <div class="bf-auth-body">
-    {% if let Some(e) = error %}<p class="bf-auth-error" role="alert">{{ e }}</p>{% endif %}
+    {% if button.is_empty() %}{% if let Some(m) = message %}<p class="bf-alert is-ok" role="status">{{ layout.icon("circle-check")|safe }} {{ m }}</p>{% endif %}{% endif %}
+    {% if let Some(e) = error %}<p class="bf-alert is-error" role="alert">{{ layout.icon("circle-alert")|safe }} {{ e }}</p>{% endif %}
     {% if !button.is_empty() %}
     <form method="post" action="{{ action }}" class="bf-auth-form">
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
@@ -16,7 +17,7 @@
       {% if f.kind == "checkbox" %}
       <label class="check"><input type="checkbox" name="{{ f.name }}" value="1"> {{ layout.t.msg(f.label) }}</label>
       {% else %}
-      <div class="bf-field"><input placeholder=" " id="f-{{ f.name }}" name="{{ f.name }}" type="{{ f.kind }}" autocomplete="{{ f.autocomplete }}"{% if f.kind == "text" && f.name == "code" %} maxlength="23"{% endif %} required><label class="bf-field-label" for="f-{{ f.name }}">{{ layout.t.msg(f.label) }}</label></div>
+      <label class="bf-field"><input placeholder=" " id="f-{{ f.name }}" name="{{ f.name }}" type="{{ f.kind }}" autocomplete="{{ f.autocomplete }}"{% if f.kind == "text" && f.name == "code" %} maxlength="23"{% endif %}{% if f.autocomplete == "new-password" %} minlength="8"{% endif %}{% if loop.first %} autofocus{% endif %} required><span class="bf-field-label">{{ layout.t.msg(f.label) }}</span></label>
       {% endif %}
       {% endfor %}
       <button class="btn primary">{{ button }}</button>

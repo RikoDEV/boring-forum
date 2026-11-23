@@ -2,6 +2,8 @@
   import { tick } from "svelte";
   import { SvelteSet } from "svelte/reactivity";
   import { tr } from "#lib/i18n.js";
+  import { followTabHash } from "#lib/tabs.svelte.js";
+  import Empty from "#lib/Empty.svelte";
   import PageHead from "#lib/PageHead.svelte";
   import { Status } from "#lib/status.svelte.js";
   import { orderTree } from "#lib/tree.js";
@@ -19,6 +21,8 @@
   let groups = $state([]);
   let selected = $state(null);
   let tab = $state("general");
+  followTabHash(["general", "icon", "behaviour", "permissions", "people", "seo"], (key) => (tab = key));
+  let loaded = $state(false);
   // `#node=<id>` in the address picks a forum or category when the page opens.
   let wanted = typeof location === "undefined" ? null : (/^#node=(\d+)$/.exec(location.hash)?.[1] ?? null);
   let grants = $state({});
@@ -52,6 +56,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
 
   async function select(n) {
@@ -373,6 +378,8 @@
                 </small>{/if}
             </button>
           </li>
+        {:else}
+          <Empty li {loaded} title={tr("No forums yet.")} text={tr("Use New category or forum above to add one.")} />
         {/each}
       </ul>
     </div>
@@ -381,7 +388,7 @@
   {#if selected}
     <div>
       <div class="acp-tabs" role="tablist">
-        {#each [["general", tr("General")], ["icon", tr("Icon")], ["behaviour", tr("Posting")], ["permissions", tr("Permissions")], ["people", selected.kind === "forum" ? tr("Prefixes and moderators") : tr("Moderators")], ["seo", "SEO"]] as [key, label]}
+        {#each [["general", tr("General")], ["icon", tr("Icon")], ["behaviour", tr("Posting")], ["permissions", tr("Permissions")], ["people", selected.kind === "forum" ? tr("Prefixes and moderators") : tr("Moderators")], ["seo", tr("SEO")]] as [key, label]}
           <button role="tab" aria-selected={tab === key} onclick={() => (tab = key)}>{label}</button>
         {/each}
       </div>
@@ -426,10 +433,9 @@
               {#key selected.id}<IconPicker bind:value={selected.icon} />{/key}
             </fieldset>
             <Field
-              label={tr("Or one emoji")}
+              label={tr("Or one emoji, such as 🎮")}
               value={isSpriteIcon(selected.icon) ? "" : (selected.icon ?? "")}
               oninput={(e) => (selected.icon = e.currentTarget.value)}
-              placeholder="🎮"
             />
             <label>
               {tr("Or a picture")}<small>{tr("Takes priority; square works best")}</small><input
@@ -532,19 +538,15 @@
           </div>
         {:else if tab === "people"}
           <div class="acp-form">
-            {#if selected.kind === "forum"}<label class="bf-field acp-wide">
-                <input bind:value={prefixes} placeholder={tr("Question, Solved, Bug")} /><span class="bf-field-label">
-                  {tr("Topic prefixes")}
-                </span><small>{tr("Separated by commas")}</small>
-              </label>
+            {#if selected.kind === "forum"}<Field
+                label={tr("Topic prefixes, separated by commas: Question, Solved, Bug")}
+                bind:value={prefixes}
+                wide
+              />
               <div class="acp-actions">
                 <button class="secondary" onclick={savePrefixes}>{tr("Save prefixes")}</button>
               </div>{/if}
-            <label class="bf-field acp-wide">
-              <input placeholder=" " bind:value={mods} /><span class="bf-field-label">{tr("Moderators")}</span><small>
-                {tr("Usernames, separated by commas")}
-              </small>
-            </label>
+            <Field label={tr("Moderators: usernames, separated by commas")} bind:value={mods} wide />
             <div class="acp-actions"><button class="secondary" onclick={saveMods}>{tr("Save moderators")}</button></div>
           </div>
         {:else}
@@ -557,6 +559,6 @@
       </section>
     </div>
   {:else}
-    <section class="acp-box"><p class="acp-empty">{tr("Pick a forum on the left.")}</p></section>
+    <section class="acp-box"><Empty title={tr("Pick a forum on the left.")} /></section>
   {/if}
 </div>

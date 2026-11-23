@@ -59,7 +59,7 @@
   <div class="bf-page-meta">
     <div class="bf-byline">
       <img class="avatar" src="/avatar/{{ author }}.svg" width="44" height="44" alt="">
-      <div>{{ layout.t.t("topic.by") }} <a href="{{ author_url }}"><strong>{{ author }}</strong></a><div class="muted">{{ started }} {{ layout.t.t("topic.in") }} <a class="muted" href="{{ forum_url }}">{{ forum_title }}</a></div></div>
+      <div>{{ layout.t.t("topic.by") }} <strong>{{ layout.user_link(author)|safe }}</strong><div class="muted">{{ started }} {{ layout.t.t("topic.in") }} <a class="muted" href="{{ forum_url }}">{{ forum_title }}</a></div></div>
     </div>
     <div class="bf-head-actions">
       {% if let Some(feed) = layout.feed %}<a class="bf-icon-btn" href="{{ feed }}" aria-label="{{ layout.t.t("feed.subscribe") }}">{{ layout.icon("rss")|safe }}</a>{% endif %}
@@ -76,17 +76,7 @@
           </form>
         </div>
       </details>
-      <details class="bf-menu">
-        <summary class="btn">{{ layout.icon("bell")|safe }} <span class="bf-follow-label bf-btn-label">{{ layout.t.tj("follow.", follow) }}</span> <span class="bf-btn-label">{{ layout.icon("chevron-down")|safe }}</span></summary>
-        <div class="bf-menu-body bf-follow-menu">
-          <form method="post" action="/t/{{ id }}/follow">
-            <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-            {%- for k in ["watch", "track", "normal", "mute"] %}
-            <button name="level" value="{{ k }}"{% if follow == *k %} aria-current="true"{% endif %}><span><strong>{{ layout.t.tj("follow.", k) }}</strong></span></button>
-            {%- endfor %}
-          </form>
-        </div>
-      </details>
+      {% let follow_scope = "t" %}{% let follow_id = id %}{% let follow_topic = true %}{% include "_follow.html" %}
       {% endif %}
 
       {#- Manage: everything a moderator (or a member who may tag) can change about the topic. #}
@@ -120,7 +110,7 @@
           <div class="bf-manage-groups">
             {% if can_tag %}
             <details>
-              <summary>{{ layout.icon("flag")|safe }}<span><strong>{{ layout.t.t("forum.tags") }}</strong><small>{{ layout.t.t("topic.tags_hint") }}</small></span></summary>
+              <summary>{{ layout.icon("tag")|safe }}<span><strong>{{ layout.t.t("forum.tags") }}</strong><small>{{ layout.t.t("topic.tags_hint") }}</small></span></summary>
               <form method="post" action="/t/{{ id }}/tags" class="stack">
                 <input type="hidden" name="csrf" value="{{ layout.csrf }}">
                 <label class="bf-field"><input name="tags" value="{{ tags_csv }}" placeholder="{{ layout.t.t("topic.add_tags") }}" data-tag-input><span class="bf-field-label">{{ layout.t.t("forum.tags") }}</span></label>
@@ -256,7 +246,7 @@
               {% endif %}
             </details>
             <details>
-              <summary>{{ layout.icon("bell")|safe }}<span><strong>{{ layout.t.t("topic.banner") }}</strong><small>{{ layout.t.t("topic.banner_hint") }}</small></span></summary>
+              <summary>{{ layout.icon("megaphone")|safe }}<span><strong>{{ layout.t.t("topic.banner") }}</strong><small>{{ layout.t.t("topic.banner_hint") }}</small></span></summary>
               <form method="post" action="/t/{{ id }}/banner"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.t("topic.make_banner") }}</button></form>
             </details>
             {% endif %}

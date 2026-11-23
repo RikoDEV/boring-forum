@@ -26,6 +26,9 @@ pub(super) struct ChannelBody {
     pub(super) group_ids: Vec<i64>,
     #[serde(default)]
     pub(super) archived: bool,
+    /// Every member is put into the channel, and each new account too. Open channels only.
+    #[serde(default)]
+    pub(super) auto_join: bool,
 }
 
 pub(super) fn open_access() -> String {
@@ -42,6 +45,9 @@ pub(super) fn check_channel(b: &ChannelBody) -> Result<(), AppError> {
     }
     if b.access == "groups" && b.group_ids.is_empty() {
         return Err(AppError::Validation("Choose at least one group.".into()));
+    }
+    if b.auto_join && b.access != "open" {
+        return Err(AppError::Validation("Only a channel open to all members can add everyone.".into()));
     }
     Ok(())
 }
@@ -73,6 +79,9 @@ pub(super) async fn add_channel(
     )
     .await
     .map_err(bad_node)?;
+    if b.auto_join {
+        chat::set_auto_join(state.db()?, id, true).await.db()?;
+    }
     Ok((StatusCode::CREATED, Json(json!({ "id": id }))).into_response())
 }
 
@@ -100,6 +109,7 @@ pub(super) async fn update_channel(
     {
         return Err(AppError::NotFound);
     }
+    chat::set_auto_join(state.db()?, id, b.auto_join).await.db()?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }
 

@@ -25,7 +25,7 @@
 
 .bf-menu-body {
   position: absolute;
-  z-index: 30;
+  z-index: var(--bf-z-menu);
   inset-inline-end: 0;
   inset-block-start: calc(100% + var(--bf-space-1));
   min-width: 13rem;
@@ -42,8 +42,7 @@
 .bf-menu-body > a,
 .bf-menu-body > button,
 .bf-menu-body > form > button,
-.bf-menu-body > .report > summary,
-.bf-menu-item {
+.bf-menu-body > .report > summary {
   display: flex;
   align-items: center;
   gap: var(--bf-space-2);

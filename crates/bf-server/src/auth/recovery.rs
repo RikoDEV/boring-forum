@@ -104,7 +104,7 @@ fn reset_page(state: &AppState, v: &Viewer, token: &str, error: Option<String>) 
         button: en("Save password"),
         message: None,
         error,
-        links: vec![],
+        links: vec![(en("Back to log in"), "/login")],
     };
     form_page(state, v, f, status)
 }
@@ -198,7 +198,7 @@ async fn verify_confirm(
         button: en("Confirm email address"),
         message: None,
         error: None,
-        links: vec![],
+        links: vec![(en("Back to log in"), "/login")],
     };
     Ok(form_page(&state, &v, f, StatusCode::OK))
 }

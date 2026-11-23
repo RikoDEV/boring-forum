@@ -101,8 +101,8 @@
 }
 
 .bf-group-pill {
-  padding: 2px var(--bf-space-3);
-  border-radius: 999px;
+  padding: var(--bf-space-0) var(--bf-space-3);
+  border-radius: var(--bf-radius-pill);
   background: var(--bf-color-accent-soft);
   color: var(--bf-color-accent);
   font-size: var(--bf-text-xs);
@@ -201,10 +201,10 @@
 
 .quote-float {
   position: absolute;
-  z-index: 20;
+  z-index: var(--bf-z-sticky);
 }
 
-@media (width <= 980px) {
+@media (width <= 979px) {
   .post {
     display: block;
   }
@@ -224,7 +224,7 @@
   }
 }
 
-@media (width <= 640px) {
+@media (width <= 639px) {
   .post-actions {
     justify-content: space-between;
     border-block-start: 1px solid var(--bf-color-border);
@@ -297,8 +297,8 @@
 .scrub-end {
   display: inline-block;
   flex: none;
-  padding: 2px var(--bf-space-2);
-  border-radius: 999px;
+  padding: var(--bf-space-0) var(--bf-space-2);
+  border-radius: var(--bf-radius-pill);
   background: var(--bf-color-surface-2);
   color: var(--bf-color-muted);
   font-size: var(--bf-text-xs);
@@ -328,7 +328,7 @@
   inset-block: 0 -3px;
   inset-inline-start: calc(var(--p, 0) * (100% - 5.5rem));
   width: 5.5rem;
-  padding: 2px var(--bf-space-2);
+  padding: var(--bf-space-0) var(--bf-space-2);
   border-block-end: 3px solid var(--bf-color-accent);
   border-radius: var(--bf-radius) var(--bf-radius) 0 0;
   background: var(--bf-color-surface-2);
@@ -445,7 +445,7 @@
 .bf-react-pill {
   padding: 1px var(--bf-space-2);
   border: 1px solid var(--bf-color-border);
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   color: var(--bf-color-text);
   font-size: var(--bf-text-sm);
   font-variant-numeric: tabular-nums;
@@ -493,11 +493,11 @@
   inset-block-end: 100%;
   inset-inline-end: 0;
   display: none;
-  gap: 2px;
+  gap: var(--bf-space-0);
   padding: var(--bf-space-1);
   background: var(--bf-color-surface);
   border: 1px solid var(--bf-color-border);
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   box-shadow: var(--bf-shadow-menu);
 }
 
@@ -552,7 +552,7 @@
     border: 0;
     border-radius: 50%;
     background: none;
-    font-size: 1.125rem;
+    font-size: var(--bf-text-lg);
     line-height: 1;
     cursor: pointer;
     transition: transform var(--bf-motion);
@@ -680,7 +680,7 @@
   }
 
   & summary > .bf-icon {
-    font-size: 1.125rem;
+    font-size: var(--bf-text-lg);
     color: var(--bf-color-muted);
   }
 
@@ -719,6 +719,11 @@
 
 /* Link previews */
 
+/* A card is a link, but its text is not underlined like a link inside a sentence. */
+.cooked a.bf-onebox {
+  text-decoration: none;
+}
+
 .bf-onebox {
   display: flex;
   gap: var(--bf-space-3);
@@ -748,7 +753,7 @@
 .bf-onebox-text {
   display: grid;
   align-content: center;
-  gap: 2px;
+  gap: var(--bf-space-0);
   min-width: 0;
   padding: var(--bf-space-3);
 
@@ -919,7 +924,7 @@
   margin: 0;
   padding: 0;
 
-  & > li:not(.bf-search-state) {
+  & > li:not(:has(.bf-empty-state)) {
     display: flex;
     gap: var(--bf-space-3);
     padding: var(--bf-space-4);
@@ -1126,9 +1131,9 @@
 .bf-browsing-count {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 9px;
-  border-radius: 999px;
+  gap: var(--bf-space-1);
+  padding: var(--bf-space-0) 9px;
+  border-radius: var(--bf-radius-pill);
   background: var(--bf-color-surface-2);
   color: var(--bf-color-muted);
   font-size: var(--bf-text-xs);
@@ -1152,7 +1157,7 @@
   gap: var(--bf-space-1);
   padding: 3px 12px 3px 3px;
   border: 1px solid var(--bf-color-border);
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   background: var(--bf-color-surface-2);
   color: var(--bf-color-text);
   font-size: var(--bf-text-sm);
@@ -1281,7 +1286,7 @@
   & > span {
     display: inline-block;
     padding: var(--bf-space-1) var(--bf-space-3);
-    border-radius: 999px;
+    border-radius: var(--bf-radius-pill);
     background: var(--bf-color-surface-2);
     color: var(--bf-color-muted);
     font-size: var(--bf-text-sm);
@@ -1354,7 +1359,7 @@
   }
 
   & .bf-vote-count {
-    padding-block: 0.25rem;
+    padding-block: var(--bf-space-1);
     border-block-start: 1px solid var(--bf-color-border);
     font-variant-numeric: tabular-nums;
     font-weight: 600;

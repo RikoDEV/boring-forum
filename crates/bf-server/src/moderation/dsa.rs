@@ -317,7 +317,7 @@ async fn send_notice(
             None => mail_url(&url),
         };
         let body = v.t().msgf(
-            "We received your notice (number {id}) about:\n\n{url}\n\nWe will review it and tell you our decision.\n\n— {site}\n",
+            "Hello,\n\nWe received your notice (number {id}) about:\n\n{url}\n\nWe will review it and tell you our decision.\n\n— {site}\n",
             &[("id", &n), ("url", &shown), ("site", &site)],
         );
         if let Err(e) = bf_db::platform::mail::queue_mail(
@@ -442,7 +442,18 @@ async fn appeal(
     Ok(Redirect::to(&format!("/statements/{id}")).into_response())
 }
 
-async fn review(State(state): State<AppState>, v: Viewer) -> Result<Response, AppError> {
+#[derive(Deserialize)]
+struct ReviewQuery {
+    /// What was just decided (set by the redirect after a decision).
+    #[serde(default)]
+    done: String,
+}
+
+async fn review(
+    State(state): State<AppState>,
+    v: Viewer,
+    axum::extract::Query(q): axum::extract::Query<ReviewQuery>,
+) -> Result<Response, AppError> {
     let user = v.require_user()?;
     if !is_staff(&v) {
         return Err(AppError::Forbidden);
@@ -455,6 +466,12 @@ async fn review(State(state): State<AppState>, v: Viewer) -> Result<Response, Ap
     let body = DsaReviewPage {
         layout: l,
         me: Some(user.id.get()),
+        notice: match q.done.as_str() {
+            "notice" => v.t().msg("The decision is recorded and the notifier is told."),
+            "reversed" => v.t().msg("The appeal is accepted: the decision is reversed."),
+            "upheld" => v.t().msg("The appeal is rejected: the decision stands."),
+            _ => String::new(),
+        },
         notices: notices
             .into_iter()
             .map(|n| NoticeView {
@@ -552,15 +569,21 @@ async fn decide_notice(
     // Art. 16(5): the notifier is told the decision and the means of redress.
     if !n.notifier_email.is_empty() {
         let site = state.settings().str("site_name").to_owned();
-        let outcome = if status == "actioned" { "We have acted on it." } else { "We have decided not to act on it." };
-        let body = format!(
-            "We have reviewed your notice {id} about:\n\n{}\n\n{outcome}\n\nReasons: {reason}\n\nIf you disagree, you may turn to a certified out-of-court dispute settlement body or to the courts.\n\n— {site}\n",
-            mail_url(&n.url)
+        // The notifier's language is not known: the site's own.
+        let t = bf_core::i18n::T::new(bf_core::i18n::site_language(state.settings().str("default_locale")));
+        let outcome = if status == "actioned" {
+            t.msg("We have acted on it.")
+        } else {
+            t.msg("We have decided not to act on it.")
+        };
+        let body = t.msgf(
+            "Hello,\n\nWe have reviewed your notice {id} about:\n\n{url}\n\n{outcome}\n\nReasons: {reason}\n\nIf you disagree, you may turn to a certified out-of-court dispute settlement body or to the courts.\n\n— {site}\n",
+            &[("id", &id.to_string()), ("url", &mail_url(&n.url)), ("outcome", &outcome), ("reason", &reason), ("site", &site)],
         );
         if let Err(e) = bf_db::platform::mail::queue_mail(
             pool,
             &n.notifier_email,
-            &format!("Decision on your notice {id} - {site}"),
+            &t.msgf("Decision on your notice {id} - {site}", &[("id", &id.to_string()), ("site", &site)]),
             &body,
         )
         .await
@@ -577,7 +600,7 @@ async fn decide_notice(
     )
     .await
     .db()?;
-    Ok(Redirect::to("/review/dsa").into_response())
+    Ok(Redirect::to("/review/dsa?done=notice").into_response())
 }
 
 #[derive(Deserialize)]
@@ -687,7 +710,8 @@ async fn decide_appeal(
     )
     .await
     .db()?;
-    Ok(Redirect::to("/review/dsa").into_response())
+    Ok(Redirect::to(if f.outcome == "reversed" { "/review/dsa?done=reversed" } else { "/review/dsa?done=upheld" })
+        .into_response())
 }
 
 #[derive(Deserialize)]

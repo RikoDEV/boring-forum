@@ -34,8 +34,10 @@ pub fn set_math(on: bool) {
     MATH.store(on, Ordering::Relaxed);
 }
 
-/// Bump when the output format changes so stored posts can be re-cooked by a job.
-pub const COOK_VERSION: i32 = 5;
+/// Bump when the output format changes so stored posts can be re-cooked by a job. 6: the re-cook also
+/// records each post's links, which imported posts never had (link previews need them). 7: `<address>`
+/// in angle brackets stays a plain link (no preview card).
+pub const COOK_VERSION: i32 = 7;
 
 #[derive(Debug, Default, PartialEq)]
 pub struct Cooked {
@@ -400,6 +402,17 @@ fn oneboxes<'a>(arena: &'a Arena<'a>, root: &'a AstNode<'a>) {
             .collect();
         if text != url {
             continue; // a link with its own words stays a link
+        }
+        // An address in angle brackets (`<https://…>`) asks for a plain link, as on Discourse: no
+        // thumbnail here, and the page's script finds the link inside another element, which it
+        // does not turn into a link preview card. The `<u>` (underline) is invisible on a link,
+        // which is underlined in a post anyway.
+        let at = link.data.borrow().sourcepos;
+        if at.start.line == at.end.line && (at.end.column + 1).saturating_sub(at.start.column) == url.len() + 2 {
+            let plain: &AstNode = arena.alloc(NodeValue::Underline.into());
+            link.insert_before(plain);
+            plain.append(link);
+            continue;
         }
         let Some(id) = youtube_id(&url) else { continue };
         for c in link.children().collect::<Vec<_>>() {

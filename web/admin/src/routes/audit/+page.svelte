@@ -1,7 +1,10 @@
 <script>
   import { tr } from "#lib/i18n.js";
   import { Status } from "#lib/status.svelte.js";
-  import Notices from "#lib/Notices.svelte";
+  import PageHead from "#lib/PageHead.svelte";
+  import Box from "#lib/Box.svelte";
+  import Field from "#lib/Field.svelte";
+  import Empty from "#lib/Empty.svelte";
   import { get } from "#lib/api.js";
   import When from "#lib/When.svelte";
   import UserLink from "#lib/UserLink.svelte";
@@ -10,6 +13,7 @@
   let actor = $state("");
   const status = new Status();
   let more = $state(false);
+  let loaded = $state(false);
 
   async function load(before) {
     status.clear();
@@ -21,6 +25,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
 
   // `kind:id` targets link where the thing can be seen; a member by their name, the rest by number.
@@ -35,19 +40,20 @@
   {:else}{r.target ?? ""}{/if}
 {/snippet}
 
-<h1>{tr("Staff action log")}</h1>
-<form
-  class="row"
-  onsubmit={(e) => {
-    e.preventDefault();
-    load();
-  }}
->
-  <input bind:value={action} placeholder={tr("Action prefix, e.g. topic.")} aria-label={tr("Action")} />
-  <input bind:value={actor} placeholder={tr("Staff username")} aria-label={tr("Staff member")} />
-  <button>{tr("Filter")}</button>
-</form>
-<Notices {status} />
+<PageHead title={tr("Staff action log")} {status} />
+<Box title={tr("Filter")}>
+  <form
+    class="acp-form"
+    onsubmit={(e) => {
+      e.preventDefault();
+      load();
+    }}
+  >
+    <Field label={tr("Action prefix, e.g. topic.")} bind:value={action} />
+    <Field label={tr("Staff username")} bind:value={actor} />
+    <div class="acp-actions"><button>{tr("Filter")}</button></div>
+  </form>
+</Box>
 <table>
   <thead>
     <tr>
@@ -65,7 +71,7 @@
         </td>
       </tr>
     {:else}
-      <tr><td colspan="5" class="muted">{tr("No entries.")}</td></tr>
+      <Empty cols={5} {loaded} title={tr("No entries.")} text={tr("Staff actions are recorded here as they happen.")} />
     {/each}
   </tbody>
 </table>

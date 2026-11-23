@@ -24,6 +24,8 @@
 @import url("components/progress.css") layer(app);
 @import url("components/poll-form.css") layer(app);
 @import url("components/reactions.css") layer(app);
+@import url("components/empty.css") layer(app);
+@import url("components/alerts.css") layer(app);
 
 /* Layout */
 @import url("layout/header.css") layer(app);

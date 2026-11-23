@@ -15,7 +15,7 @@
   --danger: var(--bf-color-danger);
   --success: var(--bf-color-success);
 }
-* {
+:where(.acp-shell, .acp-top) * {
   box-sizing: border-box;
 }
 body {
@@ -33,7 +33,7 @@ body {
   color: var(--bf-color-accent-hover);
   text-decoration: underline;
 }
-:focus-visible {
+:where(.acp-shell, .acp-top) :focus-visible:where(:not(input[type="checkbox"]:not(.acp-switch), input[type="radio"])) {
   outline: 2px solid var(--bf-color-focus);
   outline-offset: 2px;
 }
@@ -55,23 +55,12 @@ body {
 :is(.bf-tags, .chat-composer, .chat-people) :is(input, textarea):focus-visible {
   outline: none;
 }
-code {
+:where(.acp-shell, .acp-top) code {
   font-family: var(--bf-font-mono);
   font-size: var(--bf-text-sm);
 }
-small {
+:where(.acp-shell, .acp-top) small {
   font-size: var(--bf-text-sm);
-}
-.bf-icon {
-  width: 1.125em;
-  height: 1.125em;
-  flex: none;
-  vertical-align: -0.2em;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 /* Shell, the same two rows of header as the site */
@@ -146,6 +135,7 @@ small {
   font-weight: 600;
   line-height: 1.25rem;
   vertical-align: middle;
+  white-space: nowrap;
 }
 .acp-search-host {
   display: contents;
@@ -167,7 +157,7 @@ small {
   color: var(--bf-color-text);
   border: 1px solid var(--bf-color-border);
   border-radius: var(--bf-radius);
-  box-shadow: var(--bf-shadow-lg, 0 8px 24px rgb(0 0 0 / 0.35));
+  box-shadow: var(--bf-shadow-menu);
 }
 .acp-find-list li {
   display: flex;
@@ -281,18 +271,18 @@ small {
 }
 
 /* Page content */
-h1 {
+:where(.acp-shell, .acp-top) h1 {
   margin: 0 0 var(--bf-space-4);
   font-size: var(--bf-text-xl);
   font-weight: 650;
   line-height: 1.25;
 }
-h2 {
+:where(.acp-shell, .acp-top) h2 {
   margin: var(--bf-space-5) 0 var(--bf-space-2);
   font-size: var(--bf-text-lg);
   font-weight: 650;
 }
-h3 {
+:where(.acp-shell, .acp-top) h3 {
   margin: var(--bf-space-4) 0 var(--bf-space-2);
   font-size: var(--bf-text-list);
   font-weight: 650;
@@ -324,7 +314,7 @@ span.ok {
   background: none;
 }
 
-table {
+:where(.acp-shell, .acp-top) table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
@@ -334,31 +324,29 @@ table {
   border-radius: var(--bf-radius);
   font-size: var(--bf-text-list);
 }
-th,
-td {
+:where(.acp-shell, .acp-top) :is(th, td) {
   padding: var(--bf-space-3) var(--bf-space-4);
   text-align: start;
   vertical-align: middle;
   border-block-start: 1px solid var(--bf-color-border);
 }
-tr:first-child > th,
-tr:first-child > td {
+:where(.acp-shell, .acp-top) tr:first-child > :is(th, td) {
   border-block-start: 0;
 }
-thead th {
+:where(.acp-shell, .acp-top) thead th {
   color: var(--bf-color-muted);
   font-size: var(--bf-text-xs);
   font-weight: 600;
   white-space: nowrap;
 }
-tbody tr:hover {
+:where(.acp-shell, .acp-top) tbody tr:hover {
   background: var(--bf-color-surface-2);
 }
-tbody tr:hover :is(select, input:not([type="checkbox"], [type="radio"])) {
+:where(.acp-shell, .acp-top) tbody tr:hover :is(select, input:not([type="checkbox"], [type="radio"])) {
   background-color: var(--bf-color-surface);
 }
 @media (max-width: 860px) {
-  table {
+  :where(.acp-shell, .acp-top) table {
     display: block;
     overflow-x: auto;
   }
@@ -387,14 +375,12 @@ tbody tr:hover :is(select, input:not([type="checkbox"], [type="radio"])) {
   background: var(--bf-color-accent-hover);
   border-color: var(--bf-color-accent-hover);
 }
-button.secondary,
-td button {
+:where(.acp-shell, .acp-top) :is(button.secondary, td button) {
   background: var(--bf-color-surface);
   border-color: var(--bf-color-border-strong);
   color: var(--bf-color-text);
 }
-button.secondary:hover,
-td button:hover {
+:where(.acp-shell, .acp-top) :is(button.secondary, td button):hover {
   background: var(--bf-color-surface-2);
   border-color: var(--bf-color-border-strong);
 }
@@ -455,7 +441,7 @@ td button:hover {
   gap: var(--bf-space-2);
   margin-block: var(--bf-space-3);
 }
-form.row {
+:where(.acp-shell, .acp-top) form.row {
   padding: var(--bf-space-3) var(--bf-space-4);
   background: var(--bf-color-surface);
   border: 1px solid var(--bf-color-border);
@@ -470,8 +456,7 @@ td form.row {
   background: none;
   border: 0;
 }
-section,
-.panel {
+:where(.acp-shell, .acp-top) :is(section, .panel) {
   margin-block-end: var(--bf-space-4);
 }
 main ul:not([class]) {
@@ -718,6 +703,52 @@ a.acp-kpi:hover {
   overflow-x: auto;
   font-variant-ligatures: none;
 }
+/* Syntax colour over a code box (lib/code.js): the textarea's own text turns transparent and a
+   layer with the same box and type draws the coloured text on top of it. */
+.acp-hl-host {
+  position: relative;
+}
+textarea.acp-hl-on {
+  color: transparent;
+  caret-color: var(--bf-color-text);
+}
+.acp-hl {
+  position: absolute;
+  margin: 0;
+  box-sizing: border-box;
+  border-style: solid;
+  border-color: transparent;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: pre;
+  color: var(--bf-color-text);
+  font-variant-ligatures: none;
+}
+.acp-hl code {
+  font: inherit;
+}
+/* Room for the textarea's scrollbar, which the layer has none of. */
+.acp-hl code::after {
+  content: "";
+  display: block;
+  height: 1.5rem;
+}
+.acp-hl .tk-c {
+  color: var(--bf-color-muted);
+  font-style: italic;
+}
+.acp-hl .tk-s {
+  color: var(--bf-color-code-string);
+}
+.acp-hl .tk-k {
+  color: var(--bf-color-code-keyword);
+}
+.acp-hl .tk-a {
+  color: var(--bf-color-code-entity);
+}
+.acp-hl .tk-n {
+  color: var(--bf-color-code-constant);
+}
 /* A picture setting (Branding): its preview, then Upload and Remove. The Upload "button" is a label
    around a hidden file input, styled like button.secondary; `.acp-set .acp-upload` outranks
    `.acp-set label`, which would make it a bold block. */
@@ -796,7 +827,7 @@ a.acp-kpi:hover {
 }
 /* The site's checkbox style (fields.css) also matches these: its border would push the knob off
    centre and its tick would sit in the middle of the track, so both are redrawn for a switch. */
-input.acp-switch {
+:where(.acp-shell, .acp-top) input.acp-switch {
   appearance: none;
   position: relative;
   width: 2.5rem;
@@ -809,7 +840,7 @@ input.acp-switch {
   transform: none;
   transition: background 0.15s;
 }
-input.acp-switch::after {
+:where(.acp-shell, .acp-top) input.acp-switch::after {
   content: "";
   position: absolute;
   inset-block-start: 3px;
@@ -820,17 +851,17 @@ input.acp-switch::after {
   background: var(--bf-color-surface);
   transition: transform 0.15s;
 }
-input.acp-switch:checked {
+:where(.acp-shell, .acp-top) input.acp-switch:checked {
   background: var(--bf-color-accent);
 }
-input.acp-switch:checked::after {
+:where(.acp-shell, .acp-top) input.acp-switch:checked::after {
   transform: translateX(1.125rem);
 }
-:dir(rtl) input.acp-switch:checked::after {
+:dir(rtl) :where(.acp-shell, .acp-top) input.acp-switch:checked::after {
   transform: translateX(-1.125rem);
 }
 /* The tick rides on the knob: centred on where the knob ends up when on (3px + 1.125rem + 0.5rem). */
-input.acp-switch::before {
+:where(.acp-shell, .acp-top) input.acp-switch::before {
   position: absolute;
   z-index: 1;
   inset-block-start: calc(3px + 0.5rem - 0.3rem);
@@ -843,7 +874,7 @@ input.acp-switch::before {
   transform: scale(0) rotate(45deg);
   transition: transform 0.15s;
 }
-input.acp-switch:checked::before {
+:where(.acp-shell, .acp-top) input.acp-switch:checked::before {
   transform: scale(1) rotate(45deg);
 }
 .acp-savebar {
@@ -912,11 +943,11 @@ main td button.link {
 main td button.link:hover {
   text-decoration: underline;
 }
-input[type="file"] {
+:where(.acp-shell, .acp-top) input[type="file"] {
   color: var(--bf-color-muted);
   font-size: var(--bf-text-sm);
 }
-input[type="file"]::file-selector-button {
+:where(.acp-shell, .acp-top) input[type="file"]::file-selector-button {
   margin-inline-end: var(--bf-space-2);
   height: var(--bf-control-height);
   padding-inline: var(--bf-space-3);
@@ -1007,14 +1038,12 @@ input[type="file"]::file-selector-button {
   align-items: end;
   padding: var(--bf-space-4);
 }
-.acp-form label,
-.acp-field {
+.acp-form label {
   display: grid;
   gap: var(--bf-space-1);
   font-weight: 500;
 }
-.acp-form label small,
-.acp-field small {
+.acp-form label small {
   color: var(--bf-color-muted);
   font-weight: 400;
 }
@@ -1065,9 +1094,6 @@ input[type="file"]::file-selector-button {
   flex: 1 1 12rem;
   min-width: 0;
 }
-.acp-pill {
-  white-space: nowrap;
-}
 /* Long unbroken text in a table cell (JSON, URLs, custom code) wraps instead of widening the table. */
 .acp-wrap {
   overflow-wrap: anywhere;
@@ -1094,8 +1120,7 @@ input[type="file"]::file-selector-button {
   vertical-align: middle;
   background: var(--bf-color-surface-2);
 }
-td button.acp-link,
-button.acp-link {
+:where(.acp-shell, .acp-top) button.acp-link {
   min-height: 0;
   padding: 0;
   border: 0;
@@ -1105,19 +1130,16 @@ button.acp-link {
   text-align: start;
   white-space: normal;
 }
-button.acp-link:hover,
-td button.acp-link:hover {
+:where(.acp-shell, .acp-top) button.acp-link:hover {
   background: none;
   text-decoration: underline;
 }
-button.is-danger,
-td button.is-danger {
+:where(.acp-shell, .acp-top) button.is-danger {
   border-color: var(--bf-color-danger);
   background: none;
   color: var(--bf-color-danger);
 }
-button.is-danger:hover,
-td button.is-danger:hover {
+:where(.acp-shell, .acp-top) button.is-danger:hover {
   background: var(--bf-color-danger-soft);
   border-color: var(--bf-color-danger);
 }
@@ -1989,6 +2011,15 @@ tr.is-drop-after > td {
   padding: var(--bf-space-6) var(--bf-space-4);
   text-align: center;
 }
+:where(.acp-shell) tbody tr.acp-empty-row:hover {
+  background: none;
+}
+.acp-empty-row > td {
+  padding: 0;
+}
+.acp-empty-state > .muted {
+  font-size: var(--bf-text-list);
+}
 /* The share picture preview under its settings: the saved look, drawn by the server. */
 .acp-og-preview {
   display: grid;
@@ -2002,7 +2033,7 @@ tr.is-drop-after > td {
   block-size: auto;
   aspect-ratio: 1200 / 630;
   border: 1px solid var(--bf-color-border);
-  border-radius: var(--bf-radius-2, 0.5rem);
+  border-radius: var(--bf-radius);
   background: var(--bf-color-surface-2, transparent);
 }
 .acp-og-bar {
@@ -2386,26 +2417,26 @@ a.acp-linkbtn:hover {
 
 /* Forced colours: the switch's track and knob are backgrounds, which the palette flattens. */
 @media (forced-colors: active) {
-  input.acp-switch {
+  :where(.acp-shell, .acp-top) input.acp-switch {
     forced-color-adjust: none;
     background: Field;
     outline: 1px solid FieldText;
   }
 
-  input.acp-switch::after {
+  :where(.acp-shell, .acp-top) input.acp-switch::after {
     background: FieldText;
   }
 
-  input.acp-switch:checked {
+  :where(.acp-shell, .acp-top) input.acp-switch:checked {
     background: Highlight;
     outline-color: Highlight;
   }
 
-  input.acp-switch::before {
+  :where(.acp-shell, .acp-top) input.acp-switch::before {
     border-color: Highlight;
   }
 
-  input.acp-switch:checked::after {
+  :where(.acp-shell, .acp-top) input.acp-switch:checked::after {
     background: HighlightText;
   }
 }
@@ -2416,8 +2447,7 @@ a.acp-linkbtn:hover {
   .acp-box,
   .acp-kpi,
   .acp-pill,
-  .acp-icon-btn,
-  dialog.acp-modal {
+  .acp-icon-btn {
     border: 1px solid CanvasText;
   }
 
@@ -2494,10 +2524,10 @@ a.acp-linkbtn:hover {
   overflow: hidden;
 }
 .acp-kpi.is-warn {
-  border-color: var(--bf-color-warning, #d97706);
+  border-color: var(--bf-color-warning);
 }
 .acp-kpi.is-warn b {
-  color: var(--bf-color-warning, #d97706);
+  color: var(--bf-color-warning);
 }
 .acp-spark {
   display: flex;
@@ -3048,4 +3078,41 @@ a.acp-linkbtn:hover {
 /* A catalog key is one long word: it wraps, so a narrow screen does not scroll sideways. */
 .acp-text-key {
   overflow-wrap: anywhere;
+}
+
+/* A tiny breadcrumb above a detail view (lib/Crumbs.svelte). */
+.acp-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-1);
+  margin-block-end: var(--bf-space-1);
+  color: var(--bf-color-muted);
+  font-size: var(--bf-text-xs);
+
+  & a,
+  & button.acp-link {
+    color: var(--bf-color-muted);
+    font: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--bf-color-accent);
+      text-decoration: underline;
+    }
+  }
+
+  & .bf-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  & > span {
+    color: var(--bf-color-text);
+  }
+
+  /* A section of the menu: no page of its own. */
+  & > span.acp-crumb-group {
+    color: var(--bf-color-muted);
+  }
 }

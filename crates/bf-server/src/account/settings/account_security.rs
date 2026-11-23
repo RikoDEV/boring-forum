@@ -336,7 +336,7 @@ pub(super) async fn change_email(
         "Hi {name},\n\nConfirm {email} as the new address for your account:\n\n{link}\n\nIf you did not ask for this, ignore this email.\n\n— {site}\n",
         &[("name", &acct.username), ("email", &email), ("link", &link), ("site", site)],
     );
-    let subject = t.msgf("Confirm your new email for {site}", &[("site", site)]);
+    let subject = t.msgf("Confirm your new email - {site}", &[("site", site)]);
     outbox::queue_mail(pool, &email, &subject, &body).await.db()?;
     settings_page(&state, &v, false, Some(t.msgf("Check {email} for a confirmation link.", &[("email", &email)])), None)
         .await

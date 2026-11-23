@@ -1101,6 +1101,8 @@ impl Context<'_> {
             self.totals.topics += 1;
             (item, 1)
         };
+        // The links of the post, so link previews and click counts find them as for any other post.
+        bf_db::forum::links::record_links(pool, item, number, &cooked.links).await?;
         if self.plugins {
             let event = if number == 1 { "topic.created" } else { "post.created" };
             let payload = serde_json::json!({

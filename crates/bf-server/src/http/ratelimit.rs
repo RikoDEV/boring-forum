@@ -217,17 +217,75 @@ static TRUSTED: std::sync::LazyLock<Vec<Net>> = std::sync::LazyLock::new(|| {
         .collect()
 });
 
-/// The visitor's address. `X-Forwarded-For` counts only from a proxy named in
-/// `BF_TRUSTED_PROXIES`; otherwise anyone could claim any address.
-pub fn client_ip(peer: IpAddr, headers: &axum::http::HeaderMap) -> IpAddr {
-    // A dual-stack listener reports IPv4 peers as ::ffff:a.b.c.d.
-    forwarded_client(peer.to_canonical(), headers.get("x-forwarded-for").and_then(|h| h.to_str().ok()), &TRUSTED)
+/// Cloudflare's edge networks (https://www.cloudflare.com/ips/). With the `cloudflare_real_ip`
+/// setting on, a request from one of these is believed about the visitor: it is Cloudflare itself
+/// talking, not someone who found the origin's address.
+const CLOUDFLARE: [&str; 22] = [
+    "173.245.48.0/20",
+    "103.21.244.0/22",
+    "103.22.200.0/22",
+    "103.31.4.0/22",
+    "141.101.64.0/18",
+    "108.162.192.0/18",
+    "190.93.240.0/20",
+    "188.114.96.0/20",
+    "197.234.240.0/22",
+    "198.41.128.0/17",
+    "162.158.0.0/15",
+    "104.16.0.0/13",
+    "104.24.0.0/14",
+    "172.64.0.0/13",
+    "131.0.72.0/22",
+    "2400:cb00::/32",
+    "2606:4700::/32",
+    "2803:f800::/32",
+    "2405:b500::/32",
+    "2405:8100::/32",
+    "2a06:98c0::/29",
+    "2c0f:f248::/32",
+];
+
+static CLOUDFLARE_NETS: std::sync::LazyLock<Vec<Net>> =
+    std::sync::LazyLock::new(|| CLOUDFLARE.iter().filter_map(|n| Net::parse(n)).collect());
+
+/// The `cloudflare_real_ip` setting, kept here so the many callers of `client_ip` need no state.
+static CLOUDFLARE_ON: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Applies the `cloudflare_real_ip` setting (called whenever the settings are read).
+pub fn set_cloudflare_real_ip(on: bool) {
+    CLOUDFLARE_ON.store(on, std::sync::atomic::Ordering::Relaxed);
 }
 
-/// Whether `peer` is a proxy named in `BF_TRUSTED_PROXIES`, i.e. whether its `X-Forwarded-*`
-/// headers may be believed.
+fn behind_cloudflare() -> bool {
+    CLOUDFLARE_ON.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// The visitor's address. `X-Forwarded-For` counts only from a proxy named in
+/// `BF_TRUSTED_PROXIES`; otherwise anyone could claim any address. With `cloudflare_real_ip` on,
+/// `CF-Connecting-IP` counts too, from Cloudflare's own addresses or such a proxy (a Cloudflare
+/// Tunnel's connector, for one).
+pub fn client_ip(peer: IpAddr, headers: &axum::http::HeaderMap) -> IpAddr {
+    // A dual-stack listener reports IPv4 peers as ::ffff:a.b.c.d.
+    let peer = peer.to_canonical();
+    let cf = headers.get("cf-connecting-ip").and_then(|h| h.to_str().ok());
+    let xff = headers.get("x-forwarded-for").and_then(|h| h.to_str().ok());
+    resolve_client(peer, cf, xff, &TRUSTED, behind_cloudflare())
+}
+
+fn resolve_client(peer: IpAddr, cf: Option<&str>, xff: Option<&str>, trusted: &[Net], cloudflare: bool) -> IpAddr {
+    if cloudflare
+        && (is_listed(&CLOUDFLARE_NETS, peer) || is_listed(trusted, peer))
+        && let Some(ip) = cf.and_then(|h| h.trim().parse::<IpAddr>().ok())
+    {
+        return ip.to_canonical();
+    }
+    forwarded_client(peer, xff, trusted)
+}
+
+/// Whether `peer` is a proxy whose `X-Forwarded-*` headers may be believed: one named in
+/// `BF_TRUSTED_PROXIES`, or Cloudflare's edge when `cloudflare_real_ip` is on.
 pub fn is_trusted_proxy(peer: IpAddr) -> bool {
-    is_listed(&TRUSTED, peer)
+    is_listed(&TRUSTED, peer) || (behind_cloudflare() && is_listed(&CLOUDFLARE_NETS, peer.to_canonical()))
 }
 
 /// Reads from the right: each proxy appends what it saw, so the rightmost address that is not
@@ -292,6 +350,27 @@ mod tests {
         assert_eq!(forwarded_client(proxy, Some("junk"), &t), proxy);
         assert_eq!(forwarded_client(proxy, None, &t), proxy);
         let _ = evil;
+    }
+
+    #[test]
+    fn cloudflare_header_counts_only_when_on_and_from_a_trusted_peer() {
+        let ip = |s: &str| s.parse::<IpAddr>().unwrap();
+        let (edge, visitor, other) = (ip("104.16.1.1"), ip("203.0.113.5"), ip("198.51.100.9"));
+        let mine = [Net::host(ip("10.0.0.1"))];
+        // On, from Cloudflare's edge: the header names the visitor, and wins over X-Forwarded-For.
+        assert_eq!(resolve_client(edge, Some("203.0.113.5"), Some("198.51.100.9"), &[], true), visitor);
+        // Off: the setting changes nothing, and the edge is just another peer.
+        assert_eq!(resolve_client(edge, Some("203.0.113.5"), None, &[], false), edge);
+        // On, but from an address that is neither Cloudflare nor ours: anyone can send the header.
+        assert_eq!(resolve_client(other, Some("203.0.113.5"), None, &mine, true), other);
+        // From a listed proxy (a tunnel's connector) it is believed.
+        assert_eq!(resolve_client(ip("10.0.0.1"), Some("203.0.113.5"), None, &mine, true), visitor);
+        // Junk falls back to the forwarding chain, and an IPv6 visitor works.
+        assert_eq!(resolve_client(edge, Some("junk"), Some("203.0.113.5"), &mine, true), edge);
+        assert_eq!(resolve_client(edge, Some("2001:db8::7"), None, &[], true), ip("2001:db8::7"));
+        // The built-in list is all valid networks, and covers both families.
+        assert_eq!(CLOUDFLARE_NETS.len(), CLOUDFLARE.len());
+        assert!(is_listed(&CLOUDFLARE_NETS, ip("2606:4700::1")) && !is_listed(&CLOUDFLARE_NETS, ip("1.1.1.1")));
     }
 
     #[test]

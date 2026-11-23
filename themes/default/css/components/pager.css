@@ -127,7 +127,7 @@
   content: "";
   width: 1.75rem;
   height: 1rem;
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   background: radial-gradient(
     circle at 0.5rem 50%,
     var(--bf-color-surface) 0.35rem,
@@ -145,4 +145,11 @@
 
 .bf-switch:hover {
   color: var(--bf-color-text);
+}
+
+@media (pointer: coarse) {
+  .pager :is(a, .current, .is-off, span) {
+    min-inline-size: 2.5rem;
+    block-size: 2.5rem;
+  }
 }

@@ -55,7 +55,7 @@ mod tests {
                 assert!(body.contains(wanted), "{code} {kind} body lost {required}");
             }
         }
-        assert_eq!(render(&T::new("en"), "verify", &vars).0, "Confirm your email for Forum");
+        assert_eq!(render(&T::new("en"), "verify", &vars).0, "Confirm your email - Forum");
     }
 
     #[test]

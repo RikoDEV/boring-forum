@@ -180,6 +180,19 @@ pub async fn online_users(pool: &PgPool, minutes: i32, limit: i64) -> Result<Vec
     .await
 }
 
+/// Members active in the last `minutes` as (named, unnamed): those who show their presence and
+/// have a public profile, and those who do not, who count only as one more visitor.
+pub async fn online_counts(pool: &PgPool, minutes: i32) -> Result<(i64, i64), Error> {
+    sqlx::query_as(
+        "SELECT count(*) FILTER (WHERE NOT hide_last_seen AND profile_visibility = 'everyone'),
+                count(*) FILTER (WHERE hide_last_seen OR profile_visibility <> 'everyone')
+           FROM users WHERE approved AND last_seen_at > now() - make_interval(mins => $1)",
+    )
+    .bind(minutes)
+    .fetch_one(pool)
+    .await
+}
+
 pub async fn top_posters(pool: &PgPool, limit: i64) -> Result<Vec<(String, i32)>, Error> {
     sqlx::query_as("SELECT username, post_count FROM users WHERE approved AND post_count > 0 ORDER BY post_count DESC, id LIMIT $1")
         .bind(limit)

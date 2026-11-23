@@ -1,12 +1,12 @@
 {% extends "layout.html" %}
 {#- Private messages: folders, search, the new-message form and the conversations. -#}
 {% block content %}
-<h1>{{ layout.t.t("nav.messages") }}</h1>
+<header class="bf-box bf-page-head"><h1>{{ layout.t.t("nav.messages") }}</h1></header>
 <div class="bf-box bf-msg-bar">
-  <nav class="small list-controls" aria-label="{{ layout.t.t("messages.folders") }}">
-    <a href="/messages"{% if !archived && current_folder.is_empty() %} class="current" aria-current="true"{% endif %}>{{ layout.icon("mail")|safe }} {{ layout.t.t("messages.inbox") }}</a>
-    <a href="/messages?folder=archive"{% if archived %} class="current" aria-current="true"{% endif %}>{{ layout.icon("archive")|safe }} {{ layout.t.t("topic.archive") }}</a>
-    {% for f in folders %}<a href="/messages?folder={{ f|urlencode }}"{% if *f == current_folder %} class="current" aria-current="true"{% endif %}>{{ layout.icon("folder")|safe }} {{ f }}</a> {% endfor %}
+  <nav class="bf-segments small" aria-label="{{ layout.t.t("messages.folders") }}">
+    <a href="/messages"{% if !archived && current_folder.is_empty() %} aria-current="page"{% endif %}>{{ layout.icon("mail")|safe }} {{ layout.t.t("messages.inbox") }}</a>
+    <a href="/messages?folder=archive"{% if archived %} aria-current="page"{% endif %}>{{ layout.icon("archive")|safe }} {{ layout.t.t("topic.archive") }}</a>
+    {% for f in folders %}<a href="/messages?folder={{ f|urlencode }}"{% if *f == current_folder %} aria-current="page"{% endif %}>{{ layout.icon("folder")|safe }} {{ f }}</a> {% endfor %}
     <a href="/messages?to=@staff#new-message">{{ layout.icon("shield")|safe }} {{ layout.t.t("messages.to_staff") }}</a>
   </nav>
   <form method="get" action="/messages" class="bf-msg-search" role="search">
@@ -39,14 +39,14 @@
         <a class="bf-feed-title" href="{{ c.url }}">{{ c.subject }}</a>
         {%- if !c.preview.is_empty() %}<p>{{ c.preview }}</p>{% endif -%}
         <div class="muted small bf-meta">
-          <span>{{ layout.icon("users")|safe }} {{ layout.t.t("messages.with") }} {% for (url, name) in c.people %}<a href="{{ url }}">{{ name }}</a>{% if !loop.last %}, {% endif %}{% endfor %}</span>
+          <span>{{ layout.icon("users")|safe }} {{ layout.t.t("messages.with") }} {% for (url, name) in c.people %}{{ layout.user_link(name)|safe }}{% if !loop.last %}, {% endif %}{% endfor %}</span>
           <span>{{ layout.icon("message-square")|safe }} {{ c.count }}</span>
           <span>{{ layout.icon("clock")|safe }} {{ c.when }}</span>
         </div>
       </div>
     </li>
     {% else %}
-    <li class="muted">{{ layout.t.t("messages.none") }}</li>
+    <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("mail")|safe }}</span><p>{{ layout.t.t("messages.none") }}</p></div></li>
     {% endfor %}
   </ul>
 </section>

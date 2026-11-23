@@ -1,25 +1,21 @@
+/* Medal palette for the directory; the ink is for text on a light medal. */
+:root {
+  --bf-medal-c0: linear-gradient(135deg, #0f766e, #14b8a6);
+  --bf-medal-c1: linear-gradient(135deg, #2563eb, #22d3ee);
+  --bf-medal-c2: linear-gradient(135deg, #7c3aed, #6366f1);
+  --bf-medal-c3: linear-gradient(135deg, #be123c, #e11d48);
+  --bf-medal-c4: linear-gradient(135deg, #ea580c, #f59e0b);
+  --bf-medal-c5: linear-gradient(135deg, #059669, #84cc16);
+  --bf-medal-c6: linear-gradient(135deg, #4338ca, #3b82f6);
+  --bf-medal-c7: linear-gradient(135deg, #db2777, #f97316);
+  --bf-medal-c8: linear-gradient(135deg, #475569, #2563eb);
+  --bf-medal-c9: linear-gradient(135deg, #a21caf, #7c3aed);
+  --bf-medal-ink: #1e293b;
+}
+
 /* Member directory, leaderboard, badges and medals. */
 
 /* Directory pages */
-
-.bf-dir-sort {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--bf-space-1);
-  margin-inline-start: auto;
-
-  & a {
-    padding: var(--bf-space-1) var(--bf-space-3);
-    border-radius: var(--bf-radius-input, 4px);
-    color: var(--bf-color-muted);
-    font-weight: 600;
-  }
-
-  & a[aria-current] {
-    background: var(--bf-color-accent-soft);
-    color: var(--bf-color-accent);
-  }
-}
 
 .bf-dir {
   list-style: none;
@@ -110,7 +106,7 @@
   & > div {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--bf-space-0);
     min-width: 0;
   }
 }
@@ -136,10 +132,6 @@
     & div {
       text-align: start;
     }
-  }
-
-  .bf-dir-sort {
-    margin-inline-start: 0;
   }
 }
 
@@ -237,55 +229,55 @@
   inset-block-end: -2px;
   inset-inline-end: -4px;
   min-width: 1.25rem;
-  padding-inline: 0.25rem;
-  border-radius: 999px;
-  background: #1e293b;
+  padding-inline: var(--bf-space-1);
+  border-radius: var(--bf-radius-pill);
+  background: var(--bf-medal-ink);
   box-shadow: 0 0 0 2px var(--bf-color-surface);
   color: #fff;
-  font-size: 0.6875rem;
+  font-size: var(--bf-text-2xs);
   font-weight: 700;
   line-height: 1.25rem;
   text-align: center;
 }
 
 .bf-medal-c0 {
-  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  background: var(--bf-medal-c0);
 }
 
 .bf-medal-c1 {
-  background: linear-gradient(135deg, #2563eb, #22d3ee);
+  background: var(--bf-medal-c1);
 }
 
 .bf-medal-c2 {
-  background: linear-gradient(135deg, #7c3aed, #6366f1);
+  background: var(--bf-medal-c2);
 }
 
 .bf-medal-c3 {
-  background: linear-gradient(135deg, #be123c, #e11d48);
+  background: var(--bf-medal-c3);
 }
 
 .bf-medal-c4 {
-  background: linear-gradient(135deg, #ea580c, #f59e0b);
+  background: var(--bf-medal-c4);
 }
 
 .bf-medal-c5 {
-  background: linear-gradient(135deg, #059669, #84cc16);
+  background: var(--bf-medal-c5);
 }
 
 .bf-medal-c6 {
-  background: linear-gradient(135deg, #4338ca, #3b82f6);
+  background: var(--bf-medal-c6);
 }
 
 .bf-medal-c7 {
-  background: linear-gradient(135deg, #db2777, #f97316);
+  background: var(--bf-medal-c7);
 }
 
 .bf-medal-c8 {
-  background: linear-gradient(135deg, #475569, #2563eb);
+  background: var(--bf-medal-c8);
 }
 
 .bf-medal-c9 {
-  background: linear-gradient(135deg, #a21caf, #7c3aed);
+  background: var(--bf-medal-c9);
 }
 
 .bf-badge-head {

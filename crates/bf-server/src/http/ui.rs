@@ -117,7 +117,8 @@ pub(crate) fn finish(state: &AppState, v: &Viewer, ctx: Ctx, shell: Shell, html:
     page(render(&body), ctx.set, cacheable)
 }
 
-/// A page of plain content in the shared shell: a heading and one box. `index` lets search engines
+/// A page of plain content in the shared shell: a heading and one box (`section.bf-box.block.bf-panel`,
+/// the one container of simple pages). `index` lets search engines
 /// list it. For a page with forms, build it with `begin` and `finish`, which give the CSRF token.
 pub(crate) fn simple_page(state: &AppState, v: &Viewer, title: &str, html: &str, index: bool) -> Response {
     let ctx = begin(state, v);
@@ -132,39 +133,6 @@ pub(crate) fn panel(html: &str) -> String {
 // Components: the small pieces most pages are built from. Text arguments are written in English
 // and shown in the viewer's language (`tr`; scripts/i18n.py finds them at the call sites), then
 // escaped; arguments named `html` are markup the caller built (escaped or cooked).
-
-/// A data table: column headings (escaped), and rows of cells (HTML), or one row saying `empty`
-/// when there are none.
-pub(crate) fn table(headings: &[&str], rows: &[Vec<String>], empty: &str) -> String {
-    let mut out = String::from("<table class=\"bf-table\"><thead><tr>");
-    for h in headings {
-        out.push_str(&format!("<th>{}</th>", trh(h)));
-    }
-    out.push_str("</tr></thead><tbody>");
-    for row in rows {
-        out.push_str("<tr>");
-        for cell in row {
-            out.push_str(&format!("<td>{cell}</td>"));
-        }
-        out.push_str("</tr>");
-    }
-    if rows.is_empty() {
-        out.push_str(&empty_row(headings.len(), empty));
-    }
-    out.push_str("</tbody></table>");
-    out
-}
-
-/// A table in its own box, under a heading (none when `title` is empty).
-pub(crate) fn table_box(title: &str, headings: &[&str], rows: &[Vec<String>], empty: &str) -> String {
-    let head = if title.is_empty() { String::new() } else { format!("<h2>{}</h2>", trh(title)) };
-    format!("<section class=\"bf-box block\">{head}{}</section>", table(headings, rows, empty))
-}
-
-/// The row a table shows when it has no rows.
-pub(crate) fn empty_row(columns: usize, text: &str) -> String {
-    format!("<tr><td colspan=\"{columns}\" class=\"muted\">{}</td></tr>", trh(text))
-}
 
 pub(crate) fn hidden_csrf(token: &str) -> String {
     format!("<input type=\"hidden\" name=\"csrf\" value=\"{}\">", esc(token))

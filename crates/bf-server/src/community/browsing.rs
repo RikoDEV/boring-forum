@@ -100,6 +100,28 @@ impl Seen {
     }
 }
 
+/// The whole site's visitors, for the "Who's online" block, under a key no page has.
+const SITE: &str = "site";
+
+/// A path that is a page rather than a file, an API call, a picture or the admin panel.
+fn is_page_view(path: &str) -> bool {
+    !["/api/", "/assets/", "/avatar/", "/admin", "/uploads/", "/img/"].iter().any(|p| path.starts_with(p))
+        && !path.rsplit('/').next().unwrap_or("").contains('.')
+}
+
+/// Visitors who are not signed in, site-wide: how many guests, how many crawlers, and the latest
+/// few crawlers by name.
+pub(crate) fn site_anonymous(state: &AppState) -> (usize, usize, Vec<String>) {
+    let Some(visitors) = state.browsing.get(SITE) else { return (0, 0, Vec::new()) };
+    let mut seen = visitors.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    let now = Instant::now();
+    seen.guests.retain(|_, at| now.duration_since(*at) < WINDOW);
+    seen.bots.retain(|_, at| now.duration_since(*at) < WINDOW);
+    let mut bots: Vec<_> = seen.bots.iter().map(|(n, at)| (n.clone(), *at)).collect();
+    bots.sort_by_key(|b| std::cmp::Reverse(b.1));
+    (seen.guests.len(), bots.len(), bots.into_iter().take(MAX_BOTS).map(|b| b.0).collect())
+}
+
 /// The page a path is a view of, as `visit` names it: "home", "forum:ID" or "topic:ID".
 fn page_key(path: &str) -> Option<String> {
     let parts: Vec<&str> = path.trim_matches('/').split('/').collect();
@@ -125,17 +147,31 @@ pub(crate) async fn guest_hit(
         .iter()
         .filter_map(|v| v.to_str().ok())
         .any(|c| c.split(';').any(|kv| kv.trim_start().starts_with("__Host-bf_session")));
-    if req.method() == axum::http::Method::GET
-        && !signed_in
-        && state.settings().bool("recently_browsing")
-        && let Some(visitors) = page_key(req.uri().path()).and_then(|k| state.browsing.get(&k))
-    {
-        let peer = req
-            .extensions()
-            .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
-            .map(|c| crate::http::ratelimit::client_ip(c.0.ip(), req.headers()));
-        let agent = req.headers().get(header::USER_AGENT).and_then(|h| h.to_str().ok()).unwrap_or("");
-        visitors.lock().unwrap_or_else(std::sync::PoisonError::into_inner).note_anonymous(agent, peer, Instant::now());
+    if req.method() == axum::http::Method::GET && !signed_in {
+        let path = req.uri().path();
+        let page = if state.settings().bool("recently_browsing") {
+            page_key(path).and_then(|k| state.browsing.get(&k))
+        } else {
+            None
+        };
+        let site = is_page_view(path);
+        if page.is_some() || site {
+            let peer = req
+                .extensions()
+                .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+                .map(|c| crate::http::ratelimit::client_ip(c.0.ip(), req.headers()));
+            let agent = req.headers().get(header::USER_AGENT).and_then(|h| h.to_str().ok()).unwrap_or("");
+            let now = Instant::now();
+            let note = |v: &Visitors| {
+                v.lock().unwrap_or_else(std::sync::PoisonError::into_inner).note_anonymous(agent, peer, now);
+            };
+            if let Some(visitors) = &page {
+                note(visitors);
+            }
+            if site {
+                note(&state.browsing.get_with(SITE.to_owned(), Visitors::default));
+            }
+        }
     }
     next.run(req).await
 }

@@ -36,21 +36,24 @@
   }
 }
 
+/* Cancel and confirm side by side, the primary action last. The markup lists the primary button
+   first so that Enter in a form chooses it. */
+.bf-auth-actions {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: var(--bf-space-2);
+
+  & .btn {
+    flex: 1;
+  }
+}
+
 .bf-auth-links {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--bf-space-1) var(--bf-space-3);
   margin: calc(var(--bf-space-2) * -1) 0 0;
-}
-
-.bf-auth-error {
-  margin: 0;
-  padding: var(--bf-space-2) var(--bf-space-3);
-  border-radius: var(--bf-radius-input);
-  background: var(--bf-color-danger-soft);
-  color: var(--bf-color-danger);
-  font-size: var(--bf-text-list);
 }
 
 .bf-auth-alt {

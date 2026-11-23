@@ -12,6 +12,7 @@
   import Section from "#lib/Section.svelte";
   import Switch from "#lib/Switch.svelte";
   import IconButton from "#lib/IconButton.svelte";
+  import Empty from "#lib/Empty.svelte";
 
   const TRIGGERS = {
     topic_created: tr("A topic is started"),
@@ -40,6 +41,7 @@
   let rules = $state([]);
   let nodes = $state([]);
   let editing = $state(null);
+  let loaded = $state(false);
   const status = new Status();
 
   const forums = $derived(orderTree(nodes));
@@ -53,6 +55,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
   load();
 
@@ -306,6 +309,7 @@
   <thead>
     <tr>
       <th>{tr("Rule")}</th><th>{tr("When")}</th><th>{tr("Then")}</th><th>{tr("Runs")}</th><th>{tr("Last run")}</th><th
+        class="acp-cell-end"
       ></th>
     </tr>
   </thead>
@@ -320,13 +324,13 @@
         <td>{summary(r)}</td>
         <td>{r.run_count}</td>
         <td><When iso={r.last_run_at} /></td>
-        <td class="acp-actions">
+        <td class="acp-cell-end">
           <button class="secondary" onclick={() => toggle(r)}>{r.enabled ? tr("Turn off") : tr("Turn on")}</button>
-          <button class="secondary" onclick={() => remove(r)}>{tr("Delete")}</button>
+          <button class="is-danger" onclick={() => remove(r)}>{tr("Delete")}</button>
         </td>
       </tr>
     {:else}
-      <tr><td colspan="6" class="muted">{tr("No rules yet.")}</td></tr>
+      <Empty cols={6} {loaded} title={tr("No rules yet.")} text={tr("Use New rule above to add one.")} />
     {/each}
   </tbody>
 </table>

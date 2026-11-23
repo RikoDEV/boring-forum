@@ -1,0 +1,18 @@
+{#- The follow menu of a forum or a topic. Set before including: `follow_scope` ("c" or "t"), `follow_id`, `follow_topic` (topic levels, no hints) and `follow` (the current level). -#}
+<details class="bf-menu">
+  <summary class="btn">{{ layout.icon("bell")|safe }} <span class="bf-follow-label bf-btn-label">{{ layout.t.tj("follow.", follow) }}</span> <span class="bf-btn-label">{{ layout.icon("chevron-down")|safe }}</span></summary>
+  <div class="bf-menu-body bf-follow-menu">
+    <form method="post" action="/{{ follow_scope }}/{{ follow_id }}/follow">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      {%- if follow_topic %}
+      {%- for k in ["watch", "track", "normal", "mute"] %}
+      <button name="level" value="{{ k }}"{% if follow == *k %} aria-current="true"{% endif %}><span><strong>{{ layout.t.tj("follow.", k) }}</strong></span></button>
+      {%- endfor %}
+      {%- else %}
+      {%- for k in ["watch", "normal", "mute"] %}
+      <button name="level" value="{{ k }}"{% if follow == *k %} aria-current="true"{% endif %}><span><strong>{{ layout.t.tj("follow.", k) }}</strong><small class="muted">{{ layout.t.tj("follow.forum_hint.", k) }}</small></span></button>
+      {%- endfor %}
+      {%- endif %}
+    </form>
+  </div>
+</details>

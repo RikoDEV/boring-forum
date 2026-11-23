@@ -32,9 +32,13 @@ struct PreviewQuery {
 fn answer(state: &AppState, p: &links::Preview) -> Response {
     // The card's picture comes from the site's imgproxy when there is one, so a reader's browser
     // does not call the other site for it.
-    let image = super::imgproxy::Config::from_settings(&state.settings(), &state.config.base_url)
-        .and_then(|c| c.url(&p.image, 640))
-        .unwrap_or_else(|| p.image.clone());
+    let image = if state.settings().bool("onebox_images") && !p.image.is_empty() {
+        super::imgproxy::Config::from_settings(&state.settings(), &state.config.base_url)
+            .and_then(|c| c.url(&p.image, 640))
+            .unwrap_or_else(|| p.image.clone())
+    } else {
+        String::new()
+    };
     let mut res =
         Json(json!({ "title": p.title, "description": p.description, "image": image, "site": p.site })).into_response();
     res.headers_mut().insert(header::CACHE_CONTROL, HeaderValue::from_static("public, max-age=3600"));
@@ -47,6 +51,11 @@ async fn preview(
     Query(q): Query<PreviewQuery>,
 ) -> Result<Response, AppError> {
     let pool = state.db()?;
+    let settings = state.settings();
+    // Switched off, or a site the administrators do not want cards for: the link stays a link.
+    if !settings.bool("onebox_enabled") || host_blocked(&q.url, settings.str("onebox_blocked_hosts")) {
+        return Err(AppError::NotFound);
+    }
     // Our own topics come from the database, with the viewer's permissions.
     if let Some(id) = internal_topic(&q.url, &state.config.base_url) {
         let (t, _, _) = readable_topic(&state, &v, id).await?;
@@ -65,7 +74,7 @@ async fn preview(
     if !links::is_posted_link(pool, &q.url, &readable).await.db()? {
         return Err(AppError::NotFound);
     }
-    let p = if let Some(p) = links::cached(pool, &q.url).await.db()? {
+    let p = if let Some(p) = links::cached(pool, &q.url, settings.int("onebox_cache_days") as i32).await.db()? {
         p
     } else {
         let p = match crate::platform::plugins::onebox_card(&state, &q.url).await {
@@ -79,6 +88,20 @@ async fn preview(
         return Err(AppError::NotFound);
     }
     Ok(answer(&state, &p))
+}
+
+/// Whether the address is on one of the sites in `blocked` (separated by spaces or lines): a listed
+/// name covers itself and its subdomains, and `www.` makes no difference.
+pub(crate) fn host_blocked(url: &str, blocked: &str) -> bool {
+    let Some(host) = url::Url::parse(url).ok().and_then(|u| u.host_str().map(str::to_ascii_lowercase)) else {
+        return false;
+    };
+    let host = host.strip_prefix("www.").unwrap_or(&host);
+    blocked.split_whitespace().any(|b| {
+        let b = b.trim_start_matches("https://").trim_start_matches("http://").trim_end_matches('/');
+        let b = b.strip_prefix("www.").unwrap_or(b).to_ascii_lowercase();
+        !b.is_empty() && (host == b || host.ends_with(&format!(".{b}")))
+    })
 }
 
 pub(crate) fn internal_topic(raw: &str, base: &str) -> Option<i64> {
@@ -200,6 +223,20 @@ fn parse(html: &str, url: &str) -> Option<links::Preview> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_blocked_site_covers_its_subdomains_and_ignores_www() {
+        let blocked = "example.com\nhttps://Other.net/ www.third.org";
+        assert!(host_blocked("https://example.com/a", blocked));
+        assert!(host_blocked("https://www.example.com/a", blocked));
+        assert!(host_blocked("https://news.example.com/a?x=1", blocked));
+        assert!(host_blocked("http://other.net", blocked));
+        assert!(host_blocked("https://third.org/page", blocked));
+        assert!(!host_blocked("https://notexample.com/a", blocked));
+        assert!(!host_blocked("https://example.com.evil.test/", blocked));
+        assert!(!host_blocked("https://example.com/", ""));
+        assert!(!host_blocked("not a url", blocked));
+    }
 
     #[test]
     fn reads_open_graph_first() {

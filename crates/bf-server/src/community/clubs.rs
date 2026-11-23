@@ -2,9 +2,10 @@
 //! be read by anyone and joined freely; a closed club's forum is visible to its members only.
 //! Also the PWA files, and the redirect map used by the 404 handler.
 
+use crate::community::people;
 use crate::http::i18n::{lang, tr, trf, trh};
 use crate::http::render::DbResult;
-use crate::http::ui::hidden_csrf;
+use crate::http::ui::{hidden_csrf, user_link};
 use crate::http::viewer::{CsrfForm, Viewer};
 use crate::state::AppState;
 use axum::extract::{Path, Query, State};
@@ -60,11 +61,6 @@ fn mark(name: &str) -> String {
     format!("<span class=\"bf-club-mark bf-club-c{hue}\" aria-hidden=\"true\">{}</span>", esc(&letter))
 }
 
-/// A member's name as a link to their profile.
-fn user_link(id: i64, name: &str) -> String {
-    format!("<a href=\"{}\">{}</a>", esc(&bf_core::slug::profile_path(id, name)), esc(name))
-}
-
 /// The one thing this viewer can do with a club, as a button (or a note).
 fn action(c: &clubs::Club, viewer: Option<i64>, token: &str) -> String {
     let form = |path: &str, label: &str, class: &str, confirm: Option<&str>| {
@@ -81,13 +77,13 @@ fn action(c: &clubs::Club, viewer: Option<i64>, token: &str) -> String {
             if c.open { trh("Sign in to join") } else { trh("Sign in to ask") }
         ),
         Some(me) if c.owner_id == Some(me) => {
-            format!("<span class=\"bf-club-role\">{tr1}</span>", tr1 = trh("You run this club"))
+            format!("<span class=\"bf-badge is-accent\">{tr1}</span>", tr1 = trh("You run this club"))
         }
         Some(_) if c.joined => form("leave", &trh("Leave"), "", Some(&tr("Leave this club?"))),
         Some(_) if c.open || c.invited => form("join", &trh("Join"), "primary", None),
         Some(_) if c.requested => {
             format!(
-                "<span class=\"bf-club-role\">{tr1}</span> {}",
+                "<span class=\"bf-badge is-warn\">{tr1}</span> {}",
                 form("withdraw", &trh("Withdraw"), "link", None),
                 tr1 = trh("Request sent")
             )
@@ -108,19 +104,19 @@ fn card(
     let title =
         if visible { format!("<a href=\"{}\">{name}</a>", forum_path(c.node_id, &c.slug)) } else { name.clone() };
     let badge = if c.open {
-        format!("<span class=\"bf-club-badge\">{tr1}</span>", tr1 = trh("Open"))
+        format!("<span class=\"bf-badge is-ok\">{tr1}</span>", tr1 = trh("Open"))
     } else {
-        format!("<span class=\"bf-club-badge is-closed\">{tr1}</span>", tr1 = trh("Closed"))
+        format!("<span class=\"bf-badge is-warn\">{tr1}</span>", tr1 = trh("Closed"))
     };
     let badge = if c.archived {
-        format!("{badge} <span class=\"bf-club-badge is-closed\">{tr1}</span>", tr1 = trh("Archived"))
+        format!("{badge} <span class=\"bf-badge is-warn\">{tr1}</span>", tr1 = trh("Archived"))
     } else {
         badge
     };
     let role = if viewer.is_some() && c.owner_id == viewer {
-        format!(" <span class=\"bf-club-badge is-you\">{tr1}</span>", tr1 = trh("Owner"))
+        format!(" <span class=\"bf-badge is-accent\">{tr1}</span>", tr1 = trh("Owner"))
     } else if c.joined {
-        format!(" <span class=\"bf-club-badge is-you\">{tr1}</span>", tr1 = trh("Member"))
+        format!(" <span class=\"bf-badge is-accent\">{tr1}</span>", tr1 = trh("Member"))
     } else {
         String::new()
     };
@@ -138,14 +134,7 @@ fn card(
     let owner = c
         .owner
         .as_deref()
-        .map(|o| {
-            format!(
-                "<li>{tr1} <a href=\"{}\">{}</a></li>",
-                esc(&bf_core::slug::profile_path(c.owner_id.unwrap_or_default(), o)),
-                esc(o),
-                tr1 = trh("Run by")
-            )
-        })
+        .map(|o| format!("<li>{tr1} {}</li>", user_link(Some(o)), tr1 = trh("Run by")))
         .unwrap_or_default();
     // The owner's tools stay folded on their own card.
     let mut manage = String::new();
@@ -153,37 +142,32 @@ fn card(
         let waiting: Vec<&(i64, i64, String)> = requests.iter().filter(|(club, _, _)| *club == c.id).collect();
         let mut req = String::new();
         for (_, user, who) in &waiting {
-            req.push_str(&format!(
-                "<li><span>{}</span><form method=\"post\" action=\"/clubs/{}/requests/{user}\" class=\"inline\">{}<button class=\"btn primary\" name=\"approve\" value=\"1\">{tr1}</button> <button class=\"btn\" name=\"approve\" value=\"0\">{tr2}</button></form></li>",
-                user_link(*user, who),
+            req.push_str(&people::row(who, &format!("<form method=\"post\" action=\"/clubs/{}/requests/{user}\" class=\"inline\">{}<button class=\"btn primary\" name=\"approve\" value=\"1\">{tr1}</button> <button class=\"btn\" name=\"approve\" value=\"0\">{tr2}</button></form>",
                 c.id,
-                hidden_csrf(token), tr1 = trh("Approve"), tr2 = trh("Decline")));
+                hidden_csrf(token), tr1 = trh("Approve"), tr2 = trh("Decline"))));
         }
         let req = if waiting.is_empty() {
             String::new()
         } else {
-            format!("<h4>{tr1}</h4><ul class=\"bf-club-people\">{req}</ul>", tr1 = trh("Waiting to join"))
+            format!("<h4>{tr1}</h4><ul class=\"bf-people bf-club-people\">{req}</ul>", tr1 = trh("Waiting to join"))
         };
         let mut ppl = String::new();
         for (uid, who) in people.iter().filter(|(uid, _)| Some(*uid) != c.owner_id) {
-            ppl.push_str(&format!(
-                "<li><span>{}</span><form method=\"post\" action=\"/clubs/{}/members/{uid}/remove\" class=\"inline\" data-confirm=\"{}\">{}<button class=\"btn\" name=\"ban\" value=\"0\">{tr1}</button> <button class=\"btn\" name=\"ban\" value=\"1\">{tr2}</button></form></li>",
-                user_link(*uid, who),
+            ppl.push_str(&people::row(who, &format!("<form method=\"post\" action=\"/clubs/{}/members/{uid}/remove\" class=\"inline\" data-confirm=\"{}\">{}<button class=\"btn\" name=\"ban\" value=\"0\">{tr1}</button> <button class=\"btn bf-btn-danger\" name=\"ban\" value=\"1\">{tr2}</button></form>",
                 c.id,
                 esc(&tr("Remove this member from the club?")),
                 hidden_csrf(token),
                 tr1 = trh("Remove"),
-                tr2 = trh("Ban")
-            ));
+                tr2 = trh("Ban"))));
         }
         let ppl = if ppl.is_empty() {
             String::new()
         } else {
-            format!("<h4>{tr1}</h4><ul class=\"bf-club-people\">{ppl}</ul>", tr1 = trh("Members"))
+            format!("<h4>{tr1}</h4><ul class=\"bf-people bf-club-people\">{ppl}</ul>", tr1 = trh("Members"))
         };
         let own = format!(
             "<form method=\"post\" action=\"/clubs/{id}/transfer\" class=\"bf-club-inline-form\" data-confirm=\"{c1}\">{h}<label class=\"bf-field\"><input name=\"username\" placeholder=\" \" autocomplete=\"off\" required><span class=\"bf-field-label\">{t1}</span></label><button class=\"btn\">{t2}</button></form>\
-             <div class=\"bf-club-actions\"><form method=\"post\" action=\"/clubs/{id}/archive\" class=\"inline\">{h}<input type=\"hidden\" name=\"archived\" value=\"{av}\"><button class=\"btn\">{t3}</button></form> <form method=\"post\" action=\"/clubs/{id}/delete\" class=\"inline\" data-confirm=\"{c2}\">{h}<button class=\"btn\">{t4}</button></form></div>",
+             <div class=\"bf-club-actions\"><form method=\"post\" action=\"/clubs/{id}/archive\" class=\"inline\">{h}<input type=\"hidden\" name=\"archived\" value=\"{av}\"><button class=\"btn\">{t3}</button></form> <form method=\"post\" action=\"/clubs/{id}/delete\" class=\"inline\" data-confirm=\"{c2}\">{h}<button class=\"btn bf-btn-danger\">{t4}</button></form></div>",
             id = c.id,
             h = hidden_csrf(token),
             av = if c.archived { "0" } else { "1" },
@@ -199,7 +183,7 @@ fn card(
              <form method=\"post\" action=\"/clubs/{id}/invite\" class=\"bf-club-inline-form\">{h}<label class=\"bf-field\"><input name=\"username\" placeholder=\" \" autocomplete=\"off\" required><span class=\"bf-field-label\">{tr1}</span></label><button class=\"btn\">{tr2}</button></form>
              <form method=\"post\" action=\"/clubs/{id}/describe\" class=\"stack\">{h}<label class=\"bf-field\"><textarea name=\"description\" rows=\"2\" maxlength=\"300\" placeholder=\" \">{desc}</textarea><span class=\"bf-field-label\">{tr3}</span></label><button class=\"btn\">{tr4}</button></form>{own}</details>",
             if waiting.is_empty() { "" } else { " open" },
-            if waiting.is_empty() { String::new() } else { format!(" <span class=\"bf-club-count\">{}</span>", waiting.len()) },
+            if waiting.is_empty() { String::new() } else { format!(" <span class=\"bf-badge is-bad\">{}</span>", waiting.len()) },
             id = c.id,
             h = hidden_csrf(token),
             trm = trh("Manage"),
@@ -256,13 +240,13 @@ async fn list(
     html.push_str(&club_bar_html(viewer.is_some(), mine_only, &q.q));
     if shown.is_empty() {
         let empty = if !needle.is_empty() {
-            trh("No club matches that name.")
+            tr("No club matches that name.")
         } else if mine_only {
-            trh("You're not in any club yet. Join one below the tabs, or start your own.")
+            tr("You're not in any club yet. Join one below the tabs, or start your own.")
         } else {
-            trh("No clubs yet. Start the first one.")
+            tr("No clubs yet. Start the first one.")
         };
-        html.push_str(&format!("<p class=\"bf-box block muted bf-club-empty\">{empty}</p>"));
+        html.push_str(&format!("<section class=\"bf-box block\">{}</section>", people::empty("users", &empty)));
     } else {
         html.push_str("<ul class=\"bf-club-grid\">");
         for c in shown {

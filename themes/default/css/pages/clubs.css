@@ -1,3 +1,15 @@
+/* Club avatar palette; white text sits on every one, in both schemes. */
+:root {
+  --bf-club-c0: #2563eb;
+  --bf-club-c1: #7c3aed;
+  --bf-club-c2: #db2777;
+  --bf-club-c3: #dc2626;
+  --bf-club-c4: #d97706;
+  --bf-club-c5: #059669;
+  --bf-club-c6: #0891b2;
+  --bf-club-c7: #4b5563;
+}
+
 /* Clubs (/clubs): invitations, a search bar, a grid of club cards and the form to start one. */
 
 .bf-club-bar {
@@ -88,34 +100,14 @@
   font-weight: 700;
 }
 
-.bf-club-c0 { background: #2563eb; }
-.bf-club-c1 { background: #7c3aed; }
-.bf-club-c2 { background: #db2777; }
-.bf-club-c3 { background: #dc2626; }
-.bf-club-c4 { background: #d97706; }
-.bf-club-c5 { background: #059669; }
-.bf-club-c6 { background: #0891b2; }
-.bf-club-c7 { background: #4b5563; }
-
-.bf-club-badge {
-  display: inline-block;
-  padding: 0 var(--bf-space-2);
-  border-radius: 999px;
-  background: var(--bf-color-success-soft);
-  color: var(--bf-color-success);
-  font-size: var(--bf-text-xs);
-  font-weight: 600;
-
-  &.is-closed {
-    background: var(--bf-color-surface-2);
-    color: var(--bf-color-muted);
-  }
-
-  &.is-you {
-    background: var(--bf-color-accent-soft);
-    color: var(--bf-color-accent);
-  }
-}
+.bf-club-c0 { background: var(--bf-club-c0); }
+.bf-club-c1 { background: var(--bf-club-c1); }
+.bf-club-c2 { background: var(--bf-club-c2); }
+.bf-club-c3 { background: var(--bf-club-c3); }
+.bf-club-c4 { background: var(--bf-club-c4); }
+.bf-club-c5 { background: var(--bf-club-c5); }
+.bf-club-c6 { background: var(--bf-club-c6); }
+.bf-club-c7 { background: var(--bf-club-c7); }
 
 .bf-club-desc {
   color: var(--bf-color-text);
@@ -153,12 +145,6 @@
   }
 }
 
-.bf-club-role {
-  color: var(--bf-color-muted);
-  font-size: var(--bf-text-sm);
-  font-weight: 500;
-}
-
 .bf-club-manage {
   padding-block-start: var(--bf-space-3);
   border-block-start: 1px solid var(--bf-color-border);
@@ -173,35 +159,13 @@
   }
 }
 
-.bf-club-count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 1.25rem;
-  height: 1.25rem;
-  padding-inline: 0.35rem;
-  border-radius: 999px;
-  background: var(--bf-color-danger);
-  color: #fff;
-  font-size: var(--bf-text-xs);
-}
-
+/* The shared .bf-people rows, tightened for the narrow card. */
 .bf-club-people {
-  display: grid;
-  gap: var(--bf-space-2);
   margin: 0 0 var(--bf-space-3);
-  padding: 0;
-  list-style: none;
 
   & li {
-    display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--bf-space-2);
-  }
-
-  & form {
-    margin: 0;
+    padding-inline: 0;
   }
 }
 
@@ -256,7 +220,7 @@
   & .bf-club-mark {
     width: 2rem;
     height: 2rem;
-    font-size: 0.9rem;
+    font-size: var(--bf-text-list);
   }
 }
 

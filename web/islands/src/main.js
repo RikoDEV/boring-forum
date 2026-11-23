@@ -224,7 +224,10 @@ function localTimes(root = document) {
   for (const t of root.querySelectorAll("time[datetime]")) {
     const iso = t.getAttribute("datetime");
     const full = fullDate(iso);
-    if (full) t.title = full;
+    if (full) {
+      t.setAttribute("data-tip", full);
+      t.removeAttribute("title");
+    }
     if (full && !t.closest(".cooked")) t.textContent = timeText(iso, t.dataset.format);
   }
   const mode = document.documentElement.dataset.date;
@@ -577,7 +580,7 @@ function userMenu() {
     el("img", { class: "avatar", src: `/avatar/${encodeURIComponent(name)}.svg`, width: 36, height: 36, alt: "" });
   const row = (n, fallback) => {
     const li = el("li", n.read === false ? { class: "is-unread" } : {});
-    const a = el("a", { href: n.url, title: [n.text, fullDate(n.when_at) || n.when].filter(Boolean).join(" · ") });
+    const a = el("a", { href: n.url, "data-tip": [n.text, fullDate(n.when_at) || n.when].filter(Boolean).join(" · ") });
     const pic = el("span", { class: "bf-um-pic" }, "");
     pic.append(avatar(n.by || n.avatar || menu.dataset.me));
     const badge = el("span", { class: "bf-um-kind" }, "");
@@ -852,6 +855,8 @@ function headerTitle() {
 
 // A bare link alone on its line becomes a card, once it comes near the screen.
 function linkPreviews(root = document) {
+  // Switched off in the admin panel: no card, and no request for one.
+  if (document.documentElement.dataset.onebox === "off") return;
   const seen = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
@@ -1173,6 +1178,9 @@ const islands = {
     deletedQuotes();
   },
   "local-times": () => localTimes(),
+  // The search form applies a filter as soon as it changes: a scope, forum or date picked, an author typed.
+  "search-filters": (form) =>
+    form.addEventListener("change", (e) => e.target.closest(".bf-search-filters") && form.requestSubmit()),
   // The page that asks for a click before an outside login: when the site sends guests straight
   // there (`auth_immediately`), the page presses its own button.
   autosubmit: (form) => form.requestSubmit(),

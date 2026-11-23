@@ -18,6 +18,7 @@
   let backups = $state([]);
   let activity = $state({ running: null, phase: "", last_error: null });
   let directory = $state("");
+  import Empty from "#lib/Empty.svelte";
   let loaded = $state(false);
   /** The settings this page edits, as the server holds them. */
   const cfg = $state({ backup_enabled: false, backup_interval_hours: 24, backup_keep: 7, backup_uploads: true });
@@ -238,7 +239,7 @@
       {/each}
     </ul>
   {:else}
-    <p class="acp-empty">{loaded ? tr("No backups yet.") : tr("Loading…")}</p>
+    <Empty {loaded} title={tr("No backups yet.")} text={tr("Use Back up now above to make one.")} />
   {/if}
 </Box>
 

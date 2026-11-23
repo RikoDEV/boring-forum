@@ -40,6 +40,8 @@ pub struct ReviewPage {
     pub sort: String,
     /// Site-wide staff may also act on an author from the queue.
     pub staff: bool,
+    /// What the last action did, shown above the queue (empty: nothing).
+    pub notice: String,
 }
 
 #[derive(Template)]
@@ -194,6 +196,8 @@ pub struct DsaReviewPage {
     pub notices: Vec<NoticeView>,
     pub appeals: Vec<AppealView>,
     pub me: Option<i64>,
+    /// What the last decision did, shown above the lists (empty: nothing).
+    pub notice: String,
 }
 
 pub struct TransparencyView {

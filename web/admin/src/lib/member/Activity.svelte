@@ -3,6 +3,7 @@
   /// badges they hold and the reports made about their posts.
   import { tr, locale } from "#lib/i18n.js";
   import { when } from "#lib/api.js";
+  import When from "#lib/When.svelte";
 
   /** @type {{ ov: any }} */
   let { ov } = $props();
@@ -21,7 +22,7 @@
     <section class="acp-box">
       <div class="acp-box-head">
         <h2>{tr("Recent posts")}</h2>
-        {#if a.last_post_at}<span class="muted">{tr("Last post")}: {when(a.last_post_at)}</span>{/if}
+        {#if a.last_post_at}<span class="muted">{tr("Last post")}: <When iso={a.last_post_at} /></span>{/if}
       </div>
       {#if ov.recent_posts.length}
         <ul class="acp-rows">
@@ -33,7 +34,7 @@
                 {#if p.state !== "visible"}<span class="acp-pill is-warn">{p.state}</span>{/if}
                 <br /><small class="muted acp-wrap">{p.excerpt}</small>
               </div>
-              <small class="muted">{when(p.created_at)}</small>
+              <small class="muted"><When iso={p.created_at} /></small>
             </li>
           {/each}
         </ul>
@@ -65,7 +66,7 @@
                   <br /><small class="muted">{r.reason}</small>
                 </div>
                 <span class="acp-pill" class:is-muted={r.status !== "open" && r.status !== "pending"}>{r.status}</span>
-                <small class="muted">{when(r.created_at)}</small>
+                <small class="muted"><When iso={r.created_at} /></small>
               </li>
             {/each}
           </ul>

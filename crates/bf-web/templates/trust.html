@@ -68,7 +68,7 @@
   <ol class="bf-trust-levels">
     {% for row in levels %}
     <li class="{% if row.is_current %}is-current{% endif %}">
-      <div class="bf-trust-level-head"><span class="bf-trust-badge is-small" data-level="{{ row.level }}">{{ row.level }}</span><h3>{{ row.name }}</h3>{% if row.is_current %}<span class="tag">{{ layout.t.msg("You are here") }}</span>{% endif %}</div>
+      <div class="bf-trust-level-head"><span class="bf-trust-badge is-small" data-level="{{ row.level }}">{{ row.level }}</span><h3>{{ row.name }}</h3>{% if row.is_current %}<span class="bf-badge is-accent">{{ layout.t.msg("You are here") }}</span>{% endif %}</div>
       {% if !row.needs.is_empty() %}<p class="small muted">{{ layout.t.msg("Needs") }}: {% for n in row.needs %}{{ n }}{% if !loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
       {% if row.unlocks.is_empty() %}<p class="small muted">{% if row.level == 0 %}{{ layout.t.msg("Reading, posting and replying, within the limits for new members.") }}{% else %}{{ layout.t.msg("Nothing new is unlocked at this level.") }}{% endif %}</p>
       {% else %}<ul class="bf-trust-list">{% for u in row.unlocks %}<li>{{ u }}</li>{% endfor %}</ul>{% endif %}

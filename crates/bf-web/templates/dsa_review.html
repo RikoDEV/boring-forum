@@ -5,10 +5,11 @@
   <h1>{{ layout.t.t("dsa_review.title") }}</h1>
   <p class="small muted">{{ layout.t.t("dsa_review.lead") }}</p>
 </header>
+{% if !notice.is_empty() %}<p class="bf-alert is-ok" role="status">{{ layout.icon("circle-check")|safe }} {{ notice }}</p>{% endif %}
 
 <section class="bf-box" aria-labelledby="r-notices">
   <div class="bf-box-head"><h2 id="r-notices">{{ layout.t.t("dsa_review.notices") }}</h2><span class="muted small">{{ layout.t.n("dsa_review.open", notices.len()) }}</span></div>
-  {% if notices.is_empty() %}<p class="bf-empty">{{ layout.t.t("dsa_review.nothing") }}</p>{% endif %}
+  {% if notices.is_empty() %}<div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("circle-check")|safe }}</span><p>{{ layout.t.t("dsa_review.nothing") }}</p></div>{% endif %}
   <ul class="bf-cases">
     {% for n in notices %}
     <li id="notice-{{ n.id }}">
@@ -22,15 +23,13 @@
       {% if !n.legal_ground.is_empty() %}<p class="small muted">{{ layout.t.t("dsa_review.law_cited") }} {{ n.legal_ground }}</p>{% endif %}
       <form method="post" action="/review/dsa/notice/{{ n.id }}" class="bf-case-form">
         <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-        <div class="bf-field">
+        <label class="bf-field">
           <select name="decision" id="d-{{ n.id }}" required>
             <option value="remove">{{ layout.t.t("dsa_review.remove") }}</option>
             <option value="terms">{{ layout.t.t("dsa_review.terms") }}</option>
             <option value="reject">{{ layout.t.t("dsa_review.no_action") }}</option>
-          </select>
-          <label class="bf-field-label" for="d-{{ n.id }}">{{ layout.t.t("dsa_review.decision") }}</label>
-        </div>
-        <div class="bf-field bf-case-reason"><input placeholder=" " name="reason" id="r-{{ n.id }}" maxlength="2000" required><label class="bf-field-label" for="r-{{ n.id }}">{{ layout.t.t("dsa_review.reasons") }}</label></div>
+          </select><span class="bf-field-label">{{ layout.t.t("dsa_review.decision") }}</span></label>
+        <label class="bf-field bf-case-reason"><input placeholder=" " name="reason" id="r-{{ n.id }}" maxlength="2000" required><span class="bf-field-label">{{ layout.t.t("dsa_review.reasons") }}</span></label>
         <button class="btn primary">{{ layout.t.t("dsa_review.decide") }}</button>
       </form>
     </li>
@@ -40,7 +39,7 @@
 
 <section class="bf-box" aria-labelledby="r-appeals">
   <div class="bf-box-head"><h2 id="r-appeals">{{ layout.t.t("dsa_review.appeals") }}</h2><span class="muted small">{{ layout.t.n("dsa_review.open", appeals.len()) }}</span></div>
-  {% if appeals.is_empty() %}<p class="bf-empty">{{ layout.t.t("dsa_review.nothing") }}</p>{% endif %}
+  {% if appeals.is_empty() %}<div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("circle-check")|safe }}</span><p>{{ layout.t.t("dsa_review.nothing") }}</p></div>{% endif %}
   <ul class="bf-cases">
     {% for a in appeals %}
     <li id="appeal-{{ a.id }}">
@@ -57,8 +56,8 @@
       {% else %}
       <form method="post" action="/review/dsa/appeal/{{ a.id }}" class="bf-case-form">
         <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-        <button class="btn primary" name="outcome" value="reversed">{{ layout.t.t("dsa_review.reverse") }}</button>
         <button class="btn" name="outcome" value="upheld">{{ layout.t.t("dsa_review.uphold") }}</button>
+        <button class="btn primary" name="outcome" value="reversed">{{ layout.t.t("dsa_review.reverse") }}</button>
       </form>
       {% endif %}
     </li>

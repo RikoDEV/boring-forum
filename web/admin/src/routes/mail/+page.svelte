@@ -1,4 +1,5 @@
 <script>
+  import { followTabHash } from "#lib/tabs.svelte.js";
   import { resolve } from "$app/paths";
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
@@ -7,12 +8,21 @@
   import When from "#lib/When.svelte";
   import UserLink from "#lib/UserLink.svelte";
   import Field from "#lib/Field.svelte";
+  import Empty from "#lib/Empty.svelte";
   let tab = $state("log");
+  followTabHash(["log", "templates", "bad", "test"], (key) => (tab = key));
   let rows = $state([]);
   const status = new Status();
   let bad = $state([]);
-  const loadBad = () => get("/mail/bad").then((r) => (bad = r), status.fail);
-  get("/mail").then((r) => (rows = r), status.fail);
+  let loadedLog = $state(false);
+  let loadedBad = $state(false);
+  const loadBad = () =>
+    get("/mail/bad")
+      .then((r) => (bad = r), status.fail)
+      .finally(() => (loadedBad = true));
+  get("/mail")
+    .then((r) => (rows = r), status.fail)
+    .finally(() => (loadedLog = true));
   // Whether the server can send at all. A misconfigured sender leaves every message "Queued", and
   // one with no transport marks them "Sent" without delivering them: say so above the log.
   let sender = $state({ kind: "", detail: "" });
@@ -70,7 +80,12 @@
             {#if !m.sent_at && m.last_error}<small class="muted acp-mail-err">{m.last_error}</small>{/if}
           </td>
         </tr>
-      {:else}<tr><td colspan="4" class="muted">{tr("No mail yet.")}</td></tr>{/each}
+      {:else}<Empty
+          cols={4}
+          loaded={loadedLog}
+          title={tr("No mail yet.")}
+          text={tr("Messages the forum sends are listed here.")}
+        />{/each}
     </tbody>
   </table>
 {:else if tab === "templates"}
@@ -92,17 +107,25 @@
     <small>{tr("No mail is sent to these after repeated bounces. Changing the address also clears this.")}</small>
   </p>
   <table>
-    <thead><tr><th>{tr("Member")}</th><th>{tr("Address")}</th><th>{tr("Bounces")}</th><th></th></tr></thead>
+    <thead>
+      <tr><th>{tr("Member")}</th><th>{tr("Address")}</th><th>{tr("Bounces")}</th><th class="acp-cell-end"></th></tr>
+    </thead>
     <tbody>
       {#each bad as u (u.id)}<tr>
-          <td><UserLink name={u.username} /></td><td>{u.email}</td><td>{u.bounces}</td><td>
-            <button onclick={() => clearBad(u)}>{tr("Clear")}</button>
+          <td><UserLink name={u.username} /></td><td>{u.email}</td><td>{u.bounces}</td><td class="acp-cell-end">
+            <button class="secondary" onclick={() => clearBad(u)}>{tr("Clear")}</button>
           </td>
-        </tr>{:else}<tr><td colspan="4" class="muted">{tr("No bad addresses.")}</td></tr>{/each}
+        </tr>{:else}<Empty
+          cols={4}
+          loaded={loadedBad}
+          title={tr("No bad addresses.")}
+          text={tr("Addresses that keep bouncing are listed here.")}
+        />{/each}
     </tbody>
   </table>
 {:else}
   <section class="acp-box">
+    <div class="acp-box-head"><h2>{tr("Test delivery")}</h2></div>
     <form class="acp-form" onsubmit={sendTest}>
       <Field
         label={tr("Send a test email to")}

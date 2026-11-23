@@ -1,4 +1,5 @@
 <script>
+  import Empty from "#lib/Empty.svelte";
   import { tn, tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
   import { Status } from "#lib/status.svelte.js";
@@ -34,7 +35,11 @@
   let tryValue = $state("");
   const status = new Status();
 
-  const load = () => get("/profile-fields").then((r) => (fields = r), status.fail);
+  let loaded = $state(false);
+  const load = () =>
+    get("/profile-fields")
+      .then((r) => (fields = r), status.fail)
+      .finally(() => (loaded = true));
   const lines = (text) =>
     text
       .split("\n")
@@ -371,11 +376,12 @@
         {#if !f.plugin}<button class="secondary" onclick={() => edit(f)}>{tr("Edit")}</button>{/if}
       </li>
     {:else}
-      <li class="acp-empty-state">
-        <strong>{tr("No profile fields yet")}</strong><span class="muted">
-          {tr("Use New field above to ask for a location, a website or a GitHub name.")}
-        </span>
-      </li>
+      <Empty
+        li
+        {loaded}
+        title={tr("No profile fields yet")}
+        text={tr("Use New field above to ask for a location, a website or a GitHub name.")}
+      />
     {/each}
   </ul>
 </div>

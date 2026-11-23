@@ -1,6 +1,8 @@
 <script>
   import { tr } from "#lib/i18n.js";
+  import { followTabHash } from "#lib/tabs.svelte.js";
   import PageHead from "#lib/PageHead.svelte";
+  import { trailOf } from "#lib/crumbs.svelte.js";
   import { Status } from "#lib/status.svelte.js";
   import { del, get, patch, post, put, upload as sendFile } from "#lib/api.js";
   import EditDialog from "#lib/EditDialog.svelte";
@@ -25,6 +27,7 @@
   let slots = $state([]);
   let defaultId = $state(0);
   let selected = $state(null);
+  $effect(() => trailOf(selected ? [{ label: selected.name }] : [], close));
   let savedCopy = $state("");
   const status = new Status();
   let fresh = $state({ slug: "", name: "", kind: "theme" });
@@ -33,6 +36,8 @@
   let source = $state("new");
   let frame = $state(null);
   let part = $state("settings");
+  // `#tab=css` switches to that part while a theme is being edited (opening a theme starts at its first).
+  followTabHash(["settings", "colours", "css", "slots", "preview"], (key) => (part = key));
   let previewing = $state(false);
 
   const GROUPS = [
@@ -297,13 +302,12 @@
 {/snippet}
 
 {#if !selected}
-  <PageHead title={tr("Themes")}>
+  <PageHead title={tr("Themes")} status={adding ? null : status}>
     {#snippet intro()}{tr("Choose how the forum looks. If a theme breaks the site, open")}
       <a href="/safe-mode"><code>/safe-mode</code></a>
       {tr("to see it without themes.")}{/snippet}
     <button onclick={() => (adding = true)}>{tr("Add a theme")}</button>
   </PageHead>
-  {#if status.error && !adding}<p class="err" role="alert">{status.error}</p>{/if}
   {#if adding}
     <EditDialog
       title={tr("Add a theme")}
@@ -381,24 +385,14 @@
     </ul>
   {/if}
 {:else}
-  <div class="acp-head">
-    <div>
-      <button class="acp-link" onclick={close}>{tr("← All themes")}</button>
-      <h1>{selected.name}</h1>
-    </div>
+  <PageHead title={selected.name} {status}>
     <div class="acp-actions">
-      {#if dirty}<span class="muted"><small>{tr("Unsaved changes")}</small></span>{:else if status.msg}<span
-          class="muted"
-          role="status"
-        >
-          <small>{status.msg}</small>
-        </span>{/if}
+      {#if dirty}<span class="muted"><small>{tr("Unsaved changes")}</small></span>{/if}
       <button onclick={save} disabled={!dirty}>{tr("Save")}</button>
     </div>
-  </div>
-  {#if status.error}<p class="err" role="alert">{status.error}</p>{/if}
+  </PageHead>
   <div class="acp-tabs" role="tablist">
-    {#each [...(selected.kind === "theme" ? [["settings", tr("Settings")]] : []), ["colours", tr("Colour tweaks")], ["css", "CSS"], ["slots", tr("Template slots")], ["preview", tr("Preview")]] as [k, label]}<button
+    {#each [...(selected.kind === "theme" ? [["settings", tr("Settings")]] : []), ["colours", tr("Colour tweaks")], ["css", tr("CSS")], ["slots", tr("Template slots")], ["preview", tr("Preview")]] as [k, label]}<button
         role="tab"
         aria-selected={part === k}
         onclick={() => (part = k)}
@@ -481,9 +475,13 @@
                   value={isHex(map[k]) ? map[k] : "#808080"}
                   class:is-unset={!map[k]}
                   oninput={(e) => (map[k] = e.currentTarget.value)}
-                  aria-label={tr("{label}, {n}, picker", { label, n: i ? "dark" : "light" })}
+                  aria-label={tr("{label}, {n}, picker", { label, n: i ? tr("dark") : tr("light") })}
                 />
-                <input bind:value={map[k]} placeholder={tr("Default")} aria-label="{label}, {i ? 'dark' : 'light'}" />
+                <input
+                  bind:value={map[k]}
+                  placeholder={tr("Default")}
+                  aria-label={tr("{label}, {mode}", { label, mode: i ? tr("dark") : tr("light") })}
+                />
               </span>
             {/each}
           </div>
@@ -499,7 +497,7 @@
   {:else if part === "css"}
     <section class="acp-box">
       <div class="acp-form">
-        <Field label={tr("Extra CSS")} bind:value={selected.css} rows="20" class="acp-code" wide />
+        <Field label={tr("Extra CSS")} bind:value={selected.css} rows="20" class="acp-code" lang="css" wide />
       </div>
     </section>
   {:else if part === "slots"}

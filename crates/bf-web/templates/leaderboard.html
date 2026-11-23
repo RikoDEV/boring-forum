@@ -11,14 +11,14 @@
     <li>
       <span class="bf-place">{{ place }}</span>
       <img class="avatar" src="/avatar/{{ name }}.svg" width="40" height="40" alt="" loading="lazy">
-      <div class="bf-dir-who"><a class="bf-feed-title" href="/u/{{ name }}">{{ name }}</a></div>
+      <div class="bf-dir-who">{{ layout.user_link(name)|safe }}</div>
       <dl class="bf-dir-stats small">
         <div><dt>{{ layout.t.t("post.reputation") }}</dt><dd>{{ reputation }}</dd></div>
         <div><dt>{{ layout.t.t("profile.posts") }}</dt><dd>{{ posts }}</dd></div>
       </dl>
     </li>
     {% else %}
-    <li class="muted">{{ layout.t.t("leaderboard.empty") }}</li>
+    <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("trophy")|safe }}</span><p>{{ layout.t.t("leaderboard.empty") }}</p></div></li>
     {% endfor %}
   </ol>
 </section>

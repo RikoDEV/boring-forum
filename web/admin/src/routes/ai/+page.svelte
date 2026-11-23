@@ -1,4 +1,5 @@
 <script>
+  import Empty from "#lib/Empty.svelte";
   import { resolve } from "$app/paths";
   import { SvelteMap } from "svelte/reactivity";
   import { tr, locale } from "#lib/i18n.js";
@@ -216,7 +217,7 @@
         </tbody>
       </table>
     {:else}
-      <p class="acp-empty">{tr("Nothing has been sent to the provider yet.")}</p>
+      <Empty title={tr("Nothing has been sent to the provider yet.")} />
     {/if}
     {#if overview.errors.length}
       <details class="acp-box-body bf-disclosure">
@@ -271,7 +272,7 @@
         </tbody>
       </table>
     {:else}
-      <p class="acp-empty">{tr("No posts have been judged yet. Turn on the mood record in the settings.")}</p>
+      <Empty title={tr("No posts have been judged yet.")} text={tr("Turn on the mood record in the settings.")} />
     {/if}
   </Box>
 
@@ -398,8 +399,9 @@
       {/each}
     </ul>
   {:else}
-    <p class="acp-empty">
-      {tr("No personas yet. Turn on “Personas answer when mentioned” in the settings, then add one.")}
-    </p>
+    <Empty
+      title={tr("No personas yet.")}
+      text={tr("Turn on “Personas answer when mentioned” in the settings, then add one.")}
+    />
   {/if}
 </div>

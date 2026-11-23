@@ -1,7 +1,8 @@
 //! Following members, topics and forums, and ignoring members.
 
+use crate::community::people;
 use crate::http::render::{DbResult, ago};
-use crate::http::ui::simple_page;
+use crate::http::ui::{simple_page, user_link};
 use crate::http::viewer::{CsrfForm, Viewer};
 use crate::state::AppState;
 use axum::extract::{Path, State};
@@ -138,22 +139,23 @@ async fn following(State(state): State<AppState>, v: Viewer) -> Result<Response,
     let pool = state.db()?;
     let tree = state.forum.get(pool).await?;
     let rows = follows::following_feed(pool, user.id.get(), &tree.readable(&v.actor)).await.db()?;
-    let items: String = rows
+    let items: Vec<String> = rows
         .iter()
         .map(|(id, slug, title, n, who, at)| {
             format!(
-                "<li><a href=\"{}#post-{n}\">{}</a> <span class=\"muted small\">{} · {}</span></li>",
+                "<li><img class=\"avatar\" src=\"/avatar/{}.svg\" width=\"32\" height=\"32\" alt=\"\" loading=\"lazy\"><div><a href=\"{}#post-{n}\">{}</a><div class=\"muted small\">{} · {}</div></div></li>",
+                esc(who),
                 esc(&topic_path(*id, slug)),
                 esc(title),
-                esc(who),
+                user_link(Some(who)),
                 ago(*at)
             )
         })
         .collect();
     let html = if items.is_empty() {
-        "<p class=\"muted\">Nothing yet. Follow members from their profiles.</p>".to_owned()
+        people::empty("users", &crate::http::i18n::tr("Nothing yet. Follow members from their profiles."))
     } else {
-        format!("<ul class=\"activity\">{items}</ul>")
+        people::list(&items)
     };
     Ok(simple_page(&state, &v, &v.t().msg("Following"), &html, false))
 }

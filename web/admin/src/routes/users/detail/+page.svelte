@@ -2,9 +2,9 @@
   import { tr } from "#lib/i18n.js";
   import { Status } from "#lib/status.svelte.js";
   import Notices from "#lib/Notices.svelte";
-  import { resolve } from "$app/paths";
+  import { trailOf } from "#lib/crumbs.svelte.js";
   import { page } from "$app/state";
-  import { del, get, patch, post, when } from "#lib/api.js";
+  import { del, get, patch, post } from "#lib/api.js";
   import Switch from "#lib/Switch.svelte";
   import { iconHref } from "#lib/icons.js";
   import MultiSelect from "#lib/MultiSelect.svelte";
@@ -13,8 +13,8 @@
   import Activity from "#lib/member/Activity.svelte";
   import Moderation from "#lib/member/Moderation.svelte";
   import Security from "#lib/member/Security.svelte";
+  import When from "#lib/When.svelte";
 
-  const base = resolve("/").replace(/\/$/, "");
   const id = $derived(Number(page.url.searchParams.get("id")));
   let u = $state(null);
   let groups = $state([]);
@@ -128,12 +128,12 @@
     if (u && !sameIds(next, u.secondary_groups))
       change({ secondary_groups: next }, tr("Groups changed")).finally(() => (picked = [...u.secondary_groups]));
   });
+  $effect(() => trailOf(u ? [{ label: u.username }] : []));
   $effect(() => {
     if (id) load();
   });
 </script>
 
-<p><a href="{base}/users/">{tr("← Members")}</a></p>
 <Notices {status} />
 {#if u}
   <section class="acp-box acp-profile">
@@ -143,12 +143,14 @@
       <div class="muted"><small>{u.email}{u.title ? ` · ${u.title}` : ""}</small></div>
       <div class="acp-chips">
         {#if !u.approved}<span class="acp-pill is-warn">{tr("Awaiting approval")}</span>{/if}
-        {#if active(u.suspended_until)}<span class="acp-pill is-danger">
-            {tr("Suspended until {n}", { n: when(u.suspended_until) })}
-          </span>{/if}
-        {#if active(u.silenced_until)}<span class="acp-pill is-danger">
-            {tr("Silenced until {n}", { n: when(u.silenced_until) })}
-          </span>{/if}
+        {#if active(u.suspended_until)}
+          {@const [before, after] = tr("Suspended until {n}", { n: "" }).split("")}
+          <span class="acp-pill is-danger">{before}<When iso={u.suspended_until} />{after}</span>
+        {/if}
+        {#if active(u.silenced_until)}
+          {@const [before, after] = tr("Silenced until {n}", { n: "" }).split("")}
+          <span class="acp-pill is-danger">{before}<When iso={u.silenced_until} />{after}</span>
+        {/if}
         {#if !u.email_verified}<span class="acp-pill is-muted">{tr("Email not verified")}</span>{/if}
         {#if u.totp_enabled}<span class="acp-pill is-ok">{tr("Two-factor on")}</span>{/if}
       </div>
@@ -365,9 +367,9 @@
           <div class="acp-box-head"><h2>{tr("Account")}</h2></div>
           <dl class="acp-dl">
             <dt>{tr("Joined")}</dt>
-            <dd>{when(u.joined_at)}</dd>
+            <dd><When iso={u.joined_at} /></dd>
             <dt>{tr("Last seen")}</dt>
-            <dd>{when(u.last_seen_at)}</dd>
+            <dd><When iso={u.last_seen_at} /></dd>
             <dt>{tr("Member id")}</dt>
             <dd>{u.id}</dd>
           </dl>

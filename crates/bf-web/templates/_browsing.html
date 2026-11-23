@@ -11,7 +11,7 @@
     </div>
     <div class="bf-box-body">
       {% if b.members.is_empty() && b.bots.is_empty() %}
-      <p class="muted bf-browsing-empty">{{ layout.t.t("browsing.empty") }}</p>
+      <div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("users")|safe }}</span><p>{{ layout.t.t("browsing.empty") }}</p></div>
       {% else %}
       <ul class="bf-browsing-list">
         {% for (name, url) in b.members %}

@@ -1,0 +1,45 @@
+/* A message box: a border, a soft background and an optional leading icon.
+
+   <p class="bf-alert is-error" role="alert"><svg class="bf-icon" aria-hidden="true">…</svg> Text</p>
+
+   `is-error` (role="alert"), `is-ok` and `is-info` (role="status"); none is a neutral note. The
+   role comes from the markup. Forced colours tell them apart by line style (a11y/forced-colors.css). */
+
+.bf-alert {
+  --alert-ink: var(--bf-color-muted);
+  --alert-bg: var(--bf-color-surface-2);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bf-space-2);
+  margin-block: var(--bf-space-3);
+  padding: var(--bf-space-3) var(--bf-space-4);
+  border: 1px solid color-mix(in srgb, var(--alert-ink) 45%, var(--bf-color-border));
+  border-radius: var(--bf-radius);
+  background: var(--alert-bg);
+  color: var(--bf-color-text);
+  font-size: var(--bf-text-list);
+  overflow-wrap: anywhere;
+
+  & > svg.bf-icon {
+    flex: none;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-block-start: 0.1rem;
+    color: var(--alert-ink);
+  }
+
+  &.is-error {
+    --alert-ink: var(--bf-color-danger);
+    --alert-bg: var(--bf-color-danger-soft);
+  }
+
+  &.is-ok {
+    --alert-ink: var(--bf-color-success);
+    --alert-bg: var(--bf-color-success-soft);
+  }
+
+  &.is-info {
+    --alert-ink: var(--bf-color-accent);
+    --alert-bg: var(--bf-color-accent-soft);
+  }
+}

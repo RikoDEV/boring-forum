@@ -1,4 +1,5 @@
 <script>
+  import Empty from "#lib/Empty.svelte";
   import { locale, tn, tr } from "#lib/i18n.js";
   import { Status } from "#lib/status.svelte.js";
   import PageHead from "#lib/PageHead.svelte";
@@ -39,11 +40,14 @@
     (r) => (groupList = r),
     () => {},
   );
+  let loaded = $state(false);
   const load = () =>
-    get("/plugins").then((r) => {
-      plugins = r;
-      settings = Object.fromEntries(r.map((p) => [p.id, JSON.stringify(p.settings, null, 2)]));
-    }, status.fail);
+    get("/plugins")
+      .then((r) => {
+        plugins = r;
+        settings = Object.fromEntries(r.map((p) => [p.id, JSON.stringify(p.settings, null, 2)]));
+      }, status.fail)
+      .finally(() => (loaded = true));
 
   /// What each capability lets a plugin do, in words an administrator can weigh.
   function describe(c) {
@@ -358,5 +362,5 @@
     {/if}
   </Box>
 {:else}
-  <p class="muted">{tr("None installed.")}</p>
+  <Empty {loaded} title={tr("None installed.")} />
 {/each}

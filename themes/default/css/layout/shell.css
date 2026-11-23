@@ -28,7 +28,7 @@
 .bf-header-bar {
   position: sticky;
   inset-block-start: 0;
-  z-index: 20;
+  z-index: var(--bf-z-sticky);
   background: var(--bf-color-header-bg);
   color: var(--bf-color-header-text);
   border-block-end: 1px solid var(--bf-color-border);
@@ -149,7 +149,7 @@
   display: block;
 }
 
-@media (width <= 640px) {
+@media (width <= 639px) {
   .brand:has(.bf-logo-small) > .bf-logo {
     display: none;
   }
@@ -257,6 +257,7 @@
 
 .bf-nav-check:focus-visible ~ .bf-header-sticky .bf-nav-toggle {
   outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
 }
 
 .main-nav.has-more,
@@ -279,7 +280,7 @@
 }
 
 /* In the phone's column the menu opens in place, like the links around it. */
-@media (width <= 640px) {
+@media (width <= 639px) {
   .main-nav .bf-menu.bf-nav-menu {
     display: block;
     align-self: stretch;
@@ -343,7 +344,7 @@ main {
   }
 }
 
-@media (width <= 640px) {
+@media (width <= 639px) {
   .header-row {
     flex-wrap: wrap;
     padding-block: var(--bf-space-2);
@@ -358,7 +359,7 @@ main {
     display: block;
     position: sticky;
     inset-block-start: 0;
-    z-index: 20;
+    z-index: var(--bf-z-sticky);
   }
 
   .bf-header-bar {
@@ -434,4 +435,11 @@ main {
   gap: var(--bf-space-3);
   max-width: var(--bf-content-width);
   margin: var(--bf-space-3) auto 0;
+}
+
+/* Touch screens: the header search field is a finger-sized target. */
+@media (pointer: coarse) {
+  .header-search input[name="q"] {
+    height: 2.5rem;
+  }
 }

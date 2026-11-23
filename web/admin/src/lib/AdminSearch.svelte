@@ -23,12 +23,21 @@
   // not with the panel's shell.
   /** @type {typeof import("#lib/settings-meta.js") | undefined} */
   let meta = $state();
+  /** @type {[string, string, string][]} */
+  let tabs = $state([]);
 
   async function load() {
     if (settings) return;
     settings = [];
     try {
-      [meta, settings] = await Promise.all([import("#lib/settings-meta.js"), get("/settings")]);
+      const [m, s, t] = await Promise.all([
+        import("#lib/settings-meta.js"),
+        get("/settings"),
+        import("#lib/tabs-meta.js"),
+      ]);
+      meta = m;
+      settings = s;
+      tabs = t.TABS;
     } catch {
       settings = null;
     }
@@ -45,6 +54,20 @@
       for (const [path, label, icon] of items)
         if (matches(`${label} ${section}`.toLowerCase()))
           out.push({ kind: "page", id: `p${path}`, label, hint: section, icon, path });
+    // A tab of a page: found by its name and the page's, opening the page on that tab.
+    for (const [path, key, label] of tabs) {
+      const page = pages.flatMap(([, items]) => items).find(([p]) => p === path);
+      if (!page) continue;
+      if (matches(`${label} ${page[1]}`.toLowerCase()))
+        out.push({
+          kind: "tab",
+          id: `t${path}${key}`,
+          label,
+          hint: page[1],
+          icon: page[2],
+          path: `${path}#tab=${key}`,
+        });
+    }
     /** @type {any[]} */
     const found = [];
     if (!meta) return out;
@@ -72,7 +95,8 @@
     q = "";
     open = false;
     input?.blur();
-    if (r.kind === "page") goto(resolve(r.path === "" ? "/" : r.path));
+    if (r.kind === "tab") goto(`${resolve(r.path.split("#")[0])}#${r.path.split("#")[1]}`);
+    else if (r.kind === "page") goto(resolve(r.path === "" ? "/" : r.path));
     else if (meta?.MANAGED_PAGE[r.key]) goto(resolve(meta.MANAGED_PAGE[r.key]));
     else goto(`${resolve("/settings")}#setting=${encodeURIComponent(r.key)}`);
   }
@@ -143,7 +167,7 @@
           }}
           onmousemove={() => (at = i)}
         >
-          {#if r.kind === "page"}
+          {#if r.kind === "page" || r.kind === "tab"}
             <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#{r.icon}"></use></svg>
           {:else}
             <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#settings"></use></svg>
@@ -151,7 +175,11 @@
           <span class="acp-find-text">
             <span class="acp-find-label">{r.label}</span>
             <span class="acp-find-hint">
-              {r.kind === "page" ? tr("Page · {section}", { section: r.hint }) : r.hint}
+              {r.kind === "page"
+                ? tr("Page · {section}", { section: r.hint })
+                : r.kind === "tab"
+                  ? tr("Tab · {page}", { page: r.hint })
+                  : r.hint}
             </span>
           </span>
           {#if r.kind === "setting" && r.where}<span class="acp-pill">{r.where}</span>{/if}

@@ -1,4 +1,5 @@
-//! Share pictures: the look of the pictures drawn for links to pages (`bf_core::og`).
+//! Share pictures: the look of the pictures drawn for links to pages (`bf_core::og`); and the link
+//! previews that links in posts become.
 
 use super::super::{SettingDef, SettingType::*};
 use super::{def, int};
@@ -15,6 +16,21 @@ pub(super) fn defs() -> Vec<SettingDef> {
         ..def(key, Bool, false, description)
     };
     vec![
+        // Link previews: the cards a bare link in a post becomes (`bf-server` `forum/onebox.rs`).
+        flag(
+            "onebox_enabled",
+            true,
+            en("A link alone on its line in a post becomes a card with the page's title, description and picture"),
+        ),
+        flag("onebox_images", true, en("Show the page's picture on a link preview card")),
+        text(
+            "onebox_blocked_hosts",
+            "",
+            en(
+                "Sites that never get a link preview card, one per line or separated by spaces, like example.com (their subdomains too)",
+            ),
+        ),
+        int("onebox_cache_days", 7, 1, 90, en("Days a link preview card is kept before the page is fetched again")),
         flag(
             "og_generate",
             false,

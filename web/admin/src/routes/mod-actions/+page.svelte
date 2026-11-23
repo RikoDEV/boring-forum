@@ -6,6 +6,7 @@
   import Field from "#lib/Field.svelte";
   import Section from "#lib/Section.svelte";
   import IconButton from "#lib/IconButton.svelte";
+  import Empty from "#lib/Empty.svelte";
   import { del, get, post, put } from "#lib/api.js";
 
   const KINDS = {
@@ -22,7 +23,11 @@
   let draft = $state(null); // the action being added or changed
   const status = new Status();
 
-  const load = () => get("/mod-actions").then((r) => (actions = r), status.fail);
+  let loaded = $state(false);
+  const load = () =>
+    get("/mod-actions")
+      .then((r) => (actions = r), status.fail)
+      .finally(() => (loaded = true));
   get("/tree").then(
     (t) => (forums = t.nodes.filter((n) => n.kind === "forum")),
     () => {},
@@ -134,7 +139,12 @@
         <td class="acp-cell-end"><button class="secondary" onclick={() => open(a)}>{tr("Edit")}</button></td>
       </tr>
     {:else}
-      <tr><td colspan="3" class="muted">{tr("No saved actions yet.")}</td></tr>
+      <Empty
+        cols={3}
+        {loaded}
+        title={tr("No saved actions yet.")}
+        text={tr("A saved action is a set of steps a moderator runs on a topic in one click.")}
+      />
     {/each}
   </tbody>
 </table>

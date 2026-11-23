@@ -333,7 +333,7 @@ pub(crate) async fn event_html(
     let csrf = esc(csrf);
     let csrf_field = hidden_csrf(&csrf);
     let mut html = format!(
-        "<section class=\"panel block event\" id=\"event\"><h2>{}</h2><p><time datetime=\"{}\">{}</time></p>",
+        "<section class=\"bf-box block event\" id=\"event\"><h2>{}</h2><p><time datetime=\"{}\">{}</time></p>",
         esc(&t.msg("Event")),
         e.starts_at.to_rfc3339(),
         esc(&when(&e, t))
@@ -355,8 +355,12 @@ pub(crate) async fn event_html(
     let counts = esc(&counts);
     html.push_str(&format!("<p class=\"small muted\">{counts}</p>"));
     if !going.is_empty() {
-        let names: Vec<String> = going.iter().map(|n| format!("<a href=\"/u/{0}\">{0}</a>", esc(n))).collect();
-        html.push_str(&format!("<p class=\"small\">{} {}</p>", esc(&t.msg("Going:")), names.join(", ")));
+        let rows: Vec<String> = going.iter().map(|n| crate::community::people::row(n, "")).collect();
+        html.push_str(&format!(
+            "<p class=\"small muted\">{}</p>{}",
+            esc(&t.msg("Going:")),
+            crate::community::people::list(&rows)
+        ));
     }
     if viewer.is_some() {
         html.push_str(&format!("<form method=\"post\" action=\"/t/{item}/rsvp\" class=\"bf-manage-row\">{csrf_field}"));
@@ -386,7 +390,7 @@ pub(crate) async fn event_html(
     ));
     if can_manage {
         html.push_str(&format!(
-            "<form method=\"post\" action=\"/t/{item}/event/delete\" class=\"inline\">{csrf_field}<button class=\"link small\">{}</button></form>",
+            "<form method=\"post\" action=\"/t/{item}/event/delete\" class=\"inline\">{csrf_field}<button class=\"btn bf-btn-danger\">{}</button></form>",
             esc(&t.msg("Remove event"))
         ));
     }
@@ -512,7 +516,7 @@ async fn calendar(
                         String::new()
                     } else {
                         format!(
-                            "<time datetime=\"{}\" data-format=\"time\" title=\"{}\">{}</time> ",
+                            "<time datetime=\"{}\" data-format=\"time\" data-tip=\"{}\">{}</time> ",
                             e.starts_at.to_rfc3339(),
                             e.starts_at.format("%Y-%m-%d %H:%M UTC"),
                             esc(&e.local_start[11..16.min(e.local_start.len())])
@@ -533,7 +537,7 @@ async fn calendar(
     }
     html.push_str("</tbody></table>");
     if rows.is_empty() {
-        html.push_str(&format!("<p class=\"muted\">{}</p>", esc(&t.msg("Nothing coming up."))));
+        html.push_str(&crate::community::people::empty("calendar", &t.msg("Nothing coming up.")));
     }
     Ok(simple_page(&state, &v, &v.t().msg("Calendar"), &html, true))
 }

@@ -4,15 +4,15 @@
 <div class="head-row">
   <h1>{{ heading }}</h1>
   {% if area != "tag" %}
-  <nav class="small list-controls" aria-label="{{ layout.t.t("stream.views") }}">
-    <a href="/latest"{% if !unread_view %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("nav.latest") }}</a>
-    {%- if layout.user.is_some() %} <a href="/unread"{% if unread_view %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("home.unread") }}</a>{% endif %}
+  <nav class="small bf-segments" aria-label="{{ layout.t.t("stream.views") }}">
+    <a href="/latest"{% if !unread_view %} aria-current="page"{% endif %}>{{ layout.t.t("nav.latest") }}</a>
+    {%- if layout.user.is_some() %} <a href="/unread"{% if unread_view %} aria-current="page"{% endif %}>{{ layout.t.t("home.unread") }}</a>{% endif %}
   </nav>
   {% endif %}
 </div>
 {% if !periods.is_empty() %}
-<nav class="small list-controls" aria-label="{{ layout.t.t("stream.period") }}">
-  {%- for (p, url, active) in periods %}<a href="{{ url }}"{% if *active %} class="current" aria-current="true"{% endif %}>{{ p }}</a> {% endfor -%}
+<nav class="small bf-segments is-bar" aria-label="{{ layout.t.t("stream.period") }}">
+  {%- for (p, url, active) in periods %}<a href="{{ url }}"{% if *active %} aria-current="page"{% endif %}>{{ p }}</a> {% endfor -%}
 </nav>
 {% endif %}
 {% if can_edit_layout %}{% include "_layout_edit.html" %}{% endif %}

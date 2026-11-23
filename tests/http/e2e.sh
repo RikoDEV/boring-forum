@@ -1819,11 +1819,6 @@ check "members have no assigned list" "$(curl -s -o /dev/null -w '%{http_code}' 
 check "bad date refused" "$(curl -s -o /dev/null -w '%{http_code}' -b $J --data-urlencode "csrf=$T" -d 'date=soon' $B/topic/$PTID/event)" 422
 check "add event" "$(curl -s -o /dev/null -w '%{http_code}' -b $J --data-urlencode "csrf=$T" -d 'date=2999-01-01' $B/topic/$PTID/event)" 303
 has "calendar" "$(curl -s $B/calendar)" 'Poll and date topic'
-setting ad_html '"<b class=\"sponsor\">Ad</b><script>alert(10)</script>"'; settle 1.5
-AD=$(curl -s $B/search)
-has "advert shown" "$AD" 'sponsor'
-no "advert has no script" "$AD" 'alert(10)'
-setting ad_html '""'
 has "direction attribute" "$(curl -s $B/search)" 'dir="ltr"'
 
 rm -f $J $K

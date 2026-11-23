@@ -33,6 +33,12 @@ export const mk = (tag, props = {}, ...kids) => {
 /** `mk` for a class and optional text. */
 export const mkc = (tag, cls, text) => mk(tag, cls ? { className: cls } : {}, ...(text === undefined ? [] : [text]));
 
+/** Gives an element the site's hover bubble (`data-tip`, see tooltip.js) and returns it. @template {Element} T @param {T} e @param {string} text @returns {T} */
+export const tipped = (e, text) => {
+  if (text) e.setAttribute("data-tip", text);
+  return e;
+};
+
 /** The page's CSRF token, from the layout's meta tag. */
 export const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content ?? "";
 
@@ -235,7 +241,7 @@ export function timeText(iso, format = "") {
 export function when(text, iso, attrs = {}) {
   const full = fullDate(iso);
   if (!full) return document.createTextNode(text ?? "");
-  return el("time", { ...attrs, datetime: iso, title: full }, timeText(iso, attrs["data-format"]));
+  return el("time", { ...attrs, datetime: iso, "data-tip": full }, timeText(iso, attrs["data-format"]));
 }
 
 // Every member's name the islands show, like the server's `layout.user_link`: a link to the

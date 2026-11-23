@@ -1,7 +1,7 @@
 <script>
   import { tr, locale } from "#lib/i18n.js";
   import { Status } from "#lib/status.svelte.js";
-  import { get, post, when } from "#lib/api.js";
+  import { get, post } from "#lib/api.js";
   import PageHead from "#lib/PageHead.svelte";
   import Box from "#lib/Box.svelte";
   import Field from "#lib/Field.svelte";
@@ -10,12 +10,15 @@
   import MultiSelect from "#lib/MultiSelect.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
   import UserLink from "#lib/UserLink.svelte";
+  import When from "#lib/When.svelte";
+  import Empty from "#lib/Empty.svelte";
 
   const status = new Status();
   const dlg = new Status();
   let groups = $state([]);
   let levels = $state([]);
   let history = $state([]);
+  let loaded = $state(false);
   let composing = $state(false);
   let confirming = $state(false);
   let subject = $state("");
@@ -51,6 +54,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
 
   // How many members the filters reach, a moment after they stop changing.
@@ -192,7 +196,7 @@
           <div class="acp-grow">
             <strong class="acp-wrap">{m.subject}</strong>
             <br /><small class="muted">
-              <UserLink name={m.sender} fallback={tr("Staff")} /> · {when(m.created_at)} ·
+              <UserLink name={m.sender} fallback={tr("Staff")} /> · <When iso={m.created_at} /> ·
               {num(m.delivered)} / {num(m.recipients)}
             </small>
           </div>
@@ -203,6 +207,6 @@
       {/each}
     </ul>
   {:else}
-    <p class="acp-empty">{tr("Nothing sent yet.")}</p>
+    <Empty {loaded} title={tr("Nothing sent yet.")} text={tr("Messages you send to members are listed here.")} />
   {/if}
 </Box>

@@ -56,7 +56,7 @@
       </form>
       <form method="post" action="/u/{{ id }}/follow" class="inline">
         <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-        <button class="btn">{% if following == Some(true) %}{{ layout.t.t("profile.unfollow") }}{% else %}{{ layout.t.t("profile.follow") }}{% endif %}</button>
+        <button class="btn{% if following != Some(true) %} primary{% endif %}">{% if following == Some(true) %}{{ layout.t.t("profile.unfollow") }}{% else %}{{ layout.t.t("profile.follow") }}{% endif %}</button>
       </form>
       <a class="btn" href="/messages?to={{ username }}">{{ layout.t.t("profile.message") }}</a>
       <button type="button" class="btn" data-dialog="report-member" aria-label="{{ layout.t.t("post.report") }}">{{ layout.icon("flag")|safe }} <span class="bf-btn-label">{{ layout.t.t("post.report") }}</span></button>
@@ -78,7 +78,7 @@
 
       {#- Staff only: notes about the member, and warnings. #}
       {% if let Some(notes) = staff_notes %}
-      <button type="button" class="btn" data-dialog="staff-notes">{{ layout.icon("shield")|safe }} {{ layout.t.t("profile.staff_notes") }}{% if !notes.is_empty() %} <span class="badge">{{ notes.len() }}</span>{% endif %}</button>
+      <button type="button" class="btn" data-dialog="staff-notes">{{ layout.icon("shield")|safe }} {{ layout.t.t("profile.staff_notes") }}{% if !notes.is_empty() %} <span class="bf-badge">{{ notes.len() }}</span>{% endif %}</button>
       <dialog class="bf-dialog is-wide" id="staff-notes" aria-labelledby="notes-title">
         <header class="bf-dialog-head">
           <h2 id="notes-title">{{ layout.t.t("profile.staff_notes") }} <span class="small muted">{{ layout.t.t("profile.staff_only") }}</span></h2>
@@ -89,7 +89,7 @@
             {% for (author, when, body) in notes %}
             <li><strong>{{ layout.user_link(author)|safe }}</strong> <span class="muted small">{{ when }}</span><p class="small">{{ body }}</p></li>
             {% else %}
-            <li class="muted">{{ layout.t.t("profile.no_notes") }}</li>
+            <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("file-text")|safe }}</span><p>{{ layout.t.t("profile.no_notes") }}</p></div></li>
             {% endfor %}
           </ul>
           <form method="post" action="/u/{{ id }}/notes" class="stack">
@@ -110,7 +110,7 @@
         <div class="bf-dialog-actions"><a class="btn" href="/u/{{ id }}/warnings">{{ layout.t.t("profile.warning_history") }}</a><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.close") }}</button></div>
       </dialog>
       {% endif %}
-      <a class="btn primary" href="?tab=summary">{{ layout.t.t("profile.summary") }}</a>
+      <a class="btn" href="?tab=summary">{{ layout.t.t("profile.summary") }}</a>
     </div>
   </div>
 </section>
@@ -169,9 +169,9 @@
     </div>
     {% if own && hide_followers %}<p class="small muted bf-followers-note">{{ layout.t.t("profile.only_you_staff") }}</p>{% endif %}
     {% if !follower_names.is_empty() %}
-    <div class="bf-avatars">{% for n in follower_names %}<a href="/u/{{ n }}" data-tip="{{ n }}"><img class="avatar" src="/avatar/{{ n }}.svg" width="40" height="40" alt="{{ n }}" loading="lazy"></a>{% endfor %}</div>
+    <div class="bf-avatars">{% for n in follower_names %}<a class="bf-user-link" href="{{ layout.profile_href(n) }}" data-tip="{{ n }}"><img class="avatar" src="/avatar/{{ n }}.svg" width="40" height="40" alt="{{ n }}" loading="lazy"></a>{% endfor %}</div>
     {% else %}
-    <p class="bf-box-body muted small">{{ layout.t.t("profile.no_followers") }}</p>
+    <div class="bf-box-body"><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("users")|safe }}</span><p>{{ layout.t.t("profile.no_followers") }}</p></div></div>
     {% endif %}
   </section>
   {% endif %}
@@ -182,9 +182,9 @@
     {% if keeps_visitors %}
     <ul class="bf-people">
       {% for (name, when) in recent_visitors %}
-      <li><img class="avatar" src="/avatar/{{ name }}.svg" width="32" height="32" alt="" loading="lazy"><div><a href="/u/{{ name }}"><strong>{{ name }}</strong></a><div class="muted small">{{ when }}</div></div></li>
+      <li><img class="avatar" src="/avatar/{{ name }}.svg" width="32" height="32" alt="" loading="lazy"><div><strong>{{ layout.user_link(name)|safe }}</strong><div class="muted small">{{ when }}</div></div></li>
       {% else %}
-      <li class="muted small">{{ layout.t.t("profile.no_visitors") }}</li>
+      <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("eye")|safe }}</span><p>{{ layout.t.t("profile.no_visitors") }}</p></div></li>
       {% endfor %}
     </ul>
     {% else %}
@@ -235,17 +235,17 @@
   </section>
 
   <section class="bf-box">
-    <nav class="small list-controls bf-list-bar" aria-label="{{ layout.t.t("settings.profile") }}">
-      <a href="?tab=status"{% if tab == "status" %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("profile.tab_status") }}</a>
-      <a href="?tab=posts"{% if tab == "posts" %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("profile.posts") }}</a>
-      <a href="?tab=topics"{% if tab == "topics" %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("profile.tab_topics") }}</a>
-      <a href="?tab=summary"{% if tab == "summary" %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("profile.summary") }}</a>
-      <a href="?tab=badges"{% if tab == "badges" %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("footer.badges") }}</a>
-      {% if has_ideas %}<a href="?tab=votes"{% if tab == "votes" %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("topics.votes") }}</a>{% endif %}
+    <div class="bf-list-bar"><nav class="bf-segments small" aria-label="{{ layout.t.t("settings.profile") }}">
+      <a href="?tab=status"{% if tab == "status" %} aria-current="page"{% endif %}>{{ layout.t.t("profile.tab_status") }}</a>
+      <a href="?tab=posts"{% if tab == "posts" %} aria-current="page"{% endif %}>{{ layout.t.t("profile.posts") }}</a>
+      <a href="?tab=topics"{% if tab == "topics" %} aria-current="page"{% endif %}>{{ layout.t.t("profile.tab_topics") }}</a>
+      <a href="?tab=summary"{% if tab == "summary" %} aria-current="page"{% endif %}>{{ layout.t.t("profile.summary") }}</a>
+      <a href="?tab=badges"{% if tab == "badges" %} aria-current="page"{% endif %}>{{ layout.t.t("footer.badges") }}</a>
+      {% if has_ideas %}<a href="?tab=votes"{% if tab == "votes" %} aria-current="page"{% endif %}>{{ layout.t.t("topics.votes") }}</a>{% endif %}
       {% for (u, l) in layout.plugin_links("profile") %}<a href="{{ u }}?user={{ id }}">{{ l }}</a>{% endfor %}
-      {% if own %}<a href="?tab=bookmarks"{% if tab == "bookmarks" %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("profile.tab_bookmarks") }}</a>{% endif %}
-      {% if own %}<a href="?tab=drafts"{% if tab == "drafts" %} class="current" aria-current="true"{% endif %}>{{ layout.t.t("profile.tab_drafts") }}</a>{% endif %}
-    </nav>
+      {% if own %}<a href="?tab=bookmarks"{% if tab == "bookmarks" %} aria-current="page"{% endif %}>{{ layout.t.t("profile.tab_bookmarks") }}</a>{% endif %}
+      {% if own %}<a href="?tab=drafts"{% if tab == "drafts" %} aria-current="page"{% endif %}>{{ layout.t.t("profile.tab_drafts") }}</a>{% endif %}
+    </nav></div>
 
     {% if tab == "drafts" %}
     <h2 class="visually-hidden">{{ layout.t.t("profile.drafts") }}</h2>
@@ -253,7 +253,7 @@
       {% for (label, url, when) in drafts %}
       <li><div><a class="bf-feed-title" href="{{ url }}">{{ label }}</a><div class="muted small">{{ when }}</div></div></li>
       {% else %}
-      <li class="muted">{{ layout.t.t("profile.no_drafts") }}</li>
+      <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("file-text")|safe }}</span><p>{{ layout.t.t("profile.no_drafts") }}</p></div></li>
       {% endfor %}
     </ul>
 
@@ -309,7 +309,7 @@
           <div class="bf-sc-reply">
             <img class="avatar" src="/avatar/{{ r.author }}.svg" width="32" height="32" alt="" loading="lazy">
             <div class="bf-sc-bubble">
-              <div class="bf-sc-reply-head"><a href="{{ r.author_url }}"><strong>{{ r.author }}</strong></a> <span class="muted small">{{ r.when }}</span>{% if r.can_delete %}<form method="post" action="/status-reply/{{ r.id }}/delete" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link small">{{ layout.t.t("common.delete") }}</button></form>{% endif %}</div>
+              <div class="bf-sc-reply-head"><strong>{{ layout.user_link(r.author)|safe }}</strong> <span class="muted small">{{ r.when }}</span>{% if r.can_delete %}<form method="post" action="/status-reply/{{ r.id }}/delete" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link small">{{ layout.t.t("common.delete") }}</button></form>{% endif %}</div>
               <p class="bf-sc-body">{{ r.body }}</p>
             </div>
           </div>
@@ -325,7 +325,7 @@
         {% endif %}
       </article>
       {% else %}
-      <div class="bf-sc-empty">{{ layout.icon("message-square")|safe }}<p class="muted">{% if can_post_status %}{{ layout.t.t("status.empty_own") }}{% else %}{{ layout.t.t("status.empty") }}{% endif %}</p></div>
+      <div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("message-square")|safe }}</span><p>{% if can_post_status %}{{ layout.t.t("status.empty_own") }}{% else %}{{ layout.t.t("status.empty") }}{% endif %}</p></div>
       {% endfor %}
     </div>
 
@@ -333,9 +333,9 @@
     <h2 class="bf-tab-title">{{ layout.t.n("count.followers", follower_count) }}</h2>
     <ul class="bf-feed">
       {% for n in follower_names %}
-      <li><img class="avatar" src="/avatar/{{ n }}.svg" width="40" height="40" alt="" loading="lazy"><div><a class="bf-feed-title" href="/u/{{ n }}">{{ n }}</a></div></li>
+      <li><img class="avatar" src="/avatar/{{ n }}.svg" width="40" height="40" alt="" loading="lazy"><div>{{ layout.user_link(n)|safe }}</div></li>
       {% else %}
-      <li class="muted">{{ layout.t.t("profile.no_followers") }}</li>
+      <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("users")|safe }}</span><p>{{ layout.t.t("profile.no_followers") }}</p></div></li>
       {% endfor %}
     </ul>
 
@@ -345,7 +345,7 @@
       {% for (url, title, likes) in top_posts %}
       <li><div><a class="bf-feed-title" href="{{ url }}">{{ title }}</a><div class="muted small">{{ layout.icon("heart")|safe }} {{ likes }}</div></div></li>
       {% else %}
-      <li class="muted">{{ layout.t.t("profile.no_liked") }}</li>
+      <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("star")|safe }}</span><p>{{ layout.t.t("profile.no_liked") }}</p></div></li>
       {% endfor %}
     </ul>
 
@@ -355,7 +355,7 @@
       {% for (name, description, tier, icon, color, level) in badges %}
       <li>{{ layout.medal(tier, icon, color, level)|safe }}<div><strong>{{ name }}</strong><div class="muted small">{{ description }}</div></div></li>
       {% else %}
-      <li class="muted">{{ layout.t.t("profile.no_badges") }}</li>
+      <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("award")|safe }}</span><p>{{ layout.t.t("profile.no_badges") }}</p></div></li>
       {% endfor %}
     </ul>
 
@@ -365,7 +365,7 @@
       {% for a in activity %}
       <li><img class="avatar" src="/avatar/{{ username }}.svg" width="40" height="40" alt="" loading="lazy"><div><a class="bf-feed-title" href="{{ a.url }}">{{ a.title }}</a><p>{{ a.excerpt }}</p><div class="muted small">{{ layout.icon("clock")|safe }} {{ a.when }}</div></div></li>
       {% else %}
-      <li class="muted">{% if tab == "votes" %}{{ layout.t.t("profile.no_votes") }}{% else %}{{ layout.t.t("profile.no_posts") }}{% endif %}</li>
+      <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("message-square")|safe }}</span><p>{% if tab == "votes" %}{{ layout.t.t("profile.no_votes") }}{% else %}{{ layout.t.t("profile.no_posts") }}{% endif %}</p></div></li>
       {% endfor %}
     </ul>
     {% endif %}

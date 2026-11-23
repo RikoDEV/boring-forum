@@ -243,9 +243,12 @@ pub fn content_security_policy(
     } else {
         ""
     };
+    // Third-party scripts (a consent banner, an ad widget) write `style=""` attributes at run time,
+    // which no hash can list. Only attributes are opened; `<style>` elements stay hash-only.
+    let style_attr = if custom.is_some_and(|c| c.scripts) { "style-src-attr 'unsafe-inline'; " } else { "" };
     format!(
         "default-src 'self'; script-src 'self' {} {} {} {extra} {scripts}; style-src 'self' {} 'unsafe-hashes' {} {} {} {extra}{styles}; \
-         img-src 'self' {}; media-src 'self'; connect-src 'self' {extra} {connect}; frame-src 'self' {extra}{frames}; \
+         {style_attr}img-src 'self' {}; media-src 'self'; connect-src 'self' {extra} {connect}; frame-src 'self' {extra}{frames}; \
          object-src 'none'; base-uri 'none'; frame-ancestors 'self'; form-action 'self'; \
          {trusted}\
          report-uri /api/v1/csp-report; report-to csp",
@@ -291,6 +294,22 @@ mod tests {
         assert!(policy("https://cdn.example", Some("giphy")).contains("https://*.giphy.com"));
         assert!(policy("https://cdn.example", Some("klipy")).contains("https://static.klipy.com"));
         assert!(!policy("", Some("nonsense")).contains("klipy") && gif_provider("nonsense").is_none());
+    }
+
+    #[test]
+    fn custom_scripts_may_set_style_attributes_but_nothing_else_inline() {
+        let policy = |custom: Option<&crate::custom_code::CustomCode>| {
+            content_security_policy("", "", &Analytics::default(), custom, None, None)
+        };
+        assert!(!policy(None).contains("style-src-attr"));
+        let plain = crate::custom_code::CustomCode::default();
+        assert!(!policy(Some(&plain)).contains("style-src-attr"));
+        let scripted = crate::custom_code::CustomCode { scripts: true, ..Default::default() };
+        let csp = policy(Some(&scripted));
+        assert!(csp.contains("style-src-attr 'unsafe-inline';"));
+        // The `style-src` list, which covers `<style>` elements, still has no `unsafe-inline`.
+        let style_src = csp.split("; ").find(|d| d.starts_with("style-src ")).unwrap();
+        assert!(!style_src.contains("'unsafe-inline'"));
     }
 
     #[test]

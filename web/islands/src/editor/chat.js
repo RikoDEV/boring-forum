@@ -1,7 +1,20 @@
 // Chat, laid out like Discourse's: a full page with channels and personal chats in a sidebar, or
 // a drawer docked at the bottom corner that shows one view at a time.
 import { dialog } from "../dialog.js";
-import { LOCALE, announce, composing, el, jsonHeaders, fullDate, mk, mkc as make, tn, tr, userLink } from "../dom.js";
+import {
+  LOCALE,
+  announce,
+  composing,
+  el,
+  jsonHeaders,
+  fullDate,
+  mk,
+  mkc as make,
+  tipped,
+  tn,
+  tr,
+  userLink,
+} from "../dom.js";
 const QUICK = ["👍", "❤️", "😂"];
 const EMOJI = ["👍", "❤️", "😂", "🎉", "😮", "😢", "🔥", "👏", "🙏", "🤔", "😀", "😍", "😎", "👀", "✅", "🚀"];
 const GROUP_MINUTES = 5;
@@ -176,7 +189,7 @@ export function startChat(root, props, tools) {
       a.append(
         c.kind === "dm"
           ? make("span", "chat-count", String(c.unread))
-          : Object.assign(make("span", "chat-dot"), { title: `${c.unread} unread` }),
+          : tipped(make("span", "chat-dot"), tn("js.count.unread_messages", c.unread)),
       );
     }
     a.addEventListener("click", (e) => {
@@ -405,7 +418,7 @@ export function startChat(root, props, tools) {
   function hoverBar(m) {
     const bar = make("div", "chat-actions");
     for (const e of QUICK) {
-      const b = Object.assign(button("chat-btn", e), { title: tr("React with {emoji}", { emoji: e }) });
+      const b = tipped(button("chat-btn", e), tr("React with {emoji}", { emoji: e }));
       b.addEventListener("click", () => react(m.id, e));
       bar.append(b);
     }
@@ -493,7 +506,7 @@ export function startChat(root, props, tools) {
     const gutter = make("div", "chat-gutter");
     // Each time shows its full date on hover.
     const stamp = (cls) =>
-      Object.assign(make("time", cls, clock(m.created_at)), { dateTime: m.created_at, title: fullDate(m.created_at) });
+      tipped(Object.assign(make("time", cls, clock(m.created_at)), { dateTime: m.created_at }), fullDate(m.created_at));
     if (compact) gutter.append(stamp("chat-time-hover"));
     else gutter.append(avatar(m.username, 32));
     const body = make("div", "chat-body");
@@ -514,9 +527,9 @@ export function startChat(root, props, tools) {
     if (m.reactions.length) {
       const pills = make("div", "chat-reactions");
       for (const r of m.reactions) {
-        const b = Object.assign(
+        const b = tipped(
           button(`chat-reaction${r.users.includes(props.me) ? " is-mine" : ""}`, `${r.emoji} ${r.count}`),
-          { title: r.users.join(", ") },
+          r.users.join(", "),
         );
         b.addEventListener("click", () => react(m.id, r.emoji));
         pills.append(b);

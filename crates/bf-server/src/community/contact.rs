@@ -29,7 +29,7 @@ async fn contact_form(State(state): State<AppState>, v: Viewer) -> Result<Respon
     let ctx = begin(&state, &v);
     let email = v.user.as_ref().map_or(String::new(), |u| esc(&u.email));
     let html = format!(
-        "<form method=\"post\" action=\"/contact\" class=\"stack\">{}<label for=\"c-email\">{tr1}</label><input id=\"c-email\" type=\"email\" name=\"email\" value=\"{email}\" required><label for=\"c-body\">{tr2}</label><textarea id=\"c-body\" name=\"body\" rows=\"6\" required></textarea><div hidden><label>{tr3} <input name=\"website\" tabindex=\"-1\" autocomplete=\"off\"></label></div><button class=\"btn primary\">{tr4}</button></form>",
+        "<form method=\"post\" action=\"/contact\" class=\"stack\">{}<label class=\"bf-field\"><input id=\"c-email\" type=\"email\" name=\"email\" value=\"{email}\" placeholder=\" \" required><span class=\"bf-field-label\">{tr1}</span></label><label class=\"bf-field\"><textarea id=\"c-body\" name=\"body\" rows=\"6\" placeholder=\" \" required></textarea><span class=\"bf-field-label\">{tr2}</span></label><div hidden><label>{tr3} <input name=\"website\" tabindex=\"-1\" autocomplete=\"off\"></label></div><button class=\"btn primary\">{tr4}</button></form>",
         hidden_csrf(&ctx.token),
         tr1 = trh("Your email"),
         tr2 = trh("Message"),
@@ -76,7 +76,10 @@ async fn contact(State(state): State<AppState>, v: Viewer, Form(f): Form<Contact
         }
         let member = v.user.as_ref().map_or("guest", |u| u.username.as_str());
         let text = format!("From: {email} ({member})\n\n{}\n", f.body);
-        bf_db::platform::mail::queue_mail(pool, &to, "Contact form message", &text).await.db()?;
+        // For the site's staff: in the site's language.
+        let t = bf_core::i18n::T::new(bf_core::i18n::site_language(state.settings().str("default_locale")));
+        let subject = t.msgf("Contact form message - {site}", &[("site", state.settings().str("site_name"))]);
+        bf_db::platform::mail::queue_mail(pool, &to, &subject, &text).await.db()?;
     }
     Ok(simple_page(
         &state,

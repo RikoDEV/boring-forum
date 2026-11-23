@@ -46,6 +46,26 @@ pub struct ErrorPage {
     pub message: String,
 }
 
+impl ErrorPage {
+    /// The page's heading in words: what kind of error, or for a 2xx notice the page title.
+    pub fn heading(&self) -> String {
+        let t = &self.layout.t;
+        match self.status {
+            200..=299 => {
+                let site = format!(" - {}", self.layout.site_name);
+                self.layout.title.strip_suffix(&site).unwrap_or(&self.layout.title).to_owned()
+            }
+            404 => t.msg("Not found"),
+            403 => t.msg("Not allowed"),
+            400 | 422 => t.msg("Please check that"),
+            429 => t.msg("Slow down"),
+            503 => t.msg("Under maintenance"),
+            500..=599 => t.msg("Something went wrong"),
+            _ => t.msg("Error"),
+        }
+    }
+}
+
 /// Renders a template, turning a (should-never-happen) render failure into a plain 500.
 pub fn render(t: &impl Template) -> Response {
     match t.render() {

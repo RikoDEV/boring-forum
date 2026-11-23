@@ -367,3 +367,20 @@ fn a_code_fence_named_like_a_css_expression_is_inert() {
         inert::assert_inert(&html, md);
     }
 }
+
+#[test]
+fn an_address_in_angle_brackets_stays_a_plain_link() {
+    // A bare address alone in its paragraph is a candidate for a link preview card: the link is the
+    // paragraph's only child.
+    let bare = cook("https://example.com/page").html;
+    assert!(bare.starts_with("<p><a "), "{bare}");
+    // In angle brackets it is wrapped, so the page's script leaves it alone.
+    let angle = cook("<https://example.com/page>").html;
+    assert!(angle.starts_with("<p><u><a "), "{angle}");
+    assert!(angle.contains("href=\"https://example.com/page\""), "{angle}");
+    // No YouTube thumbnail either.
+    let video = cook("<https://www.youtube.com/watch?v=dQw4w9WgXcQ>").html;
+    assert!(!video.contains("<img"), "{video}");
+    // A link with its own words, or one inside a sentence, is not affected.
+    assert!(cook("a <https://example.com/page> b").html.contains("<a "));
+}

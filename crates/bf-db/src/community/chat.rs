@@ -262,6 +262,57 @@ pub async fn update_channel(
     Ok(found)
 }
 
+/// Switches "everyone joins" on or off. Turning it on puts every current member in the channel,
+/// reading from its newest message, so nobody starts with a pile of unread. Only an open channel
+/// can have it; for any other the flag stays off. Returns whether the channel exists.
+pub async fn set_auto_join(pool: &PgPool, id: i64, on: bool) -> Result<bool, Error> {
+    let mut tx = pool.begin().await?;
+    let Some((was, open)): Option<(bool, bool)> = sqlx::query_as(
+        "SELECT auto_join, access = 'open' FROM chat_channels WHERE id = $1 AND kind = 'public' FOR UPDATE",
+    )
+    .bind(id)
+    .fetch_optional(&mut *tx)
+    .await?
+    else {
+        return Ok(false);
+    };
+    let on = on && open;
+    if on != was {
+        sqlx::query("UPDATE chat_channels SET auto_join = $2 WHERE id = $1")
+            .bind(id)
+            .bind(on)
+            .execute(&mut *tx)
+            .await?;
+    }
+    if on && !was {
+        sqlx::query(
+            "INSERT INTO chat_members (channel_id, user_id, last_read_id)
+             SELECT $1, u.id, coalesce((SELECT max(id) FROM chat_messages WHERE channel_id = $1), 0)
+               FROM users u WHERE NOT u.remote AND u.email_lower NOT LIKE '%@plugins.invalid'
+             ON CONFLICT DO NOTHING",
+        )
+        .bind(id)
+        .execute(&mut *tx)
+        .await?;
+    }
+    tx.commit().await?;
+    Ok(true)
+}
+
+/// Puts a new account into every channel that takes everyone.
+pub async fn join_auto_channels(conn: &mut sqlx::PgConnection, user: i64) -> Result<(), Error> {
+    sqlx::query(
+        "INSERT INTO chat_members (channel_id, user_id, last_read_id)
+         SELECT c.id, $1, coalesce((SELECT max(id) FROM chat_messages WHERE channel_id = c.id), 0)
+           FROM chat_channels c WHERE c.auto_join AND c.access = 'open' AND NOT c.archived
+         ON CONFLICT DO NOTHING",
+    )
+    .bind(user)
+    .execute(conn)
+    .await
+    .map(|_| ())
+}
+
 pub async fn delete_channel(pool: &PgPool, id: i64) -> Result<bool, Error> {
     Ok(sqlx::query("DELETE FROM chat_channels WHERE id = $1 AND kind = 'public'")
         .bind(id)
@@ -279,12 +330,13 @@ pub struct AdminChannel {
     pub access: String,
     pub group_ids: Vec<i64>,
     pub archived: bool,
+    pub auto_join: bool,
     pub messages: i64,
 }
 
 pub async fn admin_channels(pool: &PgPool) -> Result<Vec<AdminChannel>, Error> {
     sqlx::query_as(
-        "SELECT c.id, c.name, c.description, c.access, c.archived,
+        "SELECT c.id, c.name, c.description, c.access, c.archived, c.auto_join,
                 ARRAY(SELECT group_id FROM chat_channel_groups g WHERE g.channel_id = c.id) AS group_ids,
                 (SELECT count(*) FROM chat_messages m WHERE m.channel_id = c.id) AS messages
          FROM chat_channels c WHERE c.kind = 'public' ORDER BY c.name",

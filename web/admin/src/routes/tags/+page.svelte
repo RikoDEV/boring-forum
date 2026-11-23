@@ -1,21 +1,29 @@
 <script>
+  import { followTabHash } from "#lib/tabs.svelte.js";
   import { tn, tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
   import { Status } from "#lib/status.svelte.js";
-  import { del, get, patch, post, uploadFile, when } from "#lib/api.js";
+  import { del, get, patch, post, uploadFile } from "#lib/api.js";
   import UserLink from "#lib/UserLink.svelte";
+  import When from "#lib/When.svelte";
+  import Empty from "#lib/Empty.svelte";
   import Field from "#lib/Field.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
   import Dialog from "#lib/Dialog.svelte";
   let tab = $state("tags");
+  followTabHash(["tags", "emoji", "invites", "searches"], (key) => (tab = key));
   let tags = $state([]);
   let report = $state([]);
   const status = new Status();
+  let loaded = $state(false);
+  let loadedExtras = $state(false);
   const load = () =>
-    Promise.all([get("/tags"), get("/search-report")]).then(([t, r]) => {
-      tags = t;
-      report = r;
-    }, status.fail);
+    Promise.all([get("/tags"), get("/search-report")])
+      .then(([t, r]) => {
+        tags = t;
+        report = r;
+      }, status.fail)
+      .finally(() => (loaded = true));
   const rename = (t) => patch(`/tags/${t.id}`, { name: t.name }).then(load, status.fail);
   const remove = (t) =>
     confirm(tr('Delete tag "{name}" from {topics}?', { name: t.name, topics: tn("count.topics", t.topics) })) &&
@@ -29,13 +37,14 @@
   let tagName = $state("");
   let eFile = $state(null);
   const loadExtras = () => {
-    fetch("/api/v1/emoji")
+    const e = fetch("/api/v1/emoji")
       .then((r) => r.json())
       .then(
         (r) => (emoji = r),
         () => {},
       );
-    get("/invites").then((r) => (invites = r), status.fail);
+    const i = get("/invites").then((r) => (invites = r), status.fail);
+    Promise.all([e, i]).then(() => (loadedExtras = true));
   };
   async function addEmoji(e) {
     e.preventDefault();
@@ -154,7 +163,12 @@
               {tr("Rename")}
             </button><button class="is-danger" onclick={() => remove(t)}>{tr("Delete")}</button>{/if}
         </li>
-      {:else}<li class="muted">{tr("No tags yet. Add one, or they appear here once a topic uses them.")}</li>{/each}
+      {:else}<Empty
+          li
+          {loaded}
+          title={tr("No tags yet.")}
+          text={tr("Add one, or they appear here once a topic uses them.")}
+        />{/each}
     </ul>
   </div>
 {:else if tab === "emoji"}
@@ -169,7 +183,12 @@
             {tr("Delete")}
           </button>
         </li>
-      {:else}<li class="muted">{tr("No custom emoji yet.")}</li>{/each}
+      {:else}<Empty
+          li
+          loaded={loadedExtras}
+          title={tr("No custom emoji yet.")}
+          text={tr("Use New emoji above to add one.")}
+        />{/each}
     </ul>
   </div>
 {:else if tab === "invites"}
@@ -180,13 +199,19 @@
           <span class="acp-grow">{tr("Invite #{id}", { id: i.id })}</span>{#if i.used_by}<span class="acp-pill is-ok">
               {tr("Used by")}
               <UserLink name={i.used_by} />
-            </span>{:else}<small class="muted" title={when(i.expires_at)}>
-              {tr("Expires {n}", { n: i.expires_at.slice(0, 10) })}
-            </small><button class="is-danger" onclick={() => del(`/invites/${i.id}`).then(loadExtras)}>
+            </span>{:else}<small class="muted">{tr("Expires")} <When iso={i.expires_at} /></small><button
+              class="is-danger"
+              onclick={() => del(`/invites/${i.id}`).then(loadExtras)}
+            >
               {tr("Revoke")}
             </button>{/if}
         </li>
-      {:else}<li class="muted">{tr("No invites yet.")}</li>{/each}
+      {:else}<Empty
+          li
+          loaded={loadedExtras}
+          title={tr("No invites yet.")}
+          text={tr("Use Create invite link above to make one.")}
+        />{/each}
     </ul>
   </div>
 {:else}
@@ -196,7 +221,7 @@
     <tbody>
       {#each report as r (r.term)}<tr>
           <td>{r.term}</td><td>{r.searches}</td><td>{r.avg_results.toFixed(1)}</td>
-        </tr>{:else}<tr><td colspan="3" class="muted">{tr("No searches yet.")}</td></tr>{/each}
+        </tr>{:else}<Empty cols={3} {loaded} title={tr("No searches yet.")} />{/each}
     </tbody>
   </table>
 {/if}

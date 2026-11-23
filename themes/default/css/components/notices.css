@@ -64,7 +64,7 @@
 .bf-live-dock {
   position: sticky;
   inset-block-end: var(--bf-space-4);
-  z-index: 30;
+  z-index: var(--bf-z-menu);
   pointer-events: none;
 }
 

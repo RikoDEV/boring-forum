@@ -184,11 +184,18 @@ pub(crate) async fn start_session(
                     .db()?;
             // The site's default language is not at hand here; a member without one reads English.
             let t = bf_core::i18n::T::new(locale.as_deref().unwrap_or("en"));
+            let site: String = sqlx::query_scalar("SELECT value #>> '{}' FROM site_settings WHERE key = 'site_name'")
+                .fetch_optional(pool)
+                .await
+                .db()?
+                .flatten()
+                .unwrap_or_else(|| bf_core::settings::Settings::default().str("site_name").to_owned());
             let body = t.msgf(
-                "Hi {name},\n\nYour account was just signed in to from a new address ({ip}).\n\nIf this was not you, change your password and sign out other sessions under Account settings.\n",
-                &[("name", &name), ("ip", &ip.to_string())],
+                "Hi {name},\n\nYour account was just logged in to from a new address ({ip}).\n\nIf this was not you, change your password and log out other sessions under Account settings.\n\n— {site}\n",
+                &[("name", &name), ("ip", &ip.to_string()), ("site", &site)],
             );
-            bf_db::platform::mail::queue_mail(pool, &email, &t.msg("New sign-in to your account"), &body).await.db()?;
+            let subject = t.msgf("New log-in to your account - {site}", &[("site", &site)]);
+            bf_db::platform::mail::queue_mail(pool, &email, &subject, &body).await.db()?;
             let data = json!({ "message": ip.to_string(), "url": "/settings" });
             notifications::notify(pool, &[user_id.get()], "new_login", &data).await.db()?;
         }
@@ -262,13 +269,13 @@ async fn login(State(state): State<AppState>, v: Viewer, Form(f): Form<AuthForm>
             let t = crate::http::i18n::user_t(&state, u.id.get()).await;
             let forgot = format!("{}/forgot", state.config.base_url);
             let body = t.msgf(
-                "Hi {name},\n\nThere were 5 failed attempts to sign in to your account, so it is locked for {minutes} minutes.\n\nIf this was not you, consider changing your password: {link}\n\n— {site}\n",
+                "Hi {name},\n\nThere were 5 failed attempts to log in to your account, so it is locked for {minutes} minutes.\n\nIf this was not you, consider changing your password: {link}\n\n— {site}\n",
                 &[("name", &u.username), ("minutes", &minutes.to_string()), ("link", &forgot), ("site", &site)],
             );
             bf_db::platform::mail::queue_mail(
                 pool,
                 &u.email,
-                &t.msgf("Sign-in attempts on {site}", &[("site", &site)]),
+                &t.msgf("Too many failed log-in attempts - {site}", &[("site", &site)]),
                 &body,
             )
             .await

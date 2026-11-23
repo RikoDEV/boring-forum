@@ -1,0 +1,18 @@
+{#- One search result (`r`): the title and a snippet with the matches marked, then who, where, when and how it did. -#}
+<li>
+  <img class="avatar" src="/avatar/{{ r.author }}.svg" width="40" height="40" alt="" loading="lazy">
+  <div>
+    <a class="bf-feed-title" href="{{ r.url }}">{% for (t, hit) in r.title_parts %}{% if *hit %}<mark>{{ t }}</mark>{% else %}{{ t }}{% endif %}{% endfor %}</a>
+    <p>{% for (t, hit) in r.snippet_parts %}{% if *hit %}<mark>{{ t }}</mark>{% else %}{{ t }}{% endif %}{% endfor %}</p>
+    <div class="muted small bf-meta">
+      <span>{{ layout.icon("user")|safe }} {{ layout.user_link(r.author)|safe }}</span>
+      {%- if !r.forum.is_empty() %}<span>{{ layout.icon("folder")|safe }} <a class="muted" href="{{ r.forum_url }}">{{ r.forum }}</a></span>{% endif -%}
+      <span>{{ layout.icon("clock")|safe }} {{ r.when }}</span>
+      {%- if r.replies > 0 %}<span>{{ layout.icon("message-square")|safe }} {{ layout.t.n("count.replies", r.replies as i64) }}</span>{% endif -%}
+      {%- if r.likes > 0 %}<span>{{ layout.icon("heart")|safe }} {{ layout.t.n("count.likes", r.likes as i64) }}</span>{% endif -%}
+      {%- if r.by_meaning %}<span class="bf-by-meaning">{{ layout.icon("sparkles")|safe }} {{ layout.t.msg("Similar in meaning") }}</span>{% endif -%}
+      {%- if r.number > 1 %}<span>{{ layout.icon("reply")|safe }} {{ layout.t.f("search.post_number", [("n", r.number.to_string().as_str())]) }}</span>{% endif -%}
+      {%- if r.more_in_topic > 0 %}<a href="{{ r.more_url }}">{{ layout.t.msgf("{n} more matching posts in this topic", [("n", r.more_in_topic.to_string().as_str())]) }}</a>{% endif -%}
+    </div>
+  </div>
+</li>

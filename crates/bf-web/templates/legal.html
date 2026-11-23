@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {#- A legal document (terms, privacy, guidelines), with "I accept" when it is waiting for that. -#}
 {% block content %}
-<article class="panel block">
+<article class="bf-box block">
   <h1>{{ title }}</h1>
   {% if !updated.is_empty() %}<p class="small muted">{{ layout.t.f("legal.version", [("version", version.to_string().as_str())]) }} {{ updated }}</p>{% endif %}
   <div class="cooked">{{ html|safe }}</div>

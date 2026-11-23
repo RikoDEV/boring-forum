@@ -77,6 +77,14 @@ count-bots = { $n ->
     [many] { $n } روبوتًا
    *[other] { $n } روبوت
 }
+count-logins = { $n ->
+    [zero] لا تسجيلات دخول متصلة
+    [one] تسجيل دخول متصل واحد
+    [two] تسجيلا دخول متصلان
+    [few] { $n } تسجيلات دخول متصلة
+    [many] { $n } تسجيل دخول متصل
+   *[other] { $n } تسجيل دخول متصل
+}
 count-members = { $n ->
     [zero] { $n } عضو
     [one] { $n } عضو
@@ -1427,7 +1435,7 @@ admin-count-days = { $n ->
    *[other] { $n } يوم
 }
 
-mail-verify-subject = أكّد بريدك الإلكتروني في { $site }
+mail-verify-subject = أكّد بريدك الإلكتروني - { $site }
 mail-verify-body =
     مرحبًا { $username }،
 
@@ -1438,7 +1446,7 @@ mail-verify-body =
     إذا لم تطلب ذلك، فتجاهل هذه الرسالة.
 
     — { $site }
-mail-reset-subject = إعادة تعيين كلمة مرور { $site }
+mail-reset-subject = إعادة تعيين كلمة المرور - { $site }
 mail-reset-body =
     مرحبًا { $username }،
 
@@ -1451,6 +1459,8 @@ mail-reset-body =
     — { $site }
 mail-notification-subject = نشر { $by } في «{ $title }» - { $site }
 mail-notification-body =
+    مرحبًا { $username }،
+
     نشر { $by } في «{ $title }»:
 
     { $link }
@@ -1467,7 +1477,7 @@ mail-security-body =
     إذا كنت أنت من فعل ذلك، فلا حاجة لأي إجراء. وإن لم تكن أنت، فأعد تعيين كلمة مرورك عبر { $link } وتواصل مع الإشراف.
 
     — { $site }
-mail-backup-subject = رابط تنزيل نسخة احتياطية من { $site }
+mail-backup-subject = رابط تنزيل نسخة احتياطية - { $site }
 mail-backup-body =
     مرحبًا { $username }،
 
@@ -1478,7 +1488,7 @@ mail-backup-body =
     إذا لم تطلب ذلك، فتجاهل هذه الرسالة وراجع سجل الإشراف.
 
     — { $site }
-mail-digest-subject = جديد في { $site }
+mail-digest-subject = جديد - { $site }
 mail-digest-body =
     مرحبًا { $username }،
 
@@ -2171,6 +2181,8 @@ msg-comma_separated_email_domains_when_set_only_these_may = نطاقات بري�
 msg-who_sees_edit_history_everyone_members_author_or_staff = من يرى سجل التعديل: الجميع أو الأعضاء أو الكاتب أو الإدارة
 # URL returning the latest version as text; empty turns the check off
 msg-url_returning_the_latest_version_as_text_empty_turns = عنوان URL يعيد أحدث إصدار كنص؛ الفارغ يوقف الفحص
+# Behind Cloudflare: take each visitor's address from the CF-Connecting-IP header. Believed only from Cloudflare's own addresses and from proxies in BF_TRUSTED_PROXIES
+msg-behind_cloudflare_take_each_visitor_s_address_from_the = خلف Cloudflare: خذ عنوان كل زائر من ترويسة CF-Connecting-IP. تُعتمد الترويسة فقط من عناوين Cloudflare نفسها ومن الوكلاء المدرجين في BF_TRUSTED_PROXIES
 # New accounts need an invite code
 msg-new_accounts_need_an_invite_code = تحتاج الحسابات الجديدة إلى رمز دعوة
 # Checks new sign-ups for bots. Stays off until the challenge secret is set
@@ -2441,8 +2453,6 @@ msg-sites_that_may_embed_comments_as_host_names_separated = المواقع ال�
 msg-discord_or_slack_incoming_webhook_for_new_posts_in = خطاف ويب وارد من Discord أو Slack للمنشورات الجديدة في المنتديات العامة
 # Akismet API key; empty turns the spam check off
 msg-akismet_api_key_empty_turns_the_spam_check_off = مفتاح Akismet API؛ الفراغ يوقف فحص الرسائل المزعجة
-# Advert shown under the header; scripts are removed
-msg-advert_shown_under_the_header_scripts_are_removed = إعلان أسفل الترويسة؛ تُزال النصوص البرمجية
 # The lines your ad networks ask you to publish at /ads.txt; leave empty to publish no file
 msg-the_lines_your_ad_networks_ask_you_to_publish_at_ads = الأسطر التي تطلب شبكات الإعلانات نشرها على /ads.txt؛ اتركه فارغًا لعدم نشر ملف
 # Clubs one member may start
@@ -2501,6 +2511,14 @@ msg-analytics_plausible_umami_ga4_or_matomo_empty_for_none = التحليلات:
 msg-analytics_the_site_s_domain_plausible_website_id_umami = التحليلات: نطاق الموقع (Plausible)، أو معرّف الموقع (Umami)، أو معرّف القياس G-… (GA4)، أو معرّف الموقع (Matomo)
 # Analytics: https address of a self-hosted Plausible, Umami or Matomo
 msg-analytics_https_address_of_a_self_hosted_plausible = التحليلات: عنوان https لخادم Plausible أو Umami أو Matomo مستضاف ذاتيًا
+# A link alone on its line in a post becomes a card with the page's title, description and picture
+msg-a_link_alone_on_its_line_in_a_post_becomes_a_card_with = الرابط الموجود وحده في سطر داخل المنشور يتحول إلى بطاقة بعنوان الصفحة ووصفها وصورتها
+# Show the page's picture on a link preview card
+msg-show_the_page_s_picture_on_a_link_preview_card = عرض صورة الصفحة على بطاقة معاينة الرابط
+# Sites that never get a link preview card, one per line or separated by spaces, like example.com (their subdomains too)
+msg-sites_that_never_get_a_link_preview_card_one_per_line = مواقع لا تحصل أبدًا على بطاقة معاينة، واحد في كل سطر أو مفصولة بمسافات، مثل example.com (وكذلك نطاقاتها الفرعية)
+# Days a link preview card is kept before the page is fetched again
+msg-days_a_link_preview_card_is_kept_before_the_page_is = عدد الأيام التي تُحفظ فيها بطاقة معاينة الرابط قبل جلب الصفحة مجددًا
 # Draw a share picture for pages that have none, from the page's title and the site's look
 msg-draw_a_share_picture_for_pages_that_have_none_from_the = ارسم صورة مشاركة للصفحات التي لا تملك صورة، من عنوان الصفحة ومظهر الموقع
 # Layout of the share picture: classic (text on the left), centered, or poster (a picture behind the text)
@@ -2589,11 +2607,15 @@ msg-choose_two_different_accounts = اختر حسابين مختلفين.
 msg-an_administrator_cannot_be_merged_into_another_account = لا يمكن دمج مدير في حساب آخر.
 # These uploads are not in this archive (size limit, or the file is missing):
 msg-these_uploads_are_not_in_this_archive_size_limit_or_the = هذه الملفات المرفوعة ليست في الأرشيف (تجاوز حد الحجم أو الملف مفقود):
-# Your account on {site} will be deleted in {days} days.\n\nIf you did not ask for this, sign in and cancel it under Account settings: {link}\n
-msg-your_account_on_site_will_be_deleted_in_days_days_if =
+# Hi {name},\n\nYour account on {site} will be deleted in {days} days.\n\nIf you did not ask for this, log in and cancel it under Account settings: {link}\n\n— {site}\n
+msg-hi_name_your_account_on_site_will_be_deleted_in_days =
+    مرحبًا { $name }،
+
     سيُحذف حسابك في { $site } بعد { $days } يومًا.
 
-    إن لم تطلب ذلك، فسجّل الدخول وألغِ الحذف من إعدادات الحساب: { $link }
+    إذا لم تطلب ذلك، سجّل الدخول وألغِ الحذف من إعدادات الحساب: { $link }
+
+    — { $site }
 # Your account will be deleted - {site}
 msg-your_account_will_be_deleted_site = سيُحذف حسابك - { $site }
 # bad secret
@@ -2641,8 +2663,8 @@ msg-hi_name_confirm_email_as_the_new_address_for_your =
     إن لم تطلب ذلك، فتجاهل هذه الرسالة.
 
     — { $site }
-# Confirm your new email for {site}
-msg-confirm_your_new_email_for_site = أكّد بريدك الجديد في { $site }
+# Confirm your new email - {site}
+msg-confirm_your_new_email_site = أكّد بريدك الإلكتروني الجديد - { $site }
 # Check {email} for a confirmation link.
 msg-check_email_for_a_confirmation_link = تحقق من { $email } لتجد رابط التأكيد.
 # This confirmation link was already used or has expired.
@@ -2691,6 +2713,8 @@ msg-no_expiry = بلا انتهاء
 msg-expired = منتهي
 # expires {date}
 msg-expires_date = ينتهي { $date }
+# never
+msg-never_2 = أبدًا
 # unknown choice
 msg-unknown_choice = خيار غير معروف
 # You cannot ignore yourself.
@@ -2965,10 +2989,20 @@ msg-about = حول
 msg-clubs = النوادي
 # Live Q&A
 msg-live_q_a = أسئلة وأجوبة مباشرة
-# No status updates yet.
-msg-no_status_updates_yet = لا توجد تحديثات حالة بعد.
+# Signed-in members active in the last 15 minutes
+msg-signed_in_members_active_in_the_last_15_minutes = الأعضاء المسجلون الذين كانوا نشطين في آخر 15 دقيقة
+# Visitors who are not signed in
+msg-visitors_who_are_not_signed_in = الزوار غير المسجّلين
+# Search engines and other crawlers
+msg-search_engines_and_other_crawlers = محركات البحث والزواحف الأخرى
 # Nobody right now.
 msg-nobody_right_now = لا أحد الآن.
+# A crawler, not a person
+msg-a_crawler_not_a_person = زاحف وليس شخصًا
+# Nobody has posted yet.
+msg-nobody_has_posted_yet = لم ينشر أحد بعد.
+# No status updates yet.
+msg-no_status_updates_yet = لا توجد تحديثات حالة بعد.
 # Nothing coming up.
 msg-nothing_coming_up = لا شيء قادم.
 # Kind must be one of {n}; area is a page's top, side or bottom (pages: {m}).
@@ -3045,53 +3079,55 @@ msg-log_in = تسجيل الدخول
 msg-administrators_cannot_be_impersonated = لا يمكن انتحال صفة المديرين.
 # Register
 msg-register = التسجيل
-# Hi {name},\n\nYour account was just signed in to from a new address ({ip}).\n\nIf this was not you, change your password and sign out other sessions under Account settings.\n
-msg-hi_name_your_account_was_just_signed_in_to_from_a_new =
+# Hi {name},\n\nYour account was just logged in to from a new address ({ip}).\n\nIf this was not you, change your password and log out other sessions under Account settings.\n\n— {site}\n
+msg-hi_name_your_account_was_just_logged_in_to_from_a_new =
     مرحبًا { $name }،
 
     تم تسجيل الدخول إلى حسابك للتو من عنوان جديد ({ $ip }).
 
-    إن لم تكن أنت، فغيّر كلمة المرور وسجّل الخروج من الجلسات الأخرى في إعدادات الحساب.
-# New sign-in to your account
-msg-new_sign_in_to_your_account = تسجيل دخول جديد إلى حسابك
-# Too many failed attempts. Try again after {time} UTC, or reset your password.
-msg-too_many_failed_attempts_try_again_after_time_utc_or = محاولات فاشلة كثيرة جدًا. حاول مجددًا بعد { $time } بتوقيت UTC، أو أعد تعيين كلمة المرور.
-# Hi {name},\n\nThere were 5 failed attempts to sign in to your account, so it is locked for {minutes} minutes.\n\nIf this was not you, consider changing your password: {link}\n\n— {site}\n
-msg-hi_name_there_were_5_failed_attempts_to_sign_in_to_your =
-    مرحبًا { $name }،
-
-    حدثت 5 محاولات فاشلة لتسجيل الدخول إلى حسابك، لذا قُفل لمدة { $minutes } دقيقة.
-
-    إن لم تكن أنت، ففكّر في تغيير كلمة المرور: { $link }
+    إذا لم تكن أنت، فغيّر كلمة المرور وأنهِ الجلسات الأخرى من إعدادات الحساب.
 
     — { $site }
-# Sign-in attempts on {site}
-msg-sign_in_attempts_on_site = محاولات تسجيل الدخول في { $site }
-# Wrong username or password.
-msg-wrong_username_or_password = اسم المستخدم أو كلمة المرور غير صحيحة.
-# If an account uses that address, a sign-in link is on its way.
-msg-if_an_account_uses_that_address_a_sign_in_link_is_on = إن كان هناك حساب بهذا العنوان، فرابط تسجيل الدخول في طريقه إليه.
-# Hi {name},\n\nSign in to {site} with this link within 15 minutes:\n\n{link}\n\nIf you did not ask for this, ignore this email.\n
-msg-hi_name_sign_in_to_site_with_this_link_within_15 =
+# New log-in to your account - {site}
+msg-new_log_in_to_your_account_site = تسجيل دخول جديد إلى حسابك - { $site }
+# Too many failed attempts. Try again after {time} UTC, or reset your password.
+msg-too_many_failed_attempts_try_again_after_time_utc_or = محاولات فاشلة كثيرة جدًا. حاول مجددًا بعد { $time } بتوقيت UTC، أو أعد تعيين كلمة المرور.
+# Hi {name},\n\nThere were 5 failed attempts to log in to your account, so it is locked for {minutes} minutes.\n\nIf this was not you, consider changing your password: {link}\n\n— {site}\n
+msg-hi_name_there_were_5_failed_attempts_to_log_in_to_your =
     مرحبًا { $name }،
 
-    سجّل الدخول إلى { $site } عبر هذا الرابط خلال 15 دقيقة:
+    حدثت 5 محاولات فاشلة لتسجيل الدخول إلى حسابك، لذا تم قفله لمدة { $minutes } دقيقة.
+
+    إذا لم تكن أنت، ففكّر في تغيير كلمة المرور: { $link }
+
+    — { $site }
+# Too many failed log-in attempts - {site}
+msg-too_many_failed_log_in_attempts_site = محاولات تسجيل دخول فاشلة كثيرة - { $site }
+# Wrong username or password.
+msg-wrong_username_or_password = اسم المستخدم أو كلمة المرور غير صحيحة.
+# If an account uses that address, a log-in link is on its way.
+msg-if_an_account_uses_that_address_a_log_in_link_is_on_its = إذا كان هناك حساب يستخدم هذا العنوان، فرابط تسجيل الدخول في طريقه إليه.
+# Hi {name},\n\nLog in to {site} with this link within 15 minutes:\n\n{link}\n\nIf you did not ask for this, ignore this email.\n\n— {site}\n
+msg-hi_name_log_in_to_site_with_this_link_within_15_minutes =
+    مرحبًا { $name }،
+
+    سجّل الدخول إلى { $site } بهذا الرابط خلال 15 دقيقة:
 
     { $link }
 
-    إن لم تطلب ذلك، فتجاهل هذه الرسالة.
-# Your sign-in link for {site}
-msg-your_sign_in_link_for_site = رابط تسجيل دخولك إلى { $site }
-# Email me a sign-in link
-msg-email_me_a_sign_in_link = أرسل لي رابط تسجيل الدخول
+    إذا لم تطلب ذلك، فتجاهل هذه الرسالة.
+
+    — { $site }
+# Your log-in link - {site}
+msg-your_log_in_link_site = رابط تسجيل الدخول - { $site }
+# Email me a log-in link
+msg-email_me_a_log_in_link = أرسل لي رابط تسجيل الدخول
 # Email
 msg-email = البريد الإلكتروني
 # Send link
 msg-send_link = إرسال الرابط
 # Back to log in
 msg-back_to_log_in = العودة إلى تسجيل الدخول
-# Sign in
-msg-sign_in = تسجيل الدخول
 # Two-factor sign-in is unavailable right now. Please contact the site administrator.
 msg-two_factor_sign_in_is_unavailable_right_now_please = تسجيل الدخول الثنائي غير متاح الآن. تواصل مع مدير الموقع.
 # That code is not valid. Try the current one.
@@ -3199,8 +3235,8 @@ msg-hi_name_someone_just_tried_to_register_on_site_with =
     إذا لم تكن أنت، يمكنك تجاهل هذه الرسالة.
 
     — { $site }
-# You already have an account on {site}
-msg-you_already_have_an_account_on_site = لديك حساب في { $site } بالفعل
+# You already have an account - {site}
+msg-you_already_have_an_account_site = لديك حساب بالفعل - { $site }
 # If this address can be used, an email is on its way with what to do next.
 msg-if_this_address_can_be_used_an_email_is_on_its_way_with = إذا كان بالإمكان استخدام هذا العنوان، فقد أُرسلت إليه رسالة بريد إلكتروني تشرح الخطوات التالية.
 # Too many accounts were created from your network lately. Please try again later.
@@ -3391,6 +3427,8 @@ msg-you_have_sent_several_messages_recently_try_again_later = أرسلت عدة 
 msg-too_many_messages_were_sent_recently_try_again_later = أُرسلت رسائل كثيرة جدًا مؤخرًا. حاول لاحقًا.
 # Contact us
 msg-contact_us = اتصل بنا
+# Contact form message - {site}
+msg-contact_form_message_site = رسالة من نموذج الاتصال - { $site }
 # Thank you
 msg-thank_you_2 = شكرًا لك
 # Your email
@@ -3493,6 +3531,8 @@ msg-unknown_level = مستوى غير معروف
 msg-you_cannot_follow_yourself = لا يمكنك متابعة نفسك.
 # Following
 msg-following = المتابَعون
+# Nothing yet. Follow members from their profiles.
+msg-nothing_yet_follow_members_from_their_profiles = لا شيء بعد. تابع الأعضاء من ملفاتهم الشخصية.
 # Staff groups cannot be granted in bulk.
 msg-staff_groups_cannot_be_granted_in_bulk = لا يمكن منح مجموعات الطاقم جماعيًا.
 # The document needs text (at most 200 KB).
@@ -3730,18 +3770,16 @@ msg-your_link = رابطك
 msg-share_this_anyone_who_signs_up_within_30_days_of = شاركه. كل من يسجّل خلال 30 يومًا من فتحه يُحسب لك.
 # Your referral link
 msg-your_referral_link = رابط الإحالة الخاص بك
-# Yes
-msg-yes = نعم
-# Once they reach trust level 1
-msg-once_they_reach_trust_level_1 = عند بلوغهم مستوى الثقة 1
-# Referrals ({n})
-msg-referrals_n = الإحالات ({ $n })
-# Joined
-msg-joined = انضم
+# Copy
+msg-copy = نسخ
 # Counts
 msg-counts = يُحتسب
+# Once they reach trust level 1
+msg-once_they_reach_trust_level_1 = عند بلوغهم مستوى الثقة 1
 # No one yet.
 msg-no_one_yet = لا أحد بعد.
+# Referrals ({n})
+msg-referrals_n = الإحالات ({ $n })
 # This status is locked.
 msg-this_status_is_locked = هذه الحالة مقفلة.
 # You cannot reply to this status.
@@ -3812,6 +3850,8 @@ msg-a_channel_name_is_1_to_60_characters = اسم القناة من 1 إلى 60 
 msg-access_must_be_open_groups_or_invite = يجب أن يكون الوصول open أو groups أو invite.
 # Choose at least one group.
 msg-choose_at_least_one_group = اختر مجموعة واحدة على الأقل.
+# Only a channel open to all members can add everyone.
+msg-only_a_channel_open_to_all_members_can_add_everyone = يمكن للقناة المفتوحة لجميع الأعضاء فقط إضافة الجميع.
 # You cannot message that member.
 msg-you_cannot_message_that_member = لا يمكنك مراسلة هذا العضو.
 # Choose 1 to {max} people.
@@ -3972,6 +4012,8 @@ msg-ask = اسأل
 msg-your_question = سؤالك
 # Ask a question
 msg-ask_a_question = اطرح سؤالًا
+# Sign in
+msg-sign_in = تسجيل الدخول
 # to ask a question.
 msg-to_ask_a_question = لطرح سؤال.
 # End now
@@ -4051,8 +4093,8 @@ msg-your_email_subject_to_site_was_not_posted_reason_reason =
     السبب: { $reason }
 
     — { $site }
-# Your email to {site} was not posted
-msg-your_email_to_site_was_not_posted = لم يُنشر بريدك المرسل إلى { $site }
+# Your email was not posted - {site}
+msg-your_email_was_not_posted_site = لم يُنشر بريدك الإلكتروني - { $site }
 # Send a mail to
 msg-send_a_mail_to = أرسل بريدًا إلى
 # , with FORUM as the forum's number in its address. The subject becomes the title. Anyone with this address can post as you, so keep it private. Asking again replaces it.
@@ -4299,9 +4341,11 @@ msg-that_appeal_was_already_decided_or_you_made_the = تم البت في هذا 
 msg-report_illegal_content = الإبلاغ عن محتوى غير قانوني
 # Thank you. Your notice was received.
 msg-thank_you_your_notice_was_received = شكرًا. تم استلام بلاغك.
-# We received your notice (number {id}) about:\n\n{url}\n\nWe will review it and tell you our decision.\n\n— {site}\n
-msg-we_received_your_notice_number_id_about_url_we_will =
-    تلقّينا بلاغك (رقم { $id }) بشأن:
+# Hello,\n\nWe received your notice (number {id}) about:\n\n{url}\n\nWe will review it and tell you our decision.\n\n— {site}\n
+msg-hello_we_received_your_notice_number_id_about_url_we =
+    مرحبًا،
+
+    تلقينا إشعارك (رقم { $id }) بشأن:
 
     { $url }
 
@@ -4314,6 +4358,33 @@ msg-your_notice_id_site = بلاغك { $id } - { $site }
 msg-statement_of_reasons = بيان الأسباب
 # Legal notices and appeals
 msg-legal_notices_and_appeals = البلاغات القانونية والطعون
+# The decision is recorded and the notifier is told.
+msg-the_decision_is_recorded_and_the_notifier_is_told = تم تسجيل القرار وإبلاغ مقدّم البلاغ.
+# The appeal is accepted: the decision is reversed.
+msg-the_appeal_is_accepted_the_decision_is_reversed = تم قبول الاستئناف: أُلغي القرار.
+# The appeal is rejected: the decision stands.
+msg-the_appeal_is_rejected_the_decision_stands = تم رفض الاستئناف: يبقى القرار ساريًا.
+# We have acted on it.
+msg-we_have_acted_on_it = اتخذنا إجراءً بشأنه.
+# We have decided not to act on it.
+msg-we_have_decided_not_to_act_on_it = قررنا عدم اتخاذ إجراء بشأنه.
+# Hello,\n\nWe have reviewed your notice {id} about:\n\n{url}\n\n{outcome}\n\nReasons: {reason}\n\nIf you disagree, you may turn to a certified out-of-court dispute settlement body or to the courts.\n\n— {site}\n
+msg-hello_we_have_reviewed_your_notice_id_about_url_outcome =
+    مرحبًا،
+
+    راجعنا إشعارك { $id } بشأن:
+
+    { $url }
+
+    { $outcome }
+
+    الأسباب: { $reason }
+
+    إذا كنت لا توافق، فيمكنك اللجوء إلى هيئة معتمدة لتسوية المنازعات خارج المحاكم أو إلى القضاء.
+
+    — { $site }
+# Decision on your notice {id} - {site}
+msg-decision_on_your_notice_id_site = القرار بشأن إشعارك { $id } - { $site }
 # Transparency report
 msg-transparency_report = تقرير الشفافية
 # Illegal or harmful speech (hate speech, defamation)
@@ -4572,8 +4643,6 @@ msg-the_ban_is_lifted = رُفع الحظر.
 msg-suspended = موقوفون
 # Silenced
 msg-silenced = مكتومون
-# never
-msg-never_2 = أبدًا
 # Please say what is wrong with this post.
 msg-please_say_what_is_wrong_with_this_post = قل ما المشكلة في هذه المشاركة.
 # Only a visible or hidden post can be changed here.
@@ -4594,6 +4663,26 @@ msg-other_is_the_fallback_reason_and_files_a_normal_report = «other» هو ال
 msg-other_is_the_fallback_reason_and_stays_on = «other» هو السبب الاحتياطي ويظل مُفعّلًا.
 # Someone has already decided this item.
 msg-someone_has_already_decided_this_item = سبق أن بتّ شخص ما في هذا العنصر.
+# Thanks! Your post will appear once a moderator approves it.
+msg-thanks_your_post_will_appear_once_a_moderator_approves = شكرًا! سيظهر منشورك بعد موافقة المشرف.
+# The post stays and the item is closed.
+msg-the_post_stays_and_the_item_is_closed = يبقى المنشور ويُغلق البلاغ.
+# The post is removed.
+msg-the_post_is_removed = تمت إزالة المنشور.
+# The post is removed and its author is silenced.
+msg-the_post_is_removed_and_its_author_is_silenced = تمت إزالة المنشور وكتم كاتبه.
+# The account is approved.
+msg-the_account_is_approved = تمت الموافقة على الحساب.
+# The account is rejected.
+msg-the_account_is_rejected = تم رفض الحساب.
+# The held text is approved.
+msg-the_held_text_is_approved = تمت الموافقة على النص المعلّق.
+# The held text is rejected.
+msg-the_held_text_is_rejected = تم رفض النص المعلّق.
+# The report is closed.
+msg-the_report_is_closed = تم إغلاق البلاغ.
+# The message is removed from the chat.
+msg-the_message_is_removed_from_the_chat = تمت إزالة الرسالة من الدردشة.
 # That file could not be uploaded.
 msg-that_file_could_not_be_uploaded = تعذّر رفع هذا الملف.
 # Only an administrator can make an administrator or a moderator the author.
@@ -4955,14 +5044,10 @@ msg-this_sign_in_link_has_expired_please_try_again = انتهت صلاحية ر�
 msg-that_sign_in_did_not_succeed = لم ينجح تسجيل الدخول.
 # Advertisement
 msg-advertisement = إعلان
+# Under maintenance
+msg-under_maintenance = قيد الصيانة
 # Signed-in members on this page in the last 15 minutes
 msg-signed_in_members_on_this_page_in_the_last_15_minutes = الأعضاء المسجلون الموجودون في هذه الصفحة خلال آخر 15 دقيقة
-# Visitors who are not signed in
-msg-visitors_who_are_not_signed_in = الزوار غير المسجّلين
-# Search engines and other crawlers
-msg-search_engines_and_other_crawlers = محركات البحث والزواحف الأخرى
-# A crawler, not a person
-msg-a_crawler_not_a_person = زاحف وليس شخصًا
 # First column
 msg-first_column = العمود الأول
 # Second column
@@ -4993,6 +5078,10 @@ msg-add_a_staff_note = إضافة ملاحظة للطاقم
 msg-only_staff_see_it_not_the_author = يراها الفريق فقط وليس الكاتب
 # Save note
 msg-save_note = حفظ الملاحظة
+# Similar in meaning
+msg-similar_in_meaning = مشابه في المعنى
+# {n} more matching posts in this topic
+msg-n_more_matching_posts_in_this_topic = { $n } منشورات مطابقة أخرى في هذا الموضوع
 # Create account
 msg-create_account = إنشاء الحساب
 # Archive
@@ -5061,6 +5150,8 @@ msg-abuse = إساءة
 msg-part_of_a_name = جزء من الاسم
 # Find
 msg-find = بحث
+# Joined
+msg-joined = انضم
 # Last seen
 msg-last_seen = آخر ظهور
 # Posts
@@ -5123,6 +5214,8 @@ msg-address = العنوان
 msg-reason = السبب
 # Lasts (days, empty: until lifted)
 msg-lasts_days_empty_until_lifted = المدة (بالأيام، فارغ: حتى الرفع)
+# Visitors using it are refused until the ban is lifted.
+msg-visitors_using_it_are_refused_until_the_ban_is_lifted = يُرفض الزوار الذين يستخدمونه حتى يُرفع الحظر.
 # A network can be at most a /24 (IPv4) or /48 (IPv6). Wider bans are for administrators.
 msg-a_network_can_be_at_most_a_24_ipv4_or_48_ipv6_wider = أوسع شبكة مسموحة هي /24 (IPv4) أو /48 (IPv6). الحظر الأوسع للمديرين.
 # Added
@@ -5133,6 +5226,8 @@ msg-expires = تنتهي
 msg-never = أبدًا
 # Lift
 msg-lift = رفع
+# Visitors using it are let in again.
+msg-visitors_using_it_are_let_in_again = يُسمح للزوار الذين يستخدمونه بالدخول مجددًا.
 # No bans.
 msg-no_bans = لا حظر.
 # Moderator log
@@ -5143,6 +5238,8 @@ msg-points = النقاط
 msg-given_by = صدر عن
 # Given
 msg-given = تاريخ الإصدار
+# You have no notifications.
+msg-you_have_no_notifications = ليس لديك إشعارات.
 # Trust level {n}
 msg-trust_level_n = مستوى الثقة { $n }
 # Text to publish (used with the approve button; the author is told it was edited)
@@ -5159,8 +5256,36 @@ msg-spammer_delete_all = ناشر سبام: حذف الكل
 msg-remove_the_post_and_silence_its_author = إزالة المشاركة وإسكات كاتبها
 # Remove and silence
 msg-remove_and_silence = إزالة وإسكات
-# Similar in meaning
-msg-similar_in_meaning = مشابه في المعنى
+# The author is told.
+msg-the_author_is_told = تم إبلاغ الكاتب.
+# Showing results for
+msg-showing_results_for = عرض النتائج لـ
+# Search instead for {q}
+msg-search_instead_for_q = ابحث بدلًا من ذلك عن { $q }
+# Did you mean
+msg-did_you_mean = هل تقصد
+# No exact matches. These topics have similar titles.
+msg-no_exact_matches_these_topics_have_similar_titles = لا توجد نتائج مطابقة تمامًا. هذه المواضيع لها عناوين مشابهة.
+# Recommended
+msg-recommended = موصى به
+# Narrow down
+msg-narrow_down = تضييق النتائج
+# Forums
+msg-forums = المنتديات
+# Tags
+msg-tags = الوسوم
+# Year
+msg-year = السنة
+# One result per topic. Click to list every matching post.
+msg-one_result_per_topic_click_to_list_every_matching_post = نتيجة واحدة لكل موضوع. انقر لعرض كل منشور مطابق.
+# Every matching post. Click to show one result per topic.
+msg-every_matching_post_click_to_show_one_result_per_topic = كل منشور مطابق. انقر لعرض نتيجة واحدة لكل موضوع.
+# Grouped by topic
+msg-grouped_by_topic = مجمّعة حسب الموضوع
+# All posts
+msg-all_posts = كل المنشورات
+# Sort results
+msg-sort_results = فرز النتائج
 # Connected logins
 msg-connected_logins = تسجيلات الدخول المرتبطة
 # Set by your outside login
@@ -5171,18 +5296,28 @@ msg-push = الإشعارات الفورية
 msg-remembered_devices_skip_the_code_for_30_days_n = الأجهزة المتذكَّرة تتخطى الرمز لمدة 30 يومًا: { $n }
 # Forget all devices
 msg-forget_all_devices = نسيان جميع الأجهزة
+# Add a passkey
+msg-add_a_passkey = إضافة مفتاح مرور
 # Sign-in accounts linked to this one. You can unlink one while you have another way to sign in.
 msg-sign_in_accounts_linked_to_this_one_you_can_unlink_one = حسابات تسجيل الدخول المرتبطة بهذا الحساب. يمكنك فصل أحدها ما دامت لديك طريقة أخرى لتسجيل الدخول.
-# linked
-msg-linked = مرتبط
-# Unlink
-msg-unlink = فك الارتباط
-# Your only way to sign in
-msg-your_only_way_to_sign_in = طريقتك الوحيدة لتسجيل الدخول
 # No linked logins.
 msg-no_linked_logins = لا توجد تسجيلات دخول مرتبطة.
+# Set a password or add a passkey to be able to unlink it
+msg-set_a_password_or_add_a_passkey_to_be_able_to_unlink_it = عيّن كلمة مرور أو أضف مفتاح مرور لتتمكن من فصله
+# Your only way to sign in
+msg-your_only_way_to_sign_in = طريقتك الوحيدة لتسجيل الدخول
+# Connected
+msg-connected = تم الربط
+# Unlink
+msg-unlink = فك الارتباط
+# Add a login
+msg-add_a_login = إضافة تسجيل دخول
 # Connect {provider}
 msg-connect_provider = ربط { $provider }
+# No API keys yet.
+msg-no_api_keys_yet = لا توجد مفاتيح API بعد.
+# New API key
+msg-new_api_key = مفتاح API جديد
 # Download with files (ZIP)
 msg-download_with_files_zip = تنزيل مع الملفات (ZIP)
 # Who can message me
@@ -5203,10 +5338,10 @@ msg-their_posts_are_hidden_from_you_and_they_cannot_message = منشوراتهم
 msg-unmuted = أُلغي الكتم
 # Undo
 msg-undo = تراجع
-# Unmute
-msg-unmute = إلغاء الكتم
 # You have not muted anyone.
 msg-you_have_not_muted_anyone = لم تكتم أحدًا.
+# Unmute
+msg-unmute = إلغاء الكتم
 # What happens to your posts
 msg-what_happens_to_your_posts = ما يحدث لمنشوراتك
 # Keep them, without my name
@@ -6025,6 +6160,8 @@ admin-search_pages_and_settings = ابحث في الصفحات والإعداد�
 admin-search_results = نتائج البحث
 # Page · {section}
 admin-page_section = صفحة · { $section }
+# Tab · {page}
+admin-tab_page = علامة تبويب · { $page }
 # Settings could not be loaded.
 admin-settings_could_not_be_loaded = تعذر تحميل الإعدادات.
 # Nothing matches “{q}”.
@@ -6039,6 +6176,8 @@ admin-view_as_table = عرض كجدول
 admin-slot = الفترة
 # Day
 admin-day = اليوم
+# Breadcrumb
+admin-breadcrumb = مسار التنقل
 # Close
 admin-close = إغلاق
 # Save
@@ -6149,6 +6288,10 @@ admin-logo_icons_and_the_picture_for_shared_links = الشعار والأيقو�
 admin-share_pictures = صور المشاركة
 # A picture drawn for every page that is shared, from its title and your colours
 admin-a_picture_drawn_for_every_page_that_is_shared_from_its = صورة تُرسم لكل صفحة تتم مشاركتها، من عنوانها وألوانك
+# Link previews
+admin-link_previews = معاينة الروابط
+# The cards a link on its own line in a post becomes
+admin-the_cards_a_link_on_its_own_line_in_a_post_becomes = البطاقات التي يتحول إليها الرابط الموجود وحده في سطر داخل المنشور
 # General
 admin-general = عام
 # Your site's name, language and availability
@@ -6523,10 +6666,18 @@ admin-challenge_secret = سر التحدي
 admin-minimum_sign_up_time = أقل مدة للتسجيل
 # Akismet API key
 admin-akismet_api_key = مفتاح Akismet API
-# Advert HTML
-admin-advert_html = HTML الإعلان
 # Allowed image hosts
 admin-allowed_image_hosts = مضيفو الصور المسموح بهم
+# Show link previews
+admin-show_link_previews = إظهار معاينة الروابط
+# Show the picture on link previews
+admin-show_the_picture_on_link_previews = إظهار الصورة في معاينة الروابط
+# Sites without link previews
+admin-sites_without_link_previews = مواقع بلا معاينة روابط
+# Days a link preview is kept
+admin-days_a_link_preview_is_kept = أيام الاحتفاظ بمعاينة الروابط
+# Cloudflare: real visitor address
+admin-cloudflare_real_visitor_address = Cloudflare: عنوان الزائر الحقيقي
 # Private message participants
 admin-private_message_participants = المشاركون في الرسالة الخاصة
 # New private messages per hour
@@ -6577,6 +6728,64 @@ admin-checking = جارٍ التحقق…
 admin-that_did_not_work_try_again = لم ينجح ذلك. حاول مجددًا.
 # Could not reach the server. Try again.
 admin-could_not_reach_the_server_try_again = تعذّر الوصول إلى الخادم. حاول مجددًا.
+# Channels
+admin-channels = القنوات
+# Flags
+admin-flags = البلاغات
+# Reactions
+admin-reactions = التفاعلات
+# Tag groups
+admin-tag_groups = مجموعات الوسوم
+# Group rules
+admin-group_rules = قواعد المجموعات
+# Announcements
+admin-announcements = الإعلانات
+# Report reasons
+admin-report_reasons = أسباب البلاغات
+# Log
+admin-log = السجل
+# Templates
+admin-templates = القوالب
+# Bad addresses
+admin-bad_addresses = عناوين خاطئة
+# Test delivery
+admin-test_delivery = اختبار التسليم
+# Tags
+admin-tags = الوسوم
+# Custom emoji
+admin-custom_emoji = رموز تعبيرية مخصصة
+# Invites
+admin-invites = الدعوات
+# Top searches
+admin-top_searches = أكثر عمليات البحث
+# Webhooks
+admin-webhooks = خطافات الويب
+# Deliveries
+admin-deliveries = عمليات التسليم
+# Applications
+admin-applications = التطبيقات
+# Icon
+admin-icon = الأيقونة
+# Posting
+admin-posting = النشر
+# Permissions
+admin-permissions = الصلاحيات
+# Moderators
+admin-moderators = المشرفون
+# SEO
+admin-seo = SEO
+# New
+admin-new = جدد
+# Staff
+admin-staff = الطاقم
+# Awaiting approval
+admin-awaiting_approval = بانتظار الموافقة
+# Suspended
+admin-suspended = موقوفون
+# Silenced
+admin-silenced = مكتومون
+# Unverified
+admin-unverified = غير موثّقين
 # Likes received
 admin-likes_received = الإعجابات المتلقاة
 # Likes given
@@ -6613,8 +6822,6 @@ admin-points = النقاط
 admin-active = نشط
 # Expired
 admin-expired = منتهٍ
-# Staff
-admin-staff = الطاقم
 # No warnings.
 admin-no_warnings = لا تحذيرات.
 # Staff notes
@@ -6761,8 +6968,6 @@ admin-settings = الإعدادات
 admin-backups = النسخ الاحتياطية
 # Plugins
 admin-plugins = الإضافات
-# Webhooks
-admin-webhooks = خطافات الويب
 # Federation
 admin-federation = الاتحاد
 # Mail log
@@ -6777,6 +6982,8 @@ admin-data_explorer = مستكشف البيانات
 admin-logs = السجلات
 # Maintenance
 admin-maintenance = الصيانة
+# Administration
+admin-administration = الإدارة
 # Admin - {site}
 admin-admin_site = الإدارة - { $site }
 # Forum
@@ -6915,12 +7122,6 @@ admin-saved_name = حُفظ “{ $name }”.
 admin-saved_2 = تم الحفظ.
 # Delete the ad "{name}"?
 admin-delete_the_ad_name = حذف الإعلان “{ $name }”؟
-# From {date}, forever
-admin-from_date_forever = من { $date }، للأبد
-# Until {date}
-admin-until_date = حتى { $date }
-# Always
-admin-always = دائمًا
 # One ad per place on a page, picked by weight among those the visitor's groups may see. HTML is cleaned when saved: no scripts or embeds. Impressions are saved every few minutes.
 admin-one_ad_per_place_on_a_page_picked_by_weight_among_those = إعلان واحد لكل مكان في الصفحة، يُختار حسب الوزن من بين ما يُسمح لمجموعات الزائر برؤيته. يُنظَّف HTML عند الحفظ: بلا نصوص برمجية ولا تضمينات. تُحفظ مرات الظهور كل بضع دقائق.
 # New ad
@@ -6971,8 +7172,16 @@ admin-click_rate = معدل النقر
 admin-runs = المدة
 # (off)
 admin-off = (متوقف)
+# From {date}, forever
+admin-from_date_forever = من { $date }، للأبد
+# Until {date}
+admin-until_date = حتى { $date }
+# Always
+admin-always = دائمًا
 # No ads.
 admin-no_ads = لا إعلانات.
+# Use New ad above to add one.
+admin-use_new_ad_above_to_add_one = استخدم زر إعلان جديد أعلاه لإضافة إعلان.
 # The ads.txt file
 admin-the_ads_txt_file = ملف ads.txt
 # Published at /ads.txt (empty: no file)
@@ -7063,8 +7272,10 @@ admin-negative = سلبية
 admin-abusive = مسيئة
 # Spam
 admin-spam = سبام
-# No posts have been judged yet. Turn on the mood record in the settings.
-admin-no_posts_have_been_judged_yet_turn_on_the_mood_record = لم تُقيَّم أي مشاركة بعد. فعّل تسجيل المزاج في الإعدادات.
+# No posts have been judged yet.
+admin-no_posts_have_been_judged_yet = لم يتم تقييم أي منشور بعد.
+# Turn on the mood record in the settings.
+admin-turn_on_the_mood_record_in_the_settings = فعّل سجل المزاج في الإعدادات.
 # Posts the AI doubted
 admin-posts_the_ai_doubted = مشاركات شكّ فيها الذكاء الاصطناعي
 # spam {spam}, abuse {toxicity}
@@ -7109,26 +7320,28 @@ admin-edit = تعديل
 admin-turn_off = إيقاف
 # Turn on
 admin-turn_on = تشغيل
-# No personas yet. Turn on “Personas answer when mentioned” in the settings, then add one.
-admin-no_personas_yet_turn_on_personas_answer_when_mentioned = لا شخصيات بعد. فعّل «الشخصيات تردّ عند ذكرها» في الإعدادات ثم أضف واحدة.
+# No personas yet.
+admin-no_personas_yet = لا توجد شخصيات بعد.
+# Turn on “Personas answer when mentioned” in the settings, then add one.
+admin-turn_on_personas_answer_when_mentioned_in_the_settings = فعّل «الشخصيات تجيب عند ذكرها» في الإعدادات ثم أضف شخصية.
 # Staff action log
 admin-staff_action_log = سجل إجراءات فريق الإدارة
-# Action prefix, e.g. topic.
-admin-action_prefix_e_g_topic = بادئة الإجراء، مثل topic.
-# Action
-admin-action = الإجراء
-# Staff username
-admin-staff_username = اسم مستخدم عضو الفريق
-# Staff member
-admin-staff_member = عضو الفريق
 # Filter
 admin-filter = تصفية
+# Action prefix, e.g. topic.
+admin-action_prefix_e_g_topic = بادئة الإجراء، مثل topic.
+# Staff username
+admin-staff_username = اسم مستخدم عضو الفريق
 # Who
 admin-who = من
+# Action
+admin-action = الإجراء
 # Target
 admin-target = الهدف
 # No entries.
 admin-no_entries = لا إدخالات.
+# Staff actions are recorded here as they happen.
+admin-staff_actions_are_recorded_here_as_they_happen = تُسجَّل إجراءات الفريق هنا فور حدوثها.
 # Older
 admin-older = الأقدم
 # A topic is started
@@ -7231,6 +7444,8 @@ admin-enabled = مفعّلة
 admin-last_run = آخر تشغيل
 # No rules yet.
 admin-no_rules_yet = لا قواعد بعد.
+# Use New rule above to add one.
+admin-use_new_rule_above_to_add_one = استخدم زر قاعدة جديدة أعلاه لإضافة قاعدة.
 # Backing up
 admin-backing_up = جارٍ النسخ الاحتياطي
 # Restoring
@@ -7293,8 +7508,8 @@ admin-restore = استعادة
 admin-delete_name_3 = احذف { $name }
 # No backups yet.
 admin-no_backups_yet = لا توجد نسخ احتياطية بعد.
-# Loading…
-admin-loading = جارٍ التحميل…
+# Use Back up now above to make one.
+admin-use_back_up_now_above_to_make_one = استخدم زر النسخ الاحتياطي الآن أعلاه لإنشاء نسخة.
 # Restore this backup?
 admin-restore_this_backup = هل تريد استعادة هذه النسخة الاحتياطية؟
 # Everything on the site is replaced by what {name} holds: members, posts, settings and uploaded files. Whatever happened after it was made is lost. The site goes offline while it runs, and you will have to sign in again.
@@ -7333,8 +7548,6 @@ admin-translate_them_in_site_text = ترجمها في نصوص الموقع
 admin-colour = اللون
 # Colour {n}
 admin-colour_n = اللون { $n }
-# Icon
-admin-icon = الأيقونة
 # When this badge is earned is built into the forum and can't be changed.
 admin-when_this_badge_is_earned_is_built_into_the_forum_and = شرط الحصول على هذه الشارة مدمج في المنتدى ولا يمكن تغييره.
 # Earned at (any one is enough to start; all you set must be met)
@@ -7345,6 +7558,10 @@ admin-reputation = السمعة
 admin-accepted_answers = الإجابات المقبولة
 # Find a badge
 admin-find_a_badge = ابحث عن شارة
+# No badges match.
+admin-no_badges_match = لا توجد شارات مطابقة.
+# Use New badge above to add one.
+admin-use_new_badge_above_to_add_one = استخدم زر شارة جديدة أعلاه لإضافة شارة.
 # All members
 admin-all_members = كل الأعضاء
 # Chosen groups
@@ -7361,6 +7578,8 @@ admin-channels_flagged_messages_and_forum_activity_sent_to = القنوات وا
 admin-new_channel = قناة جديدة
 # New integration
 admin-new_integration = تكامل جديد
+# Edit channel
+admin-edit_channel = تعديل القناة
 # Add channel
 admin-add_channel = إضافة قناة
 # Who can see it
@@ -7369,6 +7588,8 @@ admin-who_can_see_it = من يمكنه رؤيتها
 admin-invite_only_you_add_people_from_the_channel = بالدعوة فقط: تضيف الأشخاص من القناة
 # No groups
 admin-no_groups = لا مجموعات
+# Add everyone: every member joins this channel, and so does each new account
+admin-add_everyone_every_member_joins_this_channel_and_so = إضافة الجميع: ينضم كل عضو إلى هذه القناة، وكذلك كل حساب جديد
 # Service
 admin-service = الخدمة
 # watch
@@ -7387,16 +7608,18 @@ admin-channel_chat_or_room = القناة أو الدردشة أو الغرفة
 admin-forum_id_empty_for_all = معرّف المنتدى (فارغ للكل)
 # Tag (empty for all)
 admin-tag_empty_for_all = الوسم (فارغ للكل)
-# Channels
-admin-channels = القنوات
-# Flags
-admin-flags = البلاغات
 # Messages
 admin-messages = الرسائل
 # (archived)
 admin-archived = (مؤرشفة)
+# Everyone joins
+admin-everyone_joins = ينضم الجميع
 # Archive
 admin-archive = أرشفة
+# No channels yet.
+admin-no_channels_yet = لا توجد قنوات بعد.
+# Use New channel above to add one.
+admin-use_new_channel_above_to_add_one = استخدم زر قناة جديدة أعلاه لإضافة قناة.
 # Only topics guests can read are sent.
 admin-only_topics_guests_can_read_are_sent = تُرسل فقط المواضيع التي يمكن للزوار قراءتها.
 # Follow
@@ -7419,6 +7642,10 @@ admin-scope = النطاق
 admin-all_forums = كل المنتديات
 # Test
 admin-test = اختبار
+# No integrations yet.
+admin-no_integrations_yet = لا توجد تكاملات بعد.
+# Use New integration above to send forum activity to another service.
+admin-use_new_integration_above_to_send_forum_activity_to = استخدم زر تكامل جديد أعلاه لإرسال نشاط المنتدى إلى خدمة أخرى.
 # Message
 admin-message = الرسالة
 # By
@@ -7429,6 +7656,8 @@ admin-flagged_by = أبلغ عنها
 admin-keep = إبقاء
 # Nothing flagged.
 admin-nothing_flagged = لا شيء مُبلغ عنه.
+# Messages members report appear here.
+admin-messages_members_report_appear_here = تظهر هنا الرسائل التي يبلّغ عنها الأعضاء.
 # Page background
 admin-page_background = خلفية الصفحة
 # Cards and panels
@@ -7477,8 +7706,6 @@ admin-hidden = مخفي
 admin-make_default = جعله افتراضيًا
 # More for {name}
 admin-more_for_name = المزيد لـ { $name }
-# ← All colour schemes
-admin-all_colour_schemes = ← كل أنظمة الألوان
 # Unsaved changes
 admin-unsaved_changes = تغييرات غير محفوظة
 # Members can choose this scheme
@@ -7493,6 +7720,8 @@ admin-label_mode_picker = { $label }، { $mode }، منتقي
 admin-dark_2 = داكن
 # light
 admin-light_2 = فاتح
+# {label}, {mode}
+admin-label_mode = { $label }، { $mode }
 # Preview
 admin-preview = معاينة
 # Delete the reaction "{name}"? What members reacted with it disappears from posts.
@@ -7529,24 +7758,12 @@ admin-add_reaction = إضافة تفاعل
 admin-emoji = الرمز التعبيري
 # Add group
 admin-add_group = إضافة مجموعة
-# Tags
-admin-tags = الوسوم
 # Forum ids
 admin-forum_ids = معرّفات المنتديات
 # One per topic
 admin-one_per_topic = واحد لكل موضوع
 # Add announcement
 admin-add_announcement = إضافة إعلان
-# Reactions
-admin-reactions = التفاعلات
-# Tag groups
-admin-tag_groups = مجموعات الوسوم
-# Group rules
-admin-group_rules = قواعد المجموعات
-# Announcements
-admin-announcements = الإعلانات
-# Report reasons
-admin-report_reasons = أسباب البلاغات
 # A report adds the reporter's track record times the reason's weight to the post's score; at the "hide after reports" setting the post is hidden until a moderator looks. "Illegal" reasons are recorded as illegal content in DSA statements.
 admin-a_report_adds_the_reporter_s_track_record_times_the = يضيف البلاغ سجل المُبلِّغ مضروبًا في وزن السبب إلى نقاط المنشور؛ وعند بلوغ إعداد “الإخفاء بعد البلاغات” يُخفى المنشور حتى ينظر فيه مشرف. تُسجَّل الأسباب “غير القانونية” كمحتوى غير قانوني في بيانات أسباب DSA.
 # Key
@@ -7565,12 +7782,32 @@ admin-needs_a_note = يحتاج إلى ملاحظة
 admin-illegal_content = محتوى غير قانوني
 # Send the note to the author instead of filing a report
 admin-send_the_note_to_the_author_instead_of_filing_a_report = أرسل الملاحظة إلى الكاتب بدلاً من تقديم بلاغ
+# No report reasons yet.
+admin-no_report_reasons_yet = لا توجد أسباب بلاغات بعد.
+# Use New reason above to add one.
+admin-use_new_reason_above_to_add_one = استخدم زر سبب جديد أعلاه لإضافة سبب.
 # Move {name}. Alt and the arrow keys also move it.
 admin-move_name_alt_and_the_arrow_keys_also_move_it = انقل { $name }. يمكن أيضًا استخدام Alt ومفاتيح الأسهم.
+# No reactions yet.
+admin-no_reactions_yet = لا توجد تفاعلات بعد.
+# Use New reaction above to add one.
+admin-use_new_reaction_above_to_add_one = استخدم زر تفاعل جديد أعلاه لإضافة تفاعل.
 # Tags are slugs. Forums are ids; leave empty to allow everywhere.
 admin-tags_are_slugs_forums_are_ids_leave_empty_to_allow = الوسوم معرّفات نصية. والمنتديات أرقام معرّفات؛ اتركها فارغة للسماح في كل مكان.
+# No tag groups yet.
+admin-no_tag_groups_yet = لا توجد مجموعات وسوم بعد.
+# Use New tag group above to add one.
+admin-use_new_tag_group_above_to_add_one = استخدم زر مجموعة وسوم جديدة أعلاه لإضافة مجموعة.
 # Checked every ten minutes. A group rule adds members to a group when they meet its conditions, and cannot grant staff groups. Trust levels have their own requirements under Settings, Trust and warnings.
 admin-checked_every_ten_minutes_a_group_rule_adds_members_to = تُفحص كل عشر دقائق. تضيف قاعدة المجموعة الأعضاء إلى مجموعة عند استيفاء شروطها، ولا يمكنها منح مجموعات الإشراف. لمستويات الثقة متطلباتها الخاصة في الإعدادات ضمن الثقة والتحذيرات.
+# No group rules yet.
+admin-no_group_rules_yet = لا توجد قواعد مجموعات بعد.
+# Use New group rule above to add one.
+admin-use_new_group_rule_above_to_add_one = استخدم زر قاعدة مجموعة جديدة أعلاه لإضافة قاعدة.
+# No announcements yet.
+admin-no_announcements_yet = لا توجد إعلانات بعد.
+# Use New announcement above to add one.
+admin-use_new_announcement_above_to_add_one = استخدم زر إعلان جديد أعلاه لإضافة إعلان.
 # Delete "{name}"?
 admin-delete_name = حذف “{ $name }”؟
 # Read-only SQL over forum data. Queries see the views listed below, never passwords, 2FA secrets, tokens, IP addresses or private messages. Each run is written to the audit log.
@@ -7621,6 +7858,8 @@ admin-waiting_for_the_other_server = بانتظار الخادم الآخر
 admin-stop = إيقاف
 # No forum follows a remote group.
 admin-no_forum_follows_a_remote_group = لا يتابع أي منتدى مجموعة بعيدة.
+# Use Follow a remote group above to add one.
+admin-use_follow_a_remote_group_above_to_add_one = استخدم زر متابعة مجموعة بعيدة أعلاه لإضافة مجموعة.
 # Short text
 admin-short_text = نص قصير
 # One line: a name, a place, a handle.
@@ -7757,14 +7996,12 @@ admin-category = الفئة
 admin-inside = داخل
 # Top level
 admin-top_level = المستوى الأعلى
-# Posting
-admin-posting = النشر
-# Permissions
-admin-permissions = الصلاحيات
+# No forums yet.
+admin-no_forums_yet = لا توجد منتديات بعد.
+# Use New category or forum above to add one.
+admin-use_new_category_or_forum_above_to_add_one = استخدم زر فئة أو منتدى جديد أعلاه لإضافة واحد.
 # Prefixes and moderators
 admin-prefixes_and_moderators = البادئات والمشرفون
-# Moderators
-admin-moderators = المشرفون
 # List style
 admin-list_style = نمط القائمة
 # Table
@@ -7783,8 +8020,8 @@ admin-most_replies = الأكثر ردودًا
 admin-most_views = الأكثر مشاهدة
 # Most liked
 admin-most_liked = الأكثر إعجابًا
-# Or one emoji
-admin-or_one_emoji = أو رمز تعبيري واحد
+# Or one emoji, such as 🎮
+admin-or_one_emoji_such_as = أو رمز تعبيري واحد، مثل 🎮
 # Or a picture
 admin-or_a_picture = أو صورة
 # Takes priority; square works best
@@ -7829,16 +8066,12 @@ admin-save_permissions = حفظ الصلاحيات
 admin-changes_to_the_parent_s_permissions_apply_here_too = تنطبق تغييرات أذونات القسم الأب هنا أيضًا. أوقف المفتاح لتعيين أذونات خاصة.
 # Guests can never post or moderate, whatever is ticked here.
 admin-guests_can_never_post_or_moderate_whatever_is_ticked = لا يمكن للزوار النشر أو الإشراف أبدًا، مهما حُدد هنا.
-# Question, Solved, Bug
-admin-question_solved_bug = سؤال، محلول، خطأ
-# Topic prefixes
-admin-topic_prefixes = بادئات المواضيع
-# Separated by commas
-admin-separated_by_commas = مفصولة بفواصل
+# Topic prefixes, separated by commas: Question, Solved, Bug
+admin-topic_prefixes_separated_by_commas_question_solved_bug = بادئات المواضيع، مفصولة بفواصل: سؤال، محلول، خطأ
 # Save prefixes
 admin-save_prefixes = حفظ البادئات
-# Usernames, separated by commas
-admin-usernames_separated_by_commas = أسماء المستخدمين، مفصولة بفواصل
+# Moderators: usernames, separated by commas
+admin-moderators_usernames_separated_by_commas = المشرفون: أسماء المستخدمين مفصولة بفواصل
 # Save moderators
 admin-save_moderators = حفظ المشرفين
 # SEO title
@@ -7977,14 +8210,6 @@ admin-queued_for_testto = في قائمة الإرسال إلى { $testTo }
 admin-mail = البريد
 # Outgoing email, newest first. Failed messages are retried up to 5 times.
 admin-outgoing_email_newest_first_failed_messages_are_retried = البريد الصادر، الأحدث أولًا. يُعاد إرسال الرسائل الفاشلة حتى 5 مرات.
-# Log
-admin-log = السجل
-# Templates
-admin-templates = القوالب
-# Bad addresses
-admin-bad_addresses = عناوين خاطئة
-# Test delivery
-admin-test_delivery = اختبار التسليم
 # Mail is not being sent: {reason}. Messages stay queued until this is fixed.
 admin-mail_is_not_being_sent_reason_messages_stay_queued = لا يتم إرسال البريد: { $reason }. تبقى الرسائل في قائمة الانتظار إلى أن يُصلَح ذلك.
 # No mail sender is configured (BF_SMTP_URL), so messages show as sent but are never delivered.
@@ -8001,6 +8226,8 @@ admin-sent = أُرسل
 admin-retrying_attempts = إعادة المحاولة ({ $attempts })
 # No mail yet.
 admin-no_mail_yet = لا بريد بعد.
+# Messages the forum sends are listed here.
+admin-messages_the_forum_sends_are_listed_here = تُعرض هنا الرسائل التي يرسلها المنتدى.
 # Email texts
 admin-email_texts = نصوص الرسائل البريدية
 # Each email's subject and body is a text in Site text, translated into every language there, like the rest of the site.
@@ -8017,6 +8244,8 @@ admin-address = العنوان
 admin-clear = مسح
 # No bad addresses.
 admin-no_bad_addresses = لا عناوين خاطئة.
+# Addresses that keep bouncing are listed here.
+admin-addresses_that_keep_bouncing_are_listed_here = تُعرض هنا العناوين التي ترتدّ رسائلها باستمرار.
 # Send a test email to
 admin-send_a_test_email_to = إرسال بريد تجريبي إلى
 # you@example.com
@@ -8135,6 +8364,8 @@ admin-only_confirmed_email_addresses = عناوين البريد المؤكدة 
 admin-sent_messages = الرسائل المرسلة
 # Nothing sent yet.
 admin-nothing_sent_yet = لم يُرسل شيء بعد.
+# Messages you send to members are listed here.
+admin-messages_you_send_to_members_are_listed_here = تُعرض هنا الرسائل التي ترسلها إلى الأعضاء.
 # Lock the topic
 admin-lock_the_topic = قفل الموضوع
 # Unlock the topic
@@ -8171,6 +8402,8 @@ admin-add_a_step = إضافة خطوة
 admin-steps = الخطوات
 # No saved actions yet.
 admin-no_saved_actions_yet = لا توجد إجراءات محفوظة بعد.
+# A saved action is a set of steps a moderator runs on a topic in one click.
+admin-a_saved_action_is_a_set_of_steps_a_moderator_runs_on_a = الإجراء المحفوظ هو مجموعة خطوات ينفذها المشرف على موضوع بنقرة واحدة.
 # Latest
 admin-latest = الأحدث
 # Top
@@ -8261,6 +8494,8 @@ admin-three_columns = ثلاثة أعمدة
 admin-three_equal_columns_for_features_teasers_or_links = ثلاثة أعمدة متساوية للميزات أو المقتطفات أو الروابط.
 # Page created. Open it and use "Edit layout" to add blocks.
 admin-page_created_open_it_and_use_edit_layout_to_add_blocks = تم إنشاء الصفحة. افتحها واستخدم «تحرير التخطيط» لإضافة الكتل.
+# Delete the page "{title}"?
+admin-delete_the_page_title = حذف الصفحة «{ $title }»؟
 # Pages you build from blocks. Pick a layout, then arrange blocks with "Edit layout" on the page. Add one to the header from
 admin-pages_you_build_from_blocks_pick_a_layout_then_arrange = صفحات تبنيها من الكتل. اختر تخطيطًا ثم رتّب الكتل عبر «تحرير التخطيط» في الصفحة. أضف صفحة إلى الترويسة من
 # using its address.
@@ -8283,14 +8518,16 @@ admin-about = /about
 admin-published = منشورة
 # Blocks in an area the new layout lacks move to its first column.
 admin-blocks_in_an_area_the_new_layout_lacks_move_to_its = تنتقل الكتل الموجودة في منطقة غير موجودة في التخطيط الجديد إلى عموده الأول.
-# · updated {n}
-admin-updated_n = · حُدّثت { $n }
+# updated
+admin-updated = تم التحديث
 # Draft
 admin-draft = مسودة
 # Design
 admin-design = تصميم
 # No pages yet.
 admin-no_pages_yet = لا صفحات بعد.
+# Use New page above to add one.
+admin-use_new_page_above_to_add_one = استخدم زر صفحة جديدة أعلاه لإضافة صفحة.
 # Forum or category
 admin-forum_or_category = منتدى أو فئة
 # Post
@@ -8329,6 +8566,8 @@ admin-missing = مفقود
 admin-nothing_matches = لا شيء يطابق.
 # No permalinks yet.
 admin-no_permalinks_yet = لا روابط دائمة بعد.
+# Use Add permalink above to add one.
+admin-use_add_permalink_above_to_add_one = استخدم زر إضافة رابط دائم أعلاه لإضافة رابط.
 # The first {n} of {total} are shown: search for the rest.
 admin-the_first_n_of_total_are_shown_search_for_the_rest = تُعرض أول { $n } من { $total }: ابحث عن الباقي.
 # Its server code may contact {host}
@@ -8415,8 +8654,6 @@ admin-approve_and_enable = الموافقة والتفعيل
 admin-this_version_asks_for_more_than_you_approved_before_the = تطلب هذه النسخة أكثر مما وافقت عليه سابقاً. الصلاحيات الجديدة مميّزة.
 # This plugin asks to:
 admin-this_plugin_asks_to = تطلب هذه الإضافة ما يلي:
-# New
-admin-new = جدد
 # Outside the sandbox
 admin-outside_the_sandbox = خارج بيئة العزل
 # Nothing: it can only react to events.
@@ -8599,26 +8836,26 @@ admin-invite_link = رابط الدعوة
 admin-copy_it_now_it_is_not_shown_again = انسخه الآن؛ لن يظهر مرة أخرى.
 # Copy
 admin-copy = نسخ
-# Custom emoji
-admin-custom_emoji = رموز تعبيرية مخصصة
-# Invites
-admin-invites = الدعوات
-# Top searches
-admin-top_searches = أكثر عمليات البحث
 # Rename
 admin-rename = إعادة تسمية
-# No tags yet. Add one, or they appear here once a topic uses them.
-admin-no_tags_yet_add_one_or_they_appear_here_once_a_topic = لا توجد وسوم بعد. أضف وسمة، أو ستظهر هنا عندما يستخدمها موضوع.
+# No tags yet.
+admin-no_tags_yet = لا توجد وسوم بعد.
+# Add one, or they appear here once a topic uses them.
+admin-add_one_or_they_appear_here_once_a_topic_uses_them = أضف وسمًا، أو ستظهر هنا حين يستخدمها موضوع.
 # No custom emoji yet.
 admin-no_custom_emoji_yet = لا رموز تعبيرية مخصصة بعد.
+# Use New emoji above to add one.
+admin-use_new_emoji_above_to_add_one = استخدم زر رمز تعبيري جديد أعلاه لإضافة رمز.
 # Invite #{id}
 admin-invite_id = الدعوة #{ $id }
 # Used by
 admin-used_by = استخدمها
-# Expires {n}
-admin-expires_n = تنتهي { $n }
+# Expires
+admin-expires = تنتهي
 # No invites yet.
 admin-no_invites_yet = لا دعوات بعد.
+# Use Create invite link above to make one.
+admin-use_create_invite_link_above_to_make_one = استخدم زر إنشاء رابط دعوة أعلاه لإنشاء رابط.
 # Last 30 days.
 admin-last_30_days_2 = آخر 30 يومًا.
 # Term
@@ -8641,10 +8878,10 @@ admin-built_in_for_this_language = المدمج لهذه اللغة
 admin-your_text = نصك
 # Write a variable as { $name }, as in the English text above. For plurals use { $n -> [one] … *[other] … }.
 admin-write_a_variable_as_name_as_in_the_english_text_above = اكتب المتغير بالشكل { "{" } $name { "}" } كما في النص الإنجليزي أعلاه. للجمع استخدم { "{" } $n -> [one] … *[other] … { "}" }.
-# Language
-admin-language = اللغة
 # Search text
 admin-search_text = البحث في النصوص
+# Language
+admin-language = اللغة
 # Only my changes
 admin-only_my_changes = تغييراتي فقط
 # Changed
@@ -8711,10 +8948,10 @@ admin-comes_with_the_forum = مرفق مع المنتدى
 admin-components = المكوّنات
 # Small additions that apply on top of whichever theme is in use.
 admin-small_additions_that_apply_on_top_of_whichever_theme_is = إضافات صغيرة تنطبق فوق أي سمة مستخدمة.
-# ← All themes
-admin-all_themes = ← كل السمات
 # Colour tweaks
 admin-colour_tweaks = تعديلات الألوان
+# CSS
+admin-css = CSS
 # Template slots
 admin-template_slots = خانات القوالب
 # Theme is the site's default, for everyone who has not chosen one
@@ -8825,34 +9062,22 @@ admin-a_level_can_only_be_earned_when_the_level_below_it_is = لا يمكن اك
 admin-everyone_starts_at_this_level_so_it_has_no_requirements = يبدأ الجميع من هذا المستوى، لذلك لا متطلبات له.
 # All
 admin-all = الكل
-# Awaiting approval
-admin-awaiting_approval = بانتظار الموافقة
-# Suspended
-admin-suspended = موقوفون
-# Silenced
-admin-silenced = مكتومون
-# Unverified
-admin-unverified = غير موثّقين
-# Never
-admin-never = أبدًا
-# Today
-admin-today = اليوم
-# Yesterday
-admin-yesterday = أمس
 # Open one to moderate or change their account.
 admin-open_one_to_moderate_or_change_their_account = افتح أحدهم للإشراف عليه أو تغيير حسابه.
-# Username or email
-admin-username_or_email = اسم المستخدم أو البريد
 # Search members
 admin-search_members = البحث في الأعضاء
-# Last seen
-admin-last_seen = آخر ظهور
+# Username or email
+admin-username_or_email = اسم المستخدم أو البريد
 # Sort by
 admin-sort_by = الترتيب حسب
+# Last seen
+admin-last_seen = آخر ظهور
 # Trust
 admin-trust = الثقة
 # Joined
 admin-joined = انضم
+# Never
+admin-never = أبدًا
 # Account suspended
 admin-account_suspended = حساب موقوف
 # Account silenced
@@ -8865,6 +9090,8 @@ admin-not_verified = غير موثّق
 admin-active_account = حساب نشط
 # No members match.
 admin-no_members_match = لا أعضاء مطابقون.
+# Try another search or filter.
+admin-try_another_search_or_filter = جرّب بحثًا أو عامل تصفية آخر.
 # ← Previous
 admin-previous = ← السابق
 # Page {page} of {pages}
@@ -8887,8 +9114,6 @@ admin-location = الموقع
 admin-website = الموقع الإلكتروني
 # Groups changed
 admin-groups_changed = تغيّرت المجموعات
-# ← Members
-admin-members_2 = ← الأعضاء
 # Suspended until {n}
 admin-suspended_until_n = موقوف حتى { $n }
 # Silenced until {n}
@@ -9069,10 +9294,6 @@ admin-add_application = إضافة تطبيق
 admin-app_name = اسم التطبيق
 # Redirect address
 admin-redirect_address = عنوان إعادة التوجيه
-# Deliveries
-admin-deliveries = عمليات التسليم
-# Applications
-admin-applications = التطبيقات
 # Each delivery is a signed POST: verify the
 admin-each_delivery_is_a_signed_post_verify_the = كل تسليم طلب POST موقّع: تحقق من الترويسة
 # header, an HMAC-SHA256 of the body with the secret. Failures retry with growing delays, up to 8 times.
@@ -9081,12 +9302,16 @@ admin-header_an_hmac_sha256_of_the_body_with_the_secret = ، وهي HMAC-SHA256 
 admin-secret_shown_once_2 = السر، يظهر مرة واحدة:
 # No webhooks yet.
 admin-no_webhooks_yet = لا خطافات ويب بعد.
+# Use New webhook above to add one.
+admin-use_new_webhook_above_to_add_one = استخدم زر خطاف ويب جديد أعلاه لإضافة خطاف.
 # Event
 admin-event = الحدث
 # Attempts
 admin-attempts = المحاولات
 # Last result
 admin-last_result = آخر نتيجة
+# Deliveries are listed here once a webhook fires.
+admin-deliveries_are_listed_here_once_a_webhook_fires = تظهر عمليات التسليم هنا بعد تشغيل خطاف ويب.
 # Other apps can sign members in through this forum:
 admin-other_apps_can_sign_members_in_through_this_forum = يمكن للتطبيقات الأخرى تسجيل دخول الأعضاء عبر هذا المنتدى:
 # (code flow with S256 PKCE),
@@ -9097,6 +9322,8 @@ admin-client_id = معرّف العميل
 admin-secret_shown_once = ، والسر، يظهر مرة واحدة:
 # No applications yet.
 admin-no_applications_yet = لا تطبيقات بعد.
+# Use New application above to add one.
+admin-use_new_application_above_to_add_one = استخدم زر تطبيق جديد أعلاه لإضافة تطبيق.
 # Top of the page
 admin-top_of_the_page = أعلى الصفحة
 # Main column
@@ -9239,6 +9466,8 @@ admin-no_file_chosen = لم يتم اختيار ملف.
 admin-word = الكلمة
 # No watched words.
 admin-no_watched_words = لا كلمات مراقبة.
+# Use New watched word above to add one.
+admin-use_new_watched_word_above_to_add_one = استخدم زر كلمة مراقبة جديدة أعلاه لإضافة كلمة.
 # Posts per page
 admin-posts_per_page = المنشورات في الصفحة
 # Topics per page

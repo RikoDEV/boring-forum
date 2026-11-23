@@ -77,6 +77,7 @@ impl AppState {
     }
 
     fn build_with(config: Config, pool: Option<PgPool>, explorer_pool: Option<PgPool>, settings: Settings) -> Self {
+        crate::http::ratelimit::set_cloudflare_real_ip(settings.bool("cloudflare_real_ip"));
         Self {
             microcache: Microcache::new(bf_core::scaled(Duration::from_millis(config.microcache_ttl_ms))),
             rate_limiter: RateLimiter::new(config.rate_limit_per_min, Duration::from_secs(60)),
@@ -108,6 +109,7 @@ impl AppState {
         let s = self.settings.read().unwrap_or_else(std::sync::PoisonError::into_inner).clone();
         bf_cook::set_bbcode(s.bool("bbcode_enabled"));
         bf_cook::set_math(s.bool("math_enabled"));
+        crate::http::ratelimit::set_cloudflare_real_ip(s.bool("cloudflare_real_ip"));
         s
     }
 
@@ -115,6 +117,7 @@ impl AppState {
         {
             let mut live = self.settings.write().unwrap_or_else(std::sync::PoisonError::into_inner);
             self.settings_epoch.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            crate::http::ratelimit::set_cloudflare_real_ip(s.bool("cloudflare_real_ip"));
             *live = Arc::new(s);
         }
         self.microcache.clear();
@@ -133,6 +136,7 @@ impl AppState {
                     if self.settings_epoch.load(std::sync::atomic::Ordering::SeqCst) != epoch {
                         return;
                     }
+                    crate::http::ratelimit::set_cloudflare_real_ip(s.bool("cloudflare_real_ip"));
                     *live = Arc::new(s);
                 }
                 self.microcache.clear();
@@ -284,14 +288,21 @@ pub(crate) async fn recook(state: AppState) {
             return;
         }
         let mut finished = Vec::with_capacity(cooked.len());
+        let mut found = Vec::with_capacity(cooked.len());
         for mut c in cooked {
             crate::platform::plugins::finish_callbacks(&state, &mut c).await;
+            found.push(std::mem::take(&mut c.links));
             finished.push(crate::platform::plugins::after_cook(&state, c.html).await);
         }
         let html = finished;
         if let Err(e) = bf_db::forum::posts::save_cooked(&pool, &ids, &html, bf_cook::COOK_VERSION).await {
             tracing::warn!(error = %e, "re-cook save failed");
             return;
+        }
+        // Posts that came in without their links being recorded (an import) get them here: link
+        // previews and click counts look the links up.
+        if let Err(e) = bf_db::forum::links::add_links_for_posts(&pool, &ids, &found).await {
+            tracing::warn!(error = %e, "links not recorded while re-cooking");
         }
         tracing::info!(posts = ids.len(), "re-cooked");
         microcache.clear();

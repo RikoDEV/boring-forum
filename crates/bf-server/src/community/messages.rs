@@ -681,7 +681,7 @@ async fn read_reported(State(state): State<AppState>, v: Viewer, Path(id): Path<
     for m in &messages {
         html.push_str(&format!(
             "<article class=\"panel post\"><p class=\"small\"><strong>{}</strong> {}</p><div class=\"cooked\">{}</div></article>",
-            esc(m.author.as_deref().unwrap_or("deleted member")),
+            crate::http::ui::user_link(m.author.as_deref()),
             ago(m.created_at),
             m.cooked
         ));

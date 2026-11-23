@@ -267,6 +267,102 @@ pub(super) async fn arrange(
     Ok(StatusCode::NO_CONTENT.into_response())
 }
 
+/// The shared empty state of a widget: an icon and one line (`text` is already escaped HTML).
+fn empty_state(icon_name: &str, text: &str) -> String {
+    format!(
+        "<div class=\"bf-empty-state\"><span class=\"bf-empty-icon\" aria-hidden=\"true\">{}</span><p>{text}</p></div>",
+        icon(icon_name)
+    )
+}
+
+/// An icon from the site's sprite, for markup built outside a template.
+fn icon(name: &str) -> String {
+    format!(
+        "<svg class=\"bf-icon\" aria-hidden=\"true\"><use href=\"{}#{name}\"></use></svg>",
+        bf_web::assets::ICONS.url()
+    )
+}
+
+/// The "Who's online" block: three counts, then a chip per member and crawler, as in the "Recently
+/// browsing" block of a page (`_browsing.html`).
+fn presence_html(names: &[String], members: i64, guests: i64, bot_count: i64, bots: &[String]) -> String {
+    use crate::http::i18n::{lang, trh};
+    let t = lang();
+    let count = |icon_name: &str, tip: String, text: String| {
+        format!(
+            "<span class=\"bf-browsing-count\" data-tip-gate data-tip=\"{}\">{} {}</span>",
+            tip,
+            icon(icon_name),
+            esc(&text)
+        )
+    };
+    let mut html = format!(
+        "<div class=\"bf-whos-online\"><div class=\"bf-browsing-counts\">{}{}{}</div>",
+        count("user", trh("Signed-in members active in the last 15 minutes"), t.n("count.members", members)),
+        count("eye", trh("Visitors who are not signed in"), t.n("count.guests", guests)),
+        count("cpu", trh("Search engines and other crawlers"), t.n("count.bots", bot_count)),
+    );
+    if names.is_empty() && bots.is_empty() {
+        html.push_str(&empty_state("users", &trh("Nobody right now.")));
+    } else {
+        html.push_str("<ul class=\"bf-browsing-list\">");
+        for n in names {
+            let n = esc(n);
+            html.push_str(&format!(
+                "<li><a class=\"bf-browsing-chip\" href=\"/u/{n}\"><img class=\"avatar bf-browsing-avatar\" src=\"/avatar/{n}.svg\" width=\"32\" height=\"32\" alt=\"\" loading=\"lazy\"><span class=\"bf-browsing-name\">{n}</span></a></li>"
+            ));
+        }
+        for b in bots {
+            html.push_str(&format!(
+                "<li><span class=\"bf-browsing-chip is-bot\" data-tip=\"{}\"><span class=\"bf-browsing-avatar bf-browsing-bot\">{}</span><span class=\"bf-browsing-name\">{}</span></span></li>",
+                trh("A crawler, not a person"),
+                icon("cpu"),
+                esc(b)
+            ));
+        }
+        html.push_str("</ul>");
+    }
+    html.push_str("</div>");
+    html
+}
+
+/// The "Top posters" block: a ranked list, each row with the member's picture, name, a bar of
+/// their post count against the leader's, and the count. The first three ranks are medals.
+fn top_posters_html(rows: &[(String, i32)]) -> String {
+    use crate::http::i18n::{lang, trh};
+    if rows.is_empty() {
+        return empty_state("users", &trh("Nobody has posted yet."));
+    }
+    let t = lang();
+    let lead = i64::from(rows.iter().map(|r| r.1).max().unwrap_or(1).max(1));
+    let items: String = rows
+        .iter()
+        .enumerate()
+        .map(|(i, (name, posts))| {
+            let n = esc(name);
+            let medal = match i {
+                0 => " is-gold",
+                1 => " is-silver",
+                2 => " is-bronze",
+                _ => "",
+            };
+            // The bar's width is a class, a tenth of the leader's count at a time: the page's
+            // policy allows no inline style.
+            let step = ((i64::from(*posts) * 10 + lead / 2) / lead).clamp(1, 10);
+            format!(
+                "<li class=\"bf-top-row\"><span class=\"bf-top-rank{medal}\">{rank}</span>\
+                 <img class=\"avatar bf-top-avatar\" src=\"/avatar/{n}.svg\" width=\"36\" height=\"36\" alt=\"\" loading=\"lazy\">\
+                 <div class=\"bf-top-who\"><a class=\"bf-user-link\" href=\"/u/{n}\">{n}</a>\
+                 <span class=\"bf-top-bar bf-w-{step}\" aria-hidden=\"true\"></span></div>\
+                 <span class=\"bf-top-count\" data-tip=\"{tip}\" data-tip-side=\"below\">{posts}</span></li>",
+                rank = i + 1,
+                tip = esc(&t.n("count.posts", i64::from(*posts))),
+            )
+        })
+        .collect();
+    format!("<ol class=\"bf-top\">{items}</ol>")
+}
+
 /// Renders one widget. Lists respect what guests may read: the output is cached and shared,
 /// so it must never depend on the viewer.
 pub(super) async fn render_widget(state: &AppState, w: &themes::Widget) -> Result<String, AppError> {
@@ -280,32 +376,30 @@ pub(super) async fn render_widget(state: &AppState, w: &themes::Widget) -> Resul
         "latest_statuses" => {
             let rows = bf_db::community::statuses::latest_public(pool, limit).await.db()?;
             if rows.is_empty() {
-                return Ok(format!(
-                    "<p class=\"muted small\">{}</p>",
-                    crate::http::i18n::trh("No status updates yet.")
-                ));
+                return Ok(empty_state("message-square", &crate::http::i18n::trh("No status updates yet.")));
             }
             let items: String = rows
                 .iter()
                 .map(|(name, body, at)| {
                     format!(
-                        "<li><img class=\"avatar\" src=\"/avatar/{0}.svg\" width=\"28\" height=\"28\" alt=\"\" loading=\"lazy\"><div><a href=\"/u/{0}\"><strong>{0}</strong></a> <span class=\"muted small\">{2}</span><p>{1}</p></div></li>",
+                        "<li><img class=\"avatar\" src=\"/avatar/{0}.svg\" width=\"28\" height=\"28\" alt=\"\" loading=\"lazy\"><div><strong>{3}</strong> <span class=\"muted small\">{2}</span><p>{1}</p></div></li>",
                         esc(name),
                         esc(body),
-                        crate::http::render::ago(*at)
+                        crate::http::render::ago(*at),
+                        crate::http::ui::user_link(Some(name))
                     )
                 })
                 .collect();
             format!("<ul class=\"bf-status-widget\">{items}</ul>")
         }
+        // The same look as "Recently browsing": counts of members, guests and crawlers, then a chip
+        // for each member and crawler. Members come from the database (the whole site); guests and
+        // crawlers are counted in memory, so each node knows only its own.
         "online_users" => {
-            let names = themes::online_users(pool, 15, limit).await.db()?;
-            let links: Vec<String> = names.iter().map(|n| format!("<a href=\"/u/{0}\">{0}</a>", esc(n))).collect();
-            if links.is_empty() {
-                format!("<p class=\"muted small\">{}</p>", crate::http::i18n::trh("Nobody right now."))
-            } else {
-                format!("<p class=\"small\">{}</p>", links.join(", "))
-            }
+            let names = themes::online_users(pool, 15, limit.max(10)).await.db()?;
+            let (named, unnamed) = themes::online_counts(pool, 15).await.db()?;
+            let (guests, bot_count, bots) = crate::community::browsing::site_anonymous(state);
+            presence_html(&names, named, guests as i64 + unnamed, bot_count as i64, &bots)
         }
         "latest_topics" => {
             let rows = themes::latest_titles(pool, &public, limit).await.db()?;
@@ -319,11 +413,7 @@ pub(super) async fn render_widget(state: &AppState, w: &themes::Widget) -> Resul
         }
         "top_posters" => {
             let rows = themes::top_posters(pool, limit).await.db()?;
-            let items: String = rows
-                .iter()
-                .map(|(n, c)| format!("<li><a href=\"/u/{0}\">{0}</a> <span class=\"muted\">{c}</span></li>", esc(n)))
-                .collect();
-            format!("<ol class=\"small\">{items}</ol>")
+            top_posters_html(&rows)
         }
         "stats" => {
             let s = bf_db::admin::maintenance::index_stats(pool).await.db()?;
@@ -345,7 +435,9 @@ pub(super) async fn render_widget(state: &AppState, w: &themes::Widget) -> Resul
         }
         "tag_cloud" => {
             let rows = themes::tag_cloud(pool, &public, limit.max(20)).await.db()?;
-            rows.iter().map(|(n, s, _)| format!("<a class=\"tag\" href=\"/tag/{}\">{}</a> ", esc(s), esc(n))).collect()
+            rows.iter()
+                .map(|(n, s, _)| format!("<a class=\"bf-badge\" href=\"/tag/{}\">{}</a> ", esc(s), esc(n)))
+                .collect()
         }
         // config.events: [{"date": "2027-01-31", "title": "...", "url": "/..."}]; past ones drop off.
         "upcoming_events" if w.config.get("events").and_then(Value::as_array).is_none_or(Vec::is_empty) => {
@@ -369,7 +461,7 @@ pub(super) async fn render_widget(state: &AppState, w: &themes::Widget) -> Resul
                 })
                 .collect();
             if items.is_empty() {
-                format!("<p class=\"muted small\">{}</p>", crate::http::i18n::trh("Nothing coming up."))
+                empty_state("calendar", &crate::http::i18n::trh("Nothing coming up."))
             } else {
                 format!("<ul class=\"small\">{items}</ul>")
             }
@@ -441,10 +533,7 @@ pub(super) async fn render_widget(state: &AppState, w: &themes::Widget) -> Resul
                 .take(limit as usize)
                 .collect();
             if soon.is_empty() {
-                html.push_str(&format!(
-                    "<p class=\"muted small\">{}</p>",
-                    crate::http::i18n::trh("Nothing coming up.")
-                ));
+                html.push_str(&empty_state("calendar", &crate::http::i18n::trh("Nothing coming up.")));
             } else {
                 html.push_str("<ul class=\"small\">");
                 for (e, slug, title) in soon {
@@ -475,8 +564,14 @@ pub(super) async fn render_widget(state: &AppState, w: &themes::Widget) -> Resul
                 .iter()
                 .take(limit as usize)
                 .map(|e| {
-                    let (date, title) =
-                        (esc(e["date"].as_str().unwrap_or_default()), esc(e["title"].as_str().unwrap_or_default()));
+                    let raw = e["date"].as_str().unwrap_or_default();
+                    let date = match chrono::NaiveDate::parse_from_str(raw, "%Y-%m-%d") {
+                        Ok(d) => {
+                            bf_web::ago::Ago::day(d.and_hms_opt(12, 0, 0).unwrap_or_default().and_utc()).to_string()
+                        }
+                        Err(_) => esc(raw),
+                    };
+                    let title = esc(e["title"].as_str().unwrap_or_default());
                     match e["url"]
                         .as_str()
                         .filter(|u| u.starts_with('/') && !u.starts_with("//") || u.starts_with("https://"))
@@ -487,7 +582,7 @@ pub(super) async fn render_widget(state: &AppState, w: &themes::Widget) -> Resul
                 })
                 .collect();
             if items.is_empty() {
-                format!("<p class=\"muted small\">{}</p>", crate::http::i18n::trh("Nothing coming up."))
+                empty_state("calendar", &crate::http::i18n::trh("Nothing coming up."))
             } else {
                 format!("<ul class=\"small\">{items}</ul>")
             }

@@ -534,7 +534,7 @@ async fn bounce(state: &AppState, user: i64, subject: &str, why: &AppError) {
     if let Err(e) = bf_db::platform::mail::queue_mail(
         pool,
         &email,
-        &t.msgf("Your email to {site} was not posted", &[("site", &site)]),
+        &t.msgf("Your email was not posted - {site}", &[("site", &site)]),
         &body,
     )
     .await

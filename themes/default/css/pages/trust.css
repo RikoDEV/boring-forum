@@ -117,7 +117,7 @@
   align-items: stretch;
   overflow: hidden;
   border: 1px solid var(--bf-color-border);
-  border-radius: 4px;
+  border-radius: var(--bf-radius-input);
   color: var(--bf-color-muted);
   font-size: var(--bf-text-xs);
   font-weight: 500;
@@ -172,9 +172,9 @@
   inset-inline-end: -4px;
   box-sizing: border-box;
   min-inline-size: 1.5rem;
-  padding-inline: 0.25rem;
+  padding-inline: var(--bf-space-1);
   border: 2px solid var(--bf-color-border-strong);
-  border-radius: 6px;
+  border-radius: var(--bf-radius);
   background: var(--bf-color-surface);
   color: var(--bf-color-text);
   font-size: var(--bf-text-xs);
@@ -189,9 +189,9 @@
 
   &.is-small {
     min-inline-size: 1rem;
-    padding-inline: 0.125rem;
+    padding-inline: var(--bf-space-0);
     border-width: 1.5px;
-    border-radius: 4px;
+    border-radius: var(--bf-radius-input);
     font-size: 0.625rem;
     line-height: 0.8rem;
   }

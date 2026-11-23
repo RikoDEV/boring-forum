@@ -2,15 +2,15 @@
 {#- A member's account settings: one long page of sections, with a menu beside it. -#}
 {% block content %}
 <h1>{{ layout.t.t("settings.title") }}</h1>
-{% if let Some(m) = message %}<p class="panel" role="status">{{ m }}</p>{% endif %}
-{% if let Some(e) = error %}<p class="panel error" role="alert">{{ e }}</p>{% endif %}
+{% if let Some(m) = message %}<p class="bf-alert is-ok" role="status">{{ layout.icon("circle-check")|safe }} {{ m }}</p>{% endif %}
+{% if let Some(e) = error %}<p class="bf-alert is-error" role="alert">{{ layout.icon("circle-alert")|safe }} {{ e }}</p>{% endif %}
 
 <div class="bf-settings">
 <nav class="bf-settings-nav" aria-label="{{ layout.t.t("settings.sections") }}">
   <div class="bf-nav-group">{{ layout.t.t("settings.group_account") }}</div>
   <a href="#s-profile">{{ layout.icon("user")|safe }} {{ layout.t.t("settings.profile") }}</a>
   <a href="#s-status">{{ layout.icon("pencil")|safe }} {{ layout.t.t("settings.signature") }}</a>
-  <a href="#s-username">{{ layout.icon("user")|safe }} {{ layout.t.t("settings.username") }}</a>
+  <a href="#s-username">{{ layout.icon("at-sign")|safe }} {{ layout.t.t("settings.username") }}</a>
   <a href="#s-email">{{ layout.icon("mail")|safe }} {{ layout.t.t("settings.email") }}</a>
   <a href="#s-password">{{ layout.icon("lock")|safe }} {{ layout.t.t("settings.password") }}</a>
   <div class="bf-nav-group">{{ layout.t.t("settings.group_preferences") }}</div>
@@ -19,10 +19,10 @@
   <a href="#s-muted-tags">{{ layout.icon("flag")|safe }} {{ layout.t.t("settings.muted_tags") }}</a>
   <div class="bf-nav-group">{{ layout.t.t("settings.group_security") }}</div>
   <a href="#s-two-factor-authentication">{{ layout.icon("shield")|safe }} {{ layout.t.t("settings.two_factor") }}</a>
-  <a href="#s-passkeys">{{ layout.icon("lock")|safe }} {{ layout.t.t("settings.passkeys") }}</a>
+  <a href="#s-passkeys">{{ layout.icon("key")|safe }} {{ layout.t.t("settings.passkeys") }}</a>
   <a href="#s-connected-logins">{{ layout.icon("link")|safe }} {{ layout.t.msg("Connected logins") }}</a>
   <a href="#s-sessions">{{ layout.icon("clock")|safe }} {{ layout.t.t("settings.sessions") }}</a>
-  <a href="#s-api-keys">{{ layout.icon("link")|safe }} {{ layout.t.t("settings.api_keys") }}</a>
+  <a href="#s-api-keys">{{ layout.icon("terminal")|safe }} {{ layout.t.t("settings.api_keys") }}</a>
   <div class="bf-nav-group">{{ layout.t.t("settings.privacy") }}</div>
   <a href="#s-privacy">{{ layout.icon("archive")|safe }} {{ layout.t.t("settings.privacy") }}</a>
   <div class="bf-nav-group">{{ layout.t.t("settings.group_more") }}</div>
@@ -61,7 +61,7 @@
     <form method="post" action="/settings/signature#s-status" class="stack">
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       <div class="bf-field"><textarea placeholder=" " id="sig-text" name="signature" rows="2"></textarea><label class="bf-field-label" for="sig-text">{{ layout.t.t("settings.signature_field") }}</label></div>
-      <button class="btn">{{ layout.t.t("settings.save_signature") }}</button>
+      <button class="btn primary">{{ layout.t.t("settings.save_signature") }}</button>
     </form>
   </div>
 </section>
@@ -75,7 +75,7 @@
     <form method="post" action="/settings/username#s-username" class="row-form">
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       <label class="bf-field"><input placeholder=" " name="username" value="{{ username }}" required minlength="3" maxlength="20"><span class="bf-field-label">{{ layout.t.t("settings.username") }}</span></label>
-      <button class="btn">{{ layout.t.t("settings.change_username") }}</button>
+      <button class="btn primary">{{ layout.t.t("settings.change_username") }}</button>
     </form>
     {% endif %}
   </div>
@@ -92,7 +92,7 @@
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       <div class="bf-field"><input placeholder=" " id="new-email" name="email" type="email" autocomplete="email" required><label class="bf-field-label" for="new-email">{{ layout.t.t("settings.new_email") }}</label></div>
       <div class="bf-field"><input placeholder=" " id="email-pw" name="password" type="password" autocomplete="current-password" required><label class="bf-field-label" for="email-pw">{{ layout.t.t("settings.current_password") }}</label></div>
-      <button class="btn">{{ layout.t.t("settings.change_email") }}</button>
+      <button class="btn primary">{{ layout.t.t("settings.change_email") }}</button>
     </form>
     {% endif %}
     {% if !email_verified %}
@@ -236,7 +236,7 @@
         <input type="hidden" name="csrf" value="{{ layout.csrf }}">
         <div class="bf-field"><input placeholder=" " id="quiet-start" type="number" name="start" min="0" max="23" value="{{ quiet_start }}"><label class="bf-field-label" for="quiet-start">{{ layout.t.t("settings.quiet_from") }}</label></div>
         <div class="bf-field"><input placeholder=" " id="quiet-end" type="number" name="end" min="0" max="23" value="{{ quiet_end }}"><label class="bf-field-label" for="quiet-end">{{ layout.t.t("settings.quiet_until") }}</label></div>
-        <button class="btn">{{ layout.t.t("common.save") }}</button>
+        <button class="btn primary">{{ layout.t.t("common.save") }}</button>
       </form>
     </div>
     <div class="bf-set-part">
@@ -244,7 +244,7 @@
       <form method="post" action="/settings/dnd#s-notifications" class="stack">
         <input type="hidden" name="csrf" value="{{ layout.csrf }}">
         <div class="bf-field"><input placeholder=" " id="dnd-h" type="number" name="hours" min="0" max="8760" value="8"><label class="bf-field-label" for="dnd-h">{{ layout.t.t("settings.dnd_hours") }}</label></div>
-        <button class="btn">{{ layout.t.t("common.save") }}</button>
+        <button class="btn primary">{{ layout.t.t("common.save") }}</button>
       </form>
     </div>
   </div>
@@ -256,7 +256,7 @@
     <form method="post" action="/settings/muted-tags#s-muted-tags" class="row-form">
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       <label class="bf-field"><input name="tags" value="{{ muted_tags }}" placeholder="{{ layout.t.t("topic.add_tags") }}" data-tag-input><span class="bf-field-label">{{ layout.t.t("settings.muted_tags_field") }}</span></label>
-      <button class="btn">{{ layout.t.t("common.save") }}</button>
+      <button class="btn primary">{{ layout.t.t("common.save") }}</button>
     </form>
   </div>
 </section>
@@ -322,38 +322,73 @@
 <section class="bf-box bf-set" id="s-passkeys">
   <div class="bf-set-head"><h2>{{ layout.t.t("settings.passkeys") }}</h2><p class="muted small">{{ layout.t.t("settings.passkeys_hint") }}</p></div>
   <div class="bf-set-body">
-    <ul class="activity">
+    {% if passkeys.is_empty() %}
+    <div class="bf-empty-state">
+      <span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("key")|safe }}</span>
+      <p>{{ layout.t.t("settings.no_passkeys") }}</p>
+    </div>
+    {% else %}
+    <ul class="bf-sessions bf-rows">
       {% for (id, name, created, used) in passkeys %}
-      <li>{{ name }} · {{ layout.t.t("settings.added") }} {{ created }} · {{ layout.t.t("settings.last_used") }} {{ used }}
-        <form method="post" action="/settings/passkeys/{{ id }}/delete#s-passkeys" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link">{{ layout.t.t("settings.remove") }}</button></form>
+      <li>
+        <span class="bf-session-icon" aria-hidden="true">{{ layout.icon("key")|safe }}</span>
+        <div class="bf-session-main">
+          <strong>{{ name }}</strong>
+          <div class="bf-session-meta"><span>{{ layout.t.t("settings.added") }} {{ created }}</span><span>{{ layout.t.t("settings.last_used") }} {{ used }}</span></div>
+        </div>
+        <form method="post" action="/settings/passkeys/{{ id }}/delete#s-passkeys"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("x")|safe }} {{ layout.t.t("settings.remove") }}</button></form>
       </li>
-      {% else %}
-      <li class="muted">{{ layout.t.t("settings.no_passkeys") }}</li>
       {% endfor %}
     </ul>
-    <span data-island="passkey-register"></span>
+    {% endif %}
+    <div class="bf-add">
+      <h3>{{ layout.t.msg("Add a passkey") }}</h3>
+      <span data-island="passkey-register"></span>
+    </div>
   </div>
 </section>
 
 <section class="bf-box bf-set" id="s-connected-logins">
   <div class="bf-set-head"><h2>{{ layout.t.msg("Connected logins") }}</h2><p class="muted small">{{ layout.t.msg("Sign-in accounts linked to this one. You can unlink one while you have another way to sign in.") }}</p></div>
   <div class="bf-set-body">
-    <ul class="activity">
-      {% for (key, label, email, linked) in identities %}
-      <li>{{ label }}{% if let Some(e) = email %} · {{ e }}{% endif %} · {{ layout.t.msg("linked") }} {{ linked }}
+    {% if identities.is_empty() %}
+    <div class="bf-empty-state">
+      <span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("link")|safe }}</span>
+      <p>{{ layout.t.msg("No linked logins.") }}</p>
+    </div>
+    {% else %}
+    <div class="bf-sessions-head">
+      <p>{{ layout.t.n("count.logins", identities.len() as i64) }}</p>
+      {% if !identity_removable %}<span class="bf-session-here is-note" data-tip-gate data-tip="{{ layout.t.msg("Set a password or add a passkey to be able to unlink it") }}">{{ layout.icon("lock")|safe }} {{ layout.t.msg("Your only way to sign in") }}</span>{% endif %}
+    </div>
+    <ul class="bf-sessions bf-rows">
+      {% for l in identities %}
+      <li>
+        <span class="bf-session-icon" aria-hidden="true">{{ layout.icon(l.provider.icon.as_str())|safe }}</span>
+        <div class="bf-session-main">
+          <strong>{{ l.provider.label }}</strong>
+          <div class="bf-session-meta">
+            {%- if let Some(e) = l.email %}<span>{{ layout.icon("mail")|safe }}{{ e }}</span>{% endif %}
+            <span>{{ layout.t.msg("Connected") }} {{ l.linked }}</span>
+          </div>
+        </div>
         {% if identity_removable %}
-        <form method="post" action="/settings/identities/{{ key }}/unlink#s-connected-logins" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link">{{ layout.t.msg("Unlink") }}</button></form>
-        {% else %}
-        <span class="muted small">{{ layout.t.msg("Your only way to sign in") }}</span>
+        <form method="post" action="/settings/identities/{{ l.provider.key }}/unlink#s-connected-logins"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("x")|safe }} {{ layout.t.msg("Unlink") }}</button></form>
         {% endif %}
       </li>
-      {% else %}
-      <li class="muted">{{ layout.t.msg("No linked logins.") }}</li>
       {% endfor %}
     </ul>
-    {% for (key, label) in connectable %}
-    <form method="post" action="/auth/{{ key }}/link" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.msgf("Connect {provider}", [("provider", label.as_str())]) }}</button></form>
-    {% endfor %}
+    {% endif %}
+    {% if !connectable.is_empty() %}
+    <div class="bf-add">
+      <h3>{{ layout.t.msg("Add a login") }}</h3>
+      <div class="bf-add-list">
+        {% for p in connectable %}
+        <form method="post" action="/auth/{{ p.key }}/link"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn bf-add-btn">{{ layout.icon(p.icon.as_str())|safe }} {{ layout.t.msgf("Connect {provider}", [("provider", p.label.as_str())]) }}</button></form>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
   </div>
 </section>
 
@@ -366,7 +401,7 @@
       <form method="post" action="/settings/sessions/revoke-others#s-sessions"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("log-out")|safe }} {{ layout.t.t("settings.sign_out_others") }}</button></form>
     </div>
     {% endif %}
-    <ul class="bf-sessions">
+    <ul class="bf-sessions bf-rows">
       {% for s in sessions %}
       <li>
         <span class="bf-session-icon" aria-hidden="true">{{ layout.icon(s.browser_icon.as_str())|safe }}<span class="bf-session-os">{{ layout.icon(s.os_icon.as_str())|safe }}</span></span>
@@ -391,6 +426,27 @@
 <section class="bf-box bf-set" id="s-api-keys">
   <div class="bf-set-head"><h2>{{ layout.t.t("settings.api_keys") }}</h2><p class="muted small">{{ layout.t.t("settings.api_keys_hint") }}</p></div>
   <div class="bf-set-body">
+    {% if api_keys.is_empty() %}
+    <div class="bf-empty-state">
+      <span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("terminal")|safe }}</span>
+      <p>{{ layout.t.msg("No API keys yet.") }}</p>
+    </div>
+    {% else %}
+    <ul class="bf-sessions bf-rows">
+      {% for (id, name, scope, used, expires) in api_keys %}
+      <li>
+        <span class="bf-session-icon" aria-hidden="true">{{ layout.icon("terminal")|safe }}</span>
+        <div class="bf-session-main">
+          <strong>{{ name }}</strong>
+          <div class="bf-session-meta"><span>{{ scope }}</span><span>{{ layout.t.t("settings.last_used") }} {{ used }}</span><span>{{ expires }}</span></div>
+        </div>
+        <form method="post" action="/settings/api-keys/{{ id }}/delete#s-api-keys"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("x")|safe }} {{ layout.t.t("common.delete") }}</button></form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="bf-add">
+      <h3>{{ layout.t.msg("New API key") }}</h3>
     <form method="post" action="/settings/api-keys#s-api-keys" class="row-form">
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       <label class="bf-field"><input name="name" placeholder=" " required><span class="bf-field-label">{{ layout.t.t("settings.key_name") }}</span></label>
@@ -408,15 +464,9 @@
         <select name="days"><option value="30">{{ layout.t.n("count.days", 30) }}</option><option value="90" selected>{{ layout.t.n("count.days", 90) }}</option><option value="365">{{ layout.t.t("settings.one_year") }}</option></select>
         <span class="bf-field-label">{{ layout.t.t("settings.expires_after") }}</span>
       </label>
-      <button class="btn">{{ layout.t.t("settings.create") }}</button>
+      <button class="btn primary">{{ layout.t.t("settings.create") }}</button>
     </form>
-    <ul class="activity">
-      {% for (id, name, scope, used, expires) in api_keys %}
-      <li>{{ name }} <span class="muted small">{{ scope }} · {{ layout.t.t("settings.last_used") }} {{ used }} · {{ expires }}</span>
-        <form method="post" action="/settings/api-keys/{{ id }}/delete#s-api-keys" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="link">{{ layout.t.t("common.delete") }}</button></form>
-      </li>
-      {% endfor %}
-    </ul>
+    </div>
   </div>
 </section>
 
@@ -453,7 +503,7 @@
             <option value="following"{% if allow_pm_from == "following" %} selected{% endif %}>{{ layout.t.msg("Only people I follow") }}</option>
             <option value="nobody"{% if allow_pm_from == "nobody" %} selected{% endif %}>{{ layout.t.msg("Nobody") }}</option>
           </select>
-          <button class="btn">{{ layout.t.t("common.save") }}</button>
+          <button class="btn primary">{{ layout.t.t("common.save") }}</button>
         </form>
       </div>
     </div>
@@ -467,15 +517,22 @@
         <button class="btn small">{{ layout.t.msg("Undo") }}</button>
       </form>
       {% endif %}
-      <ul class="activity">
+      {% if muted_users.is_empty() %}
+      <div class="bf-empty-state">
+        <span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("user")|safe }}</span>
+        <p>{{ layout.t.msg("You have not muted anyone.") }}</p>
+      </div>
+      {% else %}
+      <ul class="bf-sessions bf-rows">
         {% for (uid, uname) in muted_users %}
-        <li>{{ layout.user_link(uname)|safe }}
-          <form method="post" action="/settings/muted/{{ uid }}#s-privacy" class="inline"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><input type="hidden" name="on" value="0"><button class="link">{{ layout.t.msg("Unmute") }}</button></form>
+        <li>
+          <span class="bf-session-icon" aria-hidden="true"><img class="avatar" src="/avatar/{{ uname }}.svg" width="44" height="44" alt="" loading="lazy"></span>
+          <div class="bf-session-main"><strong>{{ layout.user_link(uname)|safe }}</strong></div>
+          <form method="post" action="/settings/muted/{{ uid }}#s-privacy"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><input type="hidden" name="on" value="0"><button class="btn">{{ layout.t.msg("Unmute") }}</button></form>
         </li>
-        {% else %}
-        <li class="muted">{{ layout.t.msg("You have not muted anyone.") }}</li>
         {% endfor %}
       </ul>
+      {% endif %}
     </div>
     <div class="bf-danger-box">
       <h3>{{ layout.t.t("settings.delete_account") }}</h3>

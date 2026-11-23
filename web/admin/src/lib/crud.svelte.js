@@ -41,11 +41,12 @@ export class Crud {
     }
   };
 
-  /// Deletes record `id` (the caller has asked the admin to confirm).
-  remove = async (id) => {
+  /// Deletes record `id` (the caller has asked the admin to confirm); `ok` is the confirmation.
+  remove = async (id, ok) => {
     try {
       await del(`${this.path}/${id}`);
       this.draft = null;
+      if (ok) this.status.msg = ok;
       await this.reload();
     } catch (e) {
       this.status.fail(e);

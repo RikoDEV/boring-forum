@@ -7,7 +7,7 @@
     <p class="small muted">{{ layout.t.f("transparency.lead", [("site", layout.site_name.as_str()), ("from", from.as_str()), ("to", to.as_str())]) }}</p>
   </div>
   <nav class="bf-segments small" aria-label="{{ layout.t.t("transparency.period") }}">
-    {%- for (key, label) in periods %}<a href="/transparency?period={{ key }}"{% if *key == period %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor -%}
+    {%- for (key, label) in periods %}<a href="/transparency?period={{ key }}"{% if *key == period %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor -%}
   </nav>
 </header>
 

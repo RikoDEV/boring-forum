@@ -1,12 +1,50 @@
 {% extends "layout.html" %}
-{#- Search: the query, filters and operators beside the results, and names that match. -#}
+{#- Search: one query bar, the filters as a row of controls under it, the facets and sorting of what was found, then the results. -#}
 {% block content %}
-<h1>{{ layout.t.t("nav.search") }}</h1>
-<form method="get" action="/search" id="search-form" class="bf-box bf-search-hero" role="search">
+<form method="get" action="/search" id="search-form" class="bf-box bf-search" role="search" data-island="search-filters">
   {% if let Some(t) = topic %}<input type="hidden" name="topic" value="{{ t }}">{% endif %}
-  <label class="bf-field"><input name="q" value="{{ q }}" type="search" placeholder=" " required><span class="bf-field-label">{{ layout.t.t("search.terms") }}</span></label>
-  <button class="btn primary">{{ layout.t.t("nav.search") }}</button>
+  <div class="bf-search-bar">
+    {{ layout.icon("search")|safe }}
+    <input name="q" value="{{ q }}" type="search" placeholder="{{ layout.t.t("search.terms") }}" aria-label="{{ layout.t.t("search.terms") }}" autocomplete="off" required>
+    <button class="btn primary">{{ layout.t.t("nav.search") }}</button>
+  </div>
+  <div class="bf-search-filters" role="group" aria-label="{{ layout.t.t("search.filters") }}">
+    <div class="bf-segments small" role="radiogroup" aria-label="{{ layout.t.t("search.look_in") }}">
+      <label><input type="radio" name="in" value=""{% if !topics_only %} checked{% endif %}><span>{{ layout.t.t("search.all_posts") }}</span></label>
+      <label><input type="radio" name="in" value="topics"{% if topics_only %} checked{% endif %}><span>{{ layout.t.t("search.titles") }}</span></label>
+    </div>
+    <label class="bf-search-pill">{{ layout.icon("folder")|safe }}
+      <select name="forum" aria-label="{{ layout.t.t("forum.forum") }}">
+        <option value="">{{ layout.t.t("search.all_forums") }}</option>
+        {%- for (id, title, sel) in forums %}<option value="{{ id }}"{% if *sel %} selected{% endif %}>{{ title }}</option>{% endfor -%}
+      </select>
+    </label>
+    <label class="bf-search-pill">{{ layout.icon("at-sign")|safe }}<input name="author" value="{{ author }}" autocomplete="off" placeholder="{{ layout.t.t("search.any_member") }}" aria-label="{{ layout.t.t("search.author") }}"></label>
+    <label class="bf-search-pill"><span>{{ layout.t.t("search.from") }}</span><input name="after" type="date" value="{{ after }}"></label>
+    <label class="bf-search-pill"><span>{{ layout.t.t("search.to") }}</span><input name="before" type="date" value="{{ before }}"></label>
+    {% if filtered %}<a class="bf-search-pill is-clear" href="/search?q={{ q|urlencode }}">{{ layout.icon("x")|safe }} {{ layout.t.t("search.clear") }}</a>{% endif %}
+    <button type="button" class="bf-search-pill" data-dialog="search-operators">{{ layout.icon("circle-help")|safe }} {{ layout.t.t("search.operators") }}</button>
+  </div>
 </form>
+<dialog class="bf-dialog" id="search-operators" aria-labelledby="search-operators-title">
+  <header class="bf-dialog-head">
+    <h2 id="search-operators-title">{{ layout.t.t("search.operators") }}</h2>
+    <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+  </header>
+  <div class="bf-dialog-body">
+    <dl class="bf-search-ops">
+            <dt><code>@name</code></dt><dd>{{ layout.t.t("search.op_member") }}</dd>
+            <dt><code>#forum</code></dt><dd>{{ layout.t.t("search.op_forum") }}</dd>
+            <dt><code>tags:a,b</code></dt><dd>{{ layout.t.t("search.op_tags") }}</dd>
+            <dt><code>after:2026-01-01</code></dt><dd>{{ layout.t.t("search.op_after") }} <code>before:</code></dd>
+            <dt><code>status:closed</code></dt><dd>{{ layout.t.t("search.op_closed") }}</dd>
+            <dt><code>in:first</code></dt><dd>{{ layout.t.t("search.op_first") }}</dd>
+            <dt><code>in:mine</code></dt><dd>{{ layout.t.t("search.op_mine") }}</dd>
+            <dt><code>in:bookmarks</code></dt><dd>{{ layout.t.t("search.op_bookmarks") }}</dd>
+            <dt><code>likes:3</code></dt><dd>{{ layout.t.t("search.op_likes") }}</dd>
+    </dl>
+  </div>
+</dialog>
 {% if topic.is_some() %}
 <p class="bf-search-note small">{{ layout.icon("message-square")|safe }} {{ layout.t.t("search.in_topic") }} <a href="/search?q={{ q|urlencode }}">{{ layout.t.t("search.everywhere") }}</a></p>
 {% endif %}
@@ -14,99 +52,74 @@
 {% let area = "search" %}
 {% include "_area_top.html" %}
 
-<div class="bf-search-page">
-  <aside aria-label="{{ layout.t.t("search.filters") }}">
-    <section class="bf-box">
-      <div class="bf-box-head">
-        <h2>{{ layout.t.t("search.filters") }}</h2>
-        {% if filtered %}<a class="small" href="/search?q={{ q|urlencode }}">{{ layout.t.t("search.clear") }}</a>{% endif %}
-      </div>
-      <div class="bf-box-body bf-search-filters">
-        <fieldset>
-          <legend>{{ layout.t.t("search.look_in") }}</legend>
-          <label class="check"><input form="search-form" type="radio" name="in" value=""{% if !topics_only %} checked{% endif %}> {{ layout.t.t("search.all_posts") }}</label>
-          <label class="check"><input form="search-form" type="radio" name="in" value="topics"{% if topics_only %} checked{% endif %}> {{ layout.t.t("search.titles") }}</label>
-        </fieldset>
-        <label class="bf-field"><input form="search-form" name="author" value="{{ author }}" autocomplete="off" placeholder="{{ layout.t.t("search.any_member") }}"><span class="bf-field-label">{{ layout.t.t("search.author") }}</span></label>
-        <label class="bf-field">
-          <select form="search-form" name="forum">
-            <option value="">{{ layout.t.t("search.all_forums") }}</option>
-            {%- for (id, title, sel) in forums %}<option value="{{ id }}"{% if *sel %} selected{% endif %}>{{ title }}</option>{% endfor -%}
-          </select>
-          <span class="bf-field-label">{{ layout.t.t("forum.forum") }}</span>
-        </label>
-        <div class="bf-search-dates">
-          <label class="bf-field"><input form="search-form" name="after" type="date" value="{{ after }}"><span class="bf-field-label">{{ layout.t.t("search.from") }}</span></label>
-          <label class="bf-field"><input form="search-form" name="before" type="date" value="{{ before }}"><span class="bf-field-label">{{ layout.t.t("search.to") }}</span></label>
-        </div>
-        <button form="search-form" class="btn">{{ layout.t.t("search.apply") }}</button>
-      </div>
-    </section>
-    <details class="bf-box bf-search-help bf-disclosure">
-      <summary>{{ layout.t.t("search.operators") }}</summary>
-      <dl class="small">
-        <dt><code>@name</code></dt><dd>{{ layout.t.t("search.op_member") }}</dd>
-        <dt><code>#forum</code></dt><dd>{{ layout.t.t("search.op_forum") }}</dd>
-        <dt><code>tags:a,b</code></dt><dd>{{ layout.t.t("search.op_tags") }}</dd>
-        <dt><code>after:2026-01-01</code></dt><dd>{{ layout.t.t("search.op_after") }} <code>before:</code></dd>
-        <dt><code>status:closed</code></dt><dd>{{ layout.t.t("search.op_closed") }}</dd>
-        <dt><code>in:first</code></dt><dd>{{ layout.t.t("search.op_first") }}</dd>
-        <dt><code>in:mine</code></dt><dd>{{ layout.t.t("search.op_mine") }}</dd>
-        <dt><code>in:bookmarks</code></dt><dd>{{ layout.t.t("search.op_bookmarks") }}</dd>
-        <dt><code>likes:3</code></dt><dd>{{ layout.t.t("search.op_likes") }}</dd>
-      </dl>
-    </details>
-    {% if editing_layout || !widgets.side.is_empty() %}
-    <div data-area="search_side" data-area-label="{{ layout.t.t("search.area_side") }}">
-      {%- for (id, title, html, kind) in widgets.side.iter() %}{% include "_widget.html" %}{% endfor -%}
-    </div>
-    {% endif %}
-  </aside>
-
-  <div>
+<div class="bf-search-page{% if editing_layout || !widgets.side.is_empty() %} has-side{% endif %}">
+  <div class="bf-search-main">
     {% if q.is_empty() %}
-    <section class="bf-box bf-search-state">
-      {{ layout.icon("search")|safe }}
-      <h2>{{ layout.t.t("search.empty_title") }}</h2>
-      <p class="muted">{{ layout.t.t("search.empty_body") }}</p>
+    <section class="bf-box">
+      <div class="bf-empty-state is-centered"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("search")|safe }}</span><p><strong>{{ layout.t.t("search.empty_title") }}</strong><br>{{ layout.t.t("search.empty_body") }}</p></div>
     </section>
     {% else %}
+    {% if let Some((text, url)) = suggestion %}
+    {% if corrected %}
+    <p class="bf-alert is-info" role="status">{{ layout.icon("info")|safe }} <span>{{ layout.t.msg("Showing results for") }} <a href="{{ url }}"><strong>{{ text }}</strong></a>. <a href="{{ original_url }}">{{ layout.t.msgf("Search instead for {q}", [("q", q.as_str())]) }}</a></span></p>
+    {% else %}
+    <p class="bf-alert is-info" role="status">{{ layout.icon("info")|safe }} <span>{{ layout.t.msg("Did you mean") }} <a href="{{ url }}"><strong>{{ text }}</strong></a>?</span></p>
+    {% endif %}
+    {% endif %}
+    {% if fuzzy %}
+    <p class="bf-alert is-info" role="status">{{ layout.icon("info")|safe }} <span>{{ layout.t.msg("No exact matches. These topics have similar titles.") }}</span></p>
+    {% endif %}
     {% if !matches.is_empty() %}
-    <section class="bf-box bf-search-names">
-      <h2 class="visually-hidden">{{ layout.t.t("search.names") }}</h2>
+    <section class="bf-search-names" aria-label="{{ layout.t.t("search.names") }}">
       {%- for (kind, url, name) in matches %}
-      <a class="bf-search-name" href="{{ url }}">
-        {%- if *kind == "member" %}<img class="avatar" src="/avatar/{{ name }}.svg" width="20" height="20" alt="">{% else if *kind == "tag" %}{{ layout.icon("flag")|safe }}{% else %}{{ layout.icon("folder")|safe }}{% endif -%}
-        {{ name }}<small class="muted">{{ layout.t.tj("search.kind.", kind) }}</small></a>
+      <a class="bf-browsing-chip" href="{{ url }}">
+        {%- if *kind == "member" %}<img class="avatar bf-browsing-avatar" src="/avatar/{{ name }}.svg" width="24" height="24" alt="" loading="lazy">{% else %}<span class="bf-browsing-avatar bf-browsing-bot">{% if *kind == "tag" %}{{ layout.icon("tag")|safe }}{% else %}{{ layout.icon("folder")|safe }}{% endif %}</span>{% endif -%}
+        <span class="bf-browsing-name">{{ name }}</span><small class="muted">{{ layout.t.tj("search.kind.", kind) }}</small></a>
       {%- endfor %}
     </section>
     {% endif %}
-    <section class="bf-box">
-      <div class="bf-box-head"><h2>{{ layout.t.f("search.results_for", [("count", layout.t.n("count.results", total).as_str()), ("q", q.as_str())]) }}</h2></div>
-      {% if results.is_empty() %}
-      <div class="bf-search-state">
-        {{ layout.icon("search")|safe }}
-        <h3>{{ layout.t.t("search.none") }}</h3>
-        <p class="muted">{{ layout.t.t("search.none_hint") }}{% if filtered %} <a href="/search?q={{ q|urlencode }}">{{ layout.t.t("search.clear_filters") }}</a>{% endif %}</p>
+    {% if !best_bets.is_empty() %}
+    <section class="bf-box bf-search-bets">
+      <div class="bf-box-head"><h2>{{ layout.icon("star")|safe }} {{ layout.t.msg("Recommended") }}</h2></div>
+      <ol class="results bf-feed">
+        {% for r in best_bets %}{% include "_search_hit.html" %}{% endfor %}
+      </ol>
+    </section>
+    {% endif %}
+    {% if !facets.forums.is_empty() || !facets.tags.is_empty() || !facets.years.is_empty() %}
+    <section class="bf-search-facets" aria-label="{{ layout.t.msg("Narrow down") }}">
+      {% if !facets.forums.is_empty() %}
+      <div class="bf-search-facet"><span class="bf-search-facet-name">{{ layout.t.msg("Forums") }}</span>
+        {%- for f in facets.forums.iter().take(8) %}<a class="bf-browsing-chip"{% if f.active %} aria-current="true"{% endif %} href="{{ f.url }}">{{ f.label }} <small class="muted">{{ f.count }}</small>{% if f.active %}{{ layout.icon("x")|safe }}{% endif %}</a>{% endfor -%}
       </div>
+      {% endif %}
+      {% if !facets.tags.is_empty() %}
+      <div class="bf-search-facet"><span class="bf-search-facet-name">{{ layout.t.msg("Tags") }}</span>
+        {%- for f in facets.tags.iter().take(8) %}<a class="bf-browsing-chip"{% if f.active %} aria-current="true"{% endif %} href="{{ f.url }}">{{ f.label }} <small class="muted">{{ f.count }}</small>{% if f.active %}{{ layout.icon("x")|safe }}{% endif %}</a>{% endfor -%}
+      </div>
+      {% endif %}
+      {% if !facets.years.is_empty() %}
+      <div class="bf-search-facet"><span class="bf-search-facet-name">{{ layout.t.msg("Year") }}</span>
+        {%- for f in facets.years.iter().take(8) %}<a class="bf-browsing-chip"{% if f.active %} aria-current="true"{% endif %} href="{{ f.url }}">{{ f.label }} <small class="muted">{{ f.count }}</small>{% if f.active %}{{ layout.icon("x")|safe }}{% endif %}</a>{% endfor -%}
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+    <section class="bf-box">
+      <div class="bf-search-toolbar">
+        <h2>{{ layout.t.f("search.results_for", [("count", layout.t.n("count.results", total).as_str()), ("q", q.as_str())]) }}</h2>
+        <div class="bf-search-tools">
+          <a class="btn small" href="{{ group_url }}" data-tip="{% if grouped %}{{ layout.t.msg("One result per topic. Click to list every matching post.") }}{% else %}{{ layout.t.msg("Every matching post. Click to show one result per topic.") }}{% endif %}">{{ layout.icon("list")|safe }} <span class="bf-btn-label">{% if grouped %}{{ layout.t.msg("Grouped by topic") }}{% else %}{{ layout.t.msg("All posts") }}{% endif %}</span></a>
+          <nav class="bf-segments small" aria-label="{{ layout.t.msg("Sort results") }}">
+            {%- for (key, label, url, cur) in sorts %}<a href="{{ url }}"{% if *cur %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor -%}
+          </nav>
+        </div>
+      </div>
+      {% if results.is_empty() %}
+      <div class="bf-empty-state is-centered"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("search")|safe }}</span><p><strong>{{ layout.t.t("search.none") }}</strong><br>{{ layout.t.t("search.none_hint") }}{% if filtered %} <a href="/search?q={{ q|urlencode }}">{{ layout.t.t("search.clear_filters") }}</a>{% endif %}</p></div>
       {% else %}
       <ol class="results bf-feed">
-        {% for r in results %}
-        <li>
-          <img class="avatar" src="/avatar/{{ r.author }}.svg" width="40" height="40" alt="" loading="lazy">
-          <div>
-            <a class="bf-feed-title" href="{{ r.url }}">{% for (t, hit) in r.title_parts %}{% if *hit %}<mark>{{ t }}</mark>{% else %}{{ t }}{% endif %}{% endfor %}</a>
-            <p>{% for (t, hit) in r.snippet_parts %}{% if *hit %}<mark>{{ t }}</mark>{% else %}{{ t }}{% endif %}{% endfor %}</p>
-            <div class="muted small bf-meta">
-              <span>{{ layout.icon("user")|safe }} {{ layout.user_link(r.author)|safe }}</span>
-              {%- if !r.forum.is_empty() %}<span>{{ layout.icon("folder")|safe }} <a class="muted" href="{{ r.forum_url }}">{{ r.forum }}</a></span>{% endif -%}
-              <span>{{ layout.icon("clock")|safe }} {{ r.when }}</span>
-              {%- if r.by_meaning %}<span class="bf-by-meaning">{{ layout.icon("sparkles")|safe }} {{ layout.t.msg("Similar in meaning") }}</span>{% endif -%}
-              {%- if r.number > 1 %}<span>{{ layout.icon("reply")|safe }} {{ layout.t.f("search.post_number", [("n", r.number.to_string().as_str())]) }}</span>{% endif -%}
-            </div>
-          </div>
-        </li>
-        {% endfor %}
+        {% for r in results %}{% include "_search_hit.html" %}{% endfor %}
       </ol>
       {% endif %}
     </section>
@@ -118,5 +131,12 @@
     </div>
     {% endif %}
   </div>
+  {% if editing_layout || !widgets.side.is_empty() %}
+  <aside class="bf-search-side">
+    <div data-area="search_side" data-area-label="{{ layout.t.t("search.area_side") }}">
+      {%- for (id, title, html, kind) in widgets.side.iter() %}{% include "_widget.html" %}{% endfor -%}
+    </div>
+  </aside>
+  {% endif %}
 </div>
 {% endblock %}

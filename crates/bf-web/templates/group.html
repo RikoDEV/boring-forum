@@ -6,9 +6,9 @@
 <section class="bf-box">
   <ul class="bf-people">
     {% for m in members %}
-    <li><img class="avatar" src="/avatar/{{ m }}.svg" width="32" height="32" alt="" loading="lazy"><div><a class="bf-feed-title" href="/u/{{ m }}">{{ m }}</a></div></li>
+    <li><img class="avatar" src="/avatar/{{ m }}.svg" width="32" height="32" alt="" loading="lazy"><div>{{ layout.user_link(m)|safe }}</div></li>
     {% else %}
-    <li class="muted">{{ layout.t.t("groups.no_members") }}</li>
+    <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("users")|safe }}</span><p>{{ layout.t.t("groups.no_members") }}</p></div></li>
     {% endfor %}
   </ul>
 </section>

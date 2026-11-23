@@ -18,9 +18,10 @@
   .bf-tag-chip,
   .bf-chip,
   .bf-callout,
-  .bf-modnotice,
+  .bf-alert,
+  .error,
   dialog,
-  .bf-modal-body {
+  .bf-dialog-body {
     border: 1px solid CanvasText;
   }
 
@@ -76,6 +77,21 @@
 
   .bf-badge.is-ok,
   .bf-badge.is-accent {
+    border-color: Highlight;
+  }
+
+  /* A message is told apart by its line, not its colour: an error is double, a warning dashed. */
+  .bf-alert.is-error,
+  .error {
+    border-style: double;
+    border-width: 3px;
+  }
+
+  .bf-alert.is-info {
+    border-style: dashed;
+  }
+
+  .bf-alert.is-ok {
     border-color: Highlight;
   }
 

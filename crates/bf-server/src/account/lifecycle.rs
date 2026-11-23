@@ -194,8 +194,9 @@ async fn request_delete(
     let site = state.settings().str("site_name").to_owned();
     let t = crate::http::i18n::user_t(&state, user.id.get()).await;
     let body = t.msgf(
-        "Your account on {site} will be deleted in {days} days.\n\nIf you did not ask for this, sign in and cancel it under Account settings: {link}\n",
+        "Hi {name},\n\nYour account on {site} will be deleted in {days} days.\n\nIf you did not ask for this, log in and cancel it under Account settings: {link}\n\n— {site}\n",
         &[
+            ("name", &user.username),
             ("site", &site),
             ("days", &grace_days().to_string()),
             ("link", &format!("{}/settings", state.config.base_url)),

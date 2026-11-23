@@ -1,13 +1,14 @@
 {% extends "layout.html" %}
 {#- The review queue: chat flags, accounts and posts awaiting approval, reported members and posts. -#}
 {% block content %}
-<div class="head-row">
+<header class="bf-box bf-page-head bf-head-row">
   <h1>{{ layout.t.t("modcp.queue") }}</h1>
   <div class="bf-head-actions">
     {% if layout.moderator %}<a class="btn" href="/review/apps">{{ layout.icon("puzzle")|safe }} <span class="bf-btn-label">{{ layout.t.msg("Held by plugins") }}</span></a>{% endif %}
     <a class="btn" href="/review/deleted">{{ layout.icon("trash-2")|safe }} <span class="bf-btn-label">{{ layout.t.t("deleted.title") }}</span></a>
   </div>
-</div>
+</header>
+{% if !notice.is_empty() %}<p class="bf-alert is-ok" role="status">{{ layout.icon("circle-check")|safe }} {{ notice }}</p>{% endif %}
 <form method="get" action="/review" class="bf-box bf-filter-bar" aria-label="{{ layout.t.t("review.filter_label") }}">
   <label class="bf-field">
     <select name="kind">
@@ -39,10 +40,18 @@
         <strong>{{ layout.user_link(author)|safe }}</strong> <a class="muted small" href="/chat/{{ channel }}">{{ layout.t.t("review.in_chat") }}</a>
         <p>{{ text }}</p>
         <div class="muted small">{{ layout.t.t("review.flagged_by") }} {{ layout.user_link(by)|safe }}{% if !reason.is_empty() %}: {{ reason }}{% endif %}</div>
-        <form method="post" action="/chat/flags/{{ mid }}" class="inline">
+        <form method="post" action="/chat/flags/{{ mid }}" class="inline" id="flag-form-{{ mid }}">
           <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-          <button class="btn" name="decision" value="keep">{{ layout.t.t("review.keep") }}</button> <button class="btn bf-btn-danger" name="decision" value="remove">{{ layout.t.t("settings.remove") }}</button>
+          <button type="button" class="btn bf-btn-danger" data-dialog="flag-remove-{{ mid }}">{{ layout.t.t("settings.remove") }}</button> <button class="btn primary" name="decision" value="keep">{{ layout.t.t("review.keep") }}</button>
         </form>
+    <dialog class="bf-dialog" id="flag-remove-{{ mid }}" aria-labelledby="flag-remove-{{ mid }}-title">
+      <header class="bf-dialog-head">
+        <h2 id="flag-remove-{{ mid }}-title">{{ layout.t.t("settings.remove") }}</h2>
+        <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+      </header>
+      <div class="bf-dialog-body"><p>{{ layout.t.msg("The message is removed from the chat.") }}</p></div>
+      <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger" name="decision" value="remove" form="flag-form-{{ mid }}">{{ layout.t.t("settings.remove") }}</button></div>
+    </dialog>
       </div>
     </li>
     {% endfor %}
@@ -60,7 +69,7 @@
       <div><strong>{{ layout.user_link(name)|safe }}</strong><div class="muted small">{{ email }} · {{ layout.t.t("review.joined") }} {{ joined }}</div></div>
       <form method="post" action="/review/user/{{ uid }}" class="bf-feed-end">
         <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-        <label class="small"><input type="checkbox" name="ban_email" value="1"> {{ layout.t.t("review.ban_email") }}</label>
+        <label class="check"><input type="checkbox" name="ban_email" value="1"> {{ layout.t.t("review.ban_email") }}</label>
         <button class="btn" name="decision" value="reject" data-tip="{{ layout.t.t("review.reject_account_hint") }}">{{ layout.t.t("review.reject") }}</button> <button class="btn primary" name="decision" value="approve">{{ layout.t.t("review.approve") }}</button>
       </form>
     </li>
@@ -122,7 +131,7 @@
     </form>
   </header>
   <div class="cooked bf-review-body">{{ r.cooked|safe }}</div>
-  <form method="post" action="/review/{{ r.id }}" class="bf-review-actions">
+  <form method="post" action="/review/{{ r.id }}" class="bf-review-actions" id="rv-{{ r.id }}">
     <input type="hidden" name="csrf" value="{{ layout.csrf }}">
     <details class="bf-review-edit bf-disclosure acp-wide">
       <summary data-tip="{{ layout.t.msg("Text to publish (used with the approve button; the author is told it was edited)") }}">{{ layout.icon("pencil")|safe }} {{ layout.t.msg("Edit the text, then approve") }}</summary>
@@ -133,13 +142,39 @@
       </div>
     </details>
     <label class="bf-field"><input name="message" placeholder=" "><span class="bf-field-label">{{ layout.t.t("review.message_author") }}</span></label>
-    {% if staff %}<button class="btn bf-btn-danger" name="decision" value="spammer" data-tip="{{ layout.t.msg("Remove the post, delete everything this new member posted and suspend the account") }}">{{ layout.t.msg("Spammer: delete all") }}</button>
-    <button class="btn" name="decision" value="silence" data-tip="{{ layout.t.msg("Remove the post and silence its author") }}">{{ layout.t.msg("Remove and silence") }}</button>{% endif %}
-    <button class="btn" name="decision" value="remove">{% if r.pending_post %}{{ layout.t.t("review.reject") }}{% else %}{{ layout.t.t("review.remove_post") }}{% endif %}</button>
+    {% if staff %}<button type="button" class="btn bf-btn-danger" data-dialog="rv-spammer-{{ r.id }}" data-tip="{{ layout.t.msg("Remove the post, delete everything this new member posted and suspend the account") }}">{{ layout.t.msg("Spammer: delete all") }}</button>
+    <button type="button" class="btn bf-btn-danger" data-dialog="rv-silence-{{ r.id }}" data-tip="{{ layout.t.msg("Remove the post and silence its author") }}">{{ layout.t.msg("Remove and silence") }}</button>{% endif %}
+    <button type="button" class="btn bf-btn-danger" data-dialog="rv-remove-{{ r.id }}">{% if r.pending_post %}{{ layout.t.t("review.reject") }}{% else %}{{ layout.t.t("review.remove_post") }}{% endif %}</button>
     <button class="btn primary" name="decision" value="keep">{% if r.pending_post %}{{ layout.t.t("review.approve") }}{% else %}{{ layout.t.t("review.keep_post") }}{% endif %}</button>
   </form>
+  {% if staff %}
+  <dialog class="bf-dialog" id="rv-spammer-{{ r.id }}" aria-labelledby="rv-spammer-{{ r.id }}-title">
+    <header class="bf-dialog-head">
+      <h2 id="rv-spammer-{{ r.id }}-title">{{ layout.t.msg("Spammer: delete all") }}</h2>
+      <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+    </header>
+    <div class="bf-dialog-body"><p>{{ layout.t.msg("Remove the post, delete everything this new member posted and suspend the account") }}</p></div>
+    <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger" name="decision" value="spammer" form="rv-{{ r.id }}">{{ layout.t.msg("Spammer: delete all") }}</button></div>
+  </dialog>
+  <dialog class="bf-dialog" id="rv-silence-{{ r.id }}" aria-labelledby="rv-silence-{{ r.id }}-title">
+    <header class="bf-dialog-head">
+      <h2 id="rv-silence-{{ r.id }}-title">{{ layout.t.msg("Remove and silence") }}</h2>
+      <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+    </header>
+    <div class="bf-dialog-body"><p>{{ layout.t.msg("The post is removed and its author is silenced.") }}</p></div>
+    <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger" name="decision" value="silence" form="rv-{{ r.id }}">{{ layout.t.msg("Remove and silence") }}</button></div>
+  </dialog>
+  {% endif %}
+  <dialog class="bf-dialog" id="rv-remove-{{ r.id }}" aria-labelledby="rv-remove-{{ r.id }}-title">
+    <header class="bf-dialog-head">
+      <h2 id="rv-remove-{{ r.id }}-title">{% if r.pending_post %}{{ layout.t.t("review.reject") }}{% else %}{{ layout.t.t("review.remove_post") }}{% endif %}</h2>
+      <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+    </header>
+    <div class="bf-dialog-body"><p>{{ layout.t.msg("The author is told.") }}</p></div>
+    <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger" name="decision" value="remove" form="rv-{{ r.id }}">{% if r.pending_post %}{{ layout.t.t("review.reject") }}{% else %}{{ layout.t.t("review.remove_post") }}{% endif %}</button></div>
+  </dialog>
 </article>
 {% else %}
-<p class="panel muted">{{ layout.t.t("review.nothing") }}</p>
+<div class="bf-box bf-box-body"><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("circle-check")|safe }}</span><p>{{ layout.t.t("review.nothing") }}</p></div></div>
 {% endfor %}
 {% endblock %}

@@ -105,6 +105,15 @@ forum.example.com {
 }
 ```
 
+**Behind Cloudflare.** Cloudflare sends the visitor's address in `CF-Connecting-IP`. Switch on
+*Cloudflare: real visitor address* in the admin panel (Settings → General) and the server reads it,
+for rate limits, sessions, the guest count and the access log. The header is believed only from
+Cloudflare's own networks (built in, from <https://www.cloudflare.com/ips/>) and from proxies you
+list in `BF_TRUSTED_PROXIES`, so a Cloudflare Tunnel's connector must be listed there; nobody who
+reaches the origin directly can claim an address. For the same reason, let only Cloudflare reach
+the origin (firewall it to those networks, or use a Tunnel). Turn the setting off when the site is
+not behind Cloudflare.
+
 Do not buffer responses: live updates use server-sent events, which a buffering proxy delays.
 
 **Built-in TLS.** Set `BF_TLS_CERT` and `BF_TLS_KEY` to a PEM certificate chain and key, and

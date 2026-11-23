@@ -1,9 +1,22 @@
 {% extends "layout.html" %}
-{#- An error page: the status and what went wrong. -#}
+{#- An error page, or (2xx) a plain notice page such as "held for approval": a heading, what happened, ways on. -#}
 {% block content %}
-<section class="panel" data-error="{{ status }}">
-  <h1>{{ status }}</h1>
-  <p>{{ message }}</p>
-  <p>{% if status == 422 || status == 400 %}<a href="/" data-back>{{ layout.t.t("error.back") }}</a> · {% endif %}<a href="/">{{ layout.t.t("error.home") }}</a></p>
+<section class="bf-box bf-auth" data-error="{{ status }}">
+  <header class="bf-auth-head">
+    <h1>{{ self.heading() }}</h1>
+  </header>
+  <div class="bf-auth-body">
+    {% if status < 300 %}
+    <p class="bf-alert is-ok" role="status">{{ layout.icon("circle-check")|safe }} {{ message }}</p>
+    {% else %}
+    <p>{{ message }}</p>
+    {% endif %}
+    {% if status == 403 && layout.user.is_none() %}<p class="small muted"><a href="/login">{{ layout.t.t("nav.login") }}</a></p>{% endif %}
+  </div>
+  <footer class="bf-auth-foot small">
+    {% if status >= 400 && status < 500 %}<a href="/" data-back>{{ layout.t.t("error.back") }}</a>{% endif %}
+    {% if status == 404 %}<a href="/search">{{ layout.t.t("nav.search") }}</a>{% endif %}
+    <a href="/">{{ layout.t.t("error.home") }}</a>
+  </footer>
 </section>
 {% endblock %}

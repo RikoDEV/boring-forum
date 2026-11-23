@@ -5,8 +5,10 @@
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
   import Section from "#lib/Section.svelte";
+  import Empty from "#lib/Empty.svelte";
   import { get, post, del } from "#lib/api.js";
   let words = $state([]);
+  let loaded = $state(false);
   const fresh = $state({ action: "block", pattern: "", replacement: "" });
   const status = new Status();
   let adding = $state(false);
@@ -63,6 +65,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
 
   async function add(e) {
@@ -145,10 +148,10 @@
     {#each words as w (w.id)}
       <tr>
         <td><code>{w.pattern}</code></td><td>{LABELS[w.action]}{w.replacement ? ` “${w.replacement}”` : ""}</td>
-        <td class="acp-cell-end"><button class="secondary" onclick={() => remove(w)}>{tr("Remove")}</button></td>
+        <td class="acp-cell-end"><button class="is-danger" onclick={() => remove(w)}>{tr("Remove")}</button></td>
       </tr>
     {:else}
-      <tr><td colspan="3" class="muted">{tr("No watched words.")}</td></tr>
+      <Empty cols={3} {loaded} title={tr("No watched words.")} text={tr("Use New watched word above to add one.")} />
     {/each}
   </tbody>
 </table>

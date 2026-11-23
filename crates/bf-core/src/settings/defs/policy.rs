@@ -230,10 +230,6 @@ pub(super) fn defs() -> Vec<SettingDef> {
         },
         SettingDef {
             default: json!(""),
-            ..def("ad_html", String, false, en("Advert shown under the header; scripts are removed"))
-        },
-        SettingDef {
-            default: json!(""),
             ..def(
                 "ads_txt",
                 String,

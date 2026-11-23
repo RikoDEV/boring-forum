@@ -17,17 +17,7 @@
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       <button class="bf-icon-btn" aria-label="{{ layout.t.t("forum.mark_read") }}">{{ layout.icon("circle-check")|safe }}</button>
     </form>
-    <details class="bf-menu">
-      <summary class="btn">{{ layout.icon("bell")|safe }} <span class="bf-btn-label">{{ layout.t.tj("follow.", follow) }}</span> {{ layout.icon("chevron-down")|safe }}</summary>
-      <div class="bf-menu-body bf-follow-menu">
-        <form method="post" action="/c/{{ forum_id }}/follow">
-          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-          {%- for k in ["watch", "normal", "mute"] %}
-          <button name="level" value="{{ k }}"{% if follow == *k %} aria-current="true"{% endif %}><span><strong>{{ layout.t.tj("follow.", k) }}</strong><small class="muted">{{ layout.t.tj("follow.forum_hint.", k) }}</small></span></button>
-          {%- endfor %}
-        </form>
-      </div>
-    </details>
+    {% let follow_scope = "c" %}{% let follow_id = forum_id %}{% let follow_topic = false %}{% include "_follow.html" %}
     {% endif %}
     {% if layout.translations && layout.admin %}<a class="bf-icon-btn" href="/admin/text?q={{ stored_title|urlencode }}" aria-label="{{ layout.t.t("post.translate") }}">{{ layout.icon("globe")|safe }}</a>{% endif %}
     {% if composer.is_some() %}<a class="btn primary" href="#new-topic">{{ layout.icon("plus")|safe }} {{ layout.t.t("forum.start_topic") }}</a>{% else if let Some(tip) = composer_blocked %}<span data-tip="{{ tip }}" data-tip-gate><button class="btn primary" disabled>{{ layout.icon("plus")|safe }} {{ layout.t.t("forum.start_topic") }}</button></span>{% endif %}
@@ -42,7 +32,7 @@
 <div{% if has_side %} class="bf-grid"{% endif %}>
 <div class="bf-grid-main">
   {% if let Some(r) = rules_html %}
-  <details class="panel block bf-disclosure" open><summary>{{ layout.t.t("forum.rules") }}</summary><div class="cooked">{{ r|safe }}</div></details>
+  <details class="bf-box block bf-disclosure" open><summary>{{ layout.t.t("forum.rules") }}</summary><div class="cooked">{{ r|safe }}</div></details>
   {% endif %}
 
   {% if !subforums.is_empty() %}
@@ -55,7 +45,7 @@
   {% endif %}
 
   {% if !moved.is_empty() %}
-  <ul class="panel block small moved">
+  <ul class="bf-box block small moved">
     {% for (url, title) in moved %}<li>{{ layout.t.t("forum.moved") }} <a href="{{ url }}">{{ title }}</a></li>{% endfor %}
   </ul>
   {% endif %}
@@ -64,21 +54,21 @@
   <section class="bf-box bf-list-box list-{{ list_style }}">
     <div class="bf-list-bar bf-list-tools">
       <nav class="bf-segments small" aria-label="{{ layout.t.t("forum.show") }}">
-        {%- for (label, url, active) in filters %}<a href="{{ url }}"{% if *active %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor -%}
+        {%- for (label, url, active) in filters %}<a href="{{ url }}"{% if *active %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor -%}
       </nav>
       <div class="bf-list-menus small">
         {% if !prefixes.is_empty() %}
         <details class="bf-menu">
           <summary class="btn">{% for (px, _, active) in prefixes %}{% if *active %}{{ px }}{% endif %}{% endfor %}<span class="muted bf-menu-hint">{{ layout.t.t("forum.prefix") }}</span> {{ layout.icon("chevron-down")|safe }}</summary>
           <div class="bf-menu-body">
-            {%- for (px, url, active) in prefixes %}<a href="{{ url }}"{% if *active %} aria-current="true"{% endif %}>{{ px }}</a>{% endfor -%}
+            {%- for (px, url, active) in prefixes %}<a href="{{ url }}"{% if *active %} aria-current="page"{% endif %}>{{ px }}</a>{% endfor -%}
           </div>
         </details>
         {% endif %}
         <details class="bf-menu">
           <summary class="btn"><span class="muted bf-menu-hint">{{ layout.t.t("forum.sort") }}</span> {% for (label, _, active) in sorts %}{% if *active %}{{ label }}{% endif %}{% endfor %} {{ layout.icon("chevron-down")|safe }}</summary>
           <div class="bf-menu-body">
-            {%- for (label, url, active) in sorts %}<a href="{{ url }}"{% if *active %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor -%}
+            {%- for (label, url, active) in sorts %}<a href="{{ url }}"{% if *active %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor -%}
           </div>
         </details>
       </div>
@@ -150,7 +140,7 @@
     <strong class="bf-sheet-title">{{ layout.icon("pencil")|safe }} {{ layout.t.t("forum.create_topic") }}</strong>
     <div class="bf-sheet-controls" data-composer-controls><a class="bf-icon-btn" href="#" data-sheet-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</a></div>
   </div>
-  <p class="error small" role="alert" data-sheet-error hidden></p>
+  <p class="bf-alert is-error" role="alert" data-sheet-error hidden></p>
   <div class="bf-composer-row">
     <select data-forum-picker aria-label="{{ layout.t.t("forum.forum") }}" hidden>
       {%- for (cat, list) in c.forums %}<optgroup label="{{ cat }}">{% for (fid, name) in list %}<option value="{{ fid }}"{% if *fid == forum_id %} selected{% endif %}>{{ name }}</option>{% endfor %}</optgroup>{% endfor -%}

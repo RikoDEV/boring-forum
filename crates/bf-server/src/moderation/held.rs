@@ -205,7 +205,7 @@ async fn decide(
         crate::community::notifications::send(&state, user.id.get(), &[h.user_id], "content_rejected", &data).await;
     }
     state.microcache.clear();
-    Ok(Redirect::to("/review").into_response())
+    Ok(Redirect::to(if approve { "/review?done=approve_held" } else { "/review?done=reject_held" }).into_response())
 }
 
 /// Refuses an approval whose author can no longer write.

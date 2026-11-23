@@ -17,7 +17,7 @@
   gap: 0.4em;
   padding: 0.15rem var(--bf-space-3);
   border: 1px solid var(--bf-color-border);
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   background: none;
   color: var(--bf-color-text);
   font: inherit;

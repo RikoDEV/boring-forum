@@ -9,18 +9,18 @@ use axum::response::{IntoResponse, Redirect, Response};
 use bf_core::AppError;
 use bf_db::accounts::{preferences, security};
 use bf_db::community::follows;
+use bf_web::pages::{LinkedLogin, LoginProvider};
 use serde::Deserialize;
 
 use super::settings_page;
 
 /// Everything the settings page shows for these sections.
 pub(super) struct PrivacyView {
-    /// (provider key, label, email, linked)
-    pub(super) identities: Vec<(String, String, Option<String>, bf_web::ago::Ago)>,
+    pub(super) identities: Vec<LinkedLogin>,
     /// False when the account has no other way to sign in: the last linked login stays.
     pub(super) identity_removable: bool,
     /// Providers not connected yet: (provider key, label).
-    pub(super) connectable: Vec<(String, String)>,
+    pub(super) connectable: Vec<LoginProvider>,
     pub(super) allow_pm_from: String,
     /// (id, username)
     pub(super) muted_users: Vec<(i64, String)>,
@@ -40,13 +40,13 @@ pub(super) async fn view(
     let connectable = crate::auth::oauth::linkable(&state.settings())
         .into_iter()
         .filter(|(key, _)| !rows.iter().any(|(linked, _, _)| linked.as_str() == *key))
-        .map(|(key, label)| (key.to_owned(), label))
+        .map(|(key, label)| provider(key, label))
         .collect();
     let identities = rows
         .into_iter()
         .map(|(key, email, at)| {
-            let label = labels.iter().find(|(k, _)| *k == key).map_or_else(|| key.clone(), |(_, l)| l.clone());
-            (key, label, email, crate::http::render::ago(at))
+            let label = labels.iter().find(|(k, _)| *k == key).map_or_else(|| known_label(&key), |(_, l)| l.clone());
+            LinkedLogin { provider: provider(&key, label), email, linked: crate::http::render::ago(at) }
         })
         .collect();
     Ok(PrivacyView {
@@ -57,6 +57,31 @@ pub(super) async fn view(
         muted_users: follows::ignored_list(pool, user.get()).await.db()?,
         trusted_devices: security::trusted_device_count(pool, user).await.db()?,
     })
+}
+
+/// A provider's name when the site no longer lists it among the enabled ones (it was switched off
+/// after this member linked it).
+fn known_label(key: &str) -> String {
+    match key {
+        "google" => "Google",
+        "github" => "GitHub",
+        "discord" => "Discord",
+        "microsoft" => "Microsoft",
+        "twitch" => "Twitch",
+        "x" => "X",
+        other => other,
+    }
+    .to_owned()
+}
+
+/// The logo the sprite has for a provider, or a key for the ones it has none for (a generic OpenID
+/// provider, the site's own single sign-on).
+fn provider(key: &str, label: String) -> LoginProvider {
+    let icon = match key {
+        "google" | "github" | "discord" | "microsoft" | "twitch" | "x" => format!("brand-{key}"),
+        _ => "key".to_owned(),
+    };
+    LoginProvider { key: key.to_owned(), label, icon }
 }
 
 /// Unlinks a provider, unless it is the last way to sign in.

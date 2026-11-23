@@ -1,14 +1,16 @@
 <script>
   import { tn, tr } from "#lib/i18n.js";
   import { Status } from "#lib/status.svelte.js";
-  import Notices from "#lib/Notices.svelte";
+  import PageHead from "#lib/PageHead.svelte";
+  import Empty from "#lib/Empty.svelte";
   import { onMount, tick } from "svelte";
   import { page } from "$app/state";
   import RankEditor from "#lib/RankEditor.svelte";
   import MultiSelect from "#lib/MultiSelect.svelte";
   import { api, get, ApiError, uploadFile } from "#lib/api.js";
   import TreeSelect from "#lib/TreeSelect.svelte";
-  import { CODE, groupOf, humanize, MANAGED, meta } from "#lib/settings-meta.js";
+  import { code } from "#lib/code.js";
+  import { CODE, CODE_LANG, groupOf, humanize, MANAGED, meta } from "#lib/settings-meta.js";
   import sprite from "../../../../../themes/default/icons.svg?url";
 
   // A key or secret arrives without its value, only with `set`: whether one is stored. Typing
@@ -154,7 +156,6 @@
     "blocked_link_domains",
     "review_link_domains",
     "blocked_user_agents",
-    "ad_html",
     "login_apple_key",
     "cookie_consent_text",
     "offline_message",
@@ -163,6 +164,7 @@
     "reserved_usernames",
     "sidebar_links",
     "csp_image_hosts",
+    "onebox_blocked_hosts",
     "embed_hosts",
   ]);
   const { GROUPS, ICONS, IMAGES } = meta();
@@ -315,10 +317,7 @@
   });
 </script>
 
-<div class="acp-settings-head">
-  <h1>{tr("Settings")}</h1>
-</div>
-<Notices {status} />
+<PageHead title={tr("Settings")} {status} />
 
 <div class="acp-settings">
   <nav class="acp-settings-nav" aria-label={tr("Setting groups")}>
@@ -469,6 +468,7 @@
                     spellcheck="false"
                     autocapitalize="off"
                     autocomplete="off"
+                    use:code={{ lang: CODE_LANG[s.key], value: s.draft }}
                     bind:value={s.draft}></textarea>
                 {:else if isSecret(s)}
                   <div class="acp-secret-set">
@@ -521,7 +521,7 @@
         {/if}
       </section>
     {:else}
-      {#if loaded}<p class="acp-box acp-empty">{tr("No settings in this group.")}</p>{/if}
+      {#if loaded}<section class="acp-box"><Empty title={tr("No settings in this group.")} /></section>{/if}
     {/each}
   </div>
 </div>

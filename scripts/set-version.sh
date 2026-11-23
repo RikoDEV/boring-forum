@@ -6,5 +6,8 @@ cd "$(dirname "$0")/.."
 version="${1:?usage: set-version.sh <version>}"
 # The first `version = ` in the root manifest is [workspace.package]; every crate inherits it.
 sed -i "0,/^version = \".*\"/s//version = \"$version\"/" Cargo.toml
+# The plain-text copy installs read to learn the latest release (the `version_check_url` default).
+printf '%s
+' "$version" > VERSION
 # Moves the workspace crates in Cargo.lock to the new version without touching dependencies.
 cargo update --workspace

@@ -5,8 +5,9 @@
   import { del, get, put } from "#lib/api.js";
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
-  import Section from "#lib/Section.svelte";
   import Switch from "#lib/Switch.svelte";
+  import Box from "#lib/Box.svelte";
+  import Empty from "#lib/Empty.svelte";
 
   const LIMIT = 100;
   let catalog = $state([]);
@@ -17,14 +18,17 @@
   let q = $state(new URLSearchParams(globalThis.location?.search).get("q") ?? "");
   let onlyMine = $state(false);
   let draft = $state(null); // the message being changed: { key, text, default, value, had }
+  let loaded = $state(false);
   const status = new Status();
 
   const load = () =>
-    get(`/text?locale=${locale}`).then((r) => {
-      catalog = r.catalog;
-      overrides = r.overrides;
-      locales = r.locales;
-    }, status.fail);
+    get(`/text?locale=${locale}`)
+      .then((r) => {
+        catalog = r.catalog;
+        overrides = r.overrides;
+        locales = r.locales;
+      }, status.fail)
+      .finally(() => (loaded = true));
   const mine = (key) => overrides.find((o) => o.key === key && o.locale === locale)?.value ?? "";
   const count = $derived(overrides.filter((o) => o.locale === locale).length);
   const matches = $derived.by(() => {
@@ -122,13 +126,21 @@
   </EditDialog>
 {/if}
 
-<div class="acp-settings-head">
-  <select bind:value={locale} onchange={pick} aria-label={tr("Language")}>
-    {#each locales as l (l.code)}<option value={l.code}>{l.name}</option>{/each}
-  </select>
-  <input type="search" bind:value={q} placeholder={tr("Search text")} aria-label={tr("Search text")} />
-</div>
-<Section switches><Switch label="{tr('Only my changes')} ({count})" bind:checked={onlyMine} /></Section>
+<Box title={tr("Search text")}>
+  <div class="acp-form">
+    <Field
+      label={tr("Language")}
+      value={locale}
+      onchange={(e) => {
+        locale = e.currentTarget.value;
+        pick();
+      }}
+      options={locales.map((l) => [l.code, l.name])}
+    />
+    <Field label={tr("Search text")} type="search" bind:value={q} />
+    <Switch check wide label="{tr('Only my changes')} ({count})" bind:checked={onlyMine} />
+  </div>
+</Box>
 
 {#if shown.length}
   <div class="acp-box">
@@ -150,7 +162,8 @@
       {tr("Showing the first {n} of {total}. Search to narrow the list.", { n: LIMIT, total: matches.length })}
     </p>{/if}
 {:else}
-  <p class="acp-empty">
-    {onlyMine && !q ? tr("You have not changed any text in this language.") : tr("No text matches.")}
-  </p>
+  <Empty
+    {loaded}
+    title={onlyMine && !q ? tr("You have not changed any text in this language.") : tr("No text matches.")}
+  />
 {/if}

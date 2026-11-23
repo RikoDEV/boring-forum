@@ -32,7 +32,7 @@
         </div>
       </li>
       {% else %}
-      <li class="bf-search-state">{{ layout.icon("heart")|safe }}<h3>{{ layout.t.t("summary.none") }}</h3><p class="muted">{{ layout.t.t("summary.none_hint") }}</p></li>
+      <li><div class="bf-empty-state is-centered"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("message-square")|safe }}</span><p><strong>{{ layout.t.t("summary.none") }}</strong><br>{{ layout.t.t("summary.none_hint") }}</p></div></li>
       {% endfor %}
     </ol>
   </section>
@@ -49,7 +49,7 @@
       <div class="bf-box-head"><h2>{{ layout.t.t("summary.most_active") }}</h2></div>
       <ul class="bf-people">
         {% for (name, n) in posters %}
-        <li><img class="avatar" src="/avatar/{{ name }}.svg" width="32" height="32" alt="" loading="lazy"><div><a href="/u/{{ name }}"><strong>{{ name }}</strong></a></div><span class="muted small">{{ layout.t.n("count.posts", n) }}</span></li>
+        <li><img class="avatar" src="/avatar/{{ name }}.svg" width="32" height="32" alt="" loading="lazy"><div><strong>{{ layout.user_link(name)|safe }}</strong></div><span class="muted small">{{ layout.t.n("count.posts", n) }}</span></li>
         {% endfor %}
       </ul>
     </section>

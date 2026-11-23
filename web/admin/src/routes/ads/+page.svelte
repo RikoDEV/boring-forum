@@ -7,8 +7,9 @@
   import Switch from "#lib/Switch.svelte";
   import MultiSelect from "#lib/MultiSelect.svelte";
   import Box from "#lib/Box.svelte";
-  import { Status } from "#lib/status.svelte.js";
-  import { get, put, when } from "#lib/api.js";
+  import When from "#lib/When.svelte";
+  import Empty from "#lib/Empty.svelte";
+  import { get, put } from "#lib/api.js";
   import { Crud } from "#lib/crud.svelte.js";
 
   const PLACES = {
@@ -20,6 +21,7 @@
   };
   let ads = $state([]);
   let groups = $state([]);
+  let loaded = $state(false);
   const crud = new Crud({ path: "/ads", blank: () => blank(), load: () => load() });
   const status = crud.status;
   const groupOptions = $derived(groups.map((g) => ({ value: String(g.id), label: g.name })));
@@ -30,6 +32,7 @@
     } catch (e) {
       status.fail(e);
     }
+    loaded = true;
   }
   load();
 
@@ -82,25 +85,18 @@
   }
   // ads.txt is one site setting rather than an ad, so it has its own small form.
   let adsTxt = $state("");
-  const adsTxtStatus = new Status();
   get("/settings").then(
     (all) => (adsTxt = String(all.find((x) => x.key === "ads_txt")?.value ?? "")),
-    (e) => adsTxtStatus.fail(e),
+    (e) => status.fail(e),
   );
   const saveAdsTxt = (e) => {
     e.preventDefault();
-    return adsTxtStatus.run(() => put("/settings/ads_txt", { value: adsTxt }), tr("Saved."));
+    return status.run(() => put("/settings/ads_txt", { value: adsTxt }), tr("Saved."));
   };
   const remove = (a) => confirm(tr('Delete the ad "{name}"?', { name: a.name })) && crud.remove(a.id);
   // An empty date is no limit: a missing start means it runs already, a missing end means forever.
-  const runs = (a) =>
-    a.starts_at && a.ends_at
-      ? `${when(a.starts_at)} – ${when(a.ends_at)}`
-      : a.starts_at
-        ? tr("From {date}, forever", { date: when(a.starts_at) })
-        : a.ends_at
-          ? tr("Until {date}", { date: when(a.ends_at) })
-          : tr("Always");
+  // The sentence is split around a marker, so the date can be a <When> in its place.
+  const DATE = "";
   const ctr = (a) => (a.impressions ? `${((a.clicks / a.impressions) * 100).toFixed(2)}%` : "—");
 </script>
 
@@ -170,6 +166,8 @@
   </EditDialog>
 {/if}
 
+{#snippet around(text, iso)}{@const [before, after] = text.split(DATE)}{before}<When {iso} />{after}{/snippet}
+
 <table>
   <thead>
     <tr>
@@ -188,10 +186,15 @@
         <td>{PLACES[a.placement]}</td><td>{a.impressions}</td><td>{a.url ? a.clicks : "—"}</td><td>
           {a.url ? ctr(a) : "—"}
         </td>
-        <td class="small">{runs(a)}</td>
+        <td class="small">
+          {#if a.starts_at && a.ends_at}<When iso={a.starts_at} /> – <When iso={a.ends_at} />
+          {:else if a.starts_at}{@render around(tr("From {date}, forever", { date: DATE }), a.starts_at)}
+          {:else if a.ends_at}{@render around(tr("Until {date}", { date: DATE }), a.ends_at)}
+          {:else}{tr("Always")}{/if}
+        </td>
       </tr>
     {:else}
-      <tr><td colspan="6" class="muted">{tr("No ads.")}</td></tr>
+      <Empty cols={6} {loaded} title={tr("No ads.")} text={tr("Use New ad above to add one.")} />
     {/each}
   </tbody>
 </table>
@@ -208,8 +211,6 @@
     />
     <div class="acp-actions acp-wide">
       <button>{tr("Save")}</button>
-      {#if adsTxtStatus.msg}<small class="muted">{adsTxtStatus.msg}</small>{/if}
-      {#if adsTxtStatus.error}<small class="error">{adsTxtStatus.error}</small>{/if}
     </div>
   </form>
 </Box>

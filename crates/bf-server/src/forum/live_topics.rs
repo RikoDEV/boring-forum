@@ -152,7 +152,10 @@ pub(crate) async fn live_html(
         ));
     }
     if questions.is_empty() {
-        html.push_str(&format!("<li class=\"muted\">{tr1}</li>", tr1 = trh("No questions yet.")));
+        html.push_str(&format!(
+            "<li>{}</li>",
+            crate::community::people::empty("circle-help", &crate::http::i18n::tr("No questions yet."))
+        ));
     }
     html.push_str("</ol>");
     if now < s.ends_at {
@@ -435,7 +438,10 @@ async fn list(
         ));
     }
     if rows.is_empty() {
-        html.push_str(&format!("<li class=\"muted\">{tr1}</li>", tr1 = trh("No live sessions coming up.")));
+        html.push_str(&format!(
+            "<li>{}</li>",
+            crate::community::people::empty("calendar", &crate::http::i18n::tr("No live sessions coming up."))
+        ));
     }
     html.push_str("</ul></section>");
     let shell = Shell { title: v.t().msg("Live Q&A"), canonical: Some("/live".into()), ..Shell::default() }

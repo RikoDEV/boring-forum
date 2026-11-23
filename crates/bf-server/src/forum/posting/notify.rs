@@ -281,7 +281,13 @@ async fn announce(
             let locale = locale
                 .unwrap_or_else(|| bf_core::i18n::site_language(state.settings().str("default_locale")).to_owned());
             let t = bf_core::i18n::T::new(&locale);
-            let vars = [("site", site.as_str()), ("by", by), ("title", title), ("link", abs.as_str())];
+            let vars = [
+                ("site", site.as_str()),
+                ("username", bf_db::community::notifications::RECIPIENT),
+                ("by", by),
+                ("title", title),
+                ("link", abs.as_str()),
+            ];
             let (subject, body) = crate::admin::mail_templates::render(&t, "notification", &vars);
             match bf_db::community::notifications::deliver(
                 pool, base, author_id, &ids, "reply", &data, &subject, &body, delay,

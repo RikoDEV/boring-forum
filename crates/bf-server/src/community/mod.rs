@@ -18,6 +18,7 @@ pub mod legal;
 pub mod messages;
 pub mod notifications;
 pub mod onboarding;
+pub(crate) mod people;
 pub mod polls;
 pub mod presence;
 pub mod profiles;

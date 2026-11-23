@@ -1,3 +1,9 @@
+/* Stat pill colours. */
+:root {
+  --bf-stat-rep: #2e8b63;
+  --bf-stat-answers: #2b7bbd;
+}
+
 /* Profiles: cover, avatar editing, status updates, followers and achievements. */
 
 .cover {
@@ -470,7 +476,7 @@
   & span {
     margin-inline-end: auto;
     padding: var(--bf-space-1) var(--bf-space-3);
-    border-radius: 999px;
+    border-radius: var(--bf-radius-pill);
     background: rgb(0 0 0 / 0.65);
     color: #fff;
     font-size: var(--bf-text-sm);
@@ -556,8 +562,8 @@ a.bf-achievement:hover {
   inset-block-start: -0.6rem;
   inset-inline-start: 50%;
   padding-inline: 0.3rem;
-  border-radius: 3px;
-  background: #1e293b;
+  border-radius: var(--bf-radius-sm);
+  background: var(--bf-medal-ink);
   color: #fff;
   font-size: 0.625rem;
   line-height: 1rem;
@@ -576,7 +582,7 @@ a.bf-achievement:hover {
   min-width: 3rem;
   height: 3rem;
   padding-inline: var(--bf-space-3);
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   color: #fff;
   font-size: var(--bf-text-lg);
   font-variant-numeric: tabular-nums;
@@ -584,11 +590,11 @@ a.bf-achievement:hover {
 }
 
 .bf-stat-rep {
-  background: #2e8b63;
+  background: var(--bf-stat-rep);
 }
 
 .bf-stat-answers {
-  background: #2b7bbd;
+  background: var(--bf-stat-answers);
 }
 
 /* Profile: status updates, one card each with its conversation beneath */
@@ -717,23 +723,6 @@ a.bf-achievement:hover {
 
   & .bf-field-label {
     background: linear-gradient(to bottom, transparent 45%, var(--bf-color-surface-2) 45%);
-  }
-}
-
-.bf-sc-empty {
-  display: grid;
-  justify-items: center;
-  gap: var(--bf-space-2);
-  padding: var(--bf-space-6) var(--bf-space-4);
-  color: var(--bf-color-muted);
-
-  & .bf-icon {
-    width: 2rem;
-    height: 2rem;
-  }
-
-  & p {
-    margin: 0;
   }
 }
 

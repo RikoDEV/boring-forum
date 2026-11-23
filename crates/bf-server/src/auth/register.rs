@@ -269,7 +269,7 @@ async fn already_registered(state: &AppState, v: &Viewer, pool: &PgPool, email: 
         bf_db::platform::mail::queue_mail(
             pool,
             &a.email,
-            &t.msgf("You already have an account on {site}", &[("site", &site)]),
+            &t.msgf("You already have an account - {site}", &[("site", &site)]),
             &body,
         )
         .await

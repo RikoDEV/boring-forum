@@ -273,7 +273,9 @@ pub(crate) async fn list(
         .db()?
         .into_iter()
         .map(|p| {
-            let used = p.last_used_at.map_or_else(|| bf_web::ago::Ago::plain("never"), crate::http::render::ago);
+            let used = p
+                .last_used_at
+                .map_or_else(|| bf_web::ago::Ago::plain(crate::http::i18n::tr("never")), crate::http::render::ago);
             (b64(&p.id), p.name, crate::http::render::ago(p.created_at), used)
         })
         .collect())

@@ -188,5 +188,6 @@ pub(super) async fn staff_decide(
         return Err(AppError::NotFound);
     }
     changed(&state, id).await?;
-    Ok(axum::response::Redirect::to("/review").into_response())
+    let done = if f.decision == "keep" { "chat_keep" } else { "chat_remove" };
+    Ok(axum::response::Redirect::to(&format!("/review?done={done}")).into_response())
 }

@@ -1,8 +1,12 @@
-//! Account emails (verification, password reset). Builds the message;
-//! delivery (SMTP, retries) is the mail job in bf-server.
+//! Account emails: the kinds an administrator can rewrite and the built-in verification and reset
+//! texts. Delivery (SMTP, retries) is the mail job in bf-server.
 //!
-//! Each mail's subject and body are catalog messages (`mail.<kind>.subject` / `.body`), rewritten
-//! per language in the admin panel's Site text page; `TEMPLATE_KINDS` lists them.
+//! What a member receives is read from the catalog in their language: each mail's subject and body
+//! are messages `mail.<kind>.subject` / `.body` (`locales/*.ftl`), rewritten per language in the
+//! admin panel's Site text page. `TEMPLATE_KINDS` lists those messages; a kind needs its catalog
+//! entries before it is added. `VERIFY_*` / `RESET_*` and `account_email` build the link and the
+//! English fallback. Every plain-text mail follows one shape: "Hi {name}," a body, then "— {site}";
+//! its subject reads "{what it is} - {site}".
 
 use crate::settings::Settings;
 
@@ -24,13 +28,13 @@ pub enum Kind {
 pub const TEMPLATE_KINDS: &[(&str, &[&str], &str)] = &[
     ("verify", &["site", "username", "link"], "link"),
     ("reset", &["site", "username", "link"], "link"),
-    ("notification", &["site", "by", "title", "link"], "link"),
+    ("notification", &["site", "username", "by", "title", "link"], "link"),
     ("digest", &["site", "username", "topics", "link", "unsubscribe"], "topics"),
     ("security", &["site", "username", "what", "link"], ""),
     ("backup", &["site", "username", "name", "link"], "link"),
 ];
 
-/// Built-in texts of the two account mails.
+/// Built-in English texts of the two account mails (the catalog's texts are what is sent).
 pub const VERIFY_SUBJECT: &str = "Confirm your email for {site}";
 pub const VERIFY_BODY: &str = "Hi {username},\n\nConfirm your email address by opening this link within 24 hours:\n\n{link}\n\nIf you did not ask for this, ignore this email.\n\n— {site}\n";
 pub const RESET_SUBJECT: &str = "Reset your {site} password";

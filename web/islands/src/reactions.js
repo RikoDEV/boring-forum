@@ -9,8 +9,8 @@ import { el, tr, userLink, when } from "./dom.js";
  * @typedef {{ id: number, icon: string, name: string, users: Reactor[] }} Group
  */
 
-/** One row: the member's picture, their name, when they reacted, and (in the list of all) how. */
-function row(user, group, showIcon) {
+/** One row: the member's picture, their name, when they reacted, and the reaction they chose. */
+function row(user, group) {
   const li = el("li", { class: "bf-reactor" });
   const img = el("img", {
     class: "avatar",
@@ -27,11 +27,10 @@ function row(user, group, showIcon) {
   small.append(when(null, user.at));
   who.append(name, small);
   li.append(img, who);
-  if (showIcon) {
-    const mark = el("span", { class: "bf-reactor-icon", "aria-label": group.name }, group.icon);
-    mark.dataset.tip = group.name;
-    li.append(mark);
-  }
+  // The reaction on every row, in each tab too: a list with one reaction still says which.
+  const mark = el("span", { class: "bf-reactor-icon", "aria-label": group.name }, group.icon);
+  mark.dataset.tip = group.name;
+  li.append(mark);
   return li;
 }
 
@@ -45,15 +44,15 @@ function render(body, groups) {
     return;
   }
   const list = el("ul", { class: "bf-reactors" });
-  const show = (items, showIcon) => list.replaceChildren(...items.map((x) => row(x.user, x.group, showIcon)));
-  show(all, groups.length > 1);
+  const show = (items) => list.replaceChildren(...items.map((x) => row(x.user, x.group)));
+  show(all);
   if (groups.length < 2) {
     body.replaceChildren(list);
     return;
   }
   // One tab for everything and one for each reaction, with how many members chose it.
   const tabs = el("div", { class: "bf-reactions-tabs", role: "tablist", "aria-label": tr("Reactions") });
-  const make = (label, count, items, showIcon, selected) => {
+  const make = (label, count, items, selected) => {
     const tab = el("button", {
       type: "button",
       class: "bf-reactions-tab",
@@ -67,17 +66,16 @@ function render(body, groups) {
         t.setAttribute("aria-selected", String(t === tab));
         /** @type {HTMLElement} */ (t).tabIndex = t === tab ? 0 : -1;
       }
-      show(items, showIcon);
+      show(items);
     });
     return tab;
   };
-  tabs.append(make(tr("All"), all.length, all, true, true));
+  tabs.append(make(tr("All"), all.length, all, true));
   for (const g of groups) {
     const tab = make(
       g.icon,
       g.users.length,
       g.users.map((u) => ({ user: u, group: g })),
-      false,
       false,
     );
     tab.setAttribute("aria-label", `${g.name}: ${g.users.length}`);

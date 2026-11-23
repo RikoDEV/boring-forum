@@ -102,8 +102,20 @@ pub(crate) async fn run_awards(state: &AppState) {
     for result in [system, custom] {
         match result {
             Ok(awards) => {
+                // The notification links to the member's own badges tab, which is addressed by name.
+                let ids: Vec<i64> = awards.iter().map(|(user, _)| *user).collect();
+                let names: std::collections::HashMap<i64, String> =
+                    sqlx::query_as::<_, (i64, String)>("SELECT id, username FROM users WHERE id = ANY($1)")
+                        .bind(&ids)
+                        .fetch_all(pool)
+                        .await
+                        .unwrap_or_default()
+                        .into_iter()
+                        .collect();
                 for (user, name) in awards {
-                    let data = json!({ "name": name, "url": format!("/u/{user}/badges") });
+                    let Some(who) = names.get(&user) else { continue };
+                    let url = format!("{}?tab=badges", bf_core::slug::profile_path(user, who));
+                    let data = json!({ "name": name, "url": url });
                     crate::community::notifications::send(state, 0, &[user], "badge", &data).await;
                     crate::platform::webhooks::fire(state, "badge.awarded", json!({ "user_id": user, "badge": name }));
                 }

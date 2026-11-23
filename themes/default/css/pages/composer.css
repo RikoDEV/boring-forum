@@ -68,7 +68,7 @@
 .composer-side {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--bf-space-0);
   min-width: 0;
 }
 
@@ -79,7 +79,7 @@
 /* Write | Preview, as one control. */
 .composer-modes {
   display: flex;
-  padding: 2px;
+  padding: var(--bf-space-0);
   background: var(--bf-color-surface-2);
   border-radius: var(--bf-radius);
 
@@ -128,10 +128,10 @@
 
 .composer-selbar {
   position: absolute;
-  z-index: 30;
+  z-index: var(--bf-z-menu);
   display: flex;
-  gap: 2px;
-  padding: 2px;
+  gap: var(--bf-space-0);
+  padding: var(--bf-space-0);
   background: var(--bf-color-surface);
   border: 1px solid var(--bf-color-border);
   border-radius: var(--bf-radius);
@@ -172,9 +172,9 @@
   display: inline-flex;
   align-items: center;
   gap: var(--bf-space-1);
-  padding: 2px var(--bf-space-3) 2px var(--bf-space-2);
+  padding: var(--bf-space-0) var(--bf-space-3) var(--bf-space-0) var(--bf-space-2);
   border: 1px dashed var(--bf-color-border-strong);
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   background: none;
   color: var(--bf-color-muted);
   font: inherit;
@@ -260,7 +260,7 @@
 /* The table-builder popover: a hover grid for picking rows and columns. */
 .composer-table-picker {
   position: fixed;
-  z-index: 60;
+  z-index: var(--bf-z-popover);
   padding: var(--bf-space-2);
   background: var(--bf-color-surface);
   border: 1px solid var(--bf-color-border);
@@ -278,7 +278,7 @@
   width: 18px;
   height: 18px;
   border: 1px solid var(--bf-color-border-strong);
-  border-radius: 2px;
+  border-radius: var(--bf-radius-sm);
   background: var(--bf-color-surface);
   cursor: pointer;
 }
@@ -298,10 +298,10 @@
 /* The colour swatch menu, opened from the toolbar. */
 .composer-color-menu {
   position: fixed;
-  z-index: 60;
+  z-index: var(--bf-z-popover);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  gap: var(--bf-space-1);
   padding: var(--bf-space-2);
   background: var(--bf-color-surface);
   border: 1px solid var(--bf-color-border);
@@ -328,7 +328,7 @@
    so it stays clear of the editor's own contentEditable. */
 .cm-cell-editor {
   position: fixed;
-  z-index: 70;
+  z-index: calc(var(--bf-z-popover) + 1);
   box-sizing: border-box;
   /* Width and height are set inline to match the cell exactly; these override the global
      `textarea` rules (control height, radius, max-width) that would otherwise enlarge the box. */
@@ -341,7 +341,7 @@
   background: var(--bf-color-surface);
   color: var(--bf-color-text);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: var(--bf-text-body);
   line-height: 1.3;
   resize: none;
   overflow: auto;
@@ -351,7 +351,7 @@
   position: fixed;
   inset-inline: 0;
   inset-block-end: 0;
-  z-index: 30;
+  z-index: var(--bf-z-menu);
   height: var(--dock-height, 40vh);
   margin: 0;
   overflow: auto;
@@ -398,7 +398,7 @@
     width: 3rem;
     height: 4px;
     margin-inline: auto;
-    border-radius: 2px;
+    border-radius: var(--bf-radius-sm);
   }
 }
 
@@ -422,7 +422,7 @@
   inset-block-end: var(--bf-space-4);
   inset-inline-end: var(--bf-space-4);
   gap: var(--bf-space-2);
-  border-radius: 999px;
+  border-radius: var(--bf-radius-pill);
   box-shadow: var(--bf-shadow-menu);
 
   &[hidden] {
@@ -474,7 +474,7 @@
 
 .bf-sheet-controls {
   display: flex;
-  gap: 2px;
+  gap: var(--bf-space-0);
   margin-inline-start: auto;
 }
 
@@ -501,7 +501,7 @@
   position: fixed;
   inset-block-end: 0;
   inset-inline: 0;
-  z-index: 30;
+  z-index: var(--bf-z-menu);
   flex-direction: column;
   gap: var(--bf-space-2);
   width: min(62rem, 100%);
@@ -512,7 +512,7 @@
   background: var(--bf-color-surface);
   border: 1px solid var(--bf-color-border);
   border-block-end: 0;
-  border-radius: 12px 12px 0 0;
+  border-radius: var(--bf-radius-lg) var(--bf-radius-lg) 0 0;
   box-shadow: 0 -8px 32px rgb(0 0 0 / 0.3);
 }
 
@@ -522,7 +522,7 @@
     width: 3rem;
     height: 4px;
     margin: var(--bf-space-1) auto 0;
-    border-radius: 2px;
+    border-radius: var(--bf-radius-sm);
   }
 
   & .composer-editor {
@@ -590,7 +590,7 @@
   inset-inline-start: 0;
   display: grid;
   grid-template-columns: repeat(5, 2.25rem);
-  gap: 2px;
+  gap: var(--bf-space-0);
   padding: var(--bf-space-1);
   background: var(--bf-color-surface);
   border: 1px solid var(--bf-color-border);
@@ -608,7 +608,7 @@
     border: 0;
     border-radius: var(--bf-radius-input);
     background: none;
-    font-size: 1.125rem;
+    font-size: var(--bf-text-lg);
     cursor: pointer;
   }
 
@@ -766,7 +766,7 @@
   background: var(--bf-color-surface-2);
   color: var(--bf-color-text);
   font: inherit;
-  font-size: 0.875rem;
+  font-size: var(--bf-text-list);
   cursor: pointer;
 
   &:hover {
@@ -781,7 +781,7 @@
 .composer-ai-result {
   display: grid;
   gap: var(--bf-space-2);
-  font-size: 0.9rem;
+  font-size: var(--bf-text-list);
 }
 
 .composer-ai-text {
@@ -933,7 +933,7 @@
 /* The small panel for one picture in the editor: its description, caption and size. */
 .composer-image-pop {
   position: fixed;
-  z-index: 60;
+  z-index: var(--bf-z-popover);
   display: grid;
   gap: var(--bf-space-2);
   inline-size: min(21rem, calc(100vw - 1rem));
@@ -976,7 +976,7 @@
 /* The editor's right-click menu: a list of actions at the pointer, with submenus that open beside it. */
 .composer-ctx {
   position: fixed;
-  z-index: 70;
+  z-index: calc(var(--bf-z-popover) + 1);
   min-inline-size: 13rem;
   max-inline-size: min(20rem, calc(100vw - 1rem));
   padding: var(--bf-space-1);
@@ -1021,10 +1021,14 @@
   cursor: pointer;
 
   &:hover:not(:disabled),
-  &:focus-visible,
   &[aria-expanded="true"] {
     background: var(--bf-color-surface-2);
+  }
+
+  &:focus-visible {
+    background: var(--bf-color-surface-2);
     outline: none;
+    box-shadow: inset 0 0 0 2px var(--bf-color-focus);
   }
 
   &:disabled {
@@ -1044,7 +1048,7 @@
     padding-inline-start: var(--bf-space-3);
     color: var(--bf-color-muted);
     font: inherit;
-    font-size: 0.8rem;
+    font-size: var(--bf-text-sm);
   }
 
   /* The arrow of a submenu item sits at the end. */
@@ -1061,4 +1065,20 @@
   block-size: 1px;
   margin-block: var(--bf-space-1);
   background: var(--bf-color-border);
+}
+
+/* Touch screens: finger-sized emoji and menu targets. */
+@media (pointer: coarse) {
+  .composer-emoji-panel {
+    grid-template-columns: repeat(5, 2.5rem);
+
+    & button {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+  }
+
+  .composer-toolbar .composer-more-item {
+    height: 2.5rem;
+  }
 }

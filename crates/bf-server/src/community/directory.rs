@@ -1,6 +1,7 @@
 //! Pages about the community: members, groups, badges, the leaderboard and /about.
 //! Promotion rules, warnings, announcements and member directories.
 
+use crate::community::people;
 use crate::http::render::{DbResult, layout, page};
 use crate::http::ui::simple_page;
 use crate::http::viewer::Viewer;
@@ -97,9 +98,16 @@ async fn users(
                 (m.username, m.group_name, m.post_count, m.reputation, bf_web::ago::Ago::month(m.created_at), level)
             })
             .collect(),
+        pages: [
+            (n > 1).then(|| (n - 1, url(sort, n - 1), false)),
+            Some((n, url(sort, n), true)),
+            more.then(|| (n + 1, url(sort, n + 1), false)),
+        ]
+        .into_iter()
+        .flatten()
+        .collect(),
         prev_url,
         next_url,
-        page: n,
     };
     Ok(page(render(&p), set, v.user.is_none()))
 }
@@ -227,26 +235,20 @@ async fn about(
     Ok(page(render(&p), set, v.user.is_none()))
 }
 
-fn member_link(name: &str) -> String {
-    format!("<a href=\"/u/{0}\">{0}</a>", esc(name))
-}
-
 async fn staff(State(state): State<AppState>, v: Viewer) -> Result<Response, AppError> {
     let rows = members::staff(state.db()?).await.db()?;
-    let items: String = rows
-        .iter()
-        .map(|(n, g)| format!("<li>{} <span class=\"muted small\">{}</span></li>", member_link(n), esc(g)))
-        .collect();
-    Ok(simple_page(&state, &v, &v.t().t("about.staff_title"), &format!("<ul class=\"activity\">{items}</ul>"), true))
+    let items: Vec<String> =
+        rows.iter().map(|(n, g)| people::row(n, &format!("<span class=\"muted small\">{}</span>", esc(g)))).collect();
+    let html = if items.is_empty() { people::empty("users", &v.t().t("about.no_staff")) } else { people::list(&items) };
+    Ok(simple_page(&state, &v, &v.t().t("about.staff_title"), &html, true))
 }
 
 async fn online(State(state): State<AppState>, v: Viewer) -> Result<Response, AppError> {
     let names = bf_db::admin::themes::online_users(state.db()?, 15, 200).await.db()?;
     let html = if names.is_empty() {
-        format!("<p class=\"muted\">{}</p>", esc(&v.t().t("about.nobody_online")))
+        people::empty("users", &v.t().t("about.nobody_online"))
     } else {
-        let links: Vec<String> = names.iter().map(|n| member_link(n)).collect();
-        format!("<p>{}</p>", links.join(", "))
+        people::list(&names.iter().map(|n| people::row(n, "")).collect::<Vec<_>>())
     };
     Ok(simple_page(&state, &v, &v.t().t("about.online"), &html, false))
 }

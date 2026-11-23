@@ -33,7 +33,7 @@ fn magic_on(state: &AppState) -> Result<(), AppError> {
 
 fn magic_page(state: &AppState, v: &Viewer, message: Option<String>) -> Response {
     let f = Form1 {
-        heading: en("Email me a sign-in link"),
+        heading: en("Email me a log-in link"),
         action: "/login/magic".into(),
         fields: if message.is_some() { vec![] } else { vec![field("email", en("Email"), "email", "email")] },
         button: if message.is_some() { "" } else { en("Send link") },
@@ -70,7 +70,7 @@ async fn magic_send(State(state): State<AppState>, v: Viewer, Form(f): Form<Emai
             return Ok(magic_page(
                 &state,
                 &v,
-                Some(v.t().msg("If an account uses that address, a sign-in link is on its way.")),
+                Some(v.t().msg("If an account uses that address, a log-in link is on its way.")),
             ));
         }
         let token = auth::random_token();
@@ -81,13 +81,13 @@ async fn magic_send(State(state): State<AppState>, v: Viewer, Form(f): Form<Emai
         let t = crate::http::i18n::user_t(&state, a.id.get()).await;
         let link = format!("{}/login/magic/{token}", state.config.base_url);
         let body = t.msgf(
-            "Hi {name},\n\nSign in to {site} with this link within 15 minutes:\n\n{link}\n\nIf you did not ask for this, ignore this email.\n",
+            "Hi {name},\n\nLog in to {site} with this link within 15 minutes:\n\n{link}\n\nIf you did not ask for this, ignore this email.\n\n— {site}\n",
             &[("name", a.username.as_str()), ("site", site), ("link", link.as_str())],
         );
-        let subject = t.msgf("Your sign-in link for {site}", &[("site", site)]);
+        let subject = t.msgf("Your log-in link - {site}", &[("site", site)]);
         outbox::queue_mail(pool, &a.email, &subject, &body).await.db()?;
     }
-    Ok(magic_page(&state, &v, Some(v.t().msg("If an account uses that address, a sign-in link is on its way."))))
+    Ok(magic_page(&state, &v, Some(v.t().msg("If an account uses that address, a log-in link is on its way."))))
 }
 
 /// The GET only shows a button: mail scanners follow links, and must not use up the token.
@@ -103,10 +103,10 @@ async fn magic_confirm(
         return Ok(expired_link(&state, &v));
     }
     let f = Form1 {
-        heading: en("Sign in"),
+        heading: en("Log in"),
         action: format!("/login/magic/{token}"),
         fields: vec![],
-        button: en("Sign in"),
+        button: en("Log in"),
         message: None,
         error: None,
         links: vec![],

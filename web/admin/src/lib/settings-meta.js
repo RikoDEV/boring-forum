@@ -14,6 +14,8 @@ export const MANAGED = new Set([
 ]);
 
 // Code, edited in a monospace box: (rows) for each.
+/// The language each code box is coloured as; the host list is plain text.
+export const CODE_LANG = { custom_css: "css", custom_head_html: "html", custom_footer_html: "html" };
 export const CODE = { custom_css: 12, custom_head_html: 8, custom_footer_html: 8, custom_code_hosts: 3 };
 
 /** The tables are built on first use: their text is translated when it is made, so it has to
@@ -62,6 +64,12 @@ function build() {
       ],
     ],
     [
+      "previews",
+      tr("Link previews"),
+      tr("The cards a link on its own line in a post becomes"),
+      ["onebox_enabled", "onebox_images", "onebox_blocked_hosts", "onebox_cache_days"],
+    ],
+    [
       "general",
       tr("General"),
       tr("Your site's name, language and availability"),
@@ -75,9 +83,9 @@ function build() {
         "offline",
         "offline_message",
         "cookie_consent_text",
-        "ad_html",
         "sidebar_links",
         "version_check_url",
+        "cloudflare_real_ip",
       ],
     ],
     [
@@ -569,8 +577,12 @@ function build() {
     captcha_secret: tr("Challenge secret"),
     min_register_seconds: tr("Minimum sign-up time"),
     akismet_key: tr("Akismet API key"),
-    ad_html: tr("Advert HTML"),
     csp_image_hosts: tr("Allowed image hosts"),
+    onebox_enabled: tr("Show link previews"),
+    onebox_images: tr("Show the picture on link previews"),
+    onebox_blocked_hosts: tr("Sites without link previews"),
+    onebox_cache_days: tr("Days a link preview is kept"),
+    cloudflare_real_ip: tr("Cloudflare: real visitor address"),
     pm_max_participants: tr("Private message participants"),
     pm_per_hour: tr("New private messages per hour"),
     pm_min_trust_level: tr("Trust level to start private messages"),
@@ -589,6 +601,7 @@ function build() {
   const ICONS = {
     branding: "palette",
     share: "image",
+    previews: "link",
     general: "settings",
     accounts: "user",
     logins: "key",

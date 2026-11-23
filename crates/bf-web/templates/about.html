@@ -16,9 +16,9 @@
   <div class="bf-box-head"><h2>{{ layout.t.t("about.staff") }}</h2></div>
   <ul class="bf-people">
     {% for (name, group) in staff %}
-    <li><img class="avatar" src="/avatar/{{ name }}.svg" width="32" height="32" alt="" loading="lazy"><div><a class="bf-feed-title" href="/u/{{ name }}">{{ name }}</a></div><span class="small muted">{{ group }}</span></li>
+    <li><img class="avatar" src="/avatar/{{ name }}.svg" width="32" height="32" alt="" loading="lazy"><div>{{ layout.user_link(name)|safe }}</div><span class="small muted">{{ group }}</span></li>
     {% else %}
-    <li class="muted">{{ layout.t.t("about.no_staff") }}</li>
+    <li><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("users")|safe }}</span><p>{{ layout.t.t("about.no_staff") }}</p></div></li>
     {% endfor %}
   </ul>
 </section>

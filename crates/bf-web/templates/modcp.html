@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {#- The moderator panel: an overview of what waits for moderators, then members, the log and the tools, each on its own tab. -#}
 {% block content %}
-<h1>{{ layout.t.t("menu.modcp") }}</h1>
+<header class="bf-box bf-page-head bf-head-row"><h1>{{ layout.t.t("menu.modcp") }}</h1></header>
 
 <nav class="bf-modtabs" aria-label="{{ layout.t.t("modcp.tools") }}">
   {% for (key, label, url, count) in tabs %}
@@ -9,7 +9,7 @@
   {% endfor %}
 </nav>
 
-{% if !notice.is_empty() %}<p class="bf-modnotice" role="status">{{ layout.icon("circle-check")|safe }} {{ notice }}</p>{% endif %}
+{% if !notice.is_empty() %}<p class="bf-alert is-ok" role="status">{{ layout.icon("circle-check")|safe }} {{ notice }}</p>{% endif %}
 
 {% if tab == "overview" %}
 <div class="bf-tiles">
@@ -27,14 +27,14 @@
         {% for (url, title, author, reasons, when) in reports %}
         <li><img class="avatar" src="/avatar/{{ author }}.svg" width="32" height="32" alt="" loading="lazy"><div><a class="bf-feed-title" href="{{ url }}">{{ title }}</a><div class="small muted">{{ layout.by_line(author)|safe }}{% if !reasons.is_empty() %} · {{ reasons }}{% endif %} · {{ when }}</div></div></li>
         {% else %}
-        <li class="muted">{{ layout.t.msg("Nothing is waiting. Good.") }}</li>
+        <li><div class="bf-empty-state"><p>{{ layout.t.msg("Nothing is waiting. Good.") }}</p></div></li>
         {% endfor %}
       </ul>
     </section>
     {% if staff %}
     <section class="bf-box">
       <div class="bf-box-head"><h2>{{ layout.t.msg("Recent moderator actions") }}</h2><a href="/modcp?tab=log">{{ layout.t.msg("Whole log") }}</a></div>
-      {% if log.is_empty() %}<p class="bf-box-body muted">{{ layout.t.msg("Nothing has been logged yet.") }}</p>{% else %}
+      {% if log.is_empty() %}<div class="bf-box-body"><div class="bf-empty-state"><p>{{ layout.t.msg("Nothing has been logged yet.") }}</p></div></div>{% else %}
       <ul class="bf-modlog">
         {% for r in log %}
         <li><span>{{ layout.user_link(r.actor)|safe }} {{ r.what }}{% if !r.target.1.is_empty() %} {% if r.target.0.is_empty() %}<code>{{ r.target.1 }}</code>{% else %}<a href="{{ r.target.0 }}">{{ r.target.1 }}</a>{% endif %}{% endif %}{% if !r.note.is_empty() %} <span class="muted small">— {{ r.note }}</span>{% endif %}</span><span class="muted small">{{ r.when }}</span></li>
@@ -52,7 +52,7 @@
         {% for m in members %}
         <li><div>{{ layout.user_link(m.name)|safe }}{% for f in m.flags %} <span class="badge">{{ f }}</span>{% endfor %}<div class="muted small">{{ m.joined }} · {{ layout.t.n("count.posts", m.posts) }}</div></div></li>
         {% else %}
-        <li class="muted">{{ layout.t.msg("No members yet.") }}</li>
+        <li><div class="bf-empty-state"><p>{{ layout.t.msg("No members yet.") }}</p></div></li>
         {% endfor %}
       </ul>
     </section>
@@ -62,7 +62,7 @@
         {% for w in warnings %}
         <li><div>{{ layout.user_link(w.member)|safe }} <span class="badge">{{ w.points }}</span><div class="muted small">{{ w.reason }} · {{ w.when }}</div></div></li>
         {% else %}
-        <li class="muted">{{ layout.t.msg("No warnings given.") }}</li>
+        <li><div class="bf-empty-state"><p>{{ layout.t.msg("No warnings given.") }}</p></div></li>
         {% endfor %}
       </ul>
     </section>
@@ -85,7 +85,7 @@
   <div class="bf-box-head"><h2>{{ layout.t.msg("Members") }}</h2></div>
   <form method="get" action="/modcp" class="bf-modfind">
     <input type="hidden" name="tab" value="members">
-    <div class="bf-field"><input id="find-q" name="find" value="{{ find }}" placeholder=" " autocomplete="off"><label class="bf-field-label" for="find-q">{{ layout.t.msg("Part of a name") }}</label></div>
+    <label class="bf-field"><input id="find-q" name="find" value="{{ find }}" placeholder=" " autocomplete="off"><span class="bf-field-label">{{ layout.t.msg("Part of a name") }}</span></label>
     <button class="btn">{{ layout.t.msg("Find") }}</button>
   </form>
   <div class="bf-table-wrap">
@@ -103,7 +103,7 @@
           <td class="bf-modact">{% if m.can_act %}<button type="button" class="btn" data-dialog="act-{{ m.id }}">{{ layout.icon("shield")|safe }} {{ layout.t.msg("Act") }}</button>{% endif %}</td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="muted">{{ layout.t.msg("No member has that in their name.") }}</td></tr>
+        <tr><td colspan="7"><div class="bf-empty-state"><p>{{ layout.t.msg("No member has that in their name.") }}</p></div></td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -170,14 +170,22 @@
 {% else if tab == "bans" %}
 <section class="bf-box">
   <div class="bf-box-head"><h2>{{ layout.t.msg("Add a ban") }}</h2></div>
-  <form method="post" action="/modcp/ban" class="bf-modfind">
+  <form method="post" action="/modcp/ban" class="bf-modfind" id="ban-form">
     <input type="hidden" name="csrf" value="{{ layout.csrf }}">
     <label class="bf-field bf-modkind"><select name="kind"><option value="ip">{{ layout.t.msg("IP address or network") }}</option><option value="email">{{ layout.t.msg("Email address or @domain") }}</option>{% if admin %}<option value="ip_allow">{{ layout.t.msg("Never ban this address (allow list)") }}</option>{% endif %}</select><span class="bf-field-label">{{ layout.t.msg("Kind") }}</span></label>
-    <div class="bf-field"><input id="ban-v" name="value" placeholder=" " autocomplete="off" required><label class="bf-field-label" for="ban-v">{{ layout.t.msg("Address") }}</label></div>
-    <div class="bf-field"><input id="ban-r" name="reason" placeholder=" " maxlength="200"><label class="bf-field-label" for="ban-r">{{ layout.t.msg("Reason") }}</label></div>
-    <div class="bf-field"><input id="ban-d" name="days" type="number" min="1" max="3650" placeholder=" "><label class="bf-field-label" for="ban-d">{{ layout.t.msg("Lasts (days, empty: until lifted)") }}</label></div>
-    <button class="btn">{{ layout.t.msg("Ban") }}</button>
+    <label class="bf-field"><input id="ban-v" name="value" placeholder=" " autocomplete="off" required><span class="bf-field-label">{{ layout.t.msg("Address") }}</span></label>
+    <label class="bf-field"><input id="ban-r" name="reason" placeholder=" " maxlength="200"><span class="bf-field-label">{{ layout.t.msg("Reason") }}</span></label>
+    <label class="bf-field"><input id="ban-d" name="days" type="number" min="1" max="3650" placeholder=" "><span class="bf-field-label">{{ layout.t.msg("Lasts (days, empty: until lifted)") }}</span></label>
+    <button type="button" class="btn bf-btn-danger" data-dialog="ban-add">{{ layout.t.msg("Ban") }}</button>
   </form>
+  <dialog class="bf-dialog" id="ban-add" aria-labelledby="ban-add-title">
+    <header class="bf-dialog-head">
+      <h2 id="ban-add-title">{{ layout.t.msg("Ban") }}</h2>
+      <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+    </header>
+    <div class="bf-dialog-body"><p>{{ layout.t.msg("Visitors using it are refused until the ban is lifted.") }}</p></div>
+    <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger" form="ban-form">{{ layout.t.msg("Ban") }}</button></div>
+  </dialog>
   <p class="bf-box-body small muted">{{ layout.t.msg("A network can be at most a /24 (IPv4) or /48 (IPv6). Wider bans are for administrators.") }}</p>
 </section>
 <section class="bf-box">
@@ -188,9 +196,17 @@
       <tbody>
         {% for b in bans %}
         <tr><td>{{ b.kind }}</td><td><code>{{ b.value }}</code></td><td>{{ b.reason }}</td><td>{{ b.when }}</td><td>{% if let Some(e) = b.expires %}{{ e }}{% else %}{{ layout.t.msg("Never") }}{% endif %}</td>
-          <td class="bf-modact"><form method="post" action="/modcp/ban/{{ b.id }}/remove"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.t.msg("Lift") }}</button></form></td></tr>
+          <td class="bf-modact"><form method="post" action="/modcp/ban/{{ b.id }}/remove" id="ban-lift-form-{{ b.id }}"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button type="button" class="btn" data-dialog="ban-lift-{{ b.id }}">{{ layout.t.msg("Lift") }}</button></form>
+          <dialog class="bf-dialog" id="ban-lift-{{ b.id }}" aria-labelledby="ban-lift-{{ b.id }}-title">
+    <header class="bf-dialog-head">
+      <h2 id="ban-lift-{{ b.id }}-title">{{ layout.t.msg("Lift") }}</h2>
+      <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+    </header>
+    <div class="bf-dialog-body"><p>{{ layout.t.msg("Visitors using it are let in again.") }}</p></div>
+    <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn" form="ban-lift-form-{{ b.id }}">{{ layout.t.msg("Lift") }}</button></div>
+  </dialog></td></tr>
         {% else %}
-        <tr><td colspan="6" class="muted">{{ layout.t.msg("No bans.") }}</td></tr>
+        <tr><td colspan="6"><div class="bf-empty-state"><p>{{ layout.t.msg("No bans.") }}</p></div></td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -200,7 +216,7 @@
 {% else if tab == "log" %}
 <section class="bf-box">
   <div class="bf-box-head"><h2>{{ layout.t.msg("Moderator log") }}</h2><a href="/review/deleted">{{ layout.t.t("modcp.deleted") }}</a></div>
-  {% if log.is_empty() %}<p class="bf-box-body muted">{{ layout.t.msg("Nothing has been logged yet.") }}</p>{% else %}
+  {% if log.is_empty() %}<div class="bf-box-body"><div class="bf-empty-state"><p>{{ layout.t.msg("Nothing has been logged yet.") }}</p></div></div>{% else %}
   <ul class="bf-modlog">
     {% for r in log %}
     <li><span>{{ layout.user_link(r.actor)|safe }} {{ r.what }}{% if !r.target.1.is_empty() %} {% if r.target.0.is_empty() %}<code>{{ r.target.1 }}</code>{% else %}<a href="{{ r.target.0 }}">{{ r.target.1 }}</a>{% endif %}{% endif %}{% if !r.note.is_empty() %} <span class="muted small">— {{ r.note }}</span>{% endif %}</span><span class="muted small">{{ r.when }}</span></li>
@@ -223,7 +239,7 @@
         {% for w in warnings %}
         <tr><td>{{ layout.user_link(w.member)|safe }}</td><td>{{ w.points }}</td><td>{{ w.reason }}</td><td>{% if w.moderator.is_empty() %}<span class="muted">—</span>{% else %}{{ layout.user_link(w.moderator)|safe }}{% endif %}</td><td>{{ w.when }}</td><td>{{ w.expires }}</td></tr>
         {% else %}
-        <tr><td colspan="6" class="muted">{{ layout.t.msg("No warnings given.") }}</td></tr>
+        <tr><td colspan="6"><div class="bf-empty-state"><p>{{ layout.t.msg("No warnings given.") }}</p></div></td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -238,7 +254,7 @@
       {% for (url, title, author, reason) in hidden_posts %}
       <li><img class="avatar" src="/avatar/{{ author }}.svg" width="32" height="32" alt="" loading="lazy"><div><a class="bf-feed-title" href="{{ url }}">{{ title }}</a><div class="small muted">{{ layout.by_line(author)|safe }}{% if !reason.is_empty() %}: {{ reason }}{% endif %}</div></div></li>
       {% else %}
-      <li class="muted">{{ layout.t.t("modcp.nothing_hidden") }}</li>
+      <li><div class="bf-empty-state"><p>{{ layout.t.t("modcp.nothing_hidden") }}</p></div></li>
       {% endfor %}
     </ul>
   </section>
@@ -249,7 +265,7 @@
       <div class="bf-box-body">
         <form method="get" action="/modcp" class="stack">
           <input type="hidden" name="tab" value="tools">
-          <div class="bf-field"><input id="ip-q" name="ip" value="{{ ip }}" placeholder="203.0.113.7 or 203.0.113.0/24"><label class="bf-field-label" for="ip-q">{{ layout.t.t("modcp.ip_field") }}</label></div>
+          <label class="bf-field"><input id="ip-q" name="ip" value="{{ ip }}" placeholder="203.0.113.7 or 203.0.113.0/24"><span class="bf-field-label">{{ layout.t.t("modcp.ip_field") }}</span></label>
           <button class="btn">{{ layout.t.t("modcp.look_up") }}</button>
         </form>
       </div>
@@ -258,7 +274,7 @@
         {% for (url, name, posts, last) in ip_members %}
         <li><div><a href="{{ url }}"><strong>{{ name }}</strong></a><div class="muted small">{{ layout.t.n("count.posts", posts) }} · {{ last }}</div></div></li>
         {% else %}
-        <li class="muted">{{ layout.t.t("modcp.no_posts_from") }}</li>
+        <li><div class="bf-empty-state"><p>{{ layout.t.t("modcp.no_posts_from") }}</p></div></li>
         {% endfor %}
       </ul>
       {% endif %}

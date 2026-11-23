@@ -50,13 +50,13 @@
       </td>
       <td class="hide-sm bf-topic-last">
         <div class="bf-last">
-          {% if !t.last_poster.is_empty() %}<a href="/u/{{ t.last_poster.to_lowercase() }}" tabindex="-1" aria-hidden="true"><img class="avatar" src="/avatar/{{ t.last_poster }}.svg" width="40" height="40" alt="" loading="lazy"></a>{% endif %}
+          {% if !t.last_poster.is_empty() %}<a href="{{ layout.profile_href(t.last_poster) }}" tabindex="-1" aria-hidden="true"><img class="avatar" src="/avatar/{{ t.last_poster }}.svg" width="40" height="40" alt="" loading="lazy"></a>{% endif %}
           <div><strong>{{ layout.user_link(t.last_poster)|safe }}</strong><span class="muted">{{ t.last_posted }}</span></div>
         </div>
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="3" class="muted">{{ layout.t.t("list.empty") }}</td></tr>
+    <tr><td colspan="3"><div class="bf-empty-state"><span class="bf-empty-icon" aria-hidden="true">{{ layout.icon("message-square")|safe }}</span><p>{{ layout.t.t("list.empty") }}</p></div></td></tr>
     {% endfor %}
   </tbody>
 </table>

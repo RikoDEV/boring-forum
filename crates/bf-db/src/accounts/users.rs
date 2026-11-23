@@ -167,7 +167,7 @@ pub async fn insert_user(tx: &mut sqlx::PgConnection, u: &NewUser<'_>) -> Result
                 Err(e) => return Err(e),
             }
         };
-        let made = sqlx::query_scalar(
+        let made: Result<UserId, sqlx::Error> = sqlx::query_scalar(
             "INSERT INTO users (username, username_lower, display_name, email, email_lower, password_hash,
                                 primary_group_id, joined_at, email_verified_at, remote, username_skeleton)
              VALUES ($1, lower($1), $2, $3, lower($3), $4,
@@ -194,6 +194,9 @@ pub async fn insert_user(tx: &mut sqlx::PgConnection, u: &NewUser<'_>) -> Result
             }
             Ok(id) => {
                 attempt.commit().await?;
+                if u.kind == AccountKind::Member {
+                    crate::community::chat::join_auto_channels(&mut *tx, id.get()).await?;
+                }
                 return Ok((id, name));
             }
             Err(e) => return Err(e),

@@ -1,5 +1,10 @@
 /* Design tokens: the only values components read. Colours are declared once
-   with light-dark(), so the system and explicit dark paths cannot drift apart. */
+   with light-dark(), so the system and explicit dark paths cannot drift apart.
+
+   Breakpoints (media queries cannot read custom properties, so they are a convention): 360 /
+   640 / 760 / 980 / 1200 px, always written as a pair that never overlaps or leaves a gap:
+   `@media (max-width: 639px)` for below and `@media (min-width: 640px)` for from; likewise
+   359/360, 759/760, 979/980, 1199/1200. */
 
 :root {
   color-scheme: light dark;
@@ -7,14 +12,17 @@
   --bf-font-body:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --bf-font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+  --bf-text-2xs: 0.6875rem;
   --bf-text-xs: 0.75rem;
   --bf-text-sm: 0.8125rem;
   --bf-text-list: 0.875rem;
   --bf-text-body: 0.9375rem;
   --bf-text-lg: 1.0625rem;
   --bf-text-xl: 1.375rem;
+  --bf-text-2xl: 1.75rem;
   --bf-measure: 72ch;
 
+  --bf-space-0: 0.125rem;
   --bf-space-1: 0.25rem;
   --bf-space-2: 0.5rem;
   --bf-space-3: 0.75rem;
@@ -23,7 +31,10 @@
   --bf-space-6: 1.5rem;
   --bf-space-8: 2rem;
 
+  --bf-radius-sm: 3px;
   --bf-radius: 6px;
+  --bf-radius-lg: 12px;
+  --bf-radius-pill: 999px;
   --bf-radius-input: 4px;
   /* One height for every button, field and select, so controls in a row line up; the small one
      is for dense toolbars and menus. */
@@ -32,7 +43,19 @@
   --bf-content-width: 1340px;
   --bf-sidebar-width: 300px;
   --bf-author-width: 160px;
-  --bf-shadow-menu: 0 4px 16px rgb(0 0 0 / 0.14);
+  /* Shadows: a dark surface hides a faint shadow, so the dark values are stronger and carry a
+     hairline ring. */
+  --bf-shadow-sm: 0 1px 3px light-dark(rgb(0 0 0 / 0.12), rgb(0 0 0 / 0.5));
+  --bf-shadow-menu:
+    0 4px 16px light-dark(rgb(0 0 0 / 0.14), rgb(0 0 0 / 0.55)), 0 0 0 1px light-dark(transparent, rgb(255 255 255 / 0.06));
+  --bf-shadow-lg:
+    0 12px 48px light-dark(rgb(0 0 0 / 0.25), rgb(0 0 0 / 0.65)), 0 0 0 1px light-dark(transparent, rgb(255 255 255 / 0.06));
+  /* Stacking scale. */
+  --bf-z-sticky: 20;
+  --bf-z-menu: 30;
+  --bf-z-popover: 60;
+  --bf-z-toast: 70;
+  --bf-z-modal: 80;
   --bf-motion: 150ms ease-out;
 
   --bf-color-bg: light-dark(#f5f6f8, #111419);
