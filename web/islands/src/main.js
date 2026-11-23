@@ -5,6 +5,7 @@
 // The page's inline loader calls mount(name, el) for each [data-island] element; props
 // come from data-props JSON. Returning false hands the element to members.js.
 import { groupColours } from "./ink.js";
+import { emoticonsInTextBoxes } from "./emoticons.js";
 import {
   announce,
   csrf,
@@ -1049,6 +1050,7 @@ function menus() {
   presence();
   postSelection();
   linkPreviews();
+  emoticonsInTextBoxes();
   document.querySelector("[data-copy-link]")?.addEventListener("click", async () => {
     await navigator.clipboard?.writeText(location.href.split("#")[0]);
     toast(tr("Link copied"));

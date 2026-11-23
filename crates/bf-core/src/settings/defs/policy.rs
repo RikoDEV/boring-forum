@@ -58,6 +58,17 @@ pub(super) fn defs() -> Vec<SettingDef> {
         SettingDef {
             default: json!(false),
             ..def(
+                "emoticons_to_emoji",
+                Bool,
+                true,
+                en(
+                    "Turn text emoticons such as :) and <3 into emoji while people type, in posts, messages, chat and statuses",
+                ),
+            )
+        },
+        SettingDef {
+            default: json!(false),
+            ..def(
                 "math_enabled",
                 Bool,
                 true,

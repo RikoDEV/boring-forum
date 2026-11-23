@@ -96,6 +96,8 @@ pub struct Layout {
     pub math: bool,
     /// Link previews (cards for bare links in posts) are on.
     pub link_previews: bool,
+    /// Text emoticons become emoji as they are typed (the `emoticons_to_emoji` setting).
+    pub emoticons: bool,
     /// The GIF picker's settings when it is on and has a key. The browser asks the provider itself.
     pub gifs: Option<GifConfig>,
     /// Optional modules that are on: (url, label), listed in the footer so each is always reachable.
@@ -662,6 +664,7 @@ impl Layout {
             post_max: settings.int("max_post_length"),
             math: settings.bool("math_enabled"),
             link_previews: settings.bool("onebox_enabled"),
+            emoticons: settings.bool("emoticons_to_emoji"),
             gifs: gif_config(settings),
             ai_related: settings.bool("ai_enabled")
                 && settings.bool("ai_related_topics_enabled")

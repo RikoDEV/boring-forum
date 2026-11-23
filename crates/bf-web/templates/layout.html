@@ -3,6 +3,7 @@
   {%- if !layout.scheme.is_empty() %} data-scheme="{{ layout.scheme }}"{% endif %}
   {%- if layout.date_format != "relative" %} data-date="{{ layout.date_format }}"{% endif %}
   {%- if !layout.link_previews %} data-onebox="off"{% endif %}
+  {%- if layout.emoticons %} data-emoticons="on"{% endif %}
   {%- if layout.skin_tone != 0 %} data-skin="{{ layout.skin_tone }}"{% endif %}
   {%- if layout.text_size != 100 %} data-text-size="{{ layout.text_size / 5 * 5 }}"{% endif %}>
 <head>

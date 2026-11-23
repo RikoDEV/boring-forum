@@ -2375,6 +2375,8 @@ msg-delete_notifications_older_than_this_many_days_read_or = احذف الإشع
 msg-delete_audit_log_events_after_this_many_days_0_keeps = حذف أحداث سجل التدقيق بعد هذا العدد من الأيام؛ 0 يبقيها دائمًا
 # Convert BBCode in new and edited posts
 msg-convert_bbcode_in_new_and_edited_posts = تحويل BBCode في المنشورات الجديدة والمعدّلة
+# Turn text emoticons such as :) and <3 into emoji while people type, in posts, messages, chat and statuses
+msg-turn_text_emoticons_such_as_and_3_into_emoji_while = تحويل الوجوه النصية مثل :) و <3 إلى رموز تعبيرية أثناء الكتابة، في المنشورات والرسائل والدردشة والحالات
 # Typeset $…$, $$…$$ and ```math blocks with KaTeX in new and edited posts
 msg-typeset_and_math_blocks_with_katex_in_new_and_edited = تنضيد $…$ و$$…$$ وكتل ```math بـ KaTeX في المنشورات الجديدة والمعدّلة
 # Hosts posts may load images from, like https://a.example; empty allows any https host
@@ -6674,6 +6676,8 @@ admin-minimum_sign_up_time = أقل مدة للتسجيل
 admin-akismet_api_key = مفتاح Akismet API
 # Allowed image hosts
 admin-allowed_image_hosts = مضيفو الصور المسموح بهم
+# Turn emoticons into emoji
+admin-turn_emoticons_into_emoji = تحويل الوجوه النصية إلى رموز تعبيرية
 # Show link previews
 admin-show_link_previews = إظهار معاينة الروابط
 # Show the picture on link previews

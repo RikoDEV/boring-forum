@@ -2,6 +2,7 @@
 // the form and is kept in sync, so posting works exactly as without JavaScript.
 import { acceptCompletion, autocompletion } from "@codemirror/autocomplete";
 import { Decoration, EditorView, ViewPlugin, WidgetType, keymap, placeholder } from "@codemirror/view";
+import { ENDS, emoticonBefore, emoticonsOn } from "../emoticons.js";
 import { StateField, EditorState, EditorSelection, Compartment, Prec } from "@codemirror/state";
 import { aiHelper } from "./ai.js";
 import { startChat } from "./chat.js";
@@ -1323,6 +1324,19 @@ function wireChip(chip) {
   refresh();
 }
 
+/** The emoticon ending at `pos` as [from, emoji], unless the switch is off or it is inside code. */
+function swappable(state, pos) {
+  if (!emoticonsOn()) return null;
+  const line = state.doc.lineAt(pos);
+  const hit = emoticonBefore(line.text, pos - line.from);
+  if (!hit) return null;
+  const from = line.from + hit[0];
+  // In inline code (an odd number of backticks before it) or a fenced block, `:)` is code.
+  if (((line.text.slice(0, hit[0]).match(/`/g) ?? []).length & 1) === 1) return null;
+  if (((state.sliceDoc(0, from).match(/^\s*```/gm) ?? []).length & 1) === 1) return null;
+  return [from, hit[1]];
+}
+
 export function mount(textarea, opts = {}) {
   const form = textarea.form;
   const titleInput = form?.querySelector('input[name="title"]');
@@ -1601,10 +1615,32 @@ export function mount(textarea, opts = {}) {
           { key: "Mod-Alt-1", run: heading(2) },
           { key: "Mod-Alt-2", run: heading(3) },
           { key: "Mod-Alt-3", run: heading(4) },
+          // An emoticon just typed at the end of the line changes before Enter ends it.
+          {
+            key: "Enter",
+            run: (v) => {
+              const at = v.state.selection.main;
+              const hit = at.empty && swappable(v.state, at.head);
+              if (hit) v.dispatch({ changes: { from: hit[0], to: at.head, insert: hit[1] }, userEvent: "input.type" });
+              return false;
+            },
+          },
           { key: "Enter", run: continueList },
           ...defaultKeymap,
           ...historyKeymap,
         ]),
+        // Typing a space, a full stop or the like after an emoticon turns it into its emoji.
+        EditorView.inputHandler.of((v, from, to, text) => {
+          if (from !== to || !ENDS.test(text)) return false;
+          const hit = swappable(v.state, from);
+          if (!hit) return false;
+          v.dispatch({
+            changes: { from: hit[0], to: from, insert: hit[1] + text },
+            selection: { anchor: hit[0] + hit[1].length + text.length },
+            userEvent: "input.type",
+          });
+          return true;
+        }),
         EditorView.contentAttributes.of({
           "aria-label": textarea.labels?.[0]?.textContent || textarea.getAttribute("aria-label") || tr("Message"),
         }),
