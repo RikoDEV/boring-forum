@@ -13,7 +13,12 @@
 //     --light               light colour scheme (default dark)
 //     --forced              Windows high-contrast style (forced-colors: active)
 //     --chrome <path>       Chromium binary (default: newest Playwright Chromium, or $CHROME)
+//     --scroll <px>         scroll the page this far down before anything else
+//     --type "<selector>|<text>"  click the element with the mouse, then type the text key by key; prints
+//                           the page's scroll position after each key (a page that jumps while typing)
+//     --probe <js>          with --type: evaluate this after every key and print the result
 //     --eval <js>           evaluate an expression after the clicks and print its JSON result
+//     --nojs                run the page without its scripts (tells native browser behaviour from a script's)
 //     --init <js>           run a script in every page before its own scripts (mock fetch, set storage)
 //
 // Prints the console errors and the layout warnings it finds: elements wider than the viewport
@@ -109,11 +114,17 @@ if (cookie) {
   }
 }
 
+if (args.includes("--nojs")) await s("Emulation.setScriptExecutionDisabled", { value: true });
 if (opt("--init")) await s("Page.addScriptToEvaluateOnNewDocument", { source: opt("--init") });
 const loaded = new Promise((r) => listeners.push((m) => m.sessionId === sessionId && m.method === "Page.loadEventFired" && r()));
 await s("Page.navigate", { url });
 await loaded;
 await sleep(wait);
+if (opt("--scroll")) {
+  await s("Runtime.evaluate", { expression: `window.scrollTo(0, ${Number(opt("--scroll"))})` });
+  await sleep(wait);
+}
+
 for (const sel of clicks) {
   const r = await s("Runtime.evaluate", {
     expression: `(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return false; e.click(); return true; })()`,
@@ -121,6 +132,32 @@ for (const sel of clicks) {
   });
   if (!r.result.value) errors.push(`--click: nothing matches ${sel}`);
   await sleep(wait);
+}
+
+if (opt("--type")) {
+  const [sel, text] = opt("--type").split("|");
+  const r = await s("Runtime.evaluate", {
+    expression: `(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const b = e.getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2]; })()`,
+    returnByValue: true,
+  });
+  if (!r.result.value) errors.push(`--type: nothing matches ${sel}`);
+  else {
+    const [x, y] = r.result.value;
+    await s("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+    for (const type of ["mousePressed", "mouseReleased"]) await s("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 });
+    await sleep(wait);
+    const seen = [];
+    const at = async () => (await s("Runtime.evaluate", { expression: "Math.round(window.scrollY)", returnByValue: true })).result.value;
+    seen.push(await at());
+    for (const ch of text) {
+      await s("Input.dispatchKeyEvent", { type: "keyDown", text: ch, key: ch, unmodifiedText: ch });
+      await s("Input.dispatchKeyEvent", { type: "keyUp", key: ch });
+      await sleep(350);
+      seen.push(await at());
+      if (opt("--probe")) console.log(`probe: ${JSON.stringify((await s("Runtime.evaluate", { expression: opt("--probe"), returnByValue: true })).result.value)}`);
+    }
+    console.log(`scrollY while typing: ${JSON.stringify(seen)}`);
+  }
 }
 
 if (opt("--hover")) {

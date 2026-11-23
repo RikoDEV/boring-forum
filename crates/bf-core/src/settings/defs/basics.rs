@@ -15,6 +15,15 @@ pub(super) fn defs() -> Vec<SettingDef> {
             default: json!("A calm place to talk."),
             ..def("site_description", String, true, en("Default meta description"))
         },
+        SettingDef {
+            default: json!(""),
+            ..def(
+                "footer_copyright",
+                String,
+                true,
+                en("Copyright line at the bottom of every page; empty shows © with the year and the site's name"),
+            )
+        },
         // Branding (§ branding): pictures from the site's own uploads; empty uses the site name.
         SettingDef {
             default: json!(""),

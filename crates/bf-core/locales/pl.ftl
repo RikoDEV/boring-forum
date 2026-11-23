@@ -1851,6 +1851,8 @@ msg-ai_personas_answer_when_they_are_mentioned_in_a_topic = AI: persony odpowiad
 msg-name_shown_in_the_header_and_page_titles = Nazwa wyświetlana w nagłówku i tytułach stron
 # Default meta description
 msg-default_meta_description = Domyślny opis meta
+# Copyright line at the bottom of every page; empty shows © with the year and the site's name
+msg-copyright_line_at_the_bottom_of_every_page_empty_shows = Linia praw autorskich na dole każdej strony; puste pokazuje © z rokiem i nazwą serwisu
 # Logo in the header, in place of the site name; about 40px tall shows best
 msg-logo_in_the_header_in_place_of_the_site_name_about_40px = Logo w nagłówku, zamiast nazwy strony; najlepiej wygląda ok. 40 px wysokości
 # Logo for the dark colour scheme; empty uses the main logo
@@ -4946,6 +4948,8 @@ msg-open_the_checklist = Otwórz listę kroków
 msg-dismiss = Zamknij
 # Announcement
 msg-announcement = Ogłoszenie
+# Powered by
+msg-powered_by = Działa na
 # oldest
 msg-oldest_2 = najstarsze
 # Members awaiting approval
@@ -6400,6 +6404,8 @@ admin-text_size = Rozmiar tekstu (%)
 admin-bottom_line = Dolna linia
 # Site description
 admin-site_description = Opis strony
+# Copyright line
+admin-copyright_line = Linia praw autorskich
 # Default language
 admin-default_language = Domyślny język
 # Offline mode

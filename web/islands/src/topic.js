@@ -409,9 +409,14 @@ async function editInPlace(trigger, editorUrl) {
   form.append(error, conflict, hidden("csrf", csrf()), base, label, text, reasonBox, row);
   cooked.hidden = true;
   cooked.after(form);
+  // The Edit button sits at the foot of the post. Hiding a long post's text shortens the page by
+  // its height, and the view, still at the old scroll position, would be left far below the editor:
+  // bring the editor into view, now and again once the editor has its full height.
+  form.scrollIntoView({ block: "nearest" });
   const editor = await import(/* @vite-ignore */ editorUrl);
   const view = editor.mount(text, {});
   view.focus();
+  form.scrollIntoView({ block: "nearest" });
   const close = () => {
     text.value = ""; // nothing left for the leave-page warning to protect
     view.destroy();

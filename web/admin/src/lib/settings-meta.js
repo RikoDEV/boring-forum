@@ -76,6 +76,7 @@ function build() {
       [
         "site_name",
         "site_description",
+        "footer_copyright",
         "default_locale",
         "contact_email",
         "contact_per_hour",
@@ -527,6 +528,7 @@ function build() {
     og_font_scale: tr("Text size (%)"),
     og_footer_text: tr("Bottom line"),
     site_description: tr("Site description"),
+    footer_copyright: tr("Copyright line"),
     default_locale: tr("Default language"),
     offline: tr("Offline mode"),
     allow_magic_link: tr("Email sign-in links"),

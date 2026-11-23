@@ -2017,6 +2017,8 @@ msg-ai_personas_answer_when_they_are_mentioned_in_a_topic = الذكاء الا�
 msg-name_shown_in_the_header_and_page_titles = الاسم الظاهر في الترويسة وعناوين الصفحات
 # Default meta description
 msg-default_meta_description = الوصف الافتراضي (meta)
+# Copyright line at the bottom of every page; empty shows © with the year and the site's name
+msg-copyright_line_at_the_bottom_of_every_page_empty_shows = سطر حقوق النشر أسفل كل صفحة؛ وإذا تُرك فارغًا يظهر © مع السنة واسم الموقع
 # Logo in the header, in place of the site name; about 40px tall shows best
 msg-logo_in_the_header_in_place_of_the_site_name_about_40px = شعار في الترويسة بدل اسم الموقع؛ يبدو أفضل بارتفاع 40 بكسل تقريبًا
 # Logo for the dark colour scheme; empty uses the main logo
@@ -5112,6 +5114,8 @@ msg-open_the_checklist = افتح قائمة الخطوات
 msg-dismiss = تجاهل
 # Announcement
 msg-announcement = إعلان
+# Powered by
+msg-powered_by = بدعم من
 # oldest
 msg-oldest_2 = الأقدم
 # Members awaiting approval
@@ -6566,6 +6570,8 @@ admin-text_size = حجم النص (%)
 admin-bottom_line = السطر السفلي
 # Site description
 admin-site_description = وصف الموقع
+# Copyright line
+admin-copyright_line = سطر حقوق النشر
 # Default language
 admin-default_language = اللغة الافتراضية
 # Offline mode

@@ -114,6 +114,8 @@ pub struct Layout {
     pub description: String,
     /// The site's own description (the `site_description` setting), the same on every page.
     pub site_description: String,
+    /// The line at the foot of every page: the `footer_copyright` setting, or © with the year and the site's name.
+    pub copyright: String,
     pub css_url: String,
     pub islands_url: String,
     /// Editor bundle, loaded by the composer island on first focus.
@@ -613,6 +615,10 @@ impl Layout {
             title: title.map_or_else(|| site.to_owned(), |t| format!("{t} - {site}")),
             description: settings.str("site_description").to_owned(),
             site_description: settings.str("site_description").to_owned(),
+            copyright: match settings.str("footer_copyright").trim() {
+                "" => format!("© {} {}", chrono::Utc::now().format("%Y"), settings.str("site_name")),
+                custom => custom.to_owned(),
+            },
             css_url: CSS.url(),
             islands_url: ISLANDS.url(),
             editor_url: EDITOR.url(),

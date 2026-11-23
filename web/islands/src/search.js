@@ -222,9 +222,15 @@ export function liveSearch(target) {
     open();
     run();
   });
+  // A text box under the sticky header makes the browser scroll the page up a step for every key typed
+  // (it keeps the caret clear of the top edge, and this box is always at the top). The box is in view
+  // the whole time, so the page stays where it was.
+  let held = 0;
+  input.addEventListener("keydown", () => (held = scrollY));
   input.addEventListener("input", () => {
     open();
     run();
+    requestAnimationFrame(() => scrollY !== held && scrollTo(scrollX, held));
   });
   input.addEventListener("keydown", (e) => {
     if (composing(e)) return; // an IME is still choosing its text
