@@ -378,8 +378,8 @@ describe("composer and header endpoints", () => {
     expect(page).not.toContain("StopSel");
     expect(page).not.toContain("&#60;/b&#62;");
     const names = (await alice.get("/search?q=alice")).text;
-    expect(names).toContain('class="bf-search-name" href="/u/alice"');
-    expect((await alice.get("/search?q=alice&author=alice")).text).not.toContain("bf-search-name");
+    expect(names).toContain('class="bf-browsing-chip" href="/u/alice"');
+    expect((await alice.get("/search?q=alice&author=alice")).text).not.toContain('class="bf-browsing-chip" href="/u/alice"');
     expect((await alice.get("/search?q=%3Cscript%3Ealert")).text).not.toContain("<script>alert");
     expect((await alice.get("/search?q=welcome&before=2000-01-01")).text).toContain("No results");
     expect((await guest.get("/search")).text).toContain("Search the forum");

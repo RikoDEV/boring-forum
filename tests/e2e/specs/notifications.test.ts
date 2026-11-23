@@ -420,7 +420,7 @@ describe("profile achievements and statuses", () => {
     const own = (await alice.get(path)).text;
     expect(own).toContain("Your achievements");
     expect(own).toContain("Community answers");
-    expect(own.indexOf("bf-achievements")).toBeLessThan(own.indexOf('bf-list-bar" aria-label="Profile"'));
+    expect(own.indexOf("bf-achievements")).toBeLessThan(own.indexOf('<div class="bf-list-bar"><nav class="bf-segments small" aria-label="Profile"'));
     const other = (await bob.get(path)).text;
     expect(other).toContain(">Achievements<");
     expect(other).not.toContain("Your achievements");

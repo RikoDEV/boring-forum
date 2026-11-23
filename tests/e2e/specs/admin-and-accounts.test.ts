@@ -146,7 +146,7 @@ describe("likes, listing, edit grace", () => {
   });
   it("top pages", async () => {
     expect((await guest.get("/top?period=all")).text).toContain("Split source topic");
-    expect((await guest.get("/top?period=week")).text).toContain('class="current" aria-current="true">This week');
+    expect((await guest.get("/top?period=week")).text).toContain('aria-current="page">This week');
   });
   it("unlisted topics leave lists", async () => {
     const t = await topic(alice, s.FORUM, "Watched forum topic", "Hello watchers of this forum");
