@@ -913,6 +913,44 @@
   color: var(--bf-color-success);
 }
 
+.bf-op-icon {
+  display: none;
+}
+
+/* On a phone the head stays on one line: "Posted" goes, and the topic-author pill shrinks to
+   its icon (the full words are its tooltip and label). */
+@media (width <= 639px) {
+  .post-head {
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .bf-posted-word {
+    display: none;
+  }
+
+  .bf-post-compact {
+    min-width: 0;
+  }
+
+  .bf-post-when {
+    white-space: nowrap;
+  }
+
+  .bf-op-pill {
+    display: inline-flex;
+    padding: var(--bf-space-0) var(--bf-space-2);
+
+    & .bf-op-text {
+      display: none;
+    }
+
+    & .bf-op-icon {
+      display: inline-flex;
+    }
+  }
+}
+
 .bf-tags-list .avatar {
   vertical-align: -5px;
 }

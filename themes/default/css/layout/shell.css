@@ -392,6 +392,16 @@ main {
     margin-inline-start: auto;
   }
 
+  /* A guest gets the one button; Register is in the menu and on the login page. */
+  .header-actions > .bf-register {
+    display: none;
+  }
+
+  /* With the topic title in the bar, only the member's avatar stays beside it. */
+  .header-row:has(.bf-header-title:not([hidden])) .header-actions > :not(.bf-user-menu) {
+    display: none;
+  }
+
   /* A long site name gives way to the icons instead of pushing them onto a second row. */
   .header-row > .brand:not(.has-logo) {
     display: block;

@@ -40,7 +40,7 @@
       {%- if p.wiki %} <span class="bf-badge">{{ layout.icon("pencil")|safe }} {{ layout.t.t("post.wiki") }}</span>{% endif %}
       {%- if can_moderate && p.number > 1 %} <input type="checkbox" form="split-form" name="post" value="{{ p.id }}" aria-label="{{ layout.t.f("post.select_split", [("n", p.number.to_string().as_str())]) }}"><button type="button" class="link small bf-select-below" data-select-below data-tip="{{ layout.t.t("post.select_below_title") }}">{{ layout.t.t("post.select_below") }}</button>{% endif -%}
       <span class="bf-post-end">
-        {%- if p.author_is_op %}<span class="bf-group-pill bf-op-pill" data-tip="{{ layout.t.t("post.topic_author_title") }}">{{ layout.t.t("post.topic_author") }}</span>{% endif %}
+        {%- if p.author_is_op %}<span class="bf-group-pill bf-op-pill" data-tip="{{ layout.t.t("post.topic_author_title") }}" aria-label="{{ layout.t.t("post.topic_author") }}"><span class="bf-op-icon" aria-hidden="true">{{ layout.icon("pencil")|safe }}</span><span class="bf-op-text">{{ layout.t.t("post.topic_author") }}</span></span>{% endif %}
         {%- if p.author_special %}<span class="bf-group-pill"{% if let Some(c) = p.author_group_colour %} data-group-colour="{{ c }}"{% endif %}>
           {%- if let Some(src) = p.author_group_image %}<img class="bf-group-image" src="{{ src }}" alt="" width="20" height="20" loading="lazy">{% else if let Some(i) = p.author_group_icon %}{{ layout.icon(i)|safe }}{% endif %}{{ p.author_group }}</span>
         {%- endif -%}
