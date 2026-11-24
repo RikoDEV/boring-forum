@@ -36,6 +36,7 @@ pub fn router() -> Router<AppState> {
         .route("/api/v1/admin/users/{id}/delete-spammer", post(delete_spammer))
         .route("/review/deleted", get(deletion_log))
         .route("/post/{id}/restore", post(restore))
+        .route("/post/{id}/purge", post(purge))
         .route("/post/{id}/history", get(history))
         .route("/post/{id}/revisions/{n}/hide", post(hide_revision))
         .route("/post/{id}/revisions/{n}/revert", post(revert))
@@ -408,6 +409,7 @@ async fn deletion_log(State(state): State<AppState>, v: Viewer) -> Result<Respon
         .into_iter()
         .map(|d| DeletedView {
             post_id: d.post_id,
+            first: d.post_number == 1,
             post_url: format!("{}#post-{}", topic_path(d.item_id, &d.slug), d.post_number),
             title: d.title,
             author: d.author.unwrap_or_else(|| "deleted".into()),
@@ -448,6 +450,34 @@ async fn restore(
         return Err(AppError::NotFound);
     }
     bf_db::moderation::topics::restore_post_override(pool, id, user.id.get(), true).await.db()?;
+    crate::moderation::topics::refresh(&state);
+    Ok(Redirect::to("/review/deleted").into_response())
+}
+
+/// The second step of deleting: removes a deleted post for good (the first post takes its topic with
+/// it). Only a moderator of its forum; to anyone else the post does not exist.
+async fn purge(
+    State(state): State<AppState>,
+    v: Viewer,
+    Path(id): Path<i64>,
+    Form(f): Form<CsrfForm>,
+) -> Result<Response, AppError> {
+    v.check_csrf(&f.csrf)?;
+    let user = v.require_user()?;
+    let pool = state.db()?;
+    let node: i64 = sqlx::query_scalar(
+        "SELECT i.node_id FROM posts p JOIN items i ON i.id = p.item_id WHERE p.id = $1 AND p.state = 'deleted'",
+    )
+    .bind(id)
+    .fetch_optional(pool)
+    .await
+    .db()?
+    .ok_or(AppError::NotFound)?;
+    let tree = state.forum.get(pool).await?;
+    if !tree.perms(&v.actor, node).has(Perms::MODERATE) {
+        return Err(AppError::NotFound);
+    }
+    bf_db::moderation::topics::purge_post(pool, id, user.id.get()).await.db()?;
     crate::moderation::topics::refresh(&state);
     Ok(Redirect::to("/review/deleted").into_response())
 }

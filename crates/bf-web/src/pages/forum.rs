@@ -45,6 +45,8 @@ pub struct TopicLine {
     pub author: String,
     pub pinned: bool,
     pub locked: bool,
+    /// Deleted, waiting for its retention period: shown greyed to its author and to staff.
+    pub deleted: bool,
     pub id: i64,
     pub replies: i32,
     pub views: i32,
@@ -147,6 +149,8 @@ pub struct ForumPage {
 }
 
 pub struct PostView {
+    /// Deleted, and shown to staff (and to the author of a deleted topic) in full, greyed.
+    pub deleted: bool,
     pub signature: Option<String>,
     pub wiki: bool,
     pub reaction_summary: String,
@@ -278,6 +282,10 @@ pub struct TopicPage {
     pub can_reply: bool,
     pub can_post_anonymously: bool,
     pub can_moderate: bool,
+    /// A moderator, or the author while nobody has replied: may delete the whole topic.
+    pub can_delete: bool,
+    /// The topic is deleted: its author and staff still see it.
+    pub deleted: bool,
     /// Forums a moderator can move this topic to: (id, title).
     pub move_targets: Vec<(i64, String)>,
     /// Viewer's follow level: watch, track, normal or mute.
@@ -431,6 +439,8 @@ pub struct DeletedView {
     pub deleted_by: String,
     pub when: crate::ago::Ago,
     pub excerpt: String,
+    /// The topic's first post: removing it for good removes the topic.
+    pub first: bool,
 }
 
 #[derive(Template)]
@@ -477,6 +487,8 @@ pub struct TopicPostsPart {
     pub can_solve: bool,
     pub can_reply: bool,
     pub can_moderate: bool,
+    pub can_delete: bool,
+    pub deleted: bool,
 }
 
 /// Sent after the page's first part, once its query finishes.

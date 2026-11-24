@@ -121,6 +121,12 @@ pub(super) async fn topic_posts_part(
             && (moderator || (uid.is_some() && uid == t.author_id.map(Into::into))),
         can_reply: perms.has(Perms::REPLY) && ((!t.locked && !t.archived) || moderator),
         can_moderate: moderator,
+        can_delete: if t.state == "deleted" {
+            moderator
+        } else {
+            moderator || (uid.is_some() && uid == t.author_id.map(Into::into) && t.highest_post_number <= 1)
+        },
+        deleted: t.state == "deleted",
     };
     let html = bf_web::pages::render_string(&part).map_err(AppError::internal)?;
     let res = ([(header::CONTENT_TYPE, "text/html; charset=utf-8")], html).into_response();

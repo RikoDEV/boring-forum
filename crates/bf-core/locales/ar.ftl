@@ -5072,28 +5072,48 @@ msg-trust_level = مستوى الثقة
 msg-trust_level_n_name = مستوى الثقة { $n }: { $name }
 # Reputation rank
 msg-reputation_rank = رتبة السمعة
+# Deleted
+msg-deleted = حُذف
 # Staff notes
 msg-staff_notes = ملاحظات الطاقم
 # Staff note
 msg-staff_note = ملاحظة الفريق
 # Delete staff note
 msg-delete_staff_note = حذف ملاحظة الفريق
+# Restore topic
+msg-restore_topic = استعادة الموضوع
+# Delete permanently
+msg-delete_permanently = حذف نهائي
+# Delete this post permanently?
+msg-delete_this_post_permanently = حذف هذا المنشور نهائيًا؟
+# The post is removed for good. This cannot be undone.
+msg-the_post_is_removed_for_good_this_cannot_be_undone = تُزال المشاركة نهائيًا. لا يمكن التراجع عن ذلك.
 # Remove bookmark
 msg-remove_bookmark = إزالة الإشارة المرجعية
 # Translate with AI
 msg-translate_with_ai = ترجمة بالذكاء الاصطناعي
+# Delete topic
+msg-delete_topic = حذف الموضوع
 # Add a staff note
 msg-add_a_staff_note = إضافة ملاحظة للطاقم
 # Only staff see it, not the author
 msg-only_staff_see_it_not_the_author = يراها الفريق فقط وليس الكاتب
 # Save note
 msg-save_note = حفظ الملاحظة
+# Delete this post?
+msg-delete_this_post = حذف هذا المنشور؟
+# The post is removed from the topic. Moderators can still see it in the deleted items.
+msg-the_post_is_removed_from_the_topic_moderators_can_still = تُزال المشاركة من الموضوع. يمكن للمشرفين رؤيتها في العناصر المحذوفة.
 # Similar in meaning
 msg-similar_in_meaning = مشابه في المعنى
 # {n} more matching posts in this topic
 msg-n_more_matching_posts_in_this_topic = { $n } منشورات مطابقة أخرى في هذا الموضوع
 # Create account
 msg-create_account = إنشاء الحساب
+# Delete this topic permanently?
+msg-delete_this_topic_permanently = حذف هذا الموضوع نهائيًا؟
+# The topic and all its posts are removed for good. This cannot be undone.
+msg-the_topic_and_all_its_posts_are_removed_for_good_this = يُزال الموضوع وجميع مشاركاته نهائيًا. لا يمكن التراجع عن ذلك.
 # Archive
 msg-archive = أرشفة
 # Unarchive
@@ -5360,6 +5380,18 @@ msg-what_happens_to_your_posts = ما يحدث لمنشوراتك
 msg-keep_them_without_my_name = احتفظ بها دون اسمي
 # Delete them too
 msg-delete_them_too = احذفها أيضًا
+# The topic is deleted. Removing it now cannot be undone.
+msg-the_topic_is_deleted_removing_it_now_cannot_be_undone = الموضوع محذوف. إزالته الآن لا يمكن التراجع عنها.
+# Removes the topic and all its posts from the forum.
+msg-removes_the_topic_and_all_its_posts_from_the_forum = يزيل الموضوع وجميع مشاركاته من المنتدى.
+# Delete this topic?
+msg-delete_this_topic = حذف هذا الموضوع؟
+# The topic and all its posts are removed from the forum. Moderators can still see it in the deleted items.
+msg-the_topic_and_all_its_posts_are_removed_from_the_forum = يُزال الموضوع وجميع مشاركاته من المنتدى. يمكن للمشرفين رؤيته في العناصر المحذوفة.
+# This topic is deleted. Only its author and the moderators can see it.
+msg-this_topic_is_deleted_only_its_author_and_the = هذا الموضوع محذوف. لا يراه إلا كاتبه والمشرفون.
+# Deleting it again removes it for good.
+msg-deleting_it_again_removes_it_for_good = سيؤدي حذفه مرة أخرى إلى إزالته نهائيًا.
 # Summarize
 msg-summarize = تلخيص
 # Log in or create an account to reply to this topic.

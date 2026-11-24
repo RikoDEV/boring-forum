@@ -22,6 +22,8 @@ use std::sync::Arc;
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/t/{id}/mod", post(moderate))
+        .route("/t/{id}/delete", post(delete_topic))
+        .route("/t/{id}/restore", post(restore_topic))
         .route("/c/{id}/bulk", post(bulk))
         .route("/t/{id}/move", post(move_topic))
         .route("/t/{id}/merge", post(merge_topic))
@@ -82,6 +84,89 @@ async fn moderate(
         .await;
     state.hub.publish(&format!("item:{id}"), "state", json!({ "action": f.action }));
     state.microcache.clear();
+    Ok(Redirect::to(&topic_path(id, &t.slug)).into_response())
+}
+
+#[derive(Deserialize)]
+struct DeleteForm {
+    csrf: String,
+}
+
+/// Deletes a whole topic, in two steps. The first deletes it where moderators can still restore it
+/// (a moderator of its forum, or its author while nobody has replied). Deleting a topic that is
+/// already deleted removes it for good, which only a moderator may do.
+/// (The first post cannot be deleted on its own: removing it is removing the topic, which is this.)
+async fn delete_topic(
+    State(state): State<AppState>,
+    v: Viewer,
+    Path(id): Path<i64>,
+    Form(f): Form<DeleteForm>,
+) -> Result<Response, AppError> {
+    v.check_csrf(&f.csrf)?;
+    let user = v.require_user()?;
+    let (t, tree, perms) = readable_topic(&state, &v, id).await?;
+    let moderator = perms.has(Perms::MODERATE);
+    if t.state == "deleted" {
+        if !moderator {
+            return Err(AppError::Forbidden);
+        }
+        let pool = state.db()?;
+        let first = first_post_id(pool, id).await?;
+        bf_db::moderation::topics::purge_post(pool, first, user.id.get()).await.db()?;
+        refresh(&state);
+        let back = tree.node(t.node_id).map_or_else(|| "/".to_owned(), |n| forum_path(n.id, &n.slug));
+        return Ok(Redirect::to(&back).into_response());
+    }
+    let own_and_unanswered = t.author_id == Some(user.id.get()) && t.highest_post_number <= 1;
+    if !moderator && !own_and_unanswered {
+        return Err(AppError::Forbidden);
+    }
+    let pool = state.db()?;
+    let first = first_post_id(pool, id).await?;
+    posts::soft_delete_post(pool, first, user.id.get()).await.db()?;
+    bf_db::admin::audit::record(
+        pool,
+        bf_db::admin::audit::Entry::new("topic.delete").by(user.id.get()).on(format!("topic:{id}")),
+    )
+    .await
+    .db()?;
+    if moderator {
+        topic_deleted(&state, user.id.get(), &user.username, id, &t.title, t.author_id).await;
+    } else {
+        crate::platform::webhooks::emit(&state, "topic.deleted", json!({ "topic_id": id, "actor": user.id })).await;
+    }
+    refresh(&state);
+    let back = tree.node(t.node_id).map_or_else(|| "/".to_owned(), |n| forum_path(n.id, &n.slug));
+    Ok(Redirect::to(&back).into_response())
+}
+
+async fn first_post_id(pool: &sqlx::PgPool, topic: i64) -> Result<i64, AppError> {
+    sqlx::query_scalar("SELECT id FROM posts WHERE item_id = $1 AND post_number = 1")
+        .bind(topic)
+        .fetch_optional(pool)
+        .await
+        .db()?
+        .ok_or(AppError::NotFound)
+}
+
+/// Brings a deleted topic back, as a moderator of its forum.
+async fn restore_topic(
+    State(state): State<AppState>,
+    v: Viewer,
+    Path(id): Path<i64>,
+    Form(f): Form<DeleteForm>,
+) -> Result<Response, AppError> {
+    v.check_csrf(&f.csrf)?;
+    let user = v.require_user()?;
+    let (t, ..) = moderated_topic(&state, &v, id).await?;
+    if t.state != "deleted" {
+        return Ok(Redirect::to(&topic_path(id, &t.slug)).into_response());
+    }
+    let pool = state.db()?;
+    let first = first_post_id(pool, id).await?;
+    bf_db::moderation::topics::restore_post_override(pool, first, user.id.get(), true).await.db()?;
+    crate::platform::webhooks::moderated(&state, "restore_topic", user.id.get(), "topic", id, json!({})).await;
+    refresh(&state);
     Ok(Redirect::to(&topic_path(id, &t.slug)).into_response())
 }
 
@@ -357,48 +442,7 @@ async fn bulk(
             Ok(()) => {
                 let me = user.id.get();
                 match (action, to) {
-                    ("delete", _) => {
-                        // The topic's author gets a statement of reasons.
-                        if let Some(author) = author.filter(|a| *a != me) {
-                            let first: Option<i64> =
-                                sqlx::query_scalar("SELECT id FROM posts WHERE item_id = $1 AND post_number = 1")
-                                    .bind(t)
-                                    .fetch_optional(pool)
-                                    .await
-                                    .ok()
-                                    .flatten();
-                            if let Some(first) = first {
-                                let sid = crate::moderation::dsa::record_silent(
-                                    &state,
-                                    crate::moderation::dsa::Restriction {
-                                        user_id: author,
-                                        target_type: "post",
-                                        target_id: first,
-                                        action: "deleted",
-                                        ground: "terms",
-                                        category: "scope_of_platform_service",
-                                        facts: "A moderator removed the topic as against the site's terms and guidelines.",
-                                        automated_detection: false,
-                                        automated_decision: false,
-                                        notice_id: None,
-                                        moderator_id: Some(me),
-                                    },
-                                )
-                                .await;
-                                let url =
-                                    sid.map_or_else(|| "/notifications".to_owned(), |id| format!("/statements/{id}"));
-                                let data = json!({ "by": user.username, "title": title, "url": url, "message": "" });
-                                crate::community::notifications::send(&state, me, &[author], "moderation", &data).await;
-                            }
-                        }
-                        crate::platform::webhooks::emit(
-                            &state,
-                            "topic.deleted",
-                            json!({ "topic_id": *t, "actor": me }),
-                        )
-                        .await;
-                        crate::platform::webhooks::moderated(&state, "delete_topic", me, "topic", *t, json!({})).await;
-                    }
+                    ("delete", _) => topic_deleted(&state, me, &user.username, *t, title, *author).await,
                     ("move", Some(dest)) => {
                         crate::platform::webhooks::emit(
                             &state,
@@ -439,6 +483,52 @@ async fn bulk(
         ));
     }
     Ok(Redirect::to(&forum_path(id, &node.slug)).into_response())
+}
+
+/// What follows the removal of a topic: its author gets a statement of reasons and a notice (unless
+/// they removed it themselves), and webhooks and plugins hear of it.
+pub(crate) async fn topic_deleted(
+    state: &AppState,
+    me: i64,
+    moderator: &str,
+    topic: i64,
+    title: &str,
+    author: Option<i64>,
+) {
+    let Ok(pool) = state.db() else { return };
+    // The topic's author gets a statement of reasons.
+    if let Some(author) = author.filter(|a| *a != me) {
+        let first: Option<i64> = sqlx::query_scalar("SELECT id FROM posts WHERE item_id = $1 AND post_number = 1")
+            .bind(topic)
+            .fetch_optional(pool)
+            .await
+            .ok()
+            .flatten();
+        if let Some(first) = first {
+            let sid = crate::moderation::dsa::record_silent(
+                state,
+                crate::moderation::dsa::Restriction {
+                    user_id: author,
+                    target_type: "post",
+                    target_id: first,
+                    action: "deleted",
+                    ground: "terms",
+                    category: "scope_of_platform_service",
+                    facts: "A moderator removed the topic as against the site's terms and guidelines.",
+                    automated_detection: false,
+                    automated_decision: false,
+                    notice_id: None,
+                    moderator_id: Some(me),
+                },
+            )
+            .await;
+            let url = sid.map_or_else(|| "/notifications".to_owned(), |id| format!("/statements/{id}"));
+            let data = json!({ "by": moderator, "title": title, "url": url, "message": "" });
+            crate::community::notifications::send(state, me, &[author], "moderation", &data).await;
+        }
+    }
+    crate::platform::webhooks::emit(state, "topic.deleted", json!({ "topic_id": topic, "actor": me })).await;
+    crate::platform::webhooks::moderated(state, "delete_topic", me, "topic", topic, json!({})).await;
 }
 
 #[derive(Deserialize)]

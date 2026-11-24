@@ -700,6 +700,63 @@
   }
 }
 
+/* Deleting the topic: apart from the groups above it, and in the danger colour. */
+.bf-manage-danger {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-2) var(--bf-space-3);
+  margin-block-start: var(--bf-space-3);
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border: 1px solid var(--bf-color-danger);
+  border-radius: var(--bf-radius);
+
+  & strong {
+    display: block;
+    font-size: var(--bf-text-list);
+  }
+
+  & small {
+    color: var(--bf-color-muted);
+    font-size: var(--bf-text-sm);
+  }
+}
+
+.bf-manage-danger-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+
+  & form {
+    margin: 0;
+  }
+}
+
+/* A deleted post, shown in full but dimmed, to the author of a deleted topic and to staff. */
+.post.is-deleted {
+  border-style: dashed;
+
+  & > .bf-post-main > .cooked {
+    opacity: 0.55;
+  }
+}
+
+.bf-deleted-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2);
+
+  & form {
+    margin: 0;
+  }
+}
+
+.bf-deleted-note {
+  margin-block-end: var(--bf-space-3);
+}
+
 .bf-manage-row {
   display: flex;
   flex-wrap: wrap;

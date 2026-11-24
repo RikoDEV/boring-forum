@@ -19,7 +19,7 @@ use bf_db::forum::{posts, reading, topics};
 use bf_web::pages::{Layout, PostView, TopicLine, TopicPage};
 use chrono::{DateTime, Utc};
 
-use super::{Tree, readable_topic};
+use super::{Tree, readable_topic, viewable_topic};
 
 /// When a post's author last posted before it, and the previous post in the topic, if any.
 type Times = (Option<DateTime<Utc>>, Option<DateTime<Utc>>);
@@ -38,7 +38,7 @@ pub(super) async fn render_topic(
 ) -> Result<Response, AppError> {
     // A page number from the address: large ones would overflow the arithmetic below.
     let page_n = page_n.clamp(1, 100_000);
-    let (t, tree, perms) = match readable_topic(&state, &v, id).await {
+    let (t, tree, perms) = match viewable_topic(&state, &v, id).await {
         Ok(r) => r,
         // Merged topics keep their URL working.
         Err(AppError::NotFound) => {
@@ -65,6 +65,8 @@ pub(super) async fn render_topic(
     let per_page = state.settings().int("posts_per_page");
     let from = ((page_n - 1) * per_page + 1) as i32;
     let moderator = perms.has(Perms::MODERATE);
+    // The author of a deleted topic sees the topic's first post, greyed, and nothing else of it.
+    let own_deleted = !moderator && t.state == "deleted";
     let mode = tree.node(t.node_id).map_or("discussion", |n| n.mode.as_str()).to_owned();
     // Q&A: one page, the question, the accepted answer, then answers by votes.
     let qa = mode == "qa";
@@ -72,7 +74,9 @@ pub(super) async fn render_topic(
         return Ok(Redirect::to(&topic_path(id, &t.slug)).into_response());
     }
     let viewer_id = v.user.as_ref().map(|u| u.id);
-    let mut rows = if qa {
+    let mut rows = if own_deleted {
+        posts::first_post(pool, id, viewer_id.map(bf_core::ids::UserId::get)).await.db()?
+    } else if qa {
         posts::topic_posts_ranked(pool, id, 500, moderator, viewer_id.map(bf_core::ids::UserId::get)).await.db()?
     } else {
         posts::topic_posts(pool, id, from, per_page + 1, moderator, viewer_id.map(bf_core::ids::UserId::get))
@@ -83,7 +87,7 @@ pub(super) async fn render_topic(
     if i64::from(from) > i64::from(t.highest_post_number) && page_n > 1 {
         return Err(AppError::NotFound);
     }
-    let has_next = !qa && i64::from(t.highest_post_number) >= i64::from(from) + per_page;
+    let has_next = !qa && !own_deleted && i64::from(t.highest_post_number) >= i64::from(from) + per_page;
     let on_page = if qa {
         rows.len()
     } else {
@@ -225,9 +229,17 @@ pub(super) async fn render_topic(
             // First, last and the pages next to the current one, with a gap where some are left out.
             bf_web::pages::page_window(total, page_n, page_url)
         },
-        can_reply: perms.has(Perms::REPLY) && ((!t.locked && !t.archived) || moderator),
+        can_reply: perms.has(Perms::REPLY) && t.state != "deleted" && ((!t.locked && !t.archived) || moderator),
         can_post_anonymously: state.settings().bool("anonymous_posting"),
         can_moderate: moderator,
+        // A live topic: a moderator, or its author while nobody has replied. A deleted one: deleting it
+        // again removes it for good, which only a moderator may do.
+        can_delete: if t.state == "deleted" {
+            moderator
+        } else {
+            moderator || (uid.is_some() && uid == t.author_id.map(Into::into) && t.highest_post_number <= 1)
+        },
+        deleted: t.state == "deleted",
         follow,
         move_targets: if moderator {
             tree.nodes
@@ -471,6 +483,8 @@ pub(super) async fn post_views(
 ) -> Result<Vec<PostView>, AppError> {
     let pool = state.db()?;
     let uid = v.user.as_ref().map(|u| u.id);
+    let see_deleted =
+        moderator || (t.state == "deleted" && uid.is_some() && t.author_id == uid.map(bf_core::ids::UserId::get));
     let t_lang = bf_core::i18n::T::new(v.locale);
     let show_levels = state.settings().bool("show_trust_levels");
     let rank_spec = state.settings().str("rank_names").to_owned();
@@ -498,14 +512,16 @@ pub(super) async fn post_views(
             PostView {
                 staff_notes: notes.remove(&p.id).unwrap_or_default(),
                 replies: p.reply_first.map(|first| (p.reply_total, first)),
+                deleted: p.state == "deleted",
                 id: p.id,
                 number: p.post_number,
                 author_url: profile_path(p.author_id.unwrap_or(0), &author),
                 author,
                 created: ago(p.created_at),
                 created_iso: p.created_at.to_rfc3339(),
-                // Moderators see hidden posts in full; deleted ones stay a placeholder.
-                cooked: if p.state == "visible" || p.state == "hidden" {
+                // Moderators see hidden posts in full. A deleted one is shown (greyed) to staff and to the
+                // author of a deleted topic, and is a placeholder for anyone else.
+                cooked: if p.state == "visible" || p.state == "hidden" || (p.state == "deleted" && see_deleted) {
                     nofollow.apply(&p.cooked, p.author_trust_level.map(i64::from)).into_owned()
                 } else {
                     format!("<p><em>[{}]</em></p>", p.state)
@@ -517,17 +533,18 @@ pub(super) async fn post_views(
                 action: p.action.as_deref().map(|a| action_sentence(&t_lang, a).0),
                 action_detail: p.action.as_deref().and_then(|a| action_sentence(&t_lang, a).1),
                 edited: p.edit_count > 0,
-                can_edit: moderator
-                    || (uid.is_some()
-                        && p.author_id == uid.map(bf_core::ids::UserId::get)
-                        && !t.locked
-                        && !v.actor.silenced)
-                    || (p.wiki
-                        && !t.locked
-                        && !v.actor.silenced
-                        && v.user
-                            .as_ref()
-                            .is_some_and(|u| i64::from(u.trust_level) >= state.settings().int("wiki_min_trust_level"))),
+                can_edit: p.state != "deleted"
+                    && (moderator
+                        || (uid.is_some()
+                            && p.author_id == uid.map(bf_core::ids::UserId::get)
+                            && !t.locked
+                            && !v.actor.silenced)
+                        || (p.wiki
+                            && !t.locked
+                            && !v.actor.silenced
+                            && v.user.as_ref().is_some_and(|u| {
+                                i64::from(u.trust_level) >= state.settings().int("wiki_min_trust_level")
+                            }))),
                 wiki: p.wiki,
                 signature: p.author_signature.clone().filter(|_| state.settings().bool("signatures_enabled")),
                 ignored: p.ignored,

@@ -82,6 +82,20 @@
   font-weight: 650;
 }
 
+/* A deleted topic, shown to its author and to staff: the row is dimmed and its title struck through. */
+.bf-topic-row.is-deleted {
+  opacity: 0.55;
+
+  & .bf-topic-title > a:not(.bf-badge) {
+    text-decoration: line-through;
+  }
+
+  &:hover,
+  &:focus-within {
+    opacity: 0.85;
+  }
+}
+
 .bf-topic-title {
   & > a:not(.bf-badge) {
     color: var(--bf-color-text);

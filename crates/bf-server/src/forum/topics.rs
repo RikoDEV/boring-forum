@@ -102,6 +102,25 @@ pub(crate) async fn readable_topic(
     v: &Viewer,
     id: i64,
 ) -> Result<(TopicRow, Arc<Tree>, Perms), AppError> {
+    readable(state, v, id, false).await
+}
+
+/// `readable_topic` for showing the page: the author may also look at their own deleted topic. Only
+/// for looking; everything that acts on a topic goes through `readable_topic` and so never reaches it.
+pub(crate) async fn viewable_topic(
+    state: &AppState,
+    v: &Viewer,
+    id: i64,
+) -> Result<(TopicRow, Arc<Tree>, Perms), AppError> {
+    readable(state, v, id, true).await
+}
+
+async fn readable(
+    state: &AppState,
+    v: &Viewer,
+    id: i64,
+    own_deleted: bool,
+) -> Result<(TopicRow, Arc<Tree>, Perms), AppError> {
     let pool = state.db()?;
     let t = topics::topic_for(pool, id, (v.user.as_ref().map(|u| u.id)).map(bf_core::ids::UserId::get))
         .await
@@ -109,7 +128,11 @@ pub(crate) async fn readable_topic(
         .ok_or(AppError::NotFound)?;
     let tree = state.forum.get(pool).await?;
     let perms = tree.perms(&v.actor, t.node_id);
-    let visible = t.state == "visible" || perms.has(Perms::MODERATE);
+    let own = own_deleted
+        && t.state == "deleted"
+        && t.author_id.is_some()
+        && t.author_id == v.user.as_ref().map(|u| u.id.get());
+    let visible = t.state == "visible" || perms.has(Perms::MODERATE) || own;
     if !perms.has(Perms::READ) || !visible {
         return Err(AppError::NotFound);
     }

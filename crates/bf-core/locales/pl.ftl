@@ -4906,28 +4906,48 @@ msg-trust_level = Poziom zaufania
 msg-trust_level_n_name = Poziom zaufania { $n }: { $name }
 # Reputation rank
 msg-reputation_rank = Ranga reputacji
+# Deleted
+msg-deleted = Usunięto
 # Staff notes
 msg-staff_notes = Notatki personelu
 # Staff note
 msg-staff_note = Notatka personelu
 # Delete staff note
 msg-delete_staff_note = Usuń notatkę personelu
+# Restore topic
+msg-restore_topic = Przywróć temat
+# Delete permanently
+msg-delete_permanently = Usuń na stałe
+# Delete this post permanently?
+msg-delete_this_post_permanently = Usunąć ten post na stałe?
+# The post is removed for good. This cannot be undone.
+msg-the_post_is_removed_for_good_this_cannot_be_undone = Post zostanie usunięty na stałe. Nie można tego cofnąć.
 # Remove bookmark
 msg-remove_bookmark = Usuń zakładkę
 # Translate with AI
 msg-translate_with_ai = Przetłumacz przez AI
+# Delete topic
+msg-delete_topic = Usuń temat
 # Add a staff note
 msg-add_a_staff_note = Dodaj notatkę personelu
 # Only staff see it, not the author
 msg-only_staff_see_it_not_the_author = Widzi ją tylko personel, nie autor
 # Save note
 msg-save_note = Zapisz notatkę
+# Delete this post?
+msg-delete_this_post = Usunąć ten post?
+# The post is removed from the topic. Moderators can still see it in the deleted items.
+msg-the_post_is_removed_from_the_topic_moderators_can_still = Post zostanie usunięty z tematu. Moderatorzy nadal zobaczą go w usuniętych elementach.
 # Similar in meaning
 msg-similar_in_meaning = Podobne znaczeniowo
 # {n} more matching posts in this topic
 msg-n_more_matching_posts_in_this_topic = Jeszcze { $n } pasujących postów w tym temacie
 # Create account
 msg-create_account = Utwórz konto
+# Delete this topic permanently?
+msg-delete_this_topic_permanently = Usunąć ten temat na stałe?
+# The topic and all its posts are removed for good. This cannot be undone.
+msg-the_topic_and_all_its_posts_are_removed_for_good_this = Temat i wszystkie jego posty zostaną usunięte na stałe. Nie można tego cofnąć.
 # Archive
 msg-archive = Archiwizuj
 # Unarchive
@@ -5194,6 +5214,18 @@ msg-what_happens_to_your_posts = Co stanie się z Twoimi postami
 msg-keep_them_without_my_name = Zachowaj je, bez mojej nazwy
 # Delete them too
 msg-delete_them_too = Usuń je również
+# The topic is deleted. Removing it now cannot be undone.
+msg-the_topic_is_deleted_removing_it_now_cannot_be_undone = Temat jest usunięty. Usunięcie go teraz jest nieodwracalne.
+# Removes the topic and all its posts from the forum.
+msg-removes_the_topic_and_all_its_posts_from_the_forum = Usuwa temat i wszystkie jego posty z forum.
+# Delete this topic?
+msg-delete_this_topic = Usunąć ten temat?
+# The topic and all its posts are removed from the forum. Moderators can still see it in the deleted items.
+msg-the_topic_and_all_its_posts_are_removed_from_the_forum = Temat i wszystkie jego posty zostaną usunięte z forum. Moderatorzy nadal zobaczą go w usuniętych elementach.
+# This topic is deleted. Only its author and the moderators can see it.
+msg-this_topic_is_deleted_only_its_author_and_the = Ten temat jest usunięty. Widzą go tylko jego autor i moderatorzy.
+# Deleting it again removes it for good.
+msg-deleting_it_again_removes_it_for_good = Ponowne usunięcie skasuje go na stałe.
 # Summarize
 msg-summarize = Streść
 # Log in or create an account to reply to this topic.

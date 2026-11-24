@@ -251,12 +251,42 @@
             </details>
             {% endif %}
           </div>
+          {% if can_delete %}
+          <div class="bf-manage-danger">
+            {% if deleted %}
+            <div><strong>{{ layout.t.msg("Delete permanently") }}</strong><small>{{ layout.t.msg("The topic is deleted. Removing it now cannot be undone.") }}</small></div>
+            <div class="bf-manage-danger-actions">
+              <form method="post" action="/t/{{ id }}/restore"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("history")|safe }} {{ layout.t.msg("Restore topic") }}</button></form>
+              <button type="button" class="btn bf-btn-danger" data-dialog="delete-topic">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("Delete permanently") }}</button>
+            </div>
+            {% else %}
+            <div><strong>{{ layout.t.msg("Delete topic") }}</strong><small>{{ layout.t.msg("Removes the topic and all its posts from the forum.") }}</small></div>
+            <button type="button" class="btn bf-btn-danger" data-dialog="delete-topic">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("Delete topic") }}</button>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
+      </dialog>
+      {% endif %}
+      {% if can_delete %}
+      <dialog class="bf-dialog is-narrow" id="delete-topic" aria-labelledby="delete-topic-title">
+        <header class="bf-dialog-head">
+          <h2 id="delete-topic-title">{% if deleted %}{{ layout.t.msg("Delete this topic permanently?") }}{% else %}{{ layout.t.msg("Delete this topic?") }}{% endif %}</h2>
+          <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+        </header>
+        <form method="post" action="/t/{{ id }}/delete">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          <div class="bf-dialog-body"><p>{% if deleted %}{{ layout.t.msg("The topic and all its posts are removed for good. This cannot be undone.") }}{% else %}{{ layout.t.msg("The topic and all its posts are removed from the forum. Moderators can still see it in the deleted items.") }}{% endif %}</p></div>
+          <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger">{{ layout.icon("trash-2")|safe }} {% if deleted %}{{ layout.t.msg("Delete permanently") }}{% else %}{{ layout.t.msg("Delete topic") }}{% endif %}</button></div>
+        </form>
       </dialog>
       {% endif %}
     </div>
   </div>
 </header>
+{% if deleted %}
+<p class="bf-alert is-error bf-deleted-note" role="status">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("This topic is deleted. Only its author and the moderators can see it.") }}{% if can_delete %} {{ layout.t.msg("Deleting it again removes it for good.") }}{% endif %}</p>
+{% endif %}
 {{ layout.slot("topic_header")|safe }}
 
 {% if can_edit_layout %}{% include "_layout_edit.html" %}{% endif %}

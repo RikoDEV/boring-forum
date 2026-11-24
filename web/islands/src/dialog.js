@@ -135,6 +135,8 @@ if (!window.bfDialogs) {
       if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) field.value = value ?? "";
     }
     wire(d);
+    // A dialog opened from a menu takes the menu's place: it does not stay open behind it.
+    opener.closest("details.bf-menu")?.removeAttribute("open");
     show(d, opener);
   });
 }

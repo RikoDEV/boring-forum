@@ -113,7 +113,10 @@ opened from a `PageHead` button; never an inline form above the list.
 - Dialogs: `dialog.acp-modal` opened with `showModal()`, as on the Badges page.
 
 **Forum pages (`crates/bf-web/templates`, `themes/default/css`)**
-- Modals: `details.bf-modal > summary` + `div.bf-modal-body` with `.bf-modal-actions`.
+- Modals: `dialog.bf-dialog` (`is-narrow`, `is-wide`) with `header.bf-dialog-head`, `.bf-dialog-body` and
+  `.bf-dialog-actions`, opened by `button[data-dialog="<id>"]`, closed by `[data-dialog-close]`
+  (`web/islands/src/dialog.js`). A `form` may wrap the body and the actions. Destructive confirmations use
+  `.btn.bf-btn-danger`; a menu item that deletes opens one instead of posting at once.
 - Tooltips: `data-tip="…"` on any element (optional `data-tip-side="below|end"`); icon buttons
   show their `aria-label` without markup. One component: `web/islands/src/tooltip.js` draws a
   single bubble in the browser's top layer (a popover), placed from the trigger's position, so

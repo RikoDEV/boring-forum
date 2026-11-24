@@ -442,6 +442,46 @@ pub async fn restore_post_override(pool: &PgPool, post_id: i64, actor: i64, allo
     tx.commit().await
 }
 
+/// What removing a deleted post or topic for good came to.
+#[derive(Debug, PartialEq, Eq)]
+pub enum Purge {
+    /// A reply was removed.
+    Post,
+    /// The first post: the whole topic, with its replies, went.
+    Topic,
+    /// Nothing deleted by that id.
+    NotFound,
+}
+
+/// Removes a post that is already deleted, for good: the second step of deleting. The first post
+/// takes its topic with it (the replies, tags, votes and the rest follow); a reply goes alone.
+/// Counters were fixed when it was deleted, but the forum's last topic may have been this one.
+pub async fn purge_post(pool: &PgPool, post_id: i64, actor: i64) -> Result<Purge, Error> {
+    let mut tx = pool.begin().await?;
+    let row: Option<(i64, i32)> =
+        sqlx::query_as("SELECT item_id, post_number FROM posts WHERE id = $1 AND state = 'deleted' FOR UPDATE")
+            .bind(post_id)
+            .fetch_optional(&mut *tx)
+            .await?;
+    let Some((item_id, number)) = row else { return Ok(Purge::NotFound) };
+    let node = node_of(&mut tx, item_id).await?;
+    let result = if number == 1 {
+        sqlx::query("DELETE FROM items WHERE id = $1").bind(item_id).execute(&mut *tx).await?;
+        Purge::Topic
+    } else {
+        sqlx::query("DELETE FROM posts WHERE id = $1").bind(post_id).execute(&mut *tx).await?;
+        Purge::Post
+    };
+    recount_node(&mut tx, node).await?;
+    let (action, target) = match result {
+        Purge::Topic => ("topic.purge", format!("topic:{item_id}")),
+        _ => ("post.purge", format!("post:{post_id}")),
+    };
+    record(&mut *tx, Entry::new(action).by(actor).on(target)).await?;
+    tx.commit().await?;
+    Ok(result)
+}
+
 #[derive(Debug, Clone, FromRow)]
 pub struct DeletedRow {
     pub post_id: i64,

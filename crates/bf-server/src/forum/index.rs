@@ -45,6 +45,7 @@ pub(crate) fn topic_line(t: &TopicRow) -> TopicLine {
         author: t.author.clone().unwrap_or_else(|| "deleted".into()),
         pinned: t.pinned,
         locked: t.locked,
+        deleted: t.state == "deleted",
         replies: t.reply_count,
         views: t.view_count,
         last_poster: t.last_poster.clone().unwrap_or_else(|| "deleted".into()),
@@ -273,6 +274,7 @@ async fn forum(
         after: chrono::NaiveDate::parse_from_str(q.after.trim(), "%Y-%m-%d").ok(),
         unread: show == "unread",
         include_unlisted: tree.perms(&v.actor, id).has(Perms::MODERATE),
+        include_deleted: tree.perms(&v.actor, id).has(Perms::MODERATE),
     };
     let node = tree.node(id).filter(|n| n.kind != "link").ok_or(AppError::NotFound)?;
     let perms = tree.perms(&v.actor, id);

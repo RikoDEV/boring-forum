@@ -96,6 +96,24 @@ pub async fn topic_posts(
     .await
 }
 
+/// The first post of a topic, whatever its state: what the author of a deleted topic is shown.
+pub async fn first_post(pool: &PgPool, item_id: i64, viewer: Option<i64>) -> Result<Vec<PostRow>, Error> {
+    // Only the constant POST_SELECT is interpolated; every value is bound. ($2 to $4 are the
+    // parameters the select's neighbours use for paging; unused here, but numbered.)
+    sqlx::query_as(concat!(
+        post_select!(),
+        "
+         WHERE p.item_id = $1 AND p.post_number = 1 AND $2 = 0 AND $3 = 0 AND $4 = 0"
+    ))
+    .bind(item_id)
+    .bind(0i32)
+    .bind(0i32)
+    .bind(0i32)
+    .bind(viewer)
+    .fetch_all(pool)
+    .await
+}
+
 /// A Q&A topic on one page: the question, the accepted answer, then answers by votes, oldest
 /// first among equals. Small action entries are left out; they would sit between answers.
 pub async fn topic_posts_ranked(

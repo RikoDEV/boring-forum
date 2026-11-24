@@ -6,7 +6,7 @@
 {% if let Some(a) = p.action %}
 <p class="action-entry" id="post-{{ p.number }}"><time class="muted" datetime="{{ p.created_iso }}">{{ p.created }}</time> <span><a href="{{ p.author_url }}">{{ p.author }}</a> {{ a }}{% if let Some(d) = p.action_detail %} <em>{{ d }}</em>{% endif %}</span></p>
 {% else %}
-<article class="panel post bf-post" id="post-{{ p.number }}" data-post="{{ p.id }}"{% if p.wiki %} data-wiki{% endif %}>
+<article class="panel post bf-post{% if p.deleted %} is-deleted{% endif %}" id="post-{{ p.number }}" data-post="{{ p.id }}"{% if p.wiki %} data-wiki{% endif %}>
   {% if p.ignored %}<details class="bf-disclosure is-small"><summary>{{ layout.t.f("post.ignored", [("name", p.author.as_str())]) }}</summary>{% endif %}
 
   {#- The author column (classic style). #}
@@ -36,6 +36,7 @@
         {%- if let Some((name, tier, colour)) = p.author_rank %} <span class="bf-rank" data-tip="{{ layout.t.msg("Reputation rank") }}">{{ layout.medal(tier.as_str(), "star", colour, 0)|safe }}{{ name }}</span>{% endif -%}
       </span>
       <a class="muted bf-post-when" href="#post-{{ p.number }}"><span class="bf-posted-word">{{ layout.t.t("post.posted") }} </span><time datetime="{{ p.created_iso }}">{{ p.created }}</time></a>
+      {%- if p.deleted %} <span class="bf-badge is-bad">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("Deleted") }}</span>{% endif %}
       {%- if p.edited %} <a class="muted" href="/post/{{ p.id }}/history">{{ layout.t.t("post.edited") }}</a>{% endif %}
       {%- if p.wiki %} <span class="bf-badge">{{ layout.icon("pencil")|safe }} {{ layout.t.t("post.wiki") }}</span>{% endif %}
       {%- if can_moderate && p.number > 1 %} <input type="checkbox" form="split-form" name="post" value="{{ p.id }}" aria-label="{{ layout.t.f("post.select_split", [("n", p.number.to_string().as_str())]) }}"><button type="button" class="link small bf-select-below" data-select-below data-tip="{{ layout.t.t("post.select_below_title") }}">{{ layout.t.t("post.select_below") }}</button>{% endif -%}
@@ -72,7 +73,32 @@
     {% if let Some(sig) = p.signature %}<div class="cooked small muted signature">{{ sig|safe }}</div>{% endif %}
 
     {{ layout.slot("post_footer")|safe }}
-    {% if layout.user.is_some() || !p.reaction_pills.is_empty() %}
+    {% if p.deleted %}
+    {#- A deleted post: staff can bring it back or, deleting it again, remove it for good. #}
+    {% if can_moderate %}
+    <footer class="post-actions small bf-deleted-actions">
+      <span class="bf-actions-gap"></span>
+      {% if p.number == 1 %}
+      <form method="post" action="/t/{{ id }}/restore"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("history")|safe }} {{ layout.t.msg("Restore topic") }}</button></form>
+      <button type="button" class="btn bf-btn-danger" data-dialog="delete-topic">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("Delete permanently") }}</button>
+      {% else %}
+      <form method="post" action="/post/{{ p.id }}/restore"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button class="btn">{{ layout.icon("history")|safe }} {{ layout.t.t("deleted.restore") }}</button></form>
+      <button type="button" class="btn bf-btn-danger" data-dialog="purge-post-{{ p.id }}">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("Delete permanently") }}</button>
+      <dialog class="bf-dialog is-narrow" id="purge-post-{{ p.id }}" aria-labelledby="purge-post-{{ p.id }}-title">
+        <header class="bf-dialog-head">
+          <h2 id="purge-post-{{ p.id }}-title">{{ layout.t.msg("Delete this post permanently?") }}</h2>
+          <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+        </header>
+        <form method="post" action="/post/{{ p.id }}/purge">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          <div class="bf-dialog-body"><p>{{ layout.t.msg("The post is removed for good. This cannot be undone.") }}</p></div>
+          <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("Delete permanently") }}</button></div>
+        </form>
+      </dialog>
+      {% endif %}
+    </footer>
+    {% endif %}
+    {% else if layout.user.is_some() || !p.reaction_pills.is_empty() %}
     <footer class="post-actions small">
       {% if !p.reaction_pills.is_empty() %}
       <button type="button" class="bf-react-pills" data-reactions="{{ p.id }}" aria-haspopup="dialog" data-tip="{{ layout.t.t("post.who_reacted") }}">
@@ -143,8 +169,9 @@
           {% if p.can_edit %}
           <button type="button" data-edit-post="{{ p.id }}">{{ layout.icon("pencil")|safe }} {{ layout.t.t("common.edit") }}</button>
           {% if layout.translations %}<a href="/translate/post/{{ p.id }}">{{ layout.icon("globe")|safe }} {{ layout.t.t("post.translate") }}</a>{% endif %}
-          <form method="post" action="/post/{{ p.id }}/delete"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button>{{ layout.icon("trash-2")|safe }} {{ layout.t.t("common.delete") }}</button></form>
+          {% if p.number > 1 %}<button type="button" data-dialog="delete-post-{{ p.id }}">{{ layout.icon("trash-2")|safe }} {{ layout.t.t("common.delete") }}</button>{% endif %}
           {% endif %}
+          {% if p.number == 1 && can_delete %}<button type="button" data-dialog="delete-topic">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("Delete topic") }}</button>{% endif %}
           {% if can_solve && p.number > 1 %}
           <form method="post" action="/post/{{ p.id }}/solve"><input type="hidden" name="csrf" value="{{ layout.csrf }}"><button>{{ layout.icon("circle-check")|safe }} {% if solved == Some(*p.number) %}{{ layout.t.t("post.unmark_answer") }}{% else %}{{ layout.t.t("post.mark_answer") }}{% endif %}</button></form>
           {% endif %}
@@ -200,6 +227,19 @@
           </details>
         </div>
       </details>
+      {% if p.can_edit && p.number > 1 %}
+      <dialog class="bf-dialog is-narrow" id="delete-post-{{ p.id }}" aria-labelledby="delete-post-{{ p.id }}-title">
+        <header class="bf-dialog-head">
+          <h2 id="delete-post-{{ p.id }}-title">{{ layout.t.msg("Delete this post?") }}</h2>
+          <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+        </header>
+        <form method="post" action="/post/{{ p.id }}/delete">
+          <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+          <div class="bf-dialog-body"><p>{{ layout.t.msg("The post is removed from the topic. Moderators can still see it in the deleted items.") }}</p></div>
+          <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger">{{ layout.icon("trash-2")|safe }} {{ layout.t.t("common.delete") }}</button></div>
+        </form>
+      </dialog>
+      {% endif %}
       {% endif %}
     </footer>
     {% endif %}

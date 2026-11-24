@@ -15,11 +15,25 @@
       <div><strong>{{ layout.user_link(d.author)|safe }}</strong> <span class="muted">{{ layout.t.t("topic.in") }}</span> <a href="{{ d.post_url }}">{{ d.title }}</a></div>
       <div class="muted small">{{ layout.t.t("deleted.by") }} {% if d.deleted_by == "unknown" %}{{ layout.t.t("deleted.unknown") }}{% else %}{{ layout.user_link(d.deleted_by)|safe }}{% endif %} · {{ d.when }}</div>
     </div>
-    <form method="post" action="/post/{{ d.post_id }}/restore" class="bf-feed-end">
-      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-      <button class="btn">{{ layout.icon("history")|safe }} <span class="bf-btn-label">{{ layout.t.t("deleted.restore") }}</span></button>
-    </form>
+    <div class="bf-feed-end bf-deleted-actions">
+      <form method="post" action="/post/{{ d.post_id }}/restore">
+        <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+        <button class="btn">{{ layout.icon("history")|safe }} <span class="bf-btn-label">{{ layout.t.t("deleted.restore") }}</span></button>
+      </form>
+      <button type="button" class="btn bf-btn-danger" data-dialog="purge-{{ d.post_id }}" aria-label="{{ layout.t.msg("Delete permanently") }}">{{ layout.icon("trash-2")|safe }} <span class="bf-btn-label">{{ layout.t.msg("Delete permanently") }}</span></button>
+    </div>
   </header>
+  <dialog class="bf-dialog is-narrow" id="purge-{{ d.post_id }}" aria-labelledby="purge-{{ d.post_id }}-title">
+    <header class="bf-dialog-head">
+      <h2 id="purge-{{ d.post_id }}-title">{% if d.first %}{{ layout.t.msg("Delete this topic permanently?") }}{% else %}{{ layout.t.msg("Delete this post permanently?") }}{% endif %}</h2>
+      <button type="button" class="bf-icon-btn" data-dialog-close aria-label="{{ layout.t.t("common.close") }}">{{ layout.icon("x")|safe }}</button>
+    </header>
+    <form method="post" action="/post/{{ d.post_id }}/purge">
+      <input type="hidden" name="csrf" value="{{ layout.csrf }}">
+      <div class="bf-dialog-body"><p>{% if d.first %}{{ layout.t.msg("The topic and all its posts are removed for good. This cannot be undone.") }}{% else %}{{ layout.t.msg("The post is removed for good. This cannot be undone.") }}{% endif %}</p></div>
+      <div class="bf-dialog-actions"><button type="button" class="btn" data-dialog-close>{{ layout.t.t("common.cancel") }}</button><button class="btn bf-btn-danger">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("Delete permanently") }}</button></div>
+    </form>
+  </dialog>
   <div class="bf-review-body"><p class="bf-deleted-text bf-prewrap">{{ d.excerpt }}</p></div>
 </article>
 {% else %}

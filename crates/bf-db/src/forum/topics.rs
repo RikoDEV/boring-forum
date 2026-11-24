@@ -158,6 +158,9 @@ pub struct TopicFilter {
     pub unread: bool,
     /// Moderators also see unlisted topics.
     pub include_unlisted: bool,
+    /// Moderators also see deleted topics, which wait for their retention period to end; their author
+    /// (the viewer) sees their own either way.
+    pub include_deleted: bool,
 }
 
 pub async fn forum_topics(
@@ -170,7 +173,8 @@ pub async fn forum_topics(
     offset: i64,
 ) -> Result<Vec<TopicRow>, Error> {
     sqlx::query_as(sqlx::AssertSqlSafe(format!(
-        "SELECT {TOPIC_COLS} {} WHERE i.node_id = $1 AND i.state = 'visible' AND (i.listed OR $12)
+        "SELECT {TOPIC_COLS} {} WHERE i.node_id = $1 AND (i.state = 'visible' OR (i.state = 'deleted' AND ($13 OR i.author_id = $6)))
+           AND (i.listed OR $12)
            AND (NOT $4 OR i.reply_count = 0) AND ($5::bigint IS NULL OR i.author_id = $5)
            AND ($7::text IS NULL OR i.prefix = $7)
            AND ($8::text IS NULL OR EXISTS (SELECT 1 FROM item_tags it JOIN tags tg ON tg.id = it.tag_id
@@ -196,6 +200,7 @@ pub async fn forum_topics(
     .bind(filter.unread)
     .bind(filter.unsolved)
     .bind(filter.include_unlisted)
+    .bind(filter.include_deleted)
     .fetch_all(pool)
     .await
 }

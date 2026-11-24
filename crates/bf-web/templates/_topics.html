@@ -9,7 +9,7 @@
   </thead>
   <tbody>
     {% for t in topics %}
-    <tr class="bf-topic-row{% if t.unread.is_some() %} is-unread{% endif %}" data-topic-id="{{ t.id }}">
+    <tr class="bf-topic-row{% if t.unread.is_some() %} is-unread{% endif %}{% if t.deleted %} is-deleted{% endif %}" data-topic-id="{{ t.id }}">
       <td>
         <div class="bf-topic-main">
           {% if bulk %}<input type="checkbox" form="bulk" name="topic" value="{{ t.id }}" aria-label="{{ layout.t.f("topics.select", [("title", t.title.as_str())]) }}">{% endif %}
@@ -27,6 +27,7 @@
               <span class="bf-badge" data-tip="{{ layout.t.t("topics.votes") }}">▲ {{ n }}</span>
               {% endif %}
               {% if t.solved %}<span class="bf-badge is-ok">{{ layout.icon("circle-check")|safe }} {{ layout.t.t("topics.solved") }}</span>{% endif %}
+              {% if t.deleted %}<span class="bf-badge is-bad">{{ layout.icon("trash-2")|safe }} {{ layout.t.msg("Deleted") }}</span>{% endif %}
               {% if t.pinned %}<span class="bf-badge is-accent">{{ layout.icon("pin")|safe }} {{ layout.t.t("topics.pinned") }}</span>{% endif %}
               {% if t.locked %}<span class="bf-badge">{{ layout.icon("lock")|safe }} {{ layout.t.t("topics.locked") }}</span>{% endif %}
               {% if let Some(px) = t.prefix %}<span class="bf-badge is-accent">{{ px }}</span>{% endif %}
