@@ -120,27 +120,16 @@
 
 @media (width <= 639px) {
   .forums > li {
-    grid-template-columns: 3rem minmax(0, 1fr);
     padding-inline: var(--bf-space-3);
   }
 
-  .stats {
-    grid-column: 2;
-    justify-content: flex-start;
-
-    & b {
-      display: inline;
-    }
-  }
-
-  /* The latest topic stays: one quiet line under the count, without the avatar. */
   .forums .bf-last {
-    grid-column: 2;
     padding: 0;
     border: 0;
 
     & .avatar {
-      display: none;
+      width: 1.75rem;
+      height: 1.75rem;
     }
   }
 }
