@@ -20,6 +20,9 @@ pub struct NavItem {
     /// Members of any of these groups see the link; empty means everyone (with `group` unset).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub groups: Vec<i64>,
+    /// An icon of the site's set, drawn before the label (`folder`, `trophy`); empty means none.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub icon: String,
 }
 
 fn builtin_url(key: &str) -> Option<&'static str> {
@@ -56,13 +59,24 @@ pub fn with_link(json: &str, key: &str) -> Option<String> {
         return None;
     }
     let url = builtin_url(key)?.to_owned();
-    items.push(NavItem { key: Some(key.to_owned()), label: String::new(), url, group: None, groups: vec![] });
+    items.push(NavItem {
+        key: Some(key.to_owned()),
+        label: String::new(),
+        url,
+        group: None,
+        groups: vec![],
+        icon: String::new(),
+    });
     serde_json::to_string(&items).ok()
 }
 
 fn safe_url(url: &str) -> bool {
     let local = url.starts_with('/') && !url.starts_with("//");
     (local || url.starts_with("https://")) && !url.contains(['\\', '\n', '\r', '\t'])
+}
+
+fn safe_icon(name: &str) -> bool {
+    name.len() <= 40 && name.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 
 fn defaults() -> Vec<NavItem> {
@@ -74,6 +88,7 @@ fn defaults() -> Vec<NavItem> {
             url: builtin_url(k).unwrap_or("/").to_owned(),
             group: None,
             groups: vec![],
+            icon: String::new(),
         })
         .collect()
 }
@@ -87,6 +102,10 @@ pub fn parse(json: &str) -> Vec<NavItem> {
     items
         .into_iter()
         .filter_map(|mut i| {
+            // An icon is a name of the set: a bad one is dropped, not the link.
+            if !safe_icon(&i.icon) {
+                i.icon.clear();
+            }
             if let Some(url) = i.key.as_deref().map(builtin_url) {
                 url?.clone_into(&mut i.url);
                 return Some(i);
@@ -141,6 +160,15 @@ mod tests {
         assert!(with_link(&once, "clubs").is_none());
         assert_eq!(parse(&once).last().map(|i| i.url.as_str()), Some("/clubs"));
         assert_eq!(module_for_setting("clubs_enabled"), Some("clubs"));
+    }
+
+    #[test]
+    fn a_link_may_have_an_icon_but_only_a_plain_name() {
+        let items = parse(
+            r#"[{"label":"A","url":"/a","icon":"trophy"},{"label":"B","url":"/b","icon":"<script>"},{"key":"top","icon":"star"}]"#,
+        );
+        assert_eq!(items.iter().map(|i| i.icon.as_str()).collect::<Vec<_>>(), ["trophy", "", "star"]);
+        assert!(!serde_json::to_string(&parse(r#"[{"label":"C","url":"/c"}]"#)).unwrap_or_default().contains("icon"));
     }
 
     #[test]

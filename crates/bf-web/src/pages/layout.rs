@@ -158,7 +158,8 @@ pub struct Layout {
     pub text_size: i16,
     pub density: String,
     /// Header links as (url, label), filtered for this viewer.
-    pub nav: Vec<(String, String)>,
+    /// The header links: (address, label, icon name or empty).
+    pub nav: Vec<(String, String, String)>,
     pub sidebar: Vec<(String, String)>,
     /// Links plugins declared with an icon or a menu, for this viewer: (url, label, icon, menu).
     pub plugin_menu: Vec<(String, String, String, String)>,
@@ -366,11 +367,11 @@ impl Layout {
                 p.nav
                     .iter()
                     .filter(|(u, _)| !rich_urls.contains(&u.as_str()))
-                    .map(|(u, l)| (u.clone(), crate::theme::plugin_label(locale, l))),
+                    .map(|(u, l)| (u.clone(), crate::theme::plugin_label(locale, l), String::new())),
             );
             // Links with a visibility rule (`group`, `groups`) show only to those who may use them.
             let items = bf_core::nav::visible(p.extras.nav_items.clone(), groups, is_admin);
-            self.nav.extend(items.into_iter().map(|i| (i.url, crate::theme::plugin_label(locale, &i.label))));
+            self.nav.extend(items.into_iter().map(|i| (i.url, crate::theme::plugin_label(locale, &i.label), i.icon)));
             // Links with an icon or a menu: ordered, and only for those who may use them.
             let mut rich: Vec<_> = p
                 .extras
@@ -585,7 +586,7 @@ impl Layout {
             .into_iter()
             .map(|i| {
                 let label = i.key.as_ref().map_or_else(|| self.t.msg(&i.label), |k| self.t.t(&format!("nav.{k}")));
-                (i.url, label)
+                (i.url, label, i.icon)
             })
             .collect();
     }

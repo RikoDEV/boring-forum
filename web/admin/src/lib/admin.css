@@ -1278,6 +1278,18 @@ main td button.link:hover {
 .acp-matrix-wrap {
   overflow-x: auto;
 }
+/* In such a table the column of buttons stays at the end while the rest scrolls under it, so the
+   buttons are always in reach and never wrap. */
+.acp-matrix-wrap :is(td, th).acp-cell-end {
+  position: sticky;
+  inset-inline-end: 0;
+  z-index: 2;
+  background: var(--bf-color-surface);
+  box-shadow: -0.75rem 0 0.75rem -0.75rem rgb(0 0 0 / 0.5);
+}
+.acp-matrix-wrap tbody tr:hover > td.acp-cell-end {
+  background: var(--bf-color-surface-2);
+}
 .acp-profile {
   display: flex;
   flex-wrap: wrap;
@@ -1824,6 +1836,7 @@ h2.acp-token-group {
 /* A table column of buttons: they line up at the end of the row. */
 :is(td, th).acp-cell-end {
   text-align: end;
+  white-space: nowrap;
 }
 /* Rows that are put in order by dragging: a handle at the start, a line where the row will land. */
 :is(td, th).acp-grip-col {
@@ -2190,6 +2203,11 @@ tr.is-drop-after > td {
 }
 .bf-dialog .bf-dialog-actions .is-danger.bf-dialog-aside {
   margin-inline-end: auto;
+}
+/* The panel's rules are not in a layer, so its heading margins beat the site's: a dialog's title has
+   none, or it sits lower than the close button beside it. */
+.bf-dialog-head h2 {
+  margin: 0;
 }
 .acp-dialog-x {
   flex: none;

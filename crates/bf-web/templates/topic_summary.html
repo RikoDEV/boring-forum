@@ -25,7 +25,7 @@
     <ol class="bf-top-replies">
       {% for (n, who, cooked, likes, url) in top %}
       <li>
-        <div class="bf-top-rank"><span class="bf-react-pill">❤️ {{ likes }}</span></div>
+        <div class="bf-top-likes"><span class="bf-react-pill">❤️ {{ likes }}</span></div>
         <div class="bf-top-main">
           <header class="small"><img class="avatar" src="/avatar/{{ who }}.svg" width="28" height="28" alt="" loading="lazy"> <strong>{{ layout.user_link(who)|safe }}</strong> <a class="muted" href="{{ url }}">{{ layout.t.f("search.post_number", [("n", n.to_string().as_str())]) }}</a></header>
           <div class="cooked">{{ cooked|safe }}</div>

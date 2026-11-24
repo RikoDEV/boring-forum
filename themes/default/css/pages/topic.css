@@ -1031,8 +1031,12 @@
   }
 }
 
-.bf-top-rank {
+.bf-top-likes {
   flex: none;
+
+  & .bf-react-pill {
+    white-space: nowrap;
+  }
 }
 
 .bf-top-main {

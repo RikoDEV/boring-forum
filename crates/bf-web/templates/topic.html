@@ -64,7 +64,6 @@
     <div class="bf-head-actions">
       {% if let Some(feed) = layout.feed %}<a class="bf-icon-btn" href="{{ feed }}" aria-label="{{ layout.t.t("feed.subscribe") }}">{{ layout.icon("rss")|safe }}</a>{% endif %}
       <a class="btn" href="/t/{{ id }}/summary">{{ layout.icon("star")|safe }} <span class="bf-btn-label">{{ layout.t.t("topic.top_replies") }}</span></a>
-      <button type="button" class="bf-icon-btn" data-copy-link aria-label="{{ layout.t.t("topic.copy_link") }}">{{ layout.icon("link")|safe }}</button>
       {% if layout.user.is_some() %}
       <details class="bf-menu">
         <summary class="btn">{{ layout.icon("mail")|safe }} <span class="bf-btn-label">{{ layout.t.t("topic.invite") }}</span></summary>

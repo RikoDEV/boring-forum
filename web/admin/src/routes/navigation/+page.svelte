@@ -8,6 +8,7 @@
   import IconButton from "#lib/IconButton.svelte";
   import Empty from "#lib/Empty.svelte";
   import MultiSelect from "#lib/MultiSelect.svelte";
+  import IconPicker from "#lib/IconPicker.svelte";
   import { Status } from "#lib/status.svelte.js";
   import { iconHref } from "#lib/icons.js";
   import { get, put } from "#lib/api.js";
@@ -41,6 +42,8 @@
 
   const off = (item) => item.key in MODULES && !enabled[MODULES[item.key]];
   const name = (item) => (item.key ? (BUILTIN[item.key]?.[0] ?? item.key) : item.label);
+  // The icon the link has in the header, if it was given one; the list shows a stand-in otherwise.
+  const standIn = (item) => item.icon || (item.key ? (BUILTIN[item.key]?.[1] ?? "link") : "link");
   const audience = (item) =>
     item.groups?.length
       ? groups
@@ -92,8 +95,11 @@
     e.preventDefault();
     const { index, kind, draft } = editing;
     const g = draft.groups.map(Number);
+    const icon = draft.icon || undefined;
     const item =
-      kind === "page" ? { key: draft.key, groups: g } : { label: draft.label.trim(), url: draft.url.trim(), groups: g };
+      kind === "page"
+        ? { key: draft.key, groups: g, icon }
+        : { label: draft.label.trim(), url: draft.url.trim(), groups: g, icon };
     if (kind === "custom" && !/^(\/|https:\/\/)/.test(item.url)) {
       status.error = tr("A link must start with / or https://.");
       return;
@@ -128,6 +134,7 @@
   <nav class="acp-nav-preview" aria-label={tr("Preview")}>
     {#each items as item}
       <span class:is-off={off(item)} data-tip={off(item) ? tr("hidden while the module is off") : undefined}>
+        {#if item.icon}<svg class="bf-icon" aria-hidden="true"><use href={iconHref(item.icon)}></use></svg>{/if}
         {name(item) || "…"}
       </span>
     {:else}
@@ -157,7 +164,7 @@
         </span>
         <span class="acp-field-icon">
           <svg class="bf-icon" aria-hidden="true">
-            <use href={iconHref(item.key ? (BUILTIN[item.key]?.[1] ?? "link") : "link")}></use>
+            <use href={iconHref(standIn(item))}></use>
           </svg>
         </span>
         <div class="acp-grow">
@@ -238,6 +245,9 @@
         <Field label={tr("Label")} bind:value={editing.draft.label} maxlength="60" required />
         <Field label={tr("Address: / or https://…")} bind:value={editing.draft.url} required spellcheck="false" />
       {/if}
+    </Section>
+    <Section legend={tr("Icon")}>
+      <IconPicker bind:value={editing.draft.icon} />
     </Section>
     <Section legend={tr("Who sees it")} grid>
       <div class="acp-wide">

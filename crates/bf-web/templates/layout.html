@@ -177,7 +177,7 @@
     </div>
     <nav class="bf-footer-col" aria-label="{{ layout.t.t("footer.browse") }}">
       <strong>{{ layout.t.t("footer.browse") }}</strong>
-      {% for (url, label) in layout.nav %}<a href="{{ url }}">{{ label }}</a>{% endfor %}
+      {% for (url, label, _) in layout.nav %}<a href="{{ url }}">{{ label }}</a>{% endfor %}
       {{ layout.plugin_nav_html()|safe }}
     </nav>
     <nav class="bf-footer-col" aria-label="{{ layout.t.t("footer.community") }}">

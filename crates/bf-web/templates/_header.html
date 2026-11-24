@@ -73,7 +73,7 @@
   <div class="bf-nav-row">
   <div class="wrap">
     <nav aria-label="{{ layout.t.t("header.main_nav") }}" class="main-nav">
-      {% for (url, label) in layout.nav %}<a href="{{ url }}">{{ label }}</a>
+      {% for (url, label, icon) in layout.nav %}<a href="{{ url }}">{% if !icon.is_empty() %}{{ layout.icon(icon)|safe }}{% endif %}{{ label }}</a>
       {% endfor %}
       {{ layout.plugin_nav_header()|safe }}
       {% if layout.moderator %}<a href="/modcp">{{ layout.t.t("nav.mod") }}</a> <a href="/review">{{ layout.t.t("nav.review") }}{% if layout.review_count > 0 %} <span class="badge">{{ layout.review_count }}</span>{% endif %}</a>{% endif %}

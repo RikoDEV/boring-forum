@@ -120,11 +120,15 @@
   const removeReaction = (r) =>
     confirm(
       tr('Delete the reaction "{name}"? What members reacted with it disappears from posts.', { name: r.name }),
-    ) && save(del(`/reactions/${r.id}`));
-  const save = (promise) => {
-    status.clear();
-    return promise.then(load, status.fail);
-  };
+    ) && removeRow(del(`/reactions/${r.id}`), () => (reactions = reactions.filter((x) => x.id !== r.id)));
+  // Changing or removing a row leaves the lists as they are: reloading them would put back what was
+  // typed in the other rows and not saved yet. (Adding goes through a dialog, which reloads.)
+  const saveRow = (promise) => status.run(() => promise, tr("Saved."));
+  const removeRow = (promise, drop) =>
+    status.run(async () => {
+      await promise;
+      drop();
+    });
   // What a header button is making: a dialog holds the form, and closes once it was saved.
   let dialog = $state(null);
   const open = (what) => () => {
@@ -285,128 +289,139 @@
       )}
     </small>
   </p>
-  <table>
-    <thead>
-      <tr>
-        <th>{tr("Key")}</th><th>{tr("Label")}</th><th>{tr("Weight")}</th><th>{tr("Needs note")}</th><th>
-          {tr("Illegal")}
-        </th><th>{tr("Message only")}</th><th>{tr("Order")}</th><th>{tr("On")}</th><th class="acp-cell-end"></th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each reasons as r (r.key)}
+  <div class="acp-matrix-wrap">
+    <table>
+      <thead>
         <tr>
-          <td><code>{r.key}</code></td>
-          <td>
-            <input bind:value={r.label} aria-label={tr("Label")} disabled={!!r.plugin} />{#if r.plugin}<div>
-                <span class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: r.plugin })}</span>
-              </div>{/if}
-          </td>
-          <td>
-            <input
-              type="number"
-              step="0.25"
-              min="0"
-              max="10"
-              bind:value={r.weight}
-              aria-label={tr("Weight")}
-              style:width="5rem"
-            />
-          </td>
-          <td><Switch bind:checked={r.needs_note} aria-label={tr("Needs a note")} /></td>
-          <td><Switch bind:checked={r.illegal} aria-label={tr("Illegal content")} /></td>
-          <td>
-            <Switch
-              bind:checked={r.message_user}
-              aria-label={tr("Send the note to the author instead of filing a report")}
-            />
-          </td>
-          <td><input type="number" bind:value={r.position} aria-label={tr("Order")} style:width="5rem" /></td>
-          <td><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} disabled={r.key === "other"} /></td>
-          <td class="acp-cell-end">
-            {#if !r.plugin}<button
-                onclick={() =>
-                  save(
-                    put(`/report-reasons/${r.key}`, { ...r, weight: Number(r.weight), position: Number(r.position) }),
-                  )}
-              >
-                {tr("Save")}
-              </button>
-              {#if r.key !== "other"}<button class="is-danger" onclick={() => save(del(`/report-reasons/${r.key}`))}>
-                  {tr("Delete")}
-                </button>{/if}{/if}
-          </td>
+          <th>{tr("Key")}</th><th>{tr("Label")}</th><th>{tr("Weight")}</th><th>{tr("Needs note")}</th><th>
+            {tr("Illegal")}
+          </th><th>{tr("Message only")}</th><th>{tr("Order")}</th><th>{tr("On")}</th><th class="acp-cell-end"></th>
         </tr>
-      {:else}
-        <Empty cols={9} {loaded} title={tr("No report reasons yet.")} text={tr("Use New reason above to add one.")} />
-      {/each}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {#each reasons as r (r.key)}
+          <tr>
+            <td><code>{r.key}</code></td>
+            <td>
+              <input bind:value={r.label} aria-label={tr("Label")} disabled={!!r.plugin} />{#if r.plugin}<div>
+                  <span class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: r.plugin })}</span>
+                </div>{/if}
+            </td>
+            <td>
+              <input
+                type="number"
+                step="0.25"
+                min="0"
+                max="10"
+                bind:value={r.weight}
+                aria-label={tr("Weight")}
+                style:width="5rem"
+              />
+            </td>
+            <td><Switch bind:checked={r.needs_note} aria-label={tr("Needs a note")} /></td>
+            <td><Switch bind:checked={r.illegal} aria-label={tr("Illegal content")} /></td>
+            <td>
+              <Switch
+                bind:checked={r.message_user}
+                aria-label={tr("Send the note to the author instead of filing a report")}
+              />
+            </td>
+            <td><input type="number" bind:value={r.position} aria-label={tr("Order")} style:width="5rem" /></td>
+            <td><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} disabled={r.key === "other"} /></td>
+            <td class="acp-cell-end">
+              {#if !r.plugin}<button
+                  onclick={() =>
+                    saveRow(
+                      put(`/report-reasons/${r.key}`, { ...r, weight: Number(r.weight), position: Number(r.position) }),
+                    )}
+                >
+                  {tr("Save")}
+                </button>
+                {#if r.key !== "other"}<button
+                    class="is-danger"
+                    onclick={() =>
+                      removeRow(
+                        del(`/report-reasons/${r.key}`),
+                        () => (reasons = reasons.filter((x) => x.key !== r.key)),
+                      )}
+                  >
+                    {tr("Delete")}
+                  </button>{/if}{/if}
+            </td>
+          </tr>
+        {:else}
+          <Empty cols={9} {loaded} title={tr("No report reasons yet.")} text={tr("Use New reason above to add one.")} />
+        {/each}
+      </tbody>
+    </table>
+  </div>
 {:else if tab === "reactions"}
-  <table>
-    <thead>
-      <tr>
-        <th class="acp-grip-col"><span class="visually-hidden">{tr("Order")}</span></th><th>{tr("Emoji")}</th><th>
-          {tr("Name")}
-        </th><th>{tr("Reputation")}</th><th>{tr("On")}</th><th class="acp-cell-end"></th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each reactions as r (r.id)}
-        <tr
-          class:is-grabbed={grabbed === r.id}
-          class:is-drop-before={hover?.id === r.id && !hover.after}
-          class:is-drop-after={hover?.id === r.id && hover.after}
-          ondragover={(e) => overRow(e, r)}
-          ondragleave={() => hover?.id === r.id && (hover = null)}
-          ondrop={dropRow}
-        >
-          <td class="acp-grip-col">
-            <span
-              class="acp-grip"
-              role="button"
-              tabindex="0"
-              draggable="true"
-              aria-label={tr("Move {name}. Alt and the arrow keys also move it.", { name: r.name })}
-              ondragstart={(e) => {
-                grabbed = r.id;
-                e.dataTransfer.effectAllowed = "move";
-                e.dataTransfer.setData("text/plain", String(r.id));
-                e.dataTransfer.setDragImage(e.currentTarget.closest("tr"), 0, 0);
-              }}
-              ondragend={() => {
-                grabbed = null;
-                hover = null;
-              }}
-              onkeydown={(e) => nudgeRow(e, r)}
-            >
-              <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#grip-vertical"></use></svg>
-            </span>
-          </td>
-          <td><input bind:value={r.icon} size="3" aria-label={tr("Emoji")} disabled={!!r.plugin} /></td>
-          <td>
-            <input bind:value={r.name} aria-label={tr("Name")} disabled={!!r.plugin} />{#if r.plugin}<div>
-                <span class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: r.plugin })}</span>
-              </div>{/if}
-          </td>
-          <td>
-            <select bind:value={r.score} aria-label={tr("Reputation")}>
-              <option value={1}>+1</option><option value={0}>0</option><option value={-1}>-1</option>
-            </select>
-          </td>
-          <td><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} /></td>
-          <td class="acp-cell-end">
-            {#if !r.plugin}<button onclick={() => save(put(`/reactions/${r.id}`, r))}>{tr("Save")}</button>
-              {#if !r.is_like}<button class="is-danger" onclick={() => removeReaction(r)}>
-                  {tr("Delete")}
-                </button>{/if}{/if}
-          </td>
+  <div class="acp-matrix-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="acp-grip-col"><span class="visually-hidden">{tr("Order")}</span></th><th>{tr("Emoji")}</th><th>
+            {tr("Name")}
+          </th><th>{tr("Reputation")}</th><th>{tr("On")}</th><th class="acp-cell-end"></th>
         </tr>
-      {:else}
-        <Empty cols={6} {loaded} title={tr("No reactions yet.")} text={tr("Use New reaction above to add one.")} />
-      {/each}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {#each reactions as r (r.id)}
+          <tr
+            class:is-grabbed={grabbed === r.id}
+            class:is-drop-before={hover?.id === r.id && !hover.after}
+            class:is-drop-after={hover?.id === r.id && hover.after}
+            ondragover={(e) => overRow(e, r)}
+            ondragleave={() => hover?.id === r.id && (hover = null)}
+            ondrop={dropRow}
+          >
+            <td class="acp-grip-col">
+              <span
+                class="acp-grip"
+                role="button"
+                tabindex="0"
+                draggable="true"
+                aria-label={tr("Move {name}. Alt and the arrow keys also move it.", { name: r.name })}
+                ondragstart={(e) => {
+                  grabbed = r.id;
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", String(r.id));
+                  e.dataTransfer.setDragImage(e.currentTarget.closest("tr"), 0, 0);
+                }}
+                ondragend={() => {
+                  grabbed = null;
+                  hover = null;
+                }}
+                onkeydown={(e) => nudgeRow(e, r)}
+              >
+                <svg class="bf-icon" aria-hidden="true"><use href="{sprite}#grip-vertical"></use></svg>
+              </span>
+            </td>
+            <td><input bind:value={r.icon} size="3" aria-label={tr("Emoji")} disabled={!!r.plugin} /></td>
+            <td>
+              <input bind:value={r.name} aria-label={tr("Name")} disabled={!!r.plugin} />{#if r.plugin}<div>
+                  <span class="acp-pill is-muted">{tr("From plugin {plugin}", { plugin: r.plugin })}</span>
+                </div>{/if}
+            </td>
+            <td>
+              <select bind:value={r.score} aria-label={tr("Reputation")}>
+                <option value={1}>+1</option><option value={0}>0</option><option value={-1}>-1</option>
+              </select>
+            </td>
+            <td><Switch bind:checked={r.enabled} aria-label={tr("Enabled")} /></td>
+            <td class="acp-cell-end">
+              {#if !r.plugin}<button onclick={() => saveRow(put(`/reactions/${r.id}`, r))}>{tr("Save")}</button>
+                {#if !r.is_like}<button class="is-danger" onclick={() => removeReaction(r)}>
+                    {tr("Delete")}
+                  </button>{/if}{/if}
+            </td>
+          </tr>
+        {:else}
+          <Empty cols={6} {loaded} title={tr("No reactions yet.")} text={tr("Use New reaction above to add one.")} />
+        {/each}
+      </tbody>
+    </table>
+  </div>
 {:else if tab === "tags"}
   <p class="muted"><small>{tr("Tags are slugs. Forums are ids; leave empty to allow everywhere.")}</small></p>
   <div class="acp-card-list">
@@ -421,9 +436,10 @@
             <Section switches><Switch label={tr("One per topic")} bind:checked={g.one_per_topic} /></Section>
           </div>
           <div class="acp-actions">
-            <button onclick={() => save(put(`/tag-groups/${g.id}`, groupBody(g)))}>{tr("Save")}</button><button
+            <button onclick={() => saveRow(put(`/tag-groups/${g.id}`, groupBody(g)))}>{tr("Save")}</button><button
               class="is-danger acp-end"
-              onclick={() => save(del(`/tag-groups/${g.id}`))}
+              onclick={() =>
+                removeRow(del(`/tag-groups/${g.id}`), () => (groups = groups.filter((x) => x.id !== g.id)))}
             >
               {tr("Delete")}
             </button>
@@ -453,9 +469,10 @@
           <Field label={tr("Name")} bind:value={r.name} wide />
           {@render ruleFields(r)}
           <div class="acp-actions">
-            <button onclick={() => save(put(`/promotion-rules/${r.id}`, ruleBody(r)))}>{tr("Save")}</button><button
+            <button onclick={() => saveRow(put(`/promotion-rules/${r.id}`, ruleBody(r)))}>{tr("Save")}</button><button
               class="is-danger acp-end"
-              onclick={() => save(del(`/promotion-rules/${r.id}`))}
+              onclick={() =>
+                removeRow(del(`/promotion-rules/${r.id}`), () => (rules = rules.filter((x) => x.id !== r.id)))}
             >
               {tr("Delete")}
             </button>
@@ -478,9 +495,10 @@
           <Field label={tr("Title")} bind:value={a.title} wide />
           {#key a.id}<MarkdownField label={tr("Text")} rows="3" bind:value={a.body} />{/key}
           <div class="acp-actions">
-            <button onclick={() => save(put(`/announcements/${a.id}`, a))}>{tr("Save")}</button><button
+            <button onclick={() => saveRow(put(`/announcements/${a.id}`, a))}>{tr("Save")}</button><button
               class="is-danger acp-end"
-              onclick={() => save(del(`/announcements/${a.id}`))}
+              onclick={() =>
+                removeRow(del(`/announcements/${a.id}`), () => (notices = notices.filter((x) => x.id !== a.id)))}
             >
               {tr("Delete")}
             </button>
