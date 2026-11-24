@@ -22,6 +22,13 @@ pub(super) fn defs() -> Vec<SettingDef> {
             true,
             en("A link alone on its line in a post becomes a card with the page's title, description and picture"),
         ),
+        flag(
+            "link_click_counts",
+            true,
+            en(
+                "Show how many times a link in a post was clicked, as a count beside it (each visitor counts once a day; the post's author does not)",
+            ),
+        ),
         flag("onebox_images", true, en("Show the page's picture on a link preview card")),
         text(
             "onebox_blocked_hosts",

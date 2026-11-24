@@ -67,7 +67,7 @@ function build() {
       "previews",
       tr("Link previews"),
       tr("The cards a link on its own line in a post becomes"),
-      ["onebox_enabled", "onebox_images", "onebox_blocked_hosts", "onebox_cache_days"],
+      ["onebox_enabled", "link_click_counts", "onebox_images", "onebox_blocked_hosts", "onebox_cache_days"],
     ],
     [
       "general",
@@ -592,6 +592,7 @@ function build() {
     csp_image_hosts: tr("Allowed image hosts"),
     emoticons_to_emoji: tr("Turn emoticons into emoji"),
     onebox_enabled: tr("Show link previews"),
+    link_click_counts: tr("Show how often links are clicked"),
     onebox_images: tr("Show the picture on link previews"),
     onebox_blocked_hosts: tr("Sites without link previews"),
     onebox_cache_days: tr("Days a link preview is kept"),

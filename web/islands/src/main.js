@@ -192,24 +192,30 @@ function math(root = document) {
 }
 
 // Rows appended by infinite scroll get the same enhancements as the first page.
-// Link click counts: shown next to links, counted by a beacon that never delays the click.
+// Link click counts: a badge beside each link that has clicks (link-counts.js), counted by a beacon
+// that never delays the click.
 function linkCounts(target, { id }) {
-  const post = (a) =>
-    a.closest(".post")?.querySelector("[data-quote]")?.dataset.quote ?? a.closest(".post")?.dataset.post;
-  document.addEventListener("click", (e) => {
-    const a = e.target.closest?.(".cooked a[href^='http']");
-    const p = a && post(a);
-    if (p) navigator.sendBeacon?.("/api/v1/links/click", JSON.stringify({ post: +p, url: a.getAttribute("href") }));
+  import("./link-counts.js").then(({ clickKey, countable, decorate, postOf, written }) => {
+    const count = (e) => {
+      const a = e.target.closest?.(".cooked a[href]");
+      const p = a && (countable(a) || a.matches(".bf-onebox")) && postOf(a);
+      if (p) navigator.sendBeacon?.("/api/v1/links/click", JSON.stringify({ post: +p, url: written(a) }));
+    };
+    document.addEventListener("click", count);
+    // A middle click opens the link in a new tab without a click event.
+    document.addEventListener("auxclick", (e) => e.button === 1 && count(e));
+    // A topic without a web link has no counts to ask for.
+    if (!document.querySelector(".cooked a[href^='http'], .cooked a[href^='//']")) return;
+    fetch(`/api/v1/topics/${id}/links`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((rows) => {
+        const counts = new Map(rows.map((r) => [clickKey(r.post, r.url), r.clicks]));
+        decorate(document, counts);
+        // Posts that arrive later (infinite scroll, a live reply, an edit) get theirs too.
+        document.addEventListener("bf:posts-added", (e) => decorate(e.detail.element, counts));
+      })
+      .catch(() => {});
   });
-  fetch(`/api/v1/topics/${id}/links`)
-    .then((r) => (r.ok ? r.json() : []))
-    .then((rows) => {
-      for (const a of document.querySelectorAll(".cooked a[href^='http']")) {
-        const hit = rows.find((r) => r.url === a.getAttribute("href") && String(r.post) === post(a));
-        if (hit) a.after(el("small", { class: "muted" }, ` ${hit.clicks}`));
-      }
-    })
-    .catch(() => {});
 }
 
 // The system switching light and dark changes every background: measure group colours again.
@@ -869,13 +875,25 @@ function linkPreviews(root = document) {
     { rootMargin: "300px" },
   );
   const card = async (a) => {
-    const res = await fetch(`/api/v1/onebox?url=${encodeURIComponent(a.href)}`).catch(() => null);
+    // Asked for by the address as written: `a.href` is the browser's resolved form (a bare host gets a "/"),
+    // which is not the one stored for the post.
+    const res = await fetch(`/api/v1/onebox?url=${encodeURIComponent(a.getAttribute("href"))}`).catch(() => null);
     if (!res?.ok) return;
     const d = await res.json();
-    const box = el("a", { class: "bf-onebox", href: a.href, rel: a.rel || "nofollow ugc noopener" });
+    // The card keeps the address as it was written (its own `href` is resolved) and the link's count.
+    const count = a.nextElementSibling?.classList.contains("bf-link-clicks") ? a.nextElementSibling : null;
+    const box = el("a", {
+      class: "bf-onebox",
+      href: a.href,
+      "data-url": a.dataset.url ?? a.getAttribute("href"),
+      rel: a.rel || "nofollow ugc noopener",
+    });
+    if (count) box.dataset.clicks = a.dataset.clicks;
     if (d.image) box.append(el("img", { src: d.image, alt: "", loading: "lazy", referrerpolicy: "no-referrer" }));
     const text = el("span", { class: "bf-onebox-text" });
-    text.append(el("small", {}, d.site), el("strong", {}, d.title));
+    const site = el("small", {}, d.site);
+    if (count) site.append(" ", count);
+    text.append(site, el("strong", {}, d.title));
     if (d.description) text.append(el("span", {}, d.description));
     box.append(text);
     box.querySelector("img")?.addEventListener("error", (ev) => ev.target.remove());
@@ -1051,10 +1069,6 @@ function menus() {
   postSelection();
   linkPreviews();
   emoticonsInTextBoxes();
-  document.querySelector("[data-copy-link]")?.addEventListener("click", async () => {
-    await navigator.clipboard?.writeText(location.href.split("#")[0]);
-    toast(tr("Link copied"));
-  });
   // Copies a fixed string (data-copy), or every item of a list it points to (data-copy-target).
   document.addEventListener("click", async (e) => {
     const b = e.target.closest?.("[data-copy], [data-copy-target]");

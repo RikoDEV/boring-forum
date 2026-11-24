@@ -23,6 +23,17 @@ logs every request in `ai_usage` and enforces `ai_monthly_token_limit` and `ai_u
   (`ai_spam_action`).
 - `ai_usage` rows are kept 400 days.
 
+## Link click counts
+
+A link in a post shows how many times it was clicked, as a small badge beside it (`161`, `1.2K`), like
+Discourse. It covers web links, including full addresses of this forum, and leaves out pictures, mentions
+and files. A link made into a preview card carries its count in the card's first line.
+
+- A visitor counts once a day for a link: a member by account, a guest by network. Only a digest of the
+  two is kept, in memory for that day; nothing is written down. The post's own author does not count.
+- Admin, Settings, Link previews has the switch (`link_click_counts`, on by default). Off, nothing is
+  counted and no badge is shown; the counts already kept stay.
+
 ## Who can open an uploaded file
 
 A file may be fetched by those who may see a place it is used. `upload_uses` lists those places

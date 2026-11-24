@@ -2523,6 +2523,8 @@ msg-analytics_the_site_s_domain_plausible_website_id_umami = التحليلات:
 msg-analytics_https_address_of_a_self_hosted_plausible = التحليلات: عنوان https لخادم Plausible أو Umami أو Matomo مستضاف ذاتيًا
 # A link alone on its line in a post becomes a card with the page's title, description and picture
 msg-a_link_alone_on_its_line_in_a_post_becomes_a_card_with = الرابط الموجود وحده في سطر داخل المنشور يتحول إلى بطاقة بعنوان الصفحة ووصفها وصورتها
+# Show how many times a link in a post was clicked, as a count beside it (each visitor counts once a day; the post's author does not)
+msg-show_how_many_times_a_link_in_a_post_was_clicked_as_a = اعرض بجانب الرابط في المنشور عدد النقرات عليه (يُحتسب كل زائر مرة واحدة يوميًا، ولا يُحتسب كاتب المنشور)
 # Show the page's picture on a link preview card
 msg-show_the_page_s_picture_on_a_link_preview_card = عرض صورة الصفحة على بطاقة معاينة الرابط
 # Sites that never get a link preview card, one per line or separated by spaces, like example.com (their subdomains too)
@@ -5616,8 +5618,6 @@ js-n_selected = { $n } محدد
 js-delete_n_click_again = حذف { $n }؟ انقر مجددًا
 # A reply could not be deleted.
 js-a_reply_could_not_be_deleted = تعذّر حذف أحد الردود.
-# Link copied
-js-link_copied = تم نسخ الرابط
 # More
 js-more = المزيد
 # I am not a robot
@@ -6728,6 +6728,8 @@ admin-allowed_image_hosts = مضيفو الصور المسموح بهم
 admin-turn_emoticons_into_emoji = تحويل الوجوه النصية إلى رموز تعبيرية
 # Show link previews
 admin-show_link_previews = إظهار معاينة الروابط
+# Show how often links are clicked
+admin-show_how_often_links_are_clicked = عرض عدد النقرات على الروابط
 # Show the picture on link previews
 admin-show_the_picture_on_link_previews = إظهار الصورة في معاينة الروابط
 # Sites without link previews

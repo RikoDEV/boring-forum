@@ -2357,6 +2357,8 @@ msg-analytics_the_site_s_domain_plausible_website_id_umami = Analityka: domena s
 msg-analytics_https_address_of_a_self_hosted_plausible = Analityka: adres https samodzielnie hostowanego Plausible, Umami lub Matomo
 # A link alone on its line in a post becomes a card with the page's title, description and picture
 msg-a_link_alone_on_its_line_in_a_post_becomes_a_card_with = Link w osobnej linii wpisu zamienia się w kartę z tytułem, opisem i obrazem strony
+# Show how many times a link in a post was clicked, as a count beside it (each visitor counts once a day; the post's author does not)
+msg-show_how_many_times_a_link_in_a_post_was_clicked_as_a = Pokazuj obok linku w poście, ile razy w niego kliknięto (każdy odwiedzający liczy się raz dziennie, autor posta się nie liczy)
 # Show the page's picture on a link preview card
 msg-show_the_page_s_picture_on_a_link_preview_card = Pokaż obraz strony na karcie podglądu linku
 # Sites that never get a link preview card, one per line or separated by spaces, like example.com (their subdomains too)
@@ -5450,8 +5452,6 @@ js-n_selected = Zaznaczono: { $n }
 js-delete_n_click_again = Usunąć { $n }? Kliknij ponownie
 # A reply could not be deleted.
 js-a_reply_could_not_be_deleted = Nie udało się usunąć odpowiedzi.
-# Link copied
-js-link_copied = Skopiowano link
 # More
 js-more = Więcej
 # I am not a robot
@@ -6562,6 +6562,8 @@ admin-allowed_image_hosts = Dozwolone hosty obrazów
 admin-turn_emoticons_into_emoji = Zamieniaj emotikony na emoji
 # Show link previews
 admin-show_link_previews = Pokazuj podgląd linków
+# Show how often links are clicked
+admin-show_how_often_links_are_clicked = Pokazuj liczbę kliknięć w linki
 # Show the picture on link previews
 admin-show_the_picture_on_link_previews = Pokazuj obraz w podglądzie linków
 # Sites without link previews

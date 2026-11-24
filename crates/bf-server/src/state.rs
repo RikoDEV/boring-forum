@@ -34,6 +34,9 @@ pub struct AppState {
     pub browsing: moka::sync::Cache<String, crate::community::browsing::Visitors>,
     /// Gravatar pictures by username: the image and its type, or None when there is none.
     pub gravatars: moka::sync::Cache<String, Option<(axum::body::Bytes, &'static str)>>,
+    /// Link clicks already counted today, by a digest of (post, link, visitor): a visitor counts once a day.
+    /// Nothing identifying is kept, and it is forgotten when the day is up.
+    pub link_clicks_seen: moka::sync::Cache<String, ()>,
     /// The widget list itself, briefly: every home page render needs it.
     pub widget_list: moka::sync::Cache<(), Arc<Vec<bf_db::admin::themes::Widget>>>,
 }
@@ -86,6 +89,10 @@ impl AppState {
             views: crate::forum::views::ViewCounter::default(),
             widgets: moka::sync::Cache::builder().max_capacity(1000).build(),
             browsing: moka::sync::Cache::builder().max_capacity(20_000).time_to_idle(Duration::from_secs(1800)).build(),
+            link_clicks_seen: moka::sync::Cache::builder()
+                .max_capacity(200_000)
+                .time_to_live(bf_core::scaled(Duration::from_secs(24 * 3600)))
+                .build(),
             gravatars: moka::sync::Cache::builder()
                 .max_capacity(5_000)
                 .time_to_live(Duration::from_secs(6 * 3600))

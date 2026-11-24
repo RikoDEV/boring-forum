@@ -99,6 +99,18 @@
   padding: 0 var(--bf-space-2);
 }
 
+/* How often a link was clicked (islands link-counts.js): the site's badge, tucked beside the link. */
+.cooked .bf-link-clicks {
+  margin-inline-start: 0.35em;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+/* A link preview card is as dark as the badge: the badge takes the page's colour there. */
+.cooked .bf-onebox .bf-link-clicks {
+  background: var(--bf-color-surface);
+}
+
 .cooked {
   & .hl-comment {
     color: var(--bf-color-muted);
