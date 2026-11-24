@@ -17,7 +17,7 @@ verify an image with `cosign` and `gh attestation verify`.
 2. Set the version and merge it to `main`:
 
    ```sh
-   scripts/set-version.sh 0.2.0     # Cargo.toml and Cargo.lock
+   scripts/set-version.sh 0.2.0     # Cargo.toml, Cargo.lock, VERSION, BF_VERSION in .env.production and docs/installation.md
    git commit -am "chore(release): 0.2.0"
    ```
 

@@ -43,6 +43,15 @@ them yourself with `-H "Cookie: …"` and to the screenshot tool with `--cookie`
 | `web/islands/**` | `pnpm build` in `web/` |
 | `crates/bf-db/migrations/*` | restart the server; the migrations run at startup |
 
+## Releasing: bump the version before the tag
+
+The Release workflow refuses a tag whose commit does not match `Cargo.toml` and is not on `main`.
+Never tag first. In this order: `sh scripts/set-version.sh X.Y.Z` (it also updates `VERSION`,
+`Cargo.lock`, `.env.production` and `docs/installation.md`), `git commit -am "chore(release): X.Y.Z"`,
+push `main`, then `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z`. Check `git ls-remote --tags
+origin` and `git tag` first: a tag may already exist locally from an earlier attempt. If a pushed
+tag failed the check, deleting it on the remote needs the owner's go-ahead.
+
 ## Run the CI gates your change touches before saying it is done
 
 A red GitHub Action after a push costs the owner a round trip. Every change is checked locally
