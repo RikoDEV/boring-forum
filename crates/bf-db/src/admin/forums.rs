@@ -156,14 +156,16 @@ pub enum NodeDelete {
     NotFound,
     /// It still has forums inside it.
     HasChildren,
-    /// It still holds topics (or other content).
+    /// It still holds topics that are not deleted.
     HasContent,
     /// A club's forum: the club goes, not the forum alone.
     InClub,
 }
 
 /// Deletes an empty forum or category with its permissions, moderators and read markers. It is
-/// refused while anything is inside it, so no topic is ever lost.
+/// refused while anything is inside it, so no topic is ever lost. Topics that were already deleted
+/// (waiting in the moderators' deleted items for the retention period to end) do not count: they
+/// go with the forum.
 pub async fn delete_node(pool: &PgPool, id: i64, actor: i64) -> Result<NodeDelete, Error> {
     let mut tx = pool.begin().await?;
     let row: Option<(String, String)> = sqlx::query_as("SELECT title, kind FROM nodes WHERE id = $1 FOR UPDATE")
@@ -178,16 +180,17 @@ pub async fn delete_node(pool: &PgPool, id: i64, actor: i64) -> Result<NodeDelet
     if has("SELECT EXISTS (SELECT 1 FROM clubs WHERE node_id = $1)").fetch_one(&mut *tx).await? {
         return Ok(NodeDelete::InClub);
     }
-    if has("SELECT EXISTS (SELECT 1 FROM items WHERE node_id = $1)").fetch_one(&mut *tx).await? {
+    if has("SELECT EXISTS (SELECT 1 FROM items WHERE node_id = $1 AND state <> 'deleted')").fetch_one(&mut *tx).await? {
         return Ok(NodeDelete::HasContent);
     }
+    let purged = sqlx::query("DELETE FROM items WHERE node_id = $1").bind(id).execute(&mut *tx).await?.rows_affected();
     sqlx::query("DELETE FROM nodes WHERE id = $1").bind(id).execute(&mut *tx).await?;
     record(
         &mut *tx,
         Entry::new("node.delete")
             .by(actor)
             .on(format!("node:{id}"))
-            .details(serde_json::json!({ "title": title, "kind": kind })),
+            .details(serde_json::json!({ "title": title, "kind": kind, "deleted_topics_removed": purged })),
     )
     .await?;
     tx.commit().await?;
