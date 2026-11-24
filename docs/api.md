@@ -48,6 +48,51 @@ recovered. List and revoke keys with `GET /api/v1/me/api-keys` and
 
 A key cannot create other keys.
 
+## MCP server
+
+`POST /mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server (Streamable HTTP,
+stateless, one JSON answer per request), built into the forum, so an AI assistant can read it and,
+for an administrator, manage it. Point a client at `https://forum.example.com/mcp`, with the key as a
+bearer token. It is on by default; **Admin, Settings, MCP server** has the switches.
+
+**Reading** (`mcp_enabled`). With no key the assistant reads what a guest can; with
+`Authorization: Bearer bf_…` it reads as that member, and the key's scope and `resources` apply as
+they do for the API. Cookies are never used, so a browser session cannot act through `/mcp`. The tools
+are `whoami`, `list_forums`, `list_topics`, `get_topic`, `get_post`, `search`, `get_user`,
+`user_activity` and `related_topics`. Each is one `GET` of the JSON API, run inside the server, so
+permissions, private forums and rate limits are the API's own.
+
+**Posting** (`mcp_posting_enabled`, **off** by default). A member's key with the `write` scope also gets
+`create_topic` and `reply_to_topic`, which post as that member. They use the forum's own forms, so
+everything that applies to a post made by hand applies here: what the member may post where, the daily
+and new-member limits, spam screening, locked topics and the queue for a first post (the tool then
+says it is waiting for a moderator). A key limited to resources needs `write:topics` or `write:posts`.
+Posting twice posts twice; there is no idempotency key for it.
+
+**Managing** (`mcp_admin_enabled`, **off** until an administrator turns it on). A key with the `admin`
+scope, or the `BF_ADMIN_TOKEN`, also gets three tools for the admin API:
+
+| Tool | Does |
+| --- | --- |
+| `admin_routes` | lists the admin API's routes (method, path, what it does), filtered by a word |
+| `admin_get` | reads one of them: users, settings, forums, reports, logs, statistics, ... |
+| `admin_write` | `POST`, `PUT`, `PATCH` or `DELETE` one of them |
+
+The agent finds a route, reads it to see its shape, then writes. Nothing here widens the API: the key
+is passed to it, and the API's own checks decide, including the two-factor rule for administrators.
+On top of that:
+
+- Never available through MCP: the shell, impersonating a member, the SQL explorer's run, installing
+  plugins and themes, restoring or linking a backup, the exports of the site and of a person, importing
+  settings, and managing a member's API keys.
+- An agent cannot change `mcp_enabled` or `mcp_admin_enabled`.
+- Every write, successful or refused, is a line in the audit log (`mcp.admin_write`, with the route,
+  the method and the status), under the administrator who owns the key.
+- Answers have anything named like a secret, token or password hidden before they reach the model.
+- An `admin` key lasts at most 30 days. Give an agent its own key, and revoke it when done.
+
+A refused call comes back as a tool error such as `404 Not found`. A request that names an `Origin`
+other than the forum's own is refused, as the protocol asks. 
 ## How requests behave
 
 **Errors** are `application/problem+json`, with `type`, `title`, `status` and usually a

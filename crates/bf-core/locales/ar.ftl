@@ -2235,6 +2235,12 @@ msg-how_long_that_automatic_silence_lasts_in_hours = مدة ذلك الكتم ا
 msg-delete_channel_messages_after_this_many_days_0_keeps = حذف رسائل القنوات بعد هذا العدد من الأيام؛ 0 يبقيها
 # Delete direct messages after this many days; 0 keeps them
 msg-delete_direct_messages_after_this_many_days_0_keeps_them = حذف الرسائل المباشرة بعد هذا العدد من الأيام؛ 0 يبقيها
+# MCP server: let an assistant post topics and replies as the member whose write API key it holds (the forum's usual rules and limits apply)
+msg-mcp_server_let_an_assistant_post_topics_and_replies_as = خادم MCP: يتيح للمساعد نشر المواضيع والردود كعضو يملك مفتاح API بصلاحية الكتابة (تسري قواعد المنتدى وحدوده المعتادة)
+# MCP server: let an administrator's admin API key manage the forum through it (every change is logged as made through MCP)
+msg-mcp_server_let_an_administrator_s_admin_api_key_manage = خادم MCP: يتيح لمفتاح API الخاص بالمسؤول إدارة المنتدى عبره (يُسجَّل كل تغيير على أنه تم عبر MCP)
+# MCP server: let AI assistants read the forum at /mcp, as a guest or with a member's API key (read-only)
+msg-mcp_server_let_ai_assistants_read_the_forum_at_mcp_as_a = خادم MCP: يتيح لمساعدي الذكاء الاصطناعي قراءة المنتدى على /mcp، كزائر أو بمفتاح API الخاص بعضو (للقراءة فقط)
 # Add a button to the editor to search and insert GIFs
 msg-add_a_button_to_the_editor_to_search_and_insert_gifs = أضف إلى المحرر زرًا للبحث عن صور GIF وإدراجها
 # Where GIFs come from: klipy or giphy
@@ -6334,6 +6340,10 @@ admin-file_sizes_and_allowances = أحجام الملفات والحصص
 admin-gifs = صور GIF
 # The GIF picker in the editor
 admin-the_gif_picker_in_the_editor = منتقي صور GIF في المحرر
+# MCP server
+admin-mcp_server = خادم MCP
+# Let AI assistants read and manage the forum at /mcp
+admin-let_ai_assistants_read_and_manage_the_forum_at_mcp = اسمح لمساعدي الذكاء الاصطناعي بقراءة المنتدى وإدارته على /mcp
 # Email
 admin-email = البريد الإلكتروني
 # Delivery and message text
@@ -6384,6 +6394,12 @@ admin-imgproxy_widest_picture = أعرض صورة في imgproxy
 admin-imgproxy_picture_format = صيغة صور imgproxy
 # Send GIFs through imgproxy
 admin-send_gifs_through_imgproxy = إرسال صور GIF عبر imgproxy
+# Enable the MCP server
+admin-enable_the_mcp_server = تفعيل خادم MCP
+# Let assistants post as members through MCP
+admin-let_assistants_post_as_members_through_mcp = اسمح للمساعدين بالنشر كأعضاء عبر MCP
+# Let administrators manage the forum through MCP
+admin-let_administrators_manage_the_forum_through_mcp = اسمح للمسؤولين بإدارة المنتدى عبر MCP
 # Enable GIFs
 admin-enable_gifs = تفعيل صور GIF
 # GIF provider

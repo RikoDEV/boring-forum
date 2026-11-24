@@ -9,6 +9,7 @@ pub mod community;
 pub mod federation;
 pub mod forum;
 pub mod http;
+pub mod mcp;
 pub mod moderation;
 pub mod platform;
 pub mod state;
@@ -29,8 +30,8 @@ use tower_http::trace::TraceLayer;
 
 const REQUEST_ID: HeaderName = HeaderName::from_static("x-request-id");
 
-pub fn app(state: AppState) -> Router {
-    http::observability::install();
+/// The site: every page and API route behind the request gates.
+fn routes(state: AppState) -> Router {
     // Guest pages from every domain that has them, behind the microcache.
     let pages = Router::new()
         .merge(forum::cached_pages())
@@ -91,34 +92,40 @@ pub fn app(state: AppState) -> Router {
         // any gate, handler or session cookie read runs.
         .layer(middleware::from_fn_with_state(state.clone(), http::middleware::https_redirect))
         .with_state(state)
-        .layer(
-            ServiceBuilder::new()
-                .layer(SetRequestIdLayer::new(REQUEST_ID, MakeRequestUuid))
-                .layer(TraceLayer::new_for_http().make_span_with(|req: &axum::extract::Request| {
-                    let id = req.headers().get(REQUEST_ID).and_then(|v| v.to_str().ok()).unwrap_or("-");
-                    // Reset, magic-link, unsubscribe and OAuth URLs carry a credential in
-                    // the query string, so it is redacted before it reaches a log line.
-                    let uri = bf_core::log::redact_uri(&req.uri().to_string());
-                    let span = tracing::info_span!("req", method = %req.method(), uri = %uri, id = %id);
-                    // A caller's W3C trace context makes this request part of its trace.
-                    http::observability::adopt_parent(&span, req.headers());
-                    span
-                }))
-                .layer(PropagateRequestIdLayer::new(REQUEST_ID))
-                .layer(CompressionLayer::new())
-                .layer(SetResponseHeaderLayer::if_not_present(
-                    header::X_CONTENT_TYPE_OPTIONS,
-                    HeaderValue::from_static("nosniff"),
-                ))
-                .layer(SetResponseHeaderLayer::if_not_present(
-                    header::REFERRER_POLICY,
-                    HeaderValue::from_static("strict-origin-when-cross-origin"),
-                ))
-                .layer(SetResponseHeaderLayer::if_not_present(
-                    header::X_FRAME_OPTIONS,
-                    HeaderValue::from_static("SAMEORIGIN"),
-                )),
-        )
+}
+
+pub fn app(state: AppState) -> Router {
+    http::observability::install();
+    // The MCP endpoint calls the site's own router, so it is added to a copy of it.
+    let site = routes(state.clone());
+    mcp::mount(site, state).layer(
+        ServiceBuilder::new()
+            .layer(SetRequestIdLayer::new(REQUEST_ID, MakeRequestUuid))
+            .layer(TraceLayer::new_for_http().make_span_with(|req: &axum::extract::Request| {
+                let id = req.headers().get(REQUEST_ID).and_then(|v| v.to_str().ok()).unwrap_or("-");
+                // Reset, magic-link, unsubscribe and OAuth URLs carry a credential in
+                // the query string, so it is redacted before it reaches a log line.
+                let uri = bf_core::log::redact_uri(&req.uri().to_string());
+                let span = tracing::info_span!("req", method = %req.method(), uri = %uri, id = %id);
+                // A caller's W3C trace context makes this request part of its trace.
+                http::observability::adopt_parent(&span, req.headers());
+                span
+            }))
+            .layer(PropagateRequestIdLayer::new(REQUEST_ID))
+            .layer(CompressionLayer::new())
+            .layer(SetResponseHeaderLayer::if_not_present(
+                header::X_CONTENT_TYPE_OPTIONS,
+                HeaderValue::from_static("nosniff"),
+            ))
+            .layer(SetResponseHeaderLayer::if_not_present(
+                header::REFERRER_POLICY,
+                HeaderValue::from_static("strict-origin-when-cross-origin"),
+            ))
+            .layer(SetResponseHeaderLayer::if_not_present(
+                header::X_FRAME_OPTIONS,
+                HeaderValue::from_static("SAMEORIGIN"),
+            )),
+    )
 }
 
 /// The admin SPA: static files with `index.html` as the client-side routing fallback, served to

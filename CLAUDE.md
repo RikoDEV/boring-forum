@@ -66,6 +66,7 @@ committed. Fix failures yourself; never hand the owner a pushed red build.
 | user-facing text, catalogs, `keys.json` | `python scripts/i18n.py check`, `python scripts/test_i18n.py`, then Prettier on both `keys.json` copies (`pnpm format:check`) |
 | `web/**` | `pnpm lint`, `pnpm format:check`, `pnpm check`, `pnpm test`, `pnpm build`, `pnpm size` |
 | API types / routes | `pnpm openapi` and `git diff --exit-code web/api/src/schema.d.ts` |
+| an admin route (`/api/v1/admin/*`) | `python scripts/gen-mcp-catalog.py`, then `cargo test -p bf-server mcp` (the MCP server lists admin routes from a generated catalog; a route outside it fails the test) |
 | `bf-cook` sanitizer, `fuzz/**` | `cargo test -p bf-cook`, plus the `xss_corpus` test |
 | Rust that reads a new `BF_*` / `OTEL_*` variable (even one only a subcommand reads) | `sh scripts/check-env-docs.sh`, then list it in `docs/configuration.md` and `.env.example` |
 | workflows, `.releaserc.json` | read the workflow end to end; check every action input and tool version it names |

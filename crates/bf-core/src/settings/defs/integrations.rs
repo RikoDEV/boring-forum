@@ -7,6 +7,39 @@ use serde_json::json;
 
 pub(super) fn defs() -> Vec<SettingDef> {
     vec![
+        SettingDef {
+            default: json!(false),
+            ..def(
+                "mcp_posting_enabled",
+                Bool,
+                false,
+                en(
+                    "MCP server: let an assistant post topics and replies as the member whose write API key it holds (the forum's usual rules and limits apply)",
+                ),
+            )
+        },
+        SettingDef {
+            default: json!(false),
+            ..def(
+                "mcp_admin_enabled",
+                Bool,
+                false,
+                en(
+                    "MCP server: let an administrator's admin API key manage the forum through it (every change is logged as made through MCP)",
+                ),
+            )
+        },
+        SettingDef {
+            default: json!(true),
+            ..def(
+                "mcp_enabled",
+                Bool,
+                false,
+                en(
+                    "MCP server: let AI assistants read the forum at /mcp, as a guest or with a member's API key (read-only)",
+                ),
+            )
+        },
         // GIF picker (ACP → Settings → GIFs). The providers (KLIPY, GIPHY) require that the browser
         // asks their API and loads their media directly, so the key is public: the editor reads it
         // from the page.

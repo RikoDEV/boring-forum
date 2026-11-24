@@ -2069,6 +2069,12 @@ msg-how_long_that_automatic_silence_lasts_in_hours = Jak długo trwa to automaty
 msg-delete_channel_messages_after_this_many_days_0_keeps = Usuwaj wiadomości kanałów po tylu dniach; 0 je zachowuje
 # Delete direct messages after this many days; 0 keeps them
 msg-delete_direct_messages_after_this_many_days_0_keeps_them = Usuwaj wiadomości bezpośrednie po tylu dniach; 0 je zachowuje
+# MCP server: let an assistant post topics and replies as the member whose write API key it holds (the forum's usual rules and limits apply)
+msg-mcp_server_let_an_assistant_post_topics_and_replies_as = Serwer MCP: pozwala asystentowi publikować tematy i odpowiedzi jako członek, którego klucz API z zapisem posiada (obowiązują zwykłe zasady i limity forum)
+# MCP server: let an administrator's admin API key manage the forum through it (every change is logged as made through MCP)
+msg-mcp_server_let_an_administrator_s_admin_api_key_manage = Serwer MCP: pozwala kluczowi API administratora zarządzać forum przez MCP (każda zmiana jest zapisywana jako wykonana przez MCP)
+# MCP server: let AI assistants read the forum at /mcp, as a guest or with a member's API key (read-only)
+msg-mcp_server_let_ai_assistants_read_the_forum_at_mcp_as_a = Serwer MCP: pozwala asystentom AI czytać forum pod adresem /mcp, jako gość lub z kluczem API członka (tylko odczyt)
 # Add a button to the editor to search and insert GIFs
 msg-add_a_button_to_the_editor_to_search_and_insert_gifs = Dodaj do edytora przycisk do wyszukiwania i wstawiania GIF-ów
 # Where GIFs come from: klipy or giphy
@@ -6168,6 +6174,10 @@ admin-file_sizes_and_allowances = Rozmiary plików i limity
 admin-gifs = GIF-y
 # The GIF picker in the editor
 admin-the_gif_picker_in_the_editor = Selektor GIF-ów w edytorze
+# MCP server
+admin-mcp_server = Serwer MCP
+# Let AI assistants read and manage the forum at /mcp
+admin-let_ai_assistants_read_and_manage_the_forum_at_mcp = Pozwól asystentom AI czytać forum i nim zarządzać pod adresem /mcp
 # Email
 admin-email = E-mail
 # Delivery and message text
@@ -6218,6 +6228,12 @@ admin-imgproxy_widest_picture = Najszerszy obraz imgproxy
 admin-imgproxy_picture_format = Format obrazów imgproxy
 # Send GIFs through imgproxy
 admin-send_gifs_through_imgproxy = Przesyłaj GIF-y przez imgproxy
+# Enable the MCP server
+admin-enable_the_mcp_server = Włącz serwer MCP
+# Let assistants post as members through MCP
+admin-let_assistants_post_as_members_through_mcp = Pozwól asystentom publikować jako członkowie przez MCP
+# Let administrators manage the forum through MCP
+admin-let_administrators_manage_the_forum_through_mcp = Pozwól administratorom zarządzać forum przez MCP
 # Enable GIFs
 admin-enable_gifs = Włącz GIF-y
 # GIF provider
