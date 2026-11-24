@@ -8,13 +8,17 @@ web/api/openapi.json
 tools/devdb/node_modules/
 __pycache__/
 
-# Local runtime data: uploads, captured mail, logs
 /data/
 sbom-*.json
 sbom-rust.json
 
-# Agent worktrees
 .claude/worktrees/
 
-# Forum exports and backups
 *.tar.gz
+
+.claude/settings.local.json
+
+test-results/
+.lighthouseci/
+
+/nul
