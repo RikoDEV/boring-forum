@@ -249,15 +249,18 @@ aside {
   }
 }
 
-/* The "Who's online" block shares the look of "Recently browsing" (topic.css); its counts start
-   at the left, under the widget's title. */
+/* The "Who's online" block shares the look of "Recently browsing" (topic.css): the counts sit
+   in the header, beside the title. */
 .bf-whos-online {
-  & .bf-browsing-counts {
-    justify-content: flex-start;
-    margin-block-end: var(--bf-space-3);
+  overflow: visible;
+
+  & .bf-box-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  & .bf-browsing-empty {
+  & .bf-box-body p {
     margin: 0;
   }
 }

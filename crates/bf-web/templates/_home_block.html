@@ -78,6 +78,8 @@
 
 {%- else if kind.as_str() == "browsing" %}
   {% include "_browsing.html" %}
+{%- else if kind.as_str() == "online_users" %}
+  <section class="bf-box bf-whos-online">{{ html|safe }}</section>
 {%- else %}
   <section class="bf-box widget">
     {%- if !title.is_empty() %}<div class="bf-box-head"><h2>{{ title }}</h2></div>{% endif -%}

@@ -283,9 +283,9 @@ fn icon(name: &str) -> String {
     )
 }
 
-/// The "Who's online" block: three counts, then a chip per member and crawler, as in the "Recently
-/// browsing" block of a page (`_browsing.html`).
-fn presence_html(names: &[String], members: i64, guests: i64, bot_count: i64, bots: &[String]) -> String {
+/// The "Who's online" block: the title with its three counts beside it, then a chip per member and
+/// crawler, laid out as the "Recently browsing" block of a page (`_browsing.html`).
+fn presence_html(title: &str, names: &[String], members: i64, guests: i64, bot_count: i64, bots: &[String]) -> String {
     use crate::http::i18n::{lang, trh};
     let t = lang();
     let count = |icon_name: &str, tip: String, text: String| {
@@ -296,8 +296,9 @@ fn presence_html(names: &[String], members: i64, guests: i64, bot_count: i64, bo
             esc(&text)
         )
     };
+    let heading = if title.is_empty() { String::new() } else { format!("<h2>{}</h2>", esc(title)) };
     let mut html = format!(
-        "<div class=\"bf-whos-online\"><div class=\"bf-browsing-counts\">{}{}{}</div>",
+        "<div class=\"bf-box-head\">{heading}<span class=\"bf-browsing-counts\">{}{}{}</span></div><div class=\"bf-box-body\">",
         count("user", trh("Signed-in members active in the last 15 minutes"), t.n("count.members", members)),
         count("eye", trh("Visitors who are not signed in"), t.n("count.guests", guests)),
         count("cpu", trh("Search engines and other crawlers"), t.n("count.bots", bot_count)),
@@ -399,7 +400,14 @@ pub(super) async fn render_widget(state: &AppState, w: &themes::Widget) -> Resul
             let names = themes::online_users(pool, 15, limit.max(10)).await.db()?;
             let (named, unnamed) = themes::online_counts(pool, 15).await.db()?;
             let (guests, bot_count, bots) = crate::community::browsing::site_anonymous(state);
-            presence_html(&names, named, guests as i64 + unnamed, bot_count as i64, &bots)
+            presence_html(
+                &crate::http::i18n::lang().msg(&w.title),
+                &names,
+                named,
+                guests as i64 + unnamed,
+                bot_count as i64,
+                &bots,
+            )
         }
         "latest_topics" => {
             let rows = themes::latest_titles(pool, &public, limit).await.db()?;
