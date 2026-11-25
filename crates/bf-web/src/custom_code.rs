@@ -93,6 +93,11 @@ fn build(css: &str, head: &str, footer: &str, hosts: &str) -> CustomCode {
             }
         }
     }
+    // Allowed hosts exist for scripts that a loader pulls in at run time (a consent banner loads its
+    // UI from them), with no `<script>` tag here to see: they write style attributes all the same.
+    if !extra.is_empty() {
+        c.scripts = true;
+    }
     for o in extra {
         c.script_src.push(o.clone());
         c.style_src.push(o.clone());
@@ -265,5 +270,11 @@ mod tests {
         let c = build("a::after { content: \"</style><script>x</script>\" }", "", "", "");
         assert!(!c.css.contains("</"));
         assert!(!c.scripts);
+    }
+
+    #[test]
+    fn allowed_hosts_alone_count_as_scripts() {
+        assert!(build("", "", "", "https://cmp.example.com").scripts);
+        assert!(!build("", "", "", "").scripts);
     }
 }
