@@ -174,6 +174,8 @@
   const status = new Status();
   let saving = $state(false);
   let active = $state("general");
+  /** The Custom code setting being edited: each has a tab of its own. */
+  let codeTab = $state("custom_css");
   // The setting the header search sent us to: its group opens and it is scrolled into view.
   let found = $state("");
 
@@ -292,6 +294,7 @@
     const key = decodeURIComponent(m[1]);
     if (!byKey.has(key)) return;
     active = groupOf(key);
+    if (key in CODE) codeTab = key;
     found = key;
     await tick();
     const row = document.getElementById(`setting-${key}`);
@@ -341,8 +344,17 @@
           <h2>{g.title}</h2>
           <p class="muted">{g.hint}</p>
         </div>
+        {#if g.id === "custom"}
+          <div class="acp-tabs acp-code-tabs" role="tablist" aria-label={g.title}>
+            {#each g.items as s (s.key)}
+              <button role="tab" aria-selected={codeTab === s.key} onclick={() => (codeTab = s.key)}>
+                {humanize(s.key)}{#if isDirty(s)}<span class="acp-pill" title={tr("Unsaved changes")}>•</span>{/if}
+              </button>
+            {/each}
+          </div>
+        {/if}
         <ul class="acp-rows">
-          {#each g.items as s (s.key)}
+          {#each g.id === "custom" ? g.items.filter((s) => s.key === codeTab) : g.items as s (s.key)}
             <li
               id="setting-{s.key}"
               class="acp-set"
@@ -460,15 +472,27 @@
                     {#each CHOICES[s.key] as [v, label]}<option value={v}>{label}</option>{/each}
                   </select>
                 {:else if s.key in CODE}
-                  <textarea
-                    id={s.key}
-                    class="acp-code"
-                    rows={CODE[s.key]}
-                    spellcheck="false"
-                    autocapitalize="off"
-                    autocomplete="off"
-                    use:code={{ lang: CODE_LANG[s.key], value: s.draft }}
-                    bind:value={s.draft}></textarea>
+                  <div class="acp-code-pane">
+                    <textarea
+                      id={s.key}
+                      class="acp-code"
+                      rows={CODE[s.key]}
+                      spellcheck="false"
+                      autocapitalize="off"
+                      autocomplete="off"
+                      use:code={{ lang: CODE_LANG[s.key], value: s.draft }}
+                      bind:value={s.draft}></textarea>
+                    {#if s.key === "robots_txt"}
+                      <div class="acp-code-actions">
+                        <a class="btn secondary" href="/robots.txt" target="_blank" rel="noopener">
+                          {tr("View live file")}
+                        </a>
+                        <button type="button" class="secondary" onclick={() => (s.draft = s.default)}>
+                          {tr("Reset to default")}
+                        </button>
+                      </div>
+                    {/if}
+                  </div>
                 {:else if isSecret(s)}
                   <div class="acp-secret-set">
                     <input

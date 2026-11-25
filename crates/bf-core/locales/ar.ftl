@@ -8912,6 +8912,10 @@ admin-setting_groups = مجموعات الإعدادات
 admin-upload = رفع
 # No gradient
 admin-no_gradient = بدون تدرج
+# View live file
+admin-view_live_file = عرض الملف الحالي
+# Reset to default
+admin-reset_to_default = استعادة الافتراضي
 # Removed when you save
 admin-removed_when_you_save = سيُحذف عند الحفظ
 # Saved; type to replace

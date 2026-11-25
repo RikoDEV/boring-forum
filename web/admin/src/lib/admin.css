@@ -696,6 +696,7 @@ a.acp-kpi:hover {
 }
 .acp-set-control textarea.acp-code,
 .bf-field.acp-code textarea {
+  min-height: 20rem;
   font-family: var(--bf-font-mono);
   font-size: var(--bf-text-sm);
   tab-size: 2;
@@ -711,6 +712,11 @@ a.acp-kpi:hover {
 textarea.acp-hl-on {
   color: transparent;
   caret-color: var(--bf-color-text);
+}
+/* A selection must not paint the textarea's own text over the coloured layer: that doubled it. */
+textarea.acp-hl-on::selection {
+  background: color-mix(in srgb, var(--bf-color-accent) 35%, transparent);
+  color: transparent;
 }
 .acp-hl {
   position: absolute;
@@ -733,9 +739,9 @@ textarea.acp-hl-on {
   display: block;
   height: 1.5rem;
 }
+/* Colour only: italic or bold could change a glyph's width and push the layer off the text. */
 .acp-hl .tk-c {
   color: var(--bf-color-muted);
-  font-style: italic;
 }
 .acp-hl .tk-s {
   color: var(--bf-color-code-string);
@@ -3161,4 +3167,24 @@ a.acp-linkbtn:hover {
   border-block-start: 1px solid var(--bf-color-border);
   color: var(--bf-color-muted);
   cursor: pointer;
+}
+
+/* Custom code: one editor per tab, with what to do with it under the box. */
+.acp-code-tabs {
+  margin-block-end: 0;
+  padding-inline: var(--bf-space-4);
+}
+.acp-code-tabs .acp-pill {
+  margin-inline-start: var(--bf-space-2);
+}
+.acp-code-pane {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.acp-code-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+  margin-block-start: var(--bf-space-2);
 }

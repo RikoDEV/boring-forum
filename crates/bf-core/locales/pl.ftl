@@ -8746,6 +8746,10 @@ admin-setting_groups = Grupy ustawień
 admin-upload = Wyślij
 # No gradient
 admin-no_gradient = Bez gradientu
+# View live file
+admin-view_live_file = Zobacz aktualny plik
+# Reset to default
+admin-reset_to_default = Przywróć domyślne
 # Removed when you save
 admin-removed_when_you_save = Zostanie usunięte po zapisaniu
 # Saved; type to replace

@@ -24,10 +24,10 @@ export const CODE_LANG = {
 };
 export const CODE = {
   custom_css: 12,
-  custom_head_html: 8,
-  custom_footer_html: 8,
-  custom_code_hosts: 3,
-  robots_txt: 10,
+  custom_head_html: 12,
+  custom_footer_html: 12,
+  custom_code_hosts: 12,
+  robots_txt: 12,
 };
 
 /** The tables are built on first use: their text is translated when it is made, so it has to

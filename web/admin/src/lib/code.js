@@ -245,10 +245,25 @@ export function code(textarea, param) {
     s.left = textarea.offsetLeft + "px";
     s.width = textarea.offsetWidth + "px";
     s.height = textarea.offsetHeight + "px";
-    s.font = cs.font;
-    s.lineHeight = cs.lineHeight;
-    s.letterSpacing = cs.letterSpacing;
-    s.tabSize = cs.tabSize;
+    // Longhands, not the `font` shorthand: Chrome answers it with "" for some fonts, and the layer
+    // would fall back to another size and drift from the text it covers.
+    for (const p of [
+      "fontFamily",
+      "fontSize",
+      "fontWeight",
+      "fontStyle",
+      "fontStretch",
+      "fontKerning",
+      "fontVariantLigatures",
+      "fontFeatureSettings",
+      "lineHeight",
+      "letterSpacing",
+      "wordSpacing",
+      "tabSize",
+      "textIndent",
+      "textTransform",
+    ])
+      s[p] = cs[p];
     s.padding = cs.padding;
     s.borderWidth = cs.borderWidth;
     sync();
