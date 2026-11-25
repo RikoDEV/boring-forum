@@ -67,7 +67,7 @@
     <span data-island="hovercards" hidden></span>
     <span data-island="code-copy" hidden></span>
     <span data-island="local-times" hidden></span>
-    {% if layout.user.is_some() %}<div data-island="push-prompt" class="push-prompt panel" role="region" aria-label="{{ layout.t.msg("Browser notifications") }}" hidden></div>{% endif %}
+    {% if layout.user.is_some() && layout.push_enabled %}<div data-island="push-prompt" class="push-prompt panel" role="region" aria-label="{{ layout.t.msg("Browser notifications") }}" hidden></div>{% endif %}
     {% if layout.user.is_some() %}<span data-island="composer-resume" data-props="{&quot;editorUrl&quot;:&quot;{{ layout.editor_url }}&quot;}" hidden></span>{% endif %}
   </div>
   </div>

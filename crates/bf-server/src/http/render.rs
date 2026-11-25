@@ -65,6 +65,7 @@ pub(crate) fn ago(t: DateTime<Utc>) -> bf_web::ago::Ago {
 pub(crate) fn layout(state: &AppState, v: &Viewer, title: Option<&str>) -> (Layout, Option<HeaderValue>) {
     let mut l = Layout::new(&state.settings(), title);
     l.t = bf_core::i18n::T::new(v.locale);
+    l.push_enabled = crate::platform::push::configured();
     l.set_nav(&state.settings(), &bf_core::ids::raw(&v.actor.groups), v.actor.is_admin);
     l.add_links(&bf_core::ids::raw(&v.actor.groups), v.actor.is_admin);
     crate::admin::themes::apply(&mut l, v, &v.theme_headers, None);

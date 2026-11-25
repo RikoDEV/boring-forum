@@ -160,6 +160,8 @@ pub struct Layout {
     /// Header links as (url, label), filtered for this viewer.
     /// The header links: (address, label, icon name or empty).
     pub nav: Vec<(String, String, String)>,
+    /// Web Push is set up, so pages may offer browser notifications.
+    pub push_enabled: bool,
     /// Links plugins declared with an icon or a menu, for this viewer: (url, label, icon, menu).
     pub plugin_menu: Vec<(String, String, String, String)>,
     /// The chosen theme's stylesheet and rendered slots, if any.
@@ -630,6 +632,7 @@ impl Layout {
             text_size: 100,
             density: "comfortable".into(),
             nav: Vec::new(),
+            push_enabled: false,
             plugin_menu: Vec::new(),
             theme: crate::theme::resolve(&[], &[]),
             plugins: Some(crate::theme::plugin_output()),

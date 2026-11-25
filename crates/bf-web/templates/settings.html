@@ -201,7 +201,7 @@
 <section class="bf-box bf-set" id="s-notifications">
   <div class="bf-set-head"><h2>{{ layout.t.t("settings.notifications") }}</h2><p class="muted small">{{ layout.t.t("settings.notifications_hint") }}</p></div>
   <div class="bf-set-body">
-    <p data-island="push-toggle" hidden></p>
+    {% if layout.push_enabled %}<p data-island="push-toggle" hidden></p>{% endif %}
     <form method="post" action="/settings/notifications#s-notifications">
       <input type="hidden" name="csrf" value="{{ layout.csrf }}">
       <table class="prefs">

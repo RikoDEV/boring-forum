@@ -40,6 +40,11 @@ fn vapid_key() -> Option<SecretKey> {
     SecretKey::from_slice(&raw).ok()
 }
 
+/// Whether Web Push is set up (`BF_VAPID_PRIVATE`); pages offer it only then.
+pub fn configured() -> bool {
+    vapid_key().is_some()
+}
+
 /// `boring-forum vapid` prints a new key pair.
 pub fn generate_keys() -> String {
     let key = <SecretKey as p256::elliptic_curve::Generate>::generate();
