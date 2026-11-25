@@ -1,6 +1,9 @@
 {% extends "layout.html" %}
 {#- The moderator panel: an overview of what waits for moderators, then members, the log and the tools, each on its own tab. -#}
 {% block content %}
+{% if tab != "overview" %}
+<nav class="crumbs small" aria-label="{{ layout.t.t("app.breadcrumb") }}"><a href="/modcp">{{ layout.t.t("menu.modcp") }}</a> {{ layout.icon("chevron-right")|safe }} {% for (key, label, url, count) in tabs %}{% if *key == tab %}<span>{{ label }}</span>{% endif %}{% endfor %}</nav>
+{% endif %}
 <header class="bf-box bf-page-head bf-head-row"><h1>{{ layout.t.t("menu.modcp") }}</h1></header>
 
 <nav class="bf-modtabs" aria-label="{{ layout.t.t("modcp.tools") }}">

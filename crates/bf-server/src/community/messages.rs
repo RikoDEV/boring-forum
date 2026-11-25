@@ -4,7 +4,6 @@
 use crate::http::i18n::{tr, trh};
 use crate::http::render::{DbResult, ago, layout, page};
 use crate::http::ui::hidden_csrf;
-use crate::http::ui::simple_page;
 use crate::http::ui::{Shell, begin, finish, panel};
 use crate::http::viewer::{CsrfForm, Viewer, is_staff};
 use crate::state::AppState;
@@ -666,7 +665,14 @@ async fn message_reports(State(state): State<AppState>, v: Viewer) -> Result<Res
             )
         })
         .collect();
-    Ok(simple_page(&state, &v, &v.t().msg("Reported messages"), &format!("<ul class=\"activity\">{items}</ul>"), false))
+    let ctx = begin(&state, &v);
+    let shell = Shell {
+        title: v.t().msg("Reported messages"),
+        crumbs: crate::http::ui::review_crumbs(&v),
+        noindex: true,
+        ..Shell::default()
+    };
+    Ok(finish(&state, &v, ctx, shell, panel(&format!("<ul class=\"activity\">{items}</ul>"))))
 }
 
 /// Opening one is written to the staff log, and works only while the report is open.
@@ -691,7 +697,9 @@ async fn read_reported(State(state): State<AppState>, v: Viewer, Path(id): Path<
         hidden_csrf(&ctx.token),
         tr1 = trh("Close report")
     ));
-    let shell = Shell { title: v.t().msg("Reported conversation"), noindex: true, ..Shell::default() };
+    let mut crumbs = crate::http::ui::review_crumbs(&v);
+    crumbs.push(("/review/messages".into(), v.t().msg("Reported messages")));
+    let shell = Shell { title: v.t().msg("Reported conversation"), crumbs, noindex: true, ..Shell::default() };
     Ok(finish(&state, &v, ctx, shell, panel(&html)))
 }
 

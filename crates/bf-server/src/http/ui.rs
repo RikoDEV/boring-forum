@@ -120,6 +120,12 @@ pub(crate) fn finish(state: &AppState, v: &Viewer, ctx: Ctx, shell: Shell, html:
 /// A page of plain content in the shared shell: a heading and one box (`section.bf-box.block.bf-panel`,
 /// the one container of simple pages). `index` lets search engines
 /// list it. For a page with forms, build it with `begin` and `finish`, which give the CSRF token.
+/// The moderator panel and review queue, the way up from a staff page under `/review`.
+pub(crate) fn review_crumbs(v: &Viewer) -> Vec<(String, String)> {
+    let t = v.t();
+    vec![("/modcp".into(), t.t("menu.modcp")), ("/review".into(), t.t("modcp.queue"))]
+}
+
 pub(crate) fn simple_page(state: &AppState, v: &Viewer, title: &str, html: &str, index: bool) -> Response {
     let ctx = begin(state, v);
     finish(state, v, ctx, Shell { title: title.into(), noindex: !index, ..Shell::default() }, panel(html))

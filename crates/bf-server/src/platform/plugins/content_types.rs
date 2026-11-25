@@ -239,7 +239,12 @@ pub(super) async fn review_page(State(state): State<AppState>, v: Viewer) -> Res
             reject = trh("Reject"),
         ));
     }
-    let shell = Shell { title: tr("Held by plugins"), noindex: true, ..Shell::default() };
+    let shell = Shell {
+        title: tr("Held by plugins"),
+        crumbs: crate::http::ui::review_crumbs(&v),
+        noindex: true,
+        ..Shell::default()
+    };
     Ok(finish(&state, &v, ctx, shell, panel(&html)))
 }
 
