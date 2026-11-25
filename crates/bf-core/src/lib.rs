@@ -20,6 +20,7 @@ pub mod search;
 pub mod secretbox;
 pub mod settings;
 pub mod slug;
+pub mod suggest;
 pub mod totp;
 pub mod trust;
 pub mod watched;

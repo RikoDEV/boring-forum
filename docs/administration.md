@@ -48,7 +48,13 @@ whether posts count toward members' totals.
 ## The panel, section by section
 
 **Overview**
-- **Dashboard**: activity, health and anything that needs attention.
+- **Dashboard**: activity, health and anything that needs attention. Its *Suggestions* box
+  proposes settings the site would be better with, worked out from how it is used: for
+  example, turning on Cloudflare's real visitor address when most sign-ins come from
+  Cloudflare's own addresses, backups for a site with members, or two-factor sign-in for
+  administrators. *Apply* changes the setting (it is logged like any other change), *Go to*
+  opens it, and the cross dismisses a suggestion until you restore it from the list below.
+  One that no longer applies disappears by itself.
 
 **People**
 - **Members**: search, open a member, change their group, trust level or identity, warn, ban,

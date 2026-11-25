@@ -1359,6 +1359,38 @@ msg-the_event_title_was_cancelled = Wydarzenie „{ $title }” zostało odwoła
 msg-n_people_answered_your_event_title = Liczba osób, które odpowiedziały na Twoje wydarzenie „{ $title }”: { $n }
 # {by} answered your event “{title}”
 msg-by_answered_your_event_title = { $by } odpowiada na Twoje wydarzenie „{ $title }”
+# Turn on Cloudflare's real visitor address
+msg-turn_on_cloudflare_s_real_visitor_address = Włącz prawdziwy adres odwiedzającego z Cloudflare
+# {n} of {total} recent sign-ins came from Cloudflare's own addresses, so the site sees the same few visitors: rate limits, IP bans and the staff log use the wrong address. The setting trusts the visitor address Cloudflare passes on, only from Cloudflare.
+msg-n_of_total_recent_sign_ins_came_from_cloudflare_s_own = { $n } z { $total } ostatnich logowań pochodzi z adresów Cloudflare, więc serwis widzi wciąż tych samych kilku odwiedzających: limity, blokady IP i dziennik personelu używają złego adresu. Ustawienie ufa adresowi odwiedzającego przekazanemu przez Cloudflare, tylko od Cloudflare.
+# Name your reverse proxy in BF_TRUSTED_PROXIES
+msg-name_your_reverse_proxy_in_bf_trusted_proxies = Wpisz swój reverse proxy w BF_TRUSTED_PROXIES
+# Requests arrive through a proxy on a private address that sends forwarding headers, but BF_TRUSTED_PROXIES is empty. Every visitor then looks like the proxy: rate limits and IP bans hit everyone at once. Set it to the proxy's address and restart.
+msg-requests_arrive_through_a_proxy_on_a_private_address = Żądania przychodzą przez proxy z adresu prywatnego, które wysyła nagłówki przekazywania, ale BF_TRUSTED_PROXIES jest puste. Każdy odwiedzający wygląda wtedy jak proxy: limity i blokady IP dotykają wszystkich naraz. Ustaw adres proxy i uruchom serwer ponownie.
+# The site address does not use https
+msg-the_site_address_does_not_use_https = Adres serwisu nie używa https
+# BF_BASE_URL starts with http://, so links in email, feeds and previews are not secure and some browser features will not work. Serve the site over https and change the address.
+msg-bf_base_url_starts_with_http_so_links_in_email_feeds = BF_BASE_URL zaczyna się od http://, więc linki w e-mailach, kanałach i podglądach nie są bezpieczne, a niektóre funkcje przeglądarki nie zadziałają. Udostępnij serwis przez https i zmień adres.
+# Administrators without two-factor sign-in
+msg-administrators_without_two_factor_sign_in = Administratorzy bez logowania dwuskładnikowego
+# {n} administrator accounts have neither an authenticator app nor a passkey. A stolen password would give full control of the site.
+msg-n_administrator_accounts_have_neither_an_authenticator = Liczba kont administratorów bez aplikacji uwierzytelniającej i bez klucza dostępu: { $n }. Skradzione hasło dałoby pełną kontrolę nad serwisem.
+# Turn on automatic backups
+msg-turn_on_automatic_backups = Włącz automatyczne kopie zapasowe
+# The site has members and content but is not backed up automatically.
+msg-the_site_has_members_and_content_but_is_not_backed_up = Serwis ma członków i treści, ale nie jest automatycznie archiwizowany.
+# Ask new members to verify their email
+msg-ask_new_members_to_verify_their_email = Wymagaj od nowych członków potwierdzenia e-maila
+# Mail is delivered and registration is open, but members can post without confirming their address. Verification keeps out throwaway and mistyped addresses.
+msg-mail_is_delivered_and_registration_is_open_but_members = Poczta jest dostarczana, a rejestracja otwarta, ale członkowie mogą pisać bez potwierdzenia adresu. Weryfikacja odsiewa adresy jednorazowe i z literówkami.
+# Tell search engines about new topics at once
+msg-tell_search_engines_about_new_topics_at_once = Informuj wyszukiwarki o nowych tematach od razu
+# IndexNow pings Bing and others when a public topic appears, so it is found within minutes. It sends the addresses of new public topics to api.indexnow.org.
+msg-indexnow_pings_bing_and_others_when_a_public_topic = IndexNow powiadamia Bing i inne wyszukiwarki, gdy pojawia się publiczny temat, więc trafia do wyników w kilka minut. Wysyła adresy nowych publicznych tematów do api.indexnow.org.
+# Describe the site
+msg-describe_the_site = Opisz serwis
+# The default meta description is empty, so search results and link previews of pages without their own text show nothing about the site.
+msg-the_default_meta_description_is_empty_so_search_results = Domyślny opis meta jest pusty, więc wyniki wyszukiwania i podglądy linków stron bez własnego tekstu nic nie mówią o serwisie.
 # Newcomer
 msg-newcomer = Nowicjusz
 # Member
@@ -6118,6 +6150,26 @@ admin-warning = Ostrzeżenie
 admin-danger = Niebezpieczeństwo
 # Selected
 admin-selected = Wybrane
+# Applied.
+admin-applied = Zastosowano.
+# Suggestions
+admin-suggestions = Sugestie
+# Important
+admin-important = Ważne
+# Suggestion
+admin-suggestion = Sugestia
+# Apply
+admin-apply = Zastosuj
+# Go to
+admin-go_to = Przejdź
+# Dismiss
+admin-dismiss = Zamknij
+# No suggestions right now.
+admin-no_suggestions_right_now = Brak sugestii.
+# Dismissed suggestions
+admin-dismissed_suggestions = Odrzucone sugestie
+# Restore
+admin-restore = Przywróć
 # Logged in
 admin-logged_in = Zalogowani
 # Anonymous
@@ -6908,8 +6960,6 @@ admin-n_d = { $n } dni
 admin-period = Okres
 # Log in
 admin-log_in = Zaloguj się
-# Dismiss
-admin-dismiss = Zamknij
 # {signups_7d} joined this week
 admin-signups_7d_joined_this_week = { $signups_7d } dołączyło w tym tygodniu
 # Topics
@@ -7230,8 +7280,10 @@ admin-staff_action_log = Dziennik działań obsługi
 admin-filter = Filtruj
 # Action prefix, e.g. topic.
 admin-action_prefix_e_g_topic = Początek akcji, np. topic.
-# Staff username
-admin-staff_username = Nazwa osoby z obsługi
+# Staff member
+admin-staff_member = Członek obsługi
+# Type a name
+admin-type_a_name = Wpisz nazwę
 # Who
 admin-who = Kto
 # Action
@@ -7402,8 +7454,6 @@ admin-automatic = Automatyczne
 admin-from_a_newer_version = Z nowszej wersji
 # Email me a download link
 admin-email_me_a_download_link = Wyślij mi link do pobrania
-# Restore
-admin-restore = Przywróć
 # Delete {name}
 admin-delete_name_3 = Usuń { $name }
 # No backups yet.
@@ -7970,8 +8020,6 @@ admin-guests_can_never_post_or_moderate_whatever_is_ticked = Goście nigdy nie m
 admin-topic_prefixes_separated_by_commas_question_solved_bug = Prefiksy tematów, oddzielone przecinkami: Pytanie, Rozwiązane, Błąd
 # Save prefixes
 admin-save_prefixes = Zapisz prefiksy
-# Moderators: usernames, separated by commas
-admin-moderators_usernames_separated_by_commas = Moderatorzy: nazwy użytkowników oddzielone przecinkami
 # Save moderators
 admin-save_moderators = Zapisz moderatorów
 # SEO title
@@ -8208,8 +8256,6 @@ admin-changed_settings = Zmienione ustawienia
 admin-paste_an_export_here = Wklej tu eksport
 # Check
 admin-check = Sprawdź
-# Username
-admin-username = Nazwa użytkownika
 # Write the text of the message.
 admin-write_the_text_of_the_message = Wpisz treść wiadomości.
 # On its way: the message is being delivered.
@@ -8452,8 +8498,6 @@ admin-edit_permalink = Edytuj permalink
 admin-old_address_like_c_old_forum_12_or_viewtopic_php_t_7 = Stary adres, np. c/stare-forum/12 lub viewtopic.php?t=7
 # Points at
 admin-points_at = Wskazuje na
-# Type a name
-admin-type_a_name = Wpisz nazwę
 # Type a tag
 admin-type_a_tag = Wpisz tag
 # Search address or destination
@@ -9160,6 +9204,8 @@ admin-deleted = Usunięto
 admin-history = Historia
 # Nothing yet.
 admin-nothing_yet = Jeszcze nic.
+# Username
+admin-username = Nazwa użytkownika
 # Display name
 admin-display_name = Nazwa wyświetlana
 # Silence this member

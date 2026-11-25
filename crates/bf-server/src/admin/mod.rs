@@ -20,6 +20,7 @@ pub mod permalinks;
 pub mod reports;
 pub mod schemes;
 pub mod settings;
+pub mod suggestions;
 pub mod text_overrides;
 pub mod themes;
 
@@ -31,6 +32,7 @@ pub fn router() -> Router<AppState> {
         .merge(backups::router())
         .merge(bulk_mail::router())
         .merge(dashboard::router())
+        .merge(suggestions::router())
         .merge(emoji::router())
         .merge(explorer::router())
         .merge(forums::router())

@@ -1525,6 +1525,38 @@ msg-the_event_title_was_cancelled = تم إلغاء الفعالية «{ $title 
 msg-n_people_answered_your_event_title = أجاب { $n } أشخاص على فعاليتك «{ $title }»
 # {by} answered your event “{title}”
 msg-by_answered_your_event_title = أجاب { $by } على فعاليتك «{ $title }»
+# Turn on Cloudflare's real visitor address
+msg-turn_on_cloudflare_s_real_visitor_address = فعّل عنوان الزائر الحقيقي من Cloudflare
+# {n} of {total} recent sign-ins came from Cloudflare's own addresses, so the site sees the same few visitors: rate limits, IP bans and the staff log use the wrong address. The setting trusts the visitor address Cloudflare passes on, only from Cloudflare.
+msg-n_of_total_recent_sign_ins_came_from_cloudflare_s_own = جاء { $n } من أصل { $total } من عمليات تسجيل الدخول الأخيرة من عناوين Cloudflare نفسها، فيرى الموقع الزوار القلائل أنفسهم: حدود المعدل وحظر العناوين وسجل الإشراف تستخدم عنوانًا خاطئًا. يثق الإعداد بعنوان الزائر الذي ترسله Cloudflare، ومن Cloudflare فقط.
+# Name your reverse proxy in BF_TRUSTED_PROXIES
+msg-name_your_reverse_proxy_in_bf_trusted_proxies = اذكر الوكيل العكسي في BF_TRUSTED_PROXIES
+# Requests arrive through a proxy on a private address that sends forwarding headers, but BF_TRUSTED_PROXIES is empty. Every visitor then looks like the proxy: rate limits and IP bans hit everyone at once. Set it to the proxy's address and restart.
+msg-requests_arrive_through_a_proxy_on_a_private_address = تصل الطلبات عبر وكيل على عنوان خاص يرسل ترويسات إعادة التوجيه، لكن BF_TRUSTED_PROXIES فارغ. عندها يبدو كل زائر كأنه الوكيل: تطال حدود المعدل وحظر العناوين الجميع دفعة واحدة. عيّن عنوان الوكيل وأعد تشغيل الخادم.
+# The site address does not use https
+msg-the_site_address_does_not_use_https = عنوان الموقع لا يستخدم https
+# BF_BASE_URL starts with http://, so links in email, feeds and previews are not secure and some browser features will not work. Serve the site over https and change the address.
+msg-bf_base_url_starts_with_http_so_links_in_email_feeds = يبدأ BF_BASE_URL بـ http://، لذا فالروابط في البريد والخلاصات والمعاينات غير آمنة وبعض ميزات المتصفح لن تعمل. قدّم الموقع عبر https وغيّر العنوان.
+# Administrators without two-factor sign-in
+msg-administrators_without_two_factor_sign_in = مسؤولون بلا تسجيل دخول بخطوتين
+# {n} administrator accounts have neither an authenticator app nor a passkey. A stolen password would give full control of the site.
+msg-n_administrator_accounts_have_neither_an_authenticator = عدد حسابات المسؤولين التي لا تملك تطبيق مصادقة ولا مفتاح مرور: { $n }. كلمة مرور مسروقة تمنح تحكمًا كاملًا بالموقع.
+# Turn on automatic backups
+msg-turn_on_automatic_backups = فعّل النسخ الاحتياطي التلقائي
+# The site has members and content but is not backed up automatically.
+msg-the_site_has_members_and_content_but_is_not_backed_up = للموقع أعضاء ومحتوى لكنه لا يُنسخ احتياطيًا تلقائيًا.
+# Ask new members to verify their email
+msg-ask_new_members_to_verify_their_email = اطلب من الأعضاء الجدد تأكيد بريدهم
+# Mail is delivered and registration is open, but members can post without confirming their address. Verification keeps out throwaway and mistyped addresses.
+msg-mail_is_delivered_and_registration_is_open_but_members = البريد يُسلَّم والتسجيل مفتوح، لكن الأعضاء يستطيعون النشر دون تأكيد عنوانهم. يستبعد التحقق العناوين المؤقتة والمكتوبة بأخطاء.
+# Tell search engines about new topics at once
+msg-tell_search_engines_about_new_topics_at_once = أبلغ محركات البحث بالمواضيع الجديدة فورًا
+# IndexNow pings Bing and others when a public topic appears, so it is found within minutes. It sends the addresses of new public topics to api.indexnow.org.
+msg-indexnow_pings_bing_and_others_when_a_public_topic = يُخطر IndexNow محرك Bing وغيره عند ظهور موضوع عام، فيُعثر عليه خلال دقائق. يرسل عناوين المواضيع العامة الجديدة إلى api.indexnow.org.
+# Describe the site
+msg-describe_the_site = صِف الموقع
+# The default meta description is empty, so search results and link previews of pages without their own text show nothing about the site.
+msg-the_default_meta_description_is_empty_so_search_results = وصف الميتا الافتراضي فارغ، لذا لا تُظهر نتائج البحث ومعاينات الروابط للصفحات التي لا نص لها شيئًا عن الموقع.
 # Newcomer
 msg-newcomer = وافد جديد
 # Member
@@ -6284,6 +6316,26 @@ admin-warning = تحذير
 admin-danger = خطر
 # Selected
 admin-selected = محدد
+# Applied.
+admin-applied = تم التطبيق.
+# Suggestions
+admin-suggestions = اقتراحات
+# Important
+admin-important = مهم
+# Suggestion
+admin-suggestion = اقتراح
+# Apply
+admin-apply = تطبيق
+# Go to
+admin-go_to = انتقل
+# Dismiss
+admin-dismiss = تجاهل
+# No suggestions right now.
+admin-no_suggestions_right_now = لا اقتراحات الآن.
+# Dismissed suggestions
+admin-dismissed_suggestions = الاقتراحات المرفوضة
+# Restore
+admin-restore = استعادة
 # Logged in
 admin-logged_in = مسجلو الدخول
 # Anonymous
@@ -7074,8 +7126,6 @@ admin-n_d = { $n } ي
 admin-period = الفترة الزمنية
 # Log in
 admin-log_in = تسجيل الدخول
-# Dismiss
-admin-dismiss = تجاهل
 # {signups_7d} joined this week
 admin-signups_7d_joined_this_week = { $signups_7d } انضموا هذا الأسبوع
 # Topics
@@ -7396,8 +7446,10 @@ admin-staff_action_log = سجل إجراءات فريق الإدارة
 admin-filter = تصفية
 # Action prefix, e.g. topic.
 admin-action_prefix_e_g_topic = بادئة الإجراء، مثل topic.
-# Staff username
-admin-staff_username = اسم مستخدم عضو الفريق
+# Staff member
+admin-staff_member = عضو الإشراف
+# Type a name
+admin-type_a_name = اكتب اسمًا
 # Who
 admin-who = من
 # Action
@@ -7568,8 +7620,6 @@ admin-automatic = تلقائي
 admin-from_a_newer_version = من إصدار أحدث
 # Email me a download link
 admin-email_me_a_download_link = أرسل لي رابط التنزيل
-# Restore
-admin-restore = استعادة
 # Delete {name}
 admin-delete_name_3 = احذف { $name }
 # No backups yet.
@@ -8136,8 +8186,6 @@ admin-guests_can_never_post_or_moderate_whatever_is_ticked = لا يمكن لل�
 admin-topic_prefixes_separated_by_commas_question_solved_bug = بادئات المواضيع، مفصولة بفواصل: سؤال، محلول، خطأ
 # Save prefixes
 admin-save_prefixes = حفظ البادئات
-# Moderators: usernames, separated by commas
-admin-moderators_usernames_separated_by_commas = المشرفون: أسماء المستخدمين مفصولة بفواصل
 # Save moderators
 admin-save_moderators = حفظ المشرفين
 # SEO title
@@ -8374,8 +8422,6 @@ admin-changed_settings = الإعدادات المتغيّرة
 admin-paste_an_export_here = الصق تصديرًا هنا
 # Check
 admin-check = فحص
-# Username
-admin-username = اسم المستخدم
 # Write the text of the message.
 admin-write_the_text_of_the_message = اكتب نص الرسالة.
 # On its way: the message is being delivered.
@@ -8618,8 +8664,6 @@ admin-edit_permalink = تحرير الرابط الدائم
 admin-old_address_like_c_old_forum_12_or_viewtopic_php_t_7 = العنوان القديم، مثل c/old-forum/12 أو viewtopic.php?t=7
 # Points at
 admin-points_at = يشير إلى
-# Type a name
-admin-type_a_name = اكتب اسمًا
 # Type a tag
 admin-type_a_tag = اكتب وسمًا
 # Search address or destination
@@ -9326,6 +9370,8 @@ admin-deleted = حُذف
 admin-history = السجل
 # Nothing yet.
 admin-nothing_yet = لا شيء بعد.
+# Username
+admin-username = اسم المستخدم
 # Display name
 admin-display_name = الاسم المعروض
 # Silence this member

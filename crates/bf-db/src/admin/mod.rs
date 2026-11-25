@@ -13,6 +13,7 @@ pub mod pages;
 pub mod permalinks;
 pub mod reports;
 pub mod schemes;
+pub mod suggestions;
 pub mod text_overrides;
 pub mod themes;
 pub mod traffic;

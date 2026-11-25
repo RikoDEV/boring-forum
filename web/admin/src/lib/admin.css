@@ -3134,3 +3134,31 @@ a.acp-linkbtn:hover {
     color: var(--bf-color-muted);
   }
 }
+
+/* Dashboard suggestions: the text on the left, its actions on the right; stacked on a phone. */
+.acp-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+}
+.acp-suggest-text {
+  flex: 1 1 22rem;
+  min-width: 0;
+}
+.acp-suggest-text p {
+  margin: var(--bf-space-1) 0 0;
+}
+.acp-suggest-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+.acp-suggest-dismissed > summary {
+  padding: var(--bf-space-3) var(--bf-space-4);
+  border-block-start: 1px solid var(--bf-color-border);
+  color: var(--bf-color-muted);
+  cursor: pointer;
+}

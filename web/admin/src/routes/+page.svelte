@@ -8,6 +8,7 @@
   import BarChart from "#lib/BarChart.svelte";
   import Spark from "#lib/Spark.svelte";
   import Traffic from "#lib/Traffic.svelte";
+  import Suggestions from "#lib/Suggestions.svelte";
   const base = resolve("/").replace(/\/$/, "");
   let stats = $state(null);
   let analytics = $state(null);
@@ -98,6 +99,8 @@
     {n.message} <small><When iso={n.created_at} /></small>
     <button class="secondary" onclick={() => del(`/notices/${n.id}`).then(loadNotices)}>{tr("Dismiss")}</button>
   </p>{/each}
+
+<Suggestions />
 
 <div class="acp-kpis">
   {#if stats}

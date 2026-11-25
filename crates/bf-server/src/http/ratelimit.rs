@@ -220,7 +220,7 @@ static TRUSTED: std::sync::LazyLock<Vec<Net>> = std::sync::LazyLock::new(|| {
 /// Cloudflare's edge networks (https://www.cloudflare.com/ips/). With the `cloudflare_real_ip`
 /// setting on, a request from one of these is believed about the visitor: it is Cloudflare itself
 /// talking, not someone who found the origin's address.
-const CLOUDFLARE: [&str; 22] = [
+pub(crate) const CLOUDFLARE: [&str; 22] = [
     "173.245.48.0/20",
     "103.21.244.0/22",
     "103.22.200.0/22",
@@ -269,7 +269,33 @@ pub fn client_ip(peer: IpAddr, headers: &axum::http::HeaderMap) -> IpAddr {
     let peer = peer.to_canonical();
     let cf = headers.get("cf-connecting-ip").and_then(|h| h.to_str().ok());
     let xff = headers.get("x-forwarded-for").and_then(|h| h.to_str().ok());
+    note_unlisted_proxy(peer, cf.is_some() || xff.is_some());
     resolve_client(peer, cf, xff, &TRUSTED, behind_cloudflare())
+}
+
+/// Requests that came from a private address (a reverse proxy next to the server) carrying
+/// forwarding headers nobody was told to believe. The admin suggestions read it: without
+/// `BF_TRUSTED_PROXIES` every visitor shares the proxy's address.
+static UNLISTED_PROXY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+fn note_unlisted_proxy(peer: IpAddr, forwarded: bool) {
+    let private = match peer {
+        IpAddr::V4(a) => a.is_private() || a.is_loopback() || a.is_link_local(),
+        IpAddr::V6(a) => a.is_loopback() || (a.segments()[0] & 0xfe00) == 0xfc00,
+    };
+    if forwarded && private && !is_listed(&TRUSTED, peer) && !is_listed(&CLOUDFLARE_NETS, peer) {
+        UNLISTED_PROXY.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
+/// How many requests since the start came through an unlisted private proxy.
+pub fn unlisted_proxy_requests() -> u64 {
+    UNLISTED_PROXY.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// Whether `BF_TRUSTED_PROXIES` names any proxy.
+pub fn has_trusted_proxies() -> bool {
+    !TRUSTED.is_empty()
 }
 
 fn resolve_client(peer: IpAddr, cf: Option<&str>, xff: Option<&str>, trusted: &[Net], cloudflare: bool) -> IpAddr {
