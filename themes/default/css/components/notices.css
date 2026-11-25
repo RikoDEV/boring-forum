@@ -9,6 +9,33 @@
   box-shadow: var(--bf-shadow-menu);
 }
 
+/* The offer of browser notifications: bottom corner on a wide screen, the full width on a phone. */
+.push-prompt {
+  position: fixed;
+  inset-block-end: var(--bf-space-4);
+  inset-inline-end: var(--bf-space-4);
+  z-index: 40;
+  display: grid;
+  gap: var(--bf-space-3);
+  max-width: 24rem;
+  box-shadow: var(--bf-shadow-menu);
+
+  &[hidden] {
+    display: none;
+  }
+
+  @media (width <= 639px) {
+    inset-inline: var(--bf-space-3);
+    inset-block-end: var(--bf-space-3);
+    max-width: none;
+  }
+}
+
+.push-prompt-actions {
+  display: flex;
+  gap: var(--bf-space-2);
+}
+
 .impersonating {
   padding: var(--bf-space-2) var(--bf-space-4);
   background: var(--bf-color-warning-soft);

@@ -467,6 +467,57 @@ function pmTyping(target, { id }) {
   });
 }
 
+// Subscribes this device to web push and tells the server. Asks the browser for permission first.
+async function pushSubscribe(reg, key) {
+  const raw = Uint8Array.from(atob(key.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+  const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: raw });
+  const j = sub.toJSON();
+  return fetch("/api/v1/push/subscribe", {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ endpoint: j.endpoint, keys: j.keys }),
+  });
+}
+
+// A member who has not been asked yet gets a small notice offering browser notifications. The
+// browser's own prompt needs a click, so it opens from the button, not on load. "Not now" is
+// remembered on this device; a refusal in the browser needs no notice at all.
+async function pushPrompt(target) {
+  if (!("PushManager" in window) || !("serviceWorker" in navigator) || !("Notification" in window)) return;
+  if (Notification.permission !== "default") return;
+  try {
+    if (localStorage.getItem("bf-push-asked")) return;
+  } catch {}
+  const keyRes = await fetch("/api/v1/push/key").catch(() => null);
+  if (!keyRes?.ok) return;
+  const { key } = await keyRes.json();
+  const reg = await navigator.serviceWorker.ready.catch(() => null);
+  if (!reg || (await reg.pushManager.getSubscription().catch(() => null))) return;
+  const done = () => {
+    try {
+      localStorage.setItem("bf-push-asked", "1");
+    } catch {}
+    target.hidden = true;
+  };
+  const text = el("span", {}, tr("Get notified about replies and mentions, even when this tab is closed?"));
+  const on = el("button", { type: "button", class: "btn primary" }, tr("Turn on"));
+  const later = el("button", { type: "button", class: "btn" }, tr("Not now"));
+  on.addEventListener("click", async () => {
+    on.disabled = true;
+    try {
+      await pushSubscribe(reg, key);
+    } catch {
+      // Refused in the browser's prompt: it will not be asked again.
+    }
+    done();
+  });
+  later.addEventListener("click", done);
+  const actions = el("div", { class: "push-prompt-actions" });
+  actions.append(on, later);
+  target.append(text, actions);
+  target.hidden = false;
+}
+
 // Turns browser notifications on or off for this device, from a button in settings.
 async function pushToggle(target) {
   if (!("PushManager" in window) || !("serviceWorker" in navigator)) return;
@@ -498,14 +549,7 @@ async function pushToggle(target) {
         }
         paint(false);
       } else {
-        const raw = Uint8Array.from(atob(key.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
-        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: raw });
-        const j = sub.toJSON();
-        const res = await fetch("/api/v1/push/subscribe", {
-          method: "POST",
-          headers: jsonHeaders(),
-          body: JSON.stringify({ endpoint: j.endpoint, keys: j.keys }),
-        });
+        const res = await pushSubscribe(reg, key);
         if (res.ok) paint(true);
         else note.textContent = tr("Could not turn them on");
       }
@@ -1210,6 +1254,7 @@ const islands = {
   altcha,
   announcement,
   "push-toggle": pushToggle,
+  "push-prompt": pushPrompt,
   "pm-typing": pmTyping,
   "saved-replies": () => savedReplies(),
   infinite: (t, p) => topic().then((m) => m.infinite(t, { ...p, onAppend })),
