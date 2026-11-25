@@ -22,6 +22,8 @@ export function tokens(text, lang) {
   if (lang === "html") html(text, put);
   else if (lang === "css") css(text, put);
   else if (lang === "js") js(text, put);
+  else if (lang === "robots") lines(text, put, true);
+  else if (lang === "hosts") lines(text, put, false);
   else put("", text);
   return out;
 }
@@ -39,6 +41,33 @@ function quoted(text, i) {
   let j = i + 1;
   while (j < text.length && text[j] !== q && !(q !== "`" && text[j] === "\n")) j += text[j] === "\\" ? 2 : 1;
   return Math.min(j + 1, text.length);
+}
+
+// One entry per line, `#` starts a comment: robots.txt (`Directive: value`, the directive is a
+// keyword and a URL value a string) and the lists of hosts (each line a string).
+function lines(text, put, directives) {
+  for (const line of text.split(/(?<=\n)/)) {
+    const hash = line.indexOf("#");
+    const body = hash < 0 ? line : line.slice(0, hash);
+    const colon = directives ? body.indexOf(":") : -1;
+    if (colon > 0 && /^[A-Za-z-]+$/.test(body.slice(0, colon).trim())) {
+      const name = body.slice(0, colon).trimEnd();
+      put("k", name);
+      put("", body.slice(name.length, colon + 1));
+      const value = body.slice(colon + 1);
+      const lead = value.length - value.trimStart().length;
+      const url = /^https?:\/\//.test(value.trim());
+      put("", value.slice(0, lead));
+      put(url ? "s" : "", value.slice(lead).trimEnd());
+      put("", value.slice(value.trimEnd().length));
+    } else if (!directives && body.trim()) {
+      const lead = body.length - body.trimStart().length;
+      put("", body.slice(0, lead));
+      put("s", body.trim());
+      put("", body.slice(body.trimEnd().length));
+    } else put("", body);
+    if (hash >= 0) put("c", line.slice(hash));
+  }
 }
 
 function css(text, put) {
@@ -193,9 +222,10 @@ export function code(textarea, param) {
   textarea.classList.add("acp-hl-on");
   let lang = param?.lang;
 
-  const draw = () => {
+  // `text` is the bound value the page passes: the textarea may not hold it yet when this runs.
+  const draw = (text = textarea.value) => {
     body.replaceChildren(
-      ...tokens(textarea.value, lang).map(([cls, s]) => {
+      ...tokens(text, lang).map(([cls, s]) => {
         const e = document.createElement("span");
         if (cls) e.className = "tk-" + cls;
         e.textContent = s;
@@ -229,18 +259,19 @@ export function code(textarea, param) {
   };
   const seen = new ResizeObserver(place);
   seen.observe(textarea);
-  textarea.addEventListener("input", draw);
+  const typed = () => draw();
+  textarea.addEventListener("input", typed);
   textarea.addEventListener("scroll", sync);
   place();
-  draw();
+  draw(typeof param?.value === "string" ? param.value : undefined);
   return {
     update(next) {
       lang = next?.lang;
-      draw();
+      draw(typeof next?.value === "string" ? next.value : undefined);
     },
     destroy() {
       seen.disconnect();
-      textarea.removeEventListener("input", draw);
+      textarea.removeEventListener("input", typed);
       textarea.removeEventListener("scroll", sync);
       textarea.classList.remove("acp-hl-on");
       pre.remove();

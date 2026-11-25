@@ -15,7 +15,13 @@ export const MANAGED = new Set([
 
 // Code, edited in a monospace box: (rows) for each.
 /// The language each code box is coloured as; the host list is plain text.
-export const CODE_LANG = { custom_css: "css", custom_head_html: "html", custom_footer_html: "html" };
+export const CODE_LANG = {
+  custom_css: "css",
+  custom_head_html: "html",
+  custom_footer_html: "html",
+  custom_code_hosts: "hosts",
+  robots_txt: "robots",
+};
 export const CODE = {
   custom_css: 12,
   custom_head_html: 8,
