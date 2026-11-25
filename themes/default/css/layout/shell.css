@@ -444,14 +444,6 @@ main {
   }
 }
 
-.sidebar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--bf-space-3);
-  max-width: var(--bf-content-width);
-  margin: var(--bf-space-3) auto 0;
-}
-
 /* Touch screens: the header search field is a finger-sized target. */
 @media (pointer: coarse) {
   .header-search input[name="q"] {

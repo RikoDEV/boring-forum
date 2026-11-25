@@ -38,10 +38,10 @@ pub async fn site_texts(pool: &PgPool) -> Result<Vec<String>, Error> {
         .collect())
 }
 
-/// The header and sidebar link lists as stored (JSON): their labels are texts to translate.
+/// The header link list as stored (JSON): their labels are texts to translate.
 pub async fn navigation_sources(pool: &PgPool) -> Result<Vec<String>, Error> {
     let rows: Vec<(String,)> = sqlx::query_as(
-        "SELECT value #>> '{}' FROM site_settings WHERE key IN ('nav_links', 'sidebar_links') AND jsonb_typeof(value) = 'string'",
+        "SELECT value #>> '{}' FROM site_settings WHERE key = 'nav_links' AND jsonb_typeof(value) = 'string'",
     )
     .fetch_all(pool)
     .await?;

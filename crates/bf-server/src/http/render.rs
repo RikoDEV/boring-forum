@@ -66,7 +66,7 @@ pub(crate) fn layout(state: &AppState, v: &Viewer, title: Option<&str>) -> (Layo
     let mut l = Layout::new(&state.settings(), title);
     l.t = bf_core::i18n::T::new(v.locale);
     l.set_nav(&state.settings(), &bf_core::ids::raw(&v.actor.groups), v.actor.is_admin);
-    l.add_links(None, &bf_core::ids::raw(&v.actor.groups), v.actor.is_admin);
+    l.add_links(&bf_core::ids::raw(&v.actor.groups), v.actor.is_admin);
     crate::admin::themes::apply(&mut l, v, &v.theme_headers, None);
     // Link previews need a full address; the other pictures are fine as paths.
     if !l.brand.og_image.is_empty() {

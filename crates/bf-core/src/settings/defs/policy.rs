@@ -100,15 +100,6 @@ pub(super) fn defs() -> Vec<SettingDef> {
             ..def("show_trust_levels", Bool, true, en("Show each member's trust level on posts, profiles and cards"))
         },
         int("trust_recent_days", 100, 1, 3650, en("Days the recent-activity window of trust levels covers")),
-        SettingDef {
-            default: json!(""),
-            ..def(
-                "sidebar_links",
-                String,
-                true,
-                en("Sidebar links as JSON, the same format as the navigation; empty hides the sidebar"),
-            )
-        },
         int("default_theme_id", 0, 0, i64::MAX, en("The site's theme; 0 uses the built-in look")),
         SettingDef {
             default: json!("standard"),

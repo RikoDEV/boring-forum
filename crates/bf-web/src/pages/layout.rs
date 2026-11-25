@@ -160,7 +160,6 @@ pub struct Layout {
     /// Header links as (url, label), filtered for this viewer.
     /// The header links: (address, label, icon name or empty).
     pub nav: Vec<(String, String, String)>,
-    pub sidebar: Vec<(String, String)>,
     /// Links plugins declared with an icon or a menu, for this viewer: (url, label, icon, menu).
     pub plugin_menu: Vec<(String, String, String, String)>,
     /// The chosen theme's stylesheet and rendered slots, if any.
@@ -353,12 +352,8 @@ impl Layout {
         serde_json::Value::Array(rows).to_string().replace('<', "\\u003c")
     }
 
-    /// Adds a member's own links to the sidebar, and links from plugins to the header.
-    pub fn add_links(&mut self, own_sidebar: Option<&str>, groups: &[i64], is_admin: bool) {
-        if let Some(own) = own_sidebar.filter(|o| !o.trim().is_empty()) {
-            let items = bf_core::nav::visible(bf_core::nav::parse(own), groups, is_admin);
-            self.sidebar.extend(items.into_iter().filter(|i| i.key.is_none()).map(|i| (i.url, i.label)));
-        }
+    /// Adds links from plugins to the header.
+    pub fn add_links(&mut self, groups: &[i64], is_admin: bool) {
         if let Some(p) = &self.plugins {
             let locale = self.t.locale;
             // Links with an icon or menu are drawn by `plugin_nav_header` and `plugin_nav_html`.
@@ -569,19 +564,6 @@ impl Layout {
             .into_iter()
             .filter(on)
             .collect();
-        let side = settings.str("sidebar_links");
-        self.sidebar = if side.trim().is_empty() {
-            Vec::new()
-        } else {
-            bf_core::nav::visible(bf_core::nav::parse(side), groups, is_admin)
-                .into_iter()
-                .filter(on)
-                .map(|i| {
-                    let label = i.key.as_ref().map_or_else(|| self.t.msg(&i.label), |k| self.t.t(&format!("nav.{k}")));
-                    (i.url, label)
-                })
-                .collect()
-        };
         self.nav = items
             .into_iter()
             .map(|i| {
@@ -648,7 +630,6 @@ impl Layout {
             text_size: 100,
             density: "comfortable".into(),
             nav: Vec::new(),
-            sidebar: Vec::new(),
             plugin_menu: Vec::new(),
             theme: crate::theme::resolve(&[], &[]),
             plugins: Some(crate::theme::plugin_output()),

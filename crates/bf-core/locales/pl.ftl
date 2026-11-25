@@ -2227,8 +2227,6 @@ msg-the_trust_levels_as_json_from_level_0_up_name_whether = Poziomy zaufania jak
 msg-show_each_member_s_trust_level_on_posts_profiles_and = Pokazuj poziom zaufania członka przy postach, na profilach i kartach
 # Days the recent-activity window of trust levels covers
 msg-days_the_recent_activity_window_of_trust_levels_covers = Liczba dni okna ostatniej aktywności poziomów zaufania
-# Sidebar links as JSON, the same format as the navigation; empty hides the sidebar
-msg-sidebar_links_as_json_the_same_format_as_the_navigation = Linki paska bocznego jako JSON, w tym samym formacie co nawigacja; puste ukrywa pasek boczny
 # The site's theme; 0 uses the built-in look
 msg-the_site_s_theme_0_uses_the_built_in_look = Motyw strony; 0 używa wbudowanego wyglądu
 # The colour scheme (its address name) whose light palette everyone who has not picked one sees
@@ -9526,8 +9524,6 @@ admin-bbcode_enabled = BBCode włączony
 admin-show_trust_levels = Pokazuj poziomy zaufania
 # Trust recent days
 admin-trust_recent_days = Dni ostatniej aktywności
-# Sidebar links
-admin-sidebar_links = Linki panelu bocznego
 # Default theme id
 admin-default_theme_id = ID domyślnego motywu
 # Default light scheme

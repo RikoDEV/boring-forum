@@ -1215,11 +1215,6 @@ if [ -n "${BF_SSO_SECRET:-}" ]; then
   rm -f $S1
 fi
 check "notices readable" "$(curl -s -o /dev/null -w '%{http_code}' -b $J $B/api/v1/admin/notices)" 200
-setting sidebar_links '"[{\"label\":\"Rules\",\"url\":\"/rules-link\"},{\"label\":\"Bad\",\"url\":\"javascript:x\"}]"'; settle 1.5
-SB=$(curl -s $B/search)
-has "sidebar" "$SB" 'href="/rules-link"'
-no "sidebar drops unsafe links" "$SB" 'javascript:x'
-setting sidebar_links '""'
 
 # --- themes, safe mode, widgets
 T=$(csrf $J)

@@ -90,7 +90,6 @@ function build() {
         "offline",
         "offline_message",
         "cookie_consent_text",
-        "sidebar_links",
         "version_check_url",
         "cloudflare_real_ip",
       ],

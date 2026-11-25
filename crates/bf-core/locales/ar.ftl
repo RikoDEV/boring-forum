@@ -2393,8 +2393,6 @@ msg-the_trust_levels_as_json_from_level_0_up_name_whether = مستويات ال�
 msg-show_each_member_s_trust_level_on_posts_profiles_and = عرض مستوى ثقة كل عضو في المنشورات والملفات الشخصية والبطاقات
 # Days the recent-activity window of trust levels covers
 msg-days_the_recent_activity_window_of_trust_levels_covers = عدد أيام نافذة النشاط الأخير لمستويات الثقة
-# Sidebar links as JSON, the same format as the navigation; empty hides the sidebar
-msg-sidebar_links_as_json_the_same_format_as_the_navigation = روابط الشريط الجانبي بصيغة JSON بنفس صيغة التنقل؛ الفارغ يخفي الشريط الجانبي
 # The site's theme; 0 uses the built-in look
 msg-the_site_s_theme_0_uses_the_built_in_look = سمة الموقع؛ 0 يستخدم المظهر المدمج
 # The colour scheme (its address name) whose light palette everyone who has not picked one sees
@@ -9692,8 +9690,6 @@ admin-bbcode_enabled = تفعيل BBCode
 admin-show_trust_levels = عرض مستويات الثقة
 # Trust recent days
 admin-trust_recent_days = أيام النشاط الأخير
-# Sidebar links
-admin-sidebar_links = روابط الشريط الجانبي
 # Default theme id
 admin-default_theme_id = معرّف السمة الافتراضية
 # Default light scheme

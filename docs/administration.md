@@ -83,7 +83,7 @@ whether posts count toward members' totals.
 
 **Appearance**
 - **Themes**, **Colour schemes**, **Widgets** (the blocks on each page), **Advertisements** and
-  **Navigation** (the header and sidebar links). Most pages also have an *Edit layout* button on
+  **Navigation** (the header links). Most pages also have an *Edit layout* button on
   the site itself, for administrators. See [Features and settings](features.md).
 
 **System**

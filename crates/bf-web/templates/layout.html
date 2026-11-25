@@ -87,13 +87,6 @@
 </form>
 {% endif %}
 {% include "_header.html" %}
-{% if !layout.sidebar.is_empty() %}
-<div class="wrap">
-  <nav class="sidebar panel" aria-label="{{ layout.t.t("layout.sidebar") }}">
-    {%- for (url, label) in layout.sidebar %}<a href="{{ url }}">{{ label }}</a>{% endfor -%}
-  </nav>
-</div>
-{% endif %}
 {{ layout.slot("header_after")|safe }}
 {{ layout.ad()|safe }}
 

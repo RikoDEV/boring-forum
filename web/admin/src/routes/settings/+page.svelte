@@ -162,7 +162,6 @@
     "blocked_email_domains",
     "allowed_email_domains",
     "reserved_usernames",
-    "sidebar_links",
     "csp_image_hosts",
     "onebox_blocked_hosts",
     "embed_hosts",
