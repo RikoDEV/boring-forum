@@ -243,12 +243,21 @@ pub fn content_security_policy(
     } else {
         ""
     };
-    // Third-party scripts (a consent banner, an ad widget) write `style=""` attributes at run time,
-    // which no hash can list. Only attributes are opened; `<style>` elements stay hash-only.
-    let style_attr = if custom.is_some_and(|c| c.scripts) { "style-src-attr 'unsafe-inline'; " } else { "" };
+    // Third-party scripts (a consent banner, an ad widget) write `style=""` attributes and add
+    // `<style>` elements at run time, which no hash can list. They may already run any script from
+    // their hosts, so the page's own styles are the only thing left to protect: elements keep the
+    // site's sources, and without the hashes, which would cancel `'unsafe-inline'`.
+    let style_attr = if custom.is_some_and(|c| c.scripts) {
+        let hosts: String = custom
+            .map(|c| c.style_src.iter().filter(|s| !s.starts_with('\'')).map(|s| format!(" {s}")).collect())
+            .unwrap_or_default();
+        format!("style-src-attr 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline' {extra}{hosts}; ")
+    } else {
+        String::new()
+    };
     format!(
         "default-src 'self'; script-src 'self' {} {} {} {extra} {scripts}; style-src 'self' {} 'unsafe-hashes' {} {} {} {extra}{styles}; \
-         {style_attr}img-src 'self' {}; media-src 'self'; connect-src 'self' {extra} {connect}; frame-src 'self' {extra}{frames}; \
+         {style_attr}img-src 'self' data: {}; media-src 'self'; connect-src 'self' {extra} {connect}; frame-src 'self' {extra}{frames}; \
          object-src 'none'; base-uri 'none'; frame-ancestors 'self'; form-action 'self'; \
          {trusted}\
          report-uri /api/v1/csp-report; report-to csp",
@@ -307,7 +316,12 @@ mod tests {
         let scripted = crate::custom_code::CustomCode { scripts: true, ..Default::default() };
         let csp = policy(Some(&scripted));
         assert!(csp.contains("style-src-attr 'unsafe-inline';"));
-        // The `style-src` list, which covers `<style>` elements, still has no `unsafe-inline`.
+        // Elements added at run time are allowed too, from the site's own sources only.
+        let elem = csp.split("; ").find(|d| d.starts_with("style-src-elem ")).unwrap();
+        assert!(elem.contains("'unsafe-inline'") && !elem.contains("sha256-"));
+        // Pictures inlined as `data:` URLs (a consent banner's icons) load.
+        assert!(csp.contains("img-src 'self' data:"));
+        // The `style-src` list, which the page's own hashed styles use, still has no `unsafe-inline`.
         let style_src = csp.split("; ").find(|d| d.starts_with("style-src ")).unwrap();
         assert!(!style_src.contains("'unsafe-inline'"));
     }
