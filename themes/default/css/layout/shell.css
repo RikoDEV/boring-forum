@@ -415,6 +415,11 @@ main {
     max-width: none;
   }
 
+  /* Reading down the page folds the search row away (headerSize in main.js). */
+  .bf-header-bar.is-folded .header-search {
+    display: none;
+  }
+
   .bf-icon-btn.bf-nav-toggle {
     display: inline-flex;
   }

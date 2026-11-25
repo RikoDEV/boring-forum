@@ -1174,6 +1174,34 @@ function headerSize() {
   new ResizeObserver(() => {
     document.documentElement.style.setProperty("--bf-header-height", `${bar.getBoundingClientRect().height}px`);
   }).observe(bar);
+  foldSearch(bar);
+}
+
+// On a phone the search row folds away while reading down the page and returns on the way back
+// up, at the top, or while the field is in use.
+function foldSearch(bar) {
+  const narrow = window.matchMedia("(width <= 639px)");
+  let last = window.scrollY;
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const y = window.scrollY;
+    const search = bar.querySelector(".header-search");
+    const busy = search?.matches(":focus-within") || search?.querySelector(".is-open");
+    if (!narrow.matches || y < 80 || y < last - 4 || busy) bar.classList.remove("is-folded");
+    else if (y > last + 4) bar.classList.add("is-folded");
+    last = y;
+  };
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    },
+    { passive: true },
+  );
 }
 
 const islands = {
