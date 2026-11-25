@@ -2331,6 +2331,8 @@ msg-security_txt_policy_the_url_of_the_vulnerability = security.txt Policy: URL 
 msg-allow_letters_from_any_script_in_usernames_normalized = Zezwalaj w nazwach użytkowników na litery z dowolnego pisma (normalizowane, jedno pismo, mylące znaki odrzucane)
 # AI training crawlers in robots.txt: allow or block
 msg-ai_training_crawlers_in_robots_txt_allow_or_block = Roboty trenujące AI w robots.txt: zezwól lub zablokuj
+# robots.txt rules, one per line. The AI-crawler block (when on) and the sitemap line are added after them
+msg-robots_txt_rules_one_per_line_the_ai_crawler_block_when = Reguły robots.txt, po jednej w wierszu. Blokada robotów AI (gdy włączona) i wiersz z mapą witryny są dodawane po nich
 # IndexNow: tell search engines about new public topics right away (sends their addresses to api.indexnow.org; needs an https address)
 msg-indexnow_tell_search_engines_about_new_public_topics = IndexNow: natychmiast informuj wyszukiwarki o nowych publicznych tematach (wysyła ich adresy do api.indexnow.org; wymaga adresu https)
 # IndexNow key (8 to 128 letters, digits and dashes); empty uses a key made from the site address
@@ -4904,6 +4906,8 @@ msg-third_column = Trzecia kolumna
 msg-page_content = Treść strony
 # Trust level
 msg-trust_level = Poziom zaufania
+# Browser notifications
+msg-browser_notifications = Powiadomienia przeglądarki
 # Trust level {n}: {name}
 msg-trust_level_n_name = Poziom zaufania { $n }: { $name }
 # Reputation rank
@@ -5408,6 +5412,12 @@ js-dismiss = Zamknij
 js-name_is_typing = { $name } pisze…
 # New message
 js-new_message = Nowa wiadomość
+# Get notified about replies and mentions, even when this tab is closed?
+js-get_notified_about_replies_and_mentions_even_when_this = Chcesz dostawać powiadomienia o odpowiedziach i wzmiankach, także gdy ta karta jest zamknięta?
+# Turn on
+js-turn_on = Włącz
+# Not now
+js-not_now = Nie teraz
 # Turn off browser notifications
 js-turn_off_browser_notifications = Wyłącz powiadomienia przeglądarki
 # Turn on browser notifications
@@ -5612,8 +5622,6 @@ js-until_you_accept_them_you_can_still_read_change_your = Dopóki ich nie zaakce
 js-terms = Regulamin
 # I don't accept
 js-i_don_t_accept = Nie akceptuję
-# Not now
-js-not_now = Nie teraz
 # Updated terms
 js-updated_terms = Zmieniony regulamin
 # See who reacted
@@ -9606,6 +9614,8 @@ admin-security_policy_url = URL polityki bezpieczeństwa
 admin-unicode_usernames = Nazwy użytkowników Unicode
 # Ai crawlers
 admin-ai_crawlers = Roboty AI
+# Robots txt
+admin-robots_txt = robots.txt
 # Indexnow enabled
 admin-indexnow_enabled = IndexNow włączony
 # Indexnow key

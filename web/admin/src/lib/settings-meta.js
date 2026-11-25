@@ -16,7 +16,13 @@ export const MANAGED = new Set([
 // Code, edited in a monospace box: (rows) for each.
 /// The language each code box is coloured as; the host list is plain text.
 export const CODE_LANG = { custom_css: "css", custom_head_html: "html", custom_footer_html: "html" };
-export const CODE = { custom_css: 12, custom_head_html: 8, custom_footer_html: 8, custom_code_hosts: 3 };
+export const CODE = {
+  custom_css: 12,
+  custom_head_html: 8,
+  custom_footer_html: 8,
+  custom_code_hosts: 3,
+  robots_txt: 10,
+};
 
 /** The tables are built on first use: their text is translated when it is made, so it has to
  * wait until the panel knows its language. */
@@ -610,6 +616,7 @@ function build() {
     custom_head_html: tr("HTML in <head>"),
     custom_footer_html: tr("HTML after the footer"),
     custom_code_hosts: tr("Allowed hosts"),
+    robots_txt: "robots.txt",
     login_required: tr("Require login to view"),
   };
   const ICONS = {

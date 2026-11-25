@@ -119,7 +119,7 @@ async fn sitemap_file(state: &AppState, part: usize) -> Result<Response, AppErro
 async fn robots(State(state): State<AppState>) -> Response {
     // AI training crawlers are turned away when the site says so.
     let block_ai = state.settings().str("ai_crawlers") != "allow";
-    let body = bf_seo::robots_txt_with(&state.config.base_url, block_ai);
+    let body = bf_seo::robots_txt_custom(&state.config.base_url, state.settings().str("robots_txt"), block_ai);
     ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], body).into_response()
 }
 

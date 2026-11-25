@@ -51,6 +51,19 @@ pub(super) fn defs() -> Vec<SettingDef> {
             ..def("ai_crawlers", String, false, en("AI training crawlers in robots.txt: allow or block"))
         },
         SettingDef {
+            default: json!(
+                "User-agent: *\nDisallow: /admin\nDisallow: /api/\nDisallow: /search\nDisallow: /login\nDisallow: /register"
+            ),
+            ..def(
+                "robots_txt",
+                String,
+                false,
+                en(
+                    "robots.txt rules, one per line. The AI-crawler block (when on) and the sitemap line are added after them",
+                ),
+            )
+        },
+        SettingDef {
             default: json!(false),
             ..def(
                 "indexnow_enabled",

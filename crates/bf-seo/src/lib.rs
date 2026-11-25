@@ -175,14 +175,24 @@ pub const AI_CRAWLERS: &[&str] = &[
     "MistralAI-User",
 ];
 
+/// The rules robots.txt starts with: the setting's default, and what an empty setting serves.
+pub const ROBOTS_RULES: &str =
+    "User-agent: *\nDisallow: /admin\nDisallow: /api/\nDisallow: /search\nDisallow: /login\nDisallow: /register";
+
 pub fn robots_txt(base_url: &str) -> String {
     robots_txt_with(base_url, false)
 }
 
 pub fn robots_txt_with(base_url: &str, block_ai: bool) -> String {
-    let mut s = String::from(
-        "User-agent: *\nDisallow: /admin\nDisallow: /api/\nDisallow: /search\nDisallow: /login\nDisallow: /register\n",
-    );
+    robots_txt_custom(base_url, "", block_ai)
+}
+
+/// The admin's rules (the built-in ones when empty), then the AI-crawler block when it is on, then
+/// the sitemap line, which is always there.
+pub fn robots_txt_custom(base_url: &str, rules: &str, block_ai: bool) -> String {
+    let rules = rules.trim();
+    let mut s = if rules.is_empty() { ROBOTS_RULES.to_owned() } else { rules.replace("\r\n", "\n") };
+    s.push('\n');
     if block_ai {
         s.push('\n');
         for bot in AI_CRAWLERS {
@@ -190,7 +200,10 @@ pub fn robots_txt_with(base_url: &str, block_ai: bool) -> String {
         }
         s.push_str("Disallow: /\n");
     }
-    s.push_str(&format!("\nSitemap: {}/sitemap.xml\n", base_url.trim_end_matches('/')));
+    let sitemap = format!("Sitemap: {}/sitemap.xml", base_url.trim_end_matches('/'));
+    if !s.lines().any(|l| l.trim() == sitemap) {
+        s.push_str(&format!("\n{sitemap}\n"));
+    }
     s
 }
 
@@ -504,6 +517,19 @@ mod tests {
         let w = website("Forum", "https://f.test/");
         assert_eq!(w["url"], "https://f.test/");
         assert_eq!(w["potentialAction"]["target"], "https://f.test/search?q={search_term_string}");
+    }
+
+    #[test]
+    fn custom_robots_rules_keep_the_sitemap_and_the_ai_block() {
+        let own = robots_txt_custom("https://f.test/", "User-agent: *\r\nDisallow: /x", false);
+        assert_eq!(own, "User-agent: *\nDisallow: /x\n\nSitemap: https://f.test/sitemap.xml\n");
+        // Another sitemap line does not stand in for this site's.
+        let other = robots_txt_custom("https://f.test", "Sitemap: https://o.test/s.xml", true);
+        assert!(other.contains("GPTBot") && other.ends_with("Sitemap: https://f.test/sitemap.xml\n"));
+        // Its own line is not repeated.
+        let same = robots_txt_custom("https://f.test", "Sitemap: https://f.test/sitemap.xml", false);
+        assert_eq!(same.matches("Sitemap:").count(), 1);
+        assert_eq!(robots_txt_custom("https://f.test", "  ", false), robots_txt("https://f.test"));
     }
 
     #[test]

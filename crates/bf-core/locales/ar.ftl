@@ -2497,6 +2497,8 @@ msg-security_txt_policy_the_url_of_the_vulnerability = security.txt Policy: را
 msg-allow_letters_from_any_script_in_usernames_normalized = السماح بأحرف من أي نظام كتابة في أسماء المستخدمين (مُوحّدة، نظام كتابة واحد، ورفض الأحرف المتشابهة)
 # AI training crawlers in robots.txt: allow or block
 msg-ai_training_crawlers_in_robots_txt_allow_or_block = زواحف تدريب الذكاء الاصطناعي في robots.txt: السماح أو الحظر
+# robots.txt rules, one per line. The AI-crawler block (when on) and the sitemap line are added after them
+msg-robots_txt_rules_one_per_line_the_ai_crawler_block_when = قواعد robots.txt، قاعدة في كل سطر. يُضاف بعدها حظر زواحف الذكاء الاصطناعي (عند تفعيله) وسطر خريطة الموقع
 # IndexNow: tell search engines about new public topics right away (sends their addresses to api.indexnow.org; needs an https address)
 msg-indexnow_tell_search_engines_about_new_public_topics = IndexNow: إبلاغ محركات البحث فورًا بالمواضيع العامة الجديدة (يرسل عناوينها إلى api.indexnow.org؛ يتطلب عنوان https)
 # IndexNow key (8 to 128 letters, digits and dashes); empty uses a key made from the site address
@@ -5070,6 +5072,8 @@ msg-third_column = العمود الثالث
 msg-page_content = محتوى الصفحة
 # Trust level
 msg-trust_level = مستوى الثقة
+# Browser notifications
+msg-browser_notifications = إشعارات المتصفح
 # Trust level {n}: {name}
 msg-trust_level_n_name = مستوى الثقة { $n }: { $name }
 # Reputation rank
@@ -5574,6 +5578,12 @@ js-dismiss = تجاهل
 js-name_is_typing = { $name } يكتب…
 # New message
 js-new_message = رسالة جديدة
+# Get notified about replies and mentions, even when this tab is closed?
+js-get_notified_about_replies_and_mentions_even_when_this = هل تريد تلقي إشعارات بالردود والإشارات حتى عند إغلاق هذا التبويب؟
+# Turn on
+js-turn_on = تشغيل
+# Not now
+js-not_now = ليس الآن
 # Turn off browser notifications
 js-turn_off_browser_notifications = إيقاف إشعارات المتصفح
 # Turn on browser notifications
@@ -5778,8 +5788,6 @@ js-until_you_accept_them_you_can_still_read_change_your = إلى أن تقبله
 js-terms = الشروط
 # I don't accept
 js-i_don_t_accept = لا أقبل
-# Not now
-js-not_now = ليس الآن
 # Updated terms
 js-updated_terms = شروط محدَّثة
 # See who reacted
@@ -9772,6 +9780,8 @@ admin-security_policy_url = رابط سياسة الأمان
 admin-unicode_usernames = أسماء مستخدمين بـ Unicode
 # Ai crawlers
 admin-ai_crawlers = زواحف الذكاء الاصطناعي
+# Robots txt
+admin-robots_txt = robots.txt
 # Indexnow enabled
 admin-indexnow_enabled = IndexNow مفعّل
 # Indexnow key
