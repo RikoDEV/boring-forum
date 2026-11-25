@@ -5,6 +5,8 @@
   import Box from "#lib/Box.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
+  import MultiSelect from "#lib/MultiSelect.svelte";
+  import { members } from "#lib/suggest.js";
   import { get, post, put } from "#lib/api.js";
 
   const status = new Status();
@@ -12,7 +14,7 @@
   let exported = $state("");
   let importText = $state("");
   let dialogKind = $state(""); // "export", "import" or "check" while that dialog is open
-  const check = $state({ user: "", forum: "" });
+  const check = $state({ user: [], forum: "" });
   let checkResult = $state(null);
   let forums = $state([]);
 
@@ -75,7 +77,9 @@
     await run(
       tr("Permission check"),
       async () =>
-        void (checkResult = await get(`/permission-check?user=${encodeURIComponent(check.user)}&forum=${check.forum}`)),
+        void (checkResult = await get(
+          `/permission-check?user=${encodeURIComponent(check.user[0] ?? "")}&forum=${check.forum}`,
+        )),
       dialog,
     );
     if (!dialog.error) close();
@@ -156,7 +160,13 @@
 {:else if dialogKind === "check"}
   <EditDialog title={tr("Permission check")} onclose={close} onsubmit={doCheck} status={dialog} save={tr("Check")}>
     <div class="acp-form">
-      <Field label={tr("Username")} bind:value={check.user} required />
+      <MultiSelect
+        label={tr("Member")}
+        bind:value={check.user}
+        suggest={members}
+        max={1}
+        placeholder={tr("Type a name")}
+      />
       <Field
         label={tr("Forum")}
         bind:value={check.forum}

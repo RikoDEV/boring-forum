@@ -41,7 +41,7 @@
       {% if can_manage %}
       <form method="post" action="/messages/{{ id }}/add" class="bf-side-form">
         <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-        <label class="bf-field"><input name="username" placeholder=" " required><span class="bf-field-label">{{ layout.t.t("conversation.add_name") }}</span></label>
+        <label class="bf-field"><input name="username" placeholder=" " required data-people-input data-max="1"><span class="bf-field-label">{{ layout.t.t("conversation.add_name") }}</span></label>
         <button class="btn">{{ layout.t.t("conversation.add") }}</button>
       </form>
       {% endif %}

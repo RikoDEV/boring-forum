@@ -12,6 +12,8 @@ const make = (tag, cls, text) => {
 function upgrade(field, people) {
   if (field.dataset.tagReady) return;
   field.dataset.tagReady = "1";
+  // `data-max="1"` makes it a single pick: the chip replaces what was there, and the box closes.
+  const max = Number(field.dataset.max) || 0;
   let tags = field.value
     .split(",")
     .map((t) => t.trim())
@@ -85,6 +87,8 @@ function upgrade(field, people) {
       list,
     );
     input.placeholder = tags.length ? "" : field.placeholder || tr("Add tags…");
+    // A full single pick shows only its chip; removing it brings the input back.
+    input.hidden = Boolean(max) && tags.length >= max;
   };
   const suggest = async () => {
     const mine = ++seq;
@@ -104,7 +108,9 @@ function upgrade(field, people) {
   };
   function add(name) {
     const clean = name.trim();
-    if (clean && !tags.some((t) => t.toLowerCase() === clean.toLowerCase())) tags.push(clean);
+    if (max === 1 && clean) tags = [clean];
+    else if (clean && !tags.some((t) => t.toLowerCase() === clean.toLowerCase()) && !(max && tags.length >= max))
+      tags.push(clean);
     input.value = "";
     paint();
     input.focus();

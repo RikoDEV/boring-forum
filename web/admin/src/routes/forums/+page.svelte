@@ -15,6 +15,8 @@
   import Section from "#lib/Section.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
   import MarkdownField from "#lib/MarkdownField.svelte";
+  import MultiSelect from "#lib/MultiSelect.svelte";
+  import { members } from "#lib/suggest.js";
 
   let nodes = $state([]);
   let bits = $state({});
@@ -26,7 +28,8 @@
   // `#node=<id>` in the address picks a forum or category when the page opens.
   let wanted = typeof location === "undefined" ? null : (/^#node=(\d+)$/.exec(location.hash)?.[1] ?? null);
   let grants = $state({});
-  let mods = $state("");
+  /** Usernames of the forum's moderators, as picked. */
+  let mods = $state([]);
   const status = new Status();
   const fresh = $state({ kind: "forum", title: "", parent_id: "" });
 
@@ -65,7 +68,7 @@
     grants = Object.fromEntries(
       groups.map((g) => [g.id, Object.fromEntries(PERMS.map((p) => [p, ((n.grants[g.id] ?? 0) & bits[p]) !== 0]))]),
     );
-    mods = (await get(`/nodes/${n.id}/moderators`)).map((m) => m.username).join(", ");
+    mods = (await get(`/nodes/${n.id}/moderators`)).map((m) => m.username);
   }
 
   async function run(fn, done) {
@@ -290,16 +293,7 @@
     );
 
   const saveMods = () =>
-    run(
-      () =>
-        put(`/nodes/${selected.id}/moderators`, {
-          usernames: mods
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-        }),
-      tr("Moderators saved"),
-    );
+    run(() => put(`/nodes/${selected.id}/moderators`, { usernames: mods }), tr("Moderators saved"));
 
   load();
 </script>
@@ -546,7 +540,14 @@
               <div class="acp-actions">
                 <button class="secondary" onclick={savePrefixes}>{tr("Save prefixes")}</button>
               </div>{/if}
-            <Field label={tr("Moderators: usernames, separated by commas")} bind:value={mods} wide />
+            <div class="acp-wide">
+              <MultiSelect
+                label={tr("Moderators")}
+                bind:value={mods}
+                suggest={members}
+                placeholder={tr("Type a name")}
+              />
+            </div>
             <div class="acp-actions"><button class="secondary" onclick={saveMods}>{tr("Save moderators")}</button></div>
           </div>
         {:else}

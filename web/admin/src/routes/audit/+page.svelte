@@ -4,13 +4,16 @@
   import PageHead from "#lib/PageHead.svelte";
   import Box from "#lib/Box.svelte";
   import Field from "#lib/Field.svelte";
+  import MultiSelect from "#lib/MultiSelect.svelte";
+  import { members } from "#lib/suggest.js";
   import Empty from "#lib/Empty.svelte";
   import { get } from "#lib/api.js";
   import When from "#lib/When.svelte";
   import UserLink from "#lib/UserLink.svelte";
   let rows = $state([]);
   let action = $state("");
-  let actor = $state("");
+  /** The staff member to filter by: at most one username. */
+  let actor = $state([]);
   const status = new Status();
   let more = $state(false);
   let loaded = $state(false);
@@ -18,7 +21,7 @@
   async function load(before) {
     status.clear();
     try {
-      const qs = new URLSearchParams({ action, actor, ...(before ? { before } : {}) });
+      const qs = new URLSearchParams({ action, actor: actor[0] ?? "", ...(before ? { before } : {}) });
       const page = await get(`/audit?${qs}`);
       rows = before ? [...rows, ...page] : page;
       more = page.length === 100;
@@ -50,7 +53,13 @@
     }}
   >
     <Field label={tr("Action prefix, e.g. topic.")} bind:value={action} />
-    <Field label={tr("Staff username")} bind:value={actor} />
+    <MultiSelect
+      label={tr("Staff member")}
+      bind:value={actor}
+      suggest={members}
+      max={1}
+      placeholder={tr("Type a name")}
+    />
     <div class="acp-actions"><button>{tr("Filter")}</button></div>
   </form>
 </Box>

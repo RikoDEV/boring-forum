@@ -166,7 +166,7 @@ fn card(
             format!("<h4>{tr1}</h4><ul class=\"bf-people bf-club-people\">{ppl}</ul>", tr1 = trh("Members"))
         };
         let own = format!(
-            "<form method=\"post\" action=\"/clubs/{id}/transfer\" class=\"bf-club-inline-form\" data-confirm=\"{c1}\">{h}<label class=\"bf-field\"><input name=\"username\" placeholder=\" \" autocomplete=\"off\" required><span class=\"bf-field-label\">{t1}</span></label><button class=\"btn\">{t2}</button></form>\
+            "<form method=\"post\" action=\"/clubs/{id}/transfer\" class=\"bf-club-inline-form\" data-confirm=\"{c1}\">{h}<label class=\"bf-field\"><input name=\"username\" placeholder=\" \" autocomplete=\"off\" required data-people-input data-max=\"1\"><span class=\"bf-field-label\">{t1}</span></label><button class=\"btn\">{t2}</button></form>\
              <div class=\"bf-club-actions\"><form method=\"post\" action=\"/clubs/{id}/archive\" class=\"inline\">{h}<input type=\"hidden\" name=\"archived\" value=\"{av}\"><button class=\"btn\">{t3}</button></form> <form method=\"post\" action=\"/clubs/{id}/delete\" class=\"inline\" data-confirm=\"{c2}\">{h}<button class=\"btn bf-btn-danger\">{t4}</button></form></div>",
             id = c.id,
             h = hidden_csrf(token),
@@ -180,7 +180,7 @@ fn card(
         );
         manage = format!(
             "<details class=\"bf-club-manage bf-disclosure\"{}><summary>{trm}{}</summary>{req}{ppl}
-             <form method=\"post\" action=\"/clubs/{id}/invite\" class=\"bf-club-inline-form\">{h}<label class=\"bf-field\"><input name=\"username\" placeholder=\" \" autocomplete=\"off\" required><span class=\"bf-field-label\">{tr1}</span></label><button class=\"btn\">{tr2}</button></form>
+             <form method=\"post\" action=\"/clubs/{id}/invite\" class=\"bf-club-inline-form\">{h}<label class=\"bf-field\"><input name=\"username\" placeholder=\" \" autocomplete=\"off\" required data-people-input data-max=\"1\"><span class=\"bf-field-label\">{tr1}</span></label><button class=\"btn\">{tr2}</button></form>
              <form method=\"post\" action=\"/clubs/{id}/describe\" class=\"stack\">{h}<label class=\"bf-field\"><textarea name=\"description\" rows=\"2\" maxlength=\"300\" placeholder=\" \">{desc}</textarea><span class=\"bf-field-label\">{tr3}</span></label><button class=\"btn\">{tr4}</button></form>{own}</details>",
             if waiting.is_empty() { "" } else { " open" },
             if waiting.is_empty() { String::new() } else { format!(" <span class=\"bf-badge is-bad\">{}</span>", waiting.len()) },

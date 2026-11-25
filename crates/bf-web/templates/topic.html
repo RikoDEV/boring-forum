@@ -70,7 +70,7 @@
         <div class="bf-menu-body">
           <form method="post" action="/t/{{ id }}/invite" class="stack">
             <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-            <label class="bf-field"><input name="username" placeholder=" " autocomplete="off" required><span class="bf-field-label">{{ layout.t.t("topic.invite_who") }}</span></label>
+            <label class="bf-field"><input name="username" placeholder=" " autocomplete="off" required data-people-input data-max="1"><span class="bf-field-label">{{ layout.t.t("topic.invite_who") }}</span></label>
             <button class="btn">{{ layout.t.t("topic.invite_send") }}</button>
           </form>
         </div>
@@ -233,13 +233,13 @@
               <summary>{{ layout.icon("users")|safe }}<span><strong>{{ layout.t.t("topic.people") }}</strong><small>{{ layout.t.t("topic.people_hint") }}</small></span></summary>
               <form method="post" action="/t/{{ id }}/assign" class="bf-manage-row">
                 <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-                <label class="bf-field"><input name="username" placeholder=" "><span class="bf-field-label">{{ layout.t.t("topic.assign_who") }}</span></label>
+                <label class="bf-field"><input name="username" placeholder=" " data-people-input data-max="1"><span class="bf-field-label">{{ layout.t.t("topic.assign_who") }}</span></label>
                 <button class="btn">{{ layout.t.t("topic.assign") }}</button>
               </form>
               {% if layout.staff %}
               <form method="post" action="/t/{{ id }}/author" class="bf-manage-row">
                 <input type="hidden" name="csrf" value="{{ layout.csrf }}">
-                <label class="bf-field"><input name="username" placeholder=" " required><span class="bf-field-label">{{ layout.t.t("topic.author_to") }}</span></label>
+                <label class="bf-field"><input name="username" placeholder=" " required data-people-input data-max="1"><span class="bf-field-label">{{ layout.t.t("topic.author_to") }}</span></label>
                 <button class="btn">{{ layout.t.t("topic.change_author") }}</button>
               </form>
               {% endif %}
