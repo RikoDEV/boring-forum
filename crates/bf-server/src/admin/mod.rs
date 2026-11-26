@@ -13,6 +13,7 @@ pub mod emoji;
 pub mod explorer;
 pub mod forums;
 pub mod invites;
+pub mod mail_preview;
 pub mod mail_templates;
 pub mod maintenance;
 pub mod pages;
@@ -37,6 +38,7 @@ pub fn router() -> Router<AppState> {
         .merge(explorer::router())
         .merge(forums::router())
         .merge(invites::router())
+        .merge(mail_preview::router())
         .merge(maintenance::router())
         .merge(pages::router())
         .merge(reports::router())

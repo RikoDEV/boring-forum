@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="{{ lang }}" dir="{{ dir }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>{{ heading }}</title>
+<style>
+body{margin:0;padding:0}
+a{color:{{ accent }}}
+@media only screen and (max-width:480px){.m-pad{padding:20px!important}.m-btn{display:block!important;text-align:center!important}}
+{% if force_dark %}@media all{% else %}@media (prefers-color-scheme:dark){% endif %}{
+.m-bg{background:#0f1216!important}.m-card{background:#1a1e24!important;border-color:#2d343d!important}
+.m-text{color:#e7eaef!important}.m-muted{color:#a0aab7!important}.m-soft{background:#20262e!important;border-color:#2d343d!important}
+.m-line{border-color:#2d343d!important}a,.m-link{color:{{ dark_link }}!important}.m-btn{color:{{ on_accent }}!important}}
+</style>
+</head>
+<body class="m-bg" style="margin:0;padding:0;background:#f2f3f5">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">{{ preview }}</div>
+<table role="presentation" class="m-bg" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f2f3f5">
+<tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" dir="{{ dir }}" style="max-width:560px;text-align:{{ start }};font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+<tr><td style="padding:0 4px 14px;text-align:{{ start }}">
+{% if let Some((src, width, height)) = logo %}<a href="{{ base }}/"><img src="{{ src }}" width="{{ width }}" height="{{ height }}" alt="{{ site }}" class="m-text" style="display:inline-block;border:0;font-size:18px;font-weight:700;color:#1a1f27"></a>
+{% else %}<a href="{{ base }}/" class="m-text" style="font-size:18px;font-weight:800;color:#1a1f27;text-decoration:none">{{ site }}</a>{% endif %}
+</td></tr>
+<tr><td class="m-card m-pad" style="background:#ffffff;border:1px solid #e1e4e9;border-radius:10px;padding:28px;text-align:{{ start }}">
+<h1 class="m-text" style="margin:0 0 16px;font-size:20px;line-height:1.35;color:#1a1f27">{{ heading }}</h1>
+{% for part in parts %}
+{%- match part.block %}
+{%- when crate::mail::Block::Text with (lines) %}
+<p class="m-text" style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#1a1f27;overflow-wrap:anywhere">{% for line in lines %}{% if !loop.first %}<br>{% endif %}{% for span in line %}{% if span.link %}<a href="{{ span.text }}" dir="ltr" style="color:{{ accent }}">{{ span.text }}</a>{% else %}{{ span.text }}{% endif %}{% endfor %}{% endfor %}</p>
+{%- when crate::mail::Block::Label with (text) %}
+<p class="m-muted" style="margin:18px 0 4px;font-size:12px;font-weight:700;letter-spacing:.05em;color:#5d6775">{{ text }}</p>
+{%- when crate::mail::Block::Button with (url) %}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 18px" width="auto"><tr><td bgcolor="{{ accent }}" style="border-radius:7px;background:{{ accent }}"><a href="{{ url }}" class="m-btn" style="display:inline-block;padding:12px 22px;font-size:15px;font-weight:600;color:{{ on_accent }};text-decoration:none;border-radius:7px">{{ part.label }}</a></td></tr></table>
+{%- when crate::mail::Block::Quote with { author, lines } %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px"><tr><td class="m-soft" style="background:#f5f7fa;border:1px solid #e1e4e9;border-radius:8px;padding:14px 16px;text-align:{{ start }}">
+{% if let Some(name) = author %}<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px"><tr><td width="32" height="32" align="center" valign="middle" bgcolor="{{ part.initial.1 }}" style="width:32px;height:32px;border-radius:16px;background:{{ part.initial.1 }};color:#ffffff;font-weight:700;font-size:14px">{{ part.initial.0 }}</td><td class="m-text" style="padding:0 10px;font-size:14px;font-weight:700;color:#1a1f27">{{ name }}</td></tr></table>{% endif %}
+<div class="m-text" style="font-size:14px;line-height:1.6;color:#1a1f27;overflow-wrap:anywhere">{% for line in lines %}{% if !loop.first %}<br>{% endif %}{{ line }}{% endfor %}</div>
+</td></tr></table>
+{%- when crate::mail::Block::Facts with (facts) %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px">{% for (label, value) in facts %}<tr><td class="m-muted m-line" valign="top" style="padding:7px 0;border-bottom:1px solid #e1e4e9;font-size:14px;color:#5d6775;white-space:nowrap;text-align:{{ start }}">{{ label }}</td><td class="m-text m-line" valign="top" style="padding:7px 12px;border-bottom:1px solid #e1e4e9;font-size:14px;color:#1a1f27;overflow-wrap:anywhere;text-align:{{ start }}">{{ value }}</td></tr>{% endfor %}</table>
+{%- when crate::mail::Block::List with (entries) %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px">{% for entry in entries %}<tr><td class="m-line" style="padding:10px 0;border-bottom:1px solid #e1e4e9;font-size:14px;line-height:1.45;text-align:{{ start }}"><a href="{{ entry.url }}" class="m-text" style="font-weight:600;color:#1a1f27;text-decoration:none">{{ entry.title }}</a>{% if !entry.note.is_empty() %}<br><span class="m-muted" style="font-size:12px;color:#5d6775">{{ entry.note }}</span>{% endif %}</td></tr>{% endfor %}</table>
+{%- endmatch %}
+{%- endfor %}
+{% if let Some((hint, url)) = fallback %}<p class="m-muted" style="margin:8px 0 0;font-size:12px;line-height:1.6;color:#5d6775;overflow-wrap:anywhere">{{ hint }}<br><a href="{{ url }}" dir="ltr" style="color:{{ accent }};word-break:break-all">{{ url }}</a></p>{% endif %}
+</td></tr>
+<tr><td class="m-muted" align="center" style="padding:16px 6px 0;font-size:12px;line-height:1.7;color:#5d6775;text-align:center">
+{{ reason }}
+{% if !links.is_empty() %}<br>{% for (label, url) in links %}{% if !loop.first %} · {% endif %}<a href="{{ url }}" class="m-muted" style="color:#5d6775;text-decoration:underline">{{ label }}</a>{% endfor %}{% endif %}
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>

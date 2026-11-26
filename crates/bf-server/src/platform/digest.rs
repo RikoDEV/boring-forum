@@ -110,16 +110,15 @@ async fn queue_one(
             t.msg("New replies in topics you watch:")
         ));
     }
-    if monthly {
-        let joined = bf_db::platform::digests::new_members_since(pool, u.since).await.map_err(db)?;
-        if joined > 0 {
-            sections.push_str(&format!(
-                "{}
+    let joined =
+        if monthly { bf_db::platform::digests::new_members_since(pool, u.since).await.map_err(db)? } else { 0 };
+    if joined > 0 {
+        sections.push_str(&format!(
+            "{}
 
 ",
-                t.msgf("New members this month: {count}", &[("count", &joined.to_string())])
-            ));
-        }
+            t.msgf("New members this month: {count}", &[("count", &joined.to_string())])
+        ));
     }
     if unread > 0 {
         sections.push_str(&format!(
@@ -147,10 +146,75 @@ async fn queue_one(
         body.push_str(&t.msgf("Unsubscribe from digests: {link}", &[("link", &unsubscribe)]));
         body.push('\n');
     }
-    bf_db::platform::digests::mark_digest_sent(pool, &u.email, &subject, Some(&body), &unsubscribe)
+    let quoting = state.settings().bool("mail_post_excerpts");
+    let cards = cards(state, u.id, &topics[..topics.len().min(CARDS)], quoting).await?;
+    let line = |(id, slug, title, replies): (i64, &str, &str, i64)| bf_web::mail::Line {
+        title: title.to_owned(),
+        url: format!("{base}{}", bf_core::slug::topic_path(id, slug)),
+        replies,
+    };
+    let summary = bf_web::mail::Summary {
+        new_topics: bf_db::platform::digests::digest_new_count(pool, u.id, &nodes, u.since).await.map_err(db)?,
+        unread,
+        likes: bf_db::platform::digests::likes_received(pool, u.id, u.since).await.map_err(db)?,
+        new_members: joined,
+        cards,
+        watched: watched.iter().map(|(id, slug, title, n)| line((*id, slug, title, *n))).collect(),
+        more: topics.iter().skip(CARDS).map(|(id, slug, title, n)| line((*id, slug, title, i64::from(*n)))).collect(),
+    };
+    let summary = serde_json::to_value(summary).map_err(bf_core::AppError::internal)?;
+    bf_db::platform::digests::mark_digest_sent(pool, &u.email, &subject, Some(&body), &unsubscribe, Some(&summary))
         .await
         .map_err(db)?;
     Ok(true)
+}
+
+/// How many topics the summary shows in full; the rest are lines.
+const CARDS: usize = 5;
+/// How much of a first post a card carries.
+const CARD_CHARS: usize = 360;
+
+/// The topics shown in full, for topics already found readable by this member. A first post's
+/// words and picture go in only when the site quotes posts in mail.
+async fn cards(
+    state: &AppState,
+    user: i64,
+    topics: &[(i64, String, String, i32)],
+    quoting: bool,
+) -> Result<Vec<bf_web::mail::Card>, bf_core::AppError> {
+    let pool = state.db()?;
+    let db = crate::http::render::db_err;
+    let ids: Vec<i64> = topics.iter().map(|t| t.0).collect();
+    let rows = bf_db::platform::digests::digest_cards(pool, &ids).await.map_err(db)?;
+    let people = bf_db::platform::digests::digest_participants(pool, user, &ids, 5).await.map_err(db)?;
+    let base = state.config.base_url.trim_end_matches('/');
+    let mut out = Vec::with_capacity(rows.len());
+    for row in rows {
+        let mut post = bf_cook::MailPost::default();
+        if quoting {
+            let raw = row.raw.clone();
+            post = tokio::task::spawn_blocking(move || bf_cook::mail_post(&raw, CARD_CHARS))
+                .await
+                .map_err(bf_core::AppError::internal)?;
+        }
+        let mine = match (post.image.as_deref().and_then(|p| p.strip_prefix("/uploads/")), row.author_id) {
+            (Some(key), Some(author)) => bf_db::platform::digests::uploaded_by(pool, key, author).await.map_err(db)?,
+            _ => false,
+        };
+        out.push(bf_web::mail::Card {
+            forum: row.forum,
+            url: format!("{base}{}", bf_core::slug::topic_path(row.id, &row.slug)),
+            title: row.title,
+            created: row.created_at,
+            author: row.author.unwrap_or_default(),
+            excerpt: post.paragraphs,
+            image: post.image.filter(|_| mine),
+            likes: row.likes,
+            replies: i64::from(row.replies),
+            participants: people.iter().filter(|p| p.0 == row.id).map(|p| p.1.clone()).collect(),
+        });
+    }
+    Ok(out)
 }
 
 pub fn spawn(state: AppState) {

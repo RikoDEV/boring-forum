@@ -145,7 +145,7 @@ pub(super) fn defs() -> Vec<SettingDef> {
             256,
             0,
             102_400,
-            "Storage each plugin may use for its tables and key-value data, in MB",
+            en("Storage each plugin may use for its tables and key-value data, in MB"),
         ),
         int("plugin_posts_per_hour", 60, 0, 10_000, en("Posts each plugin's account may make in an hour")),
         int("plugin_db_reads_per_minute", 600, 1, 100_000, en("Database reads each plugin may make in a minute")),
@@ -168,7 +168,7 @@ pub(super) fn defs() -> Vec<SettingDef> {
             60,
             0,
             525_600,
-            "Minutes a member can change or remove a reaction; 0 means no limit",
+            en("Minutes a member can change or remove a reaction; 0 means no limit"),
         ),
         int("reactions_per_day", 200, 1, 100_000, en("Reactions a member may give in a day")),
         SettingDef {
@@ -215,7 +215,7 @@ pub(super) fn defs() -> Vec<SettingDef> {
             0,
             0,
             1_000_000_000,
-            "Public forum that holds embedded comment topics; without one, embedding is off",
+            en("Public forum that holds embedded comment topics; without one, embedding is off"),
         ),
         SettingDef {
             default: json!(""),
@@ -241,6 +241,30 @@ pub(super) fn defs() -> Vec<SettingDef> {
         },
         int("clubs_per_member", 3, 0, 1000, en("Clubs one member may start")),
         int("email_bounce_limit", 3, 1, 50, en("Mark an email address bad after this many bounces")),
+        SettingDef {
+            default: json!("#0b64c0"),
+            ..def("mail_accent_colour", String, false, en("Colour of the buttons and links in email"))
+        },
+        SettingDef {
+            default: json!(""),
+            ..def(
+                "mail_logo_url",
+                String,
+                false,
+                en("Logo at the top of email, shown on a white or dark ground; empty uses the site's logo"),
+            )
+        },
+        SettingDef {
+            default: json!(true),
+            ..def(
+                "mail_post_excerpts",
+                Bool,
+                false,
+                en(
+                    "Put the first words of a post in the email about it. Mail already sent keeps them, also if the post is deleted",
+                ),
+            )
+        },
         SettingDef {
             default: json!(true),
             ..def("allow_registration", Bool, true, en("Allow new accounts to register"))

@@ -384,3 +384,45 @@ fn an_address_in_angle_brackets_stays_a_plain_link() {
     // A link with its own words, or one inside a sentence, is not affected.
     assert!(cook("a <https://example.com/page> b").html.contains("<a "));
 }
+
+#[test]
+fn a_mail_excerpt_holds_only_the_authors_open_words() {
+    let raw = "> [!note] old\n> quoted text\n\n[quote=\"bob\"]also quoted[/quote]\n\nI would **start** with `view-distance` 8 & see <b>.\n\n[hide]secret one[/hide]\n\n```hide\nsecret two\n```\n\n```spoiler\nthe ending\n```\n\n[spoiler]another ending[/spoiler]\n\n```\nlet code = 1;\n```\n\n![a picture](https://x.test/p.png)\n\nLast line.";
+    let got = crate::mail_excerpt(raw, 400);
+    for kept in ["I would start with view-distance 8 & see", "Last line."] {
+        assert!(got.contains(kept), "{kept}: {got}");
+    }
+    for left_out in [
+        "quoted text",
+        "also quoted",
+        "secret one",
+        "secret two",
+        "the ending",
+        "another ending",
+        "let code",
+        "hidden content",
+        "Spoiler",
+        "**",
+        "<p>",
+    ] {
+        assert!(!got.contains(left_out), "{left_out}: {got}");
+    }
+    assert!(!got.contains('\n'));
+    let long = "word ".repeat(200);
+    let cut = crate::mail_excerpt(&long, 40);
+    assert!(cut.ends_with('…') && cut.chars().count() <= 41, "{cut}");
+    assert_eq!(crate::mail_excerpt("[hide]only this[/hide]", 100), "");
+}
+
+#[test]
+fn a_mail_card_has_paragraphs_and_the_first_open_picture() {
+    let key = "a".repeat(64);
+    let raw = format!(
+        "> ![quoted](/uploads/{key}.gif)\n\n```spoiler\n![hidden](/uploads/{key}.webp)\n```\n\n![far](https://x.test/p.png)\n\nFirst paragraph\nstill the first.\n\n![mine](/uploads/{key}.png#640x480)\n\nSecond."
+    );
+    let post = crate::mail_post(&raw, 400);
+    assert_eq!(post.paragraphs, ["First paragraph still the first.", "Second."]);
+    assert_eq!(post.image, Some(format!("/uploads/{key}.png")));
+    assert_eq!(crate::mail_post("No picture.", 400).image, None);
+    assert_eq!(crate::mail_post("One two three.\n\nFour five six.", 20).paragraphs, ["One two three.", "Four…"]);
+}

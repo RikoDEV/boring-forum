@@ -2145,6 +2145,8 @@ msg-let_members_sign_in_with_a_link_sent_by_email = السماح للأعضاء 
 msg-hold_this_many_first_posts_of_each_new_member_for = تعليق هذا العدد من أول منشورات كل عضو جديد للموافقة
 # Members may choose to get every new post by email (mailing-list mode)
 msg-members_may_choose_to_get_every_new_post_by_email = يمكن للأعضاء اختيار تلقي كل مشاركة جديدة بالبريد الإلكتروني (وضع القائمة البريدية)
+# Votes a member at trust level 0 or 1 can give to open topics in ideas forums; closed topics give theirs back; 0 is no limit
+msg-votes_a_member_at_trust_level_0_or_1_can_give_to_open = عدد الأصوات التي يمكن لعضو بمستوى ثقة 0 أو 1 منحها للمواضيع المفتوحة في منتديات الأفكار؛ تعيد المواضيع المغلقة أصواتها؛ 0 يعني بلا حد
 # Votes for ideas at trust level 2; 0 is no limit
 msg-votes_for_ideas_at_trust_level_2_0_is_no_limit = أصوات الأفكار عند مستوى الثقة 2؛ 0 بلا حد
 # Votes for ideas at trust level 3; 0 is no limit
@@ -2213,6 +2215,8 @@ msg-comma_separated_usernames_nobody_may_register_end_a = أسماء مستخد�
 msg-comma_separated_email_domains_when_set_only_these_may = نطاقات بريد إلكتروني مفصولة بفواصل؛ عند تعيينها يُسمح بها وحدها للتسجيل أو للاستخدام في الحساب
 # Who sees edit history: everyone, members, author or staff
 msg-who_sees_edit_history_everyone_members_author_or_staff = من يرى سجل التعديل: الجميع أو الأعضاء أو الكاتب أو الإدارة
+# Purge older revisions, keeping the first and last; 0 keeps all
+msg-purge_older_revisions_keeping_the_first_and_last_0 = احذف المراجعات الأقدم مع الإبقاء على الأولى والأخيرة؛ 0 يبقيها كلها
 # URL returning the latest version as text; empty turns the check off
 msg-url_returning_the_latest_version_as_text_empty_turns = عنوان URL يعيد أحدث إصدار كنص؛ الفارغ يوقف الفحص
 # Behind Cloudflare: take each visitor's address from the CF-Connecting-IP header. Believed only from Cloudflare's own addresses and from proxies in BF_TRUSTED_PROXIES
@@ -2229,6 +2233,8 @@ msg-secret_of_the_challenge_from_the_provider_or_any_long = سر التحدي: �
 msg-consent_banner_text_leave_empty_unless_you_add_non = نص شريط الموافقة؛ اتركه فارغًا ما لم تضف ملفات تعريف ارتباط غير أساسية
 # Most images in one post; a group limit overrides it
 msg-most_images_in_one_post_a_group_limit_overrides_it = أكبر عدد من الصور في منشور واحد؛ حد المجموعة يتجاوزه
+# Hold notification emails this long, and skip them if read in the app meanwhile
+msg-hold_notification_emails_this_long_and_skip_them_if = أخّر رسائل الإشعارات هذه المدة، وتجاوزها إن قُرئت في التطبيق أثناء ذلك
 # Remove deleted content for good after this many days; 0 keeps it
 msg-remove_deleted_content_for_good_after_this_many_days_0 = إزالة المحتوى المحذوف نهائيًا بعد هذا العدد من الأيام؛ 0 يبقيه
 # Let members use chat
@@ -2435,6 +2441,8 @@ msg-the_colour_scheme_its_address_name_whose_dark_palette = نظام الألو�
 msg-offer_the_built_in_look_as_a_theme_it_can_be_turned_off = اعرض المظهر المدمج كسمة؛ يمكن إيقافه بعد أن تصبح سمة أخرى هي الافتراضية للموقع
 # Refuse plugins not signed by a key in BF_PLUGIN_PUBLIC_KEYS
 msg-refuse_plugins_not_signed_by_a_key_in_bf_plugin_public = رفض الإضافات غير الموقّعة بمفتاح من BF_PLUGIN_PUBLIC_KEYS
+# Storage each plugin may use for its tables and key-value data, in MB
+msg-storage_each_plugin_may_use_for_its_tables_and_key = مساحة التخزين التي يمكن لكل إضافة استخدامها لجداولها وبيانات المفتاح والقيمة، بالميغابايت
 # Posts each plugin's account may make in an hour
 msg-posts_each_plugin_s_account_may_make_in_an_hour = المنشورات التي يمكن لحساب كل إضافة كتابتها في الساعة
 # Database reads each plugin may make in a minute
@@ -2455,6 +2463,8 @@ msg-recurring_jobs_each_plugin_may_schedule = عدد المهام المتكرر
 msg-most_people_in_one_private_conversation = أكبر عدد من الأشخاص في محادثة خاصة واحدة
 # New private conversations a member may start in an hour
 msg-new_private_conversations_a_member_may_start_in_an_hour = المحادثات الخاصة الجديدة التي يبدؤها العضو في الساعة
+# Minutes a member can change or remove a reaction; 0 means no limit
+msg-minutes_a_member_can_change_or_remove_a_reaction_0 = عدد الدقائق التي يمكن للعضو خلالها تغيير تفاعله أو إزالته؛ 0 يعني بلا حد
 # Reactions a member may give in a day
 msg-reactions_a_member_may_give_in_a_day = التفاعلات التي يمنحها العضو في اليوم
 # Let topic authors and moderators mark a reply as the answer
@@ -2489,6 +2499,8 @@ msg-titles_members_earn_as_their_reputation_grows = الألقاب التي يك
 msg-contact_form_messages_accepted_per_hour_site_wide = رسائل نموذج التواصل المقبولة في الساعة، للموقع كله
 # Sites that may embed comments, as host names separated by commas
 msg-sites_that_may_embed_comments_as_host_names_separated = المواقع التي يمكنها تضمين التعليقات، كأسماء مضيفين مفصولة بفواصل
+# Public forum that holds embedded comment topics; without one, embedding is off
+msg-public_forum_that_holds_embedded_comment_topics_without = المنتدى العام الذي يضم مواضيع التعليقات المضمّنة؛ من دونه يكون التضمين معطلًا
 # Discord or Slack incoming webhook for new posts in public forums
 msg-discord_or_slack_incoming_webhook_for_new_posts_in = خطاف ويب وارد من Discord أو Slack للمنشورات الجديدة في المنتديات العامة
 # Akismet API key; empty turns the spam check off
@@ -2499,6 +2511,12 @@ msg-the_lines_your_ad_networks_ask_you_to_publish_at_ads = الأسطر التي
 msg-clubs_one_member_may_start = عدد النوادي التي يمكن لعضو واحد إنشاؤها
 # Mark an email address bad after this many bounces
 msg-mark_an_email_address_bad_after_this_many_bounces = وسم عنوان البريد بأنه خاطئ بعد هذا العدد من الارتدادات
+# Colour of the buttons and links in email
+msg-colour_of_the_buttons_and_links_in_email = لون الأزرار والروابط في رسائل البريد
+# Logo at the top of email, shown on a white or dark ground; empty uses the site's logo
+msg-logo_at_the_top_of_email_shown_on_a_white_or_dark = الشعار أعلى رسالة البريد، ويظهر على خلفية بيضاء أو داكنة؛ إن تُرك فارغًا استُخدم شعار الموقع
+# Put the first words of a post in the email about it. Mail already sent keeps them, also if the post is deleted
+msg-put_the_first_words_of_a_post_in_the_email_about_it = ضمّن بداية المنشور في رسالة البريد المتعلقة به. تحتفظ الرسائل المرسلة بها حتى لو حُذف المنشور
 # Allow new accounts to register
 msg-allow_new_accounts_to_register = السماح بتسجيل حسابات جديدة
 # Require login to view any page
@@ -2831,6 +2849,10 @@ msg-the_query_failed_n = فشل الاستعلام: { $n }
 msg-kind_must_be_category_forum_link_or_archive_and_title = يجب أن يكون النوع category أو forum أو link أو archive، والعنوان مطلوب
 # Link forums need an http(s) or /path url; other kinds take none.
 msg-link_forums_need_an_http_s_or_path_url_other_kinds_take = تحتاج منتديات الروابط إلى عنوان http(s) أو /مسار؛ والأنواع الأخرى لا تأخذه.
+# New topics since your last digest:
+msg-new_topics_since_your_last_digest = مواضيع جديدة منذ آخر ملخص:
+# You have {count} unread notifications.
+msg-you_have_count_unread_notifications = لديك { $count } إشعارات غير مقروءة.
 # The text must contain {name}.
 msg-the_text_must_contain_name = يجب أن يحتوي النص على { $name }.
 # An address is up to three parts of lowercase letters, digits and dashes, like /about or /help/rules.
@@ -3136,6 +3158,12 @@ msg-hi_name_your_account_was_just_logged_in_to_from_a_new =
     إذا لم تكن أنت، فغيّر كلمة المرور وأنهِ الجلسات الأخرى من إعدادات الحساب.
 
     — { $site }
+# Signed in at
+msg-signed_in_at = وقت تسجيل الدخول
+# IP address
+msg-ip_address = عنوان IP
+# Account name
+msg-account_name = اسم الحساب
 # New log-in to your account - {site}
 msg-new_log_in_to_your_account_site = تسجيل دخول جديد إلى حسابك - { $site }
 # Too many failed attempts. Try again after {time} UTC, or reset your password.
@@ -4817,14 +4845,10 @@ msg-conditions_must_be_an_object = يجب أن تكون الشروط كائنً�
 msg-this_looks_like_spam_so_it_was_not_posted = يبدو هذا رسالة مزعجة، لذا لم يُنشر.
 # Popular topics this month:
 msg-popular_topics_this_month = المواضيع الأكثر نشاطًا هذا الشهر:
-# New topics since your last digest:
-msg-new_topics_since_your_last_digest = مواضيع جديدة منذ آخر ملخص:
 # New replies in topics you watch:
 msg-new_replies_in_topics_you_watch = ردود جديدة في المواضيع التي تتابعها:
 # New members this month: {count}
 msg-new_members_this_month_count = الأعضاء الجدد هذا الشهر: { $count }
-# You have {count} unread notifications.
-msg-you_have_count_unread_notifications = لديك { $count } إشعارات غير مقروءة.
 # Unsubscribe from digests: {link}
 msg-unsubscribe_from_digests_link = إلغاء الاشتراك في الملخصات: { $link }
 # Topic
@@ -5096,6 +5120,76 @@ msg-this_sign_in_option_is_not_working = خيار تسجيل الدخول هذا
 msg-this_sign_in_link_has_expired_please_try_again = انتهت صلاحية رابط تسجيل الدخول هذا. حاول مجددًا.
 # That sign-in did not succeed.
 msg-that_sign_in_did_not_succeed = لم ينجح تسجيل الدخول.
+# Log in to your account
+msg-log_in_to_your_account = سجّل الدخول إلى حسابك
+# Confirm the new address
+msg-confirm_the_new_address = أكّد العنوان الجديد
+# Review account security
+msg-review_account_security = راجع أمان الحساب
+# Open the topic
+msg-open_the_topic = افتح الموضوع
+# Open your messages
+msg-open_your_messages = افتح رسائلك
+# See your notifications
+msg-see_your_notifications = اعرض إشعاراتك
+# Open the review queue
+msg-open_the_review_queue = افتح قائمة المراجعة
+# Download the backup
+msg-download_the_backup = نزّل النسخة الاحتياطية
+# Visit the site
+msg-visit_the_site = زر الموقع
+# Open the page
+msg-open_the_page = افتح الصفحة
+# Email settings
+msg-email_settings = إعدادات البريد
+# This email was sent by {site}.
+msg-this_email_was_sent_by_site = أرسل { $site } هذه الرسالة.
+# You get this because of your email settings on {site}.
+msg-you_get_this_because_of_your_email_settings_on_site = وصلتك هذه الرسالة بسبب إعدادات البريد الخاصة بك في { $site }.
+# Button not working? Copy this address:
+msg-button_not_working_copy_this_address = الزر لا يعمل؟ انسخ هذا العنوان:
+# January {day}
+msg-january_day = { $day } يناير
+# February {day}
+msg-february_day = { $day } فبراير
+# March {day}
+msg-march_day = { $day } مارس
+# April {day}
+msg-april_day = { $day } أبريل
+# May {day}
+msg-may_day = { $day } مايو
+# June {day}
+msg-june_day = { $day } يونيو
+# July {day}
+msg-july_day = { $day } يوليو
+# August {day}
+msg-august_day = { $day } أغسطس
+# September {day}
+msg-september_day = { $day } سبتمبر
+# October {day}
+msg-october_day = { $day } أكتوبر
+# November {day}
+msg-november_day = { $day } نوفمبر
+# December {day}
+msg-december_day = { $day } ديسمبر
+# Replies in topics you follow
+msg-replies_in_topics_you_follow = ردود في المواضيع التي تتابعها
+# More topics
+msg-more_topics = مواضيع أخرى
+# New topics
+msg-new_topics = مواضيع جديدة
+# Unread notifications
+msg-unread_notifications = إشعارات غير مقروءة
+# Since your last summary
+msg-since_your_last_summary = منذ ملخصك الأخير
+# Popular topics
+msg-popular_topics = المواضيع الرائجة
+# Read more
+msg-read_more = اقرأ المزيد
+# Likes
+msg-likes = الإعجابات
+# Replies
+msg-replies = الردود
 # Advertisement
 msg-advertisement = إعلان
 # Under maintenance
@@ -6278,6 +6372,40 @@ admin-save = حفظ
 admin-delete = حذف
 # Cancel
 admin-cancel = إلغاء
+# Reply in a topic
+admin-reply_in_a_topic = رد في موضوع
+# Digest
+admin-digest = ملخص
+# New sign-in
+admin-new_sign_in = تسجيل دخول جديد
+# Security notice
+admin-security_notice = إشعار أمني
+# Email confirmation
+admin-email_confirmation = تأكيد البريد
+# Password reset
+admin-password_reset = إعادة تعيين كلمة المرور
+# Desktop
+admin-desktop = سطح المكتب
+# Phone
+admin-phone = الهاتف
+# Queued for {testTo}
+admin-queued_for_testto = في قائمة الإرسال إلى { $testTo }
+# Preview
+admin-preview = معاينة
+# Logo and colour
+admin-logo_and_colour = الشعار واللون
+# Email
+admin-email = البريد الإلكتروني
+# Language
+admin-language = اللغة
+# Width
+admin-width = العرض
+# Dark colours
+admin-dark_colours = الألوان الداكنة
+# Send this to me
+admin-send_this_to_me = أرسلها إليّ
+# Plain text version
+admin-plain_text_version = النسخة النصية
 # Markdown
 admin-markdown = Markdown
 # Deleted #{v}
@@ -6292,6 +6420,8 @@ admin-no_matches = لا توجد نتائج
 admin-type_to_search = اكتب للبحث
 # Nothing to choose
 admin-nothing_to_choose = لا شيء للاختيار
+# Settings
+admin-settings = الإعدادات
 # From reputation
 admin-from_reputation = من السمعة
 # Rank name
@@ -6310,6 +6440,14 @@ admin-two_ranks_start_at_the_same_reputation_only_one_of_them = رتبتان ت�
 admin-members_below_n_reputation_show_no_rank = الأعضاء الذين تقل سمعتهم عن { $n } لا تظهر لهم رتبة.
 # Add rank
 admin-add_rank = إضافة رتبة
+# Unsaved changes
+admin-unsaved_changes = تغييرات غير محفوظة
+# Discard
+admin-discard = تجاهل
+# Saving…
+admin-saving = جارٍ الحفظ…
+# Save changes
+admin-save_changes = حفظ التغييرات
 # A topic title that is a link
 admin-a_topic_title_that_is_a_link = عنوان موضوع هو رابط
 # Body text sits on a card. It should be easy to read.
@@ -6326,6 +6464,116 @@ admin-warning = تحذير
 admin-danger = خطر
 # Selected
 admin-selected = محدد
+# OpenAI-compatible (OpenAI, Ollama, vLLM, OpenRouter, Gemini…)
+admin-openai_compatible_openai_ollama_vllm_openrouter_gemini = متوافق مع OpenAI (OpenAI وOllama وvLLM وOpenRouter وGemini…)
+# Send to the review queue
+admin-send_to_the_review_queue = إرسال إلى قائمة المراجعة
+# Hold until a moderator approves
+admin-hold_until_a_moderator_approves = تعليق حتى يوافق مشرف
+# Hide
+admin-hide = إخفاء
+# Browser-based
+admin-browser_based = حسب المتصفح
+# Classic (author column)
+admin-classic_author_column = كلاسيكي (عمود الكاتب)
+# Discourse (avatar beside the text)
+admin-discourse_avatar_beside_the_text = Discourse (الصورة الرمزية بجانب النص)
+# List (rows with the latest post)
+admin-list_rows_with_the_latest_post = قائمة (صفوف مع آخر منشور)
+# Boxes (a card for each forum)
+admin-boxes_a_card_for_each_forum = مربعات (بطاقة لكل منتدى)
+# Compact (one line per forum)
+admin-compact_one_line_per_forum = مضغوط (سطر لكل منتدى)
+# Forums and latest topics side by side
+admin-forums_and_latest_topics_side_by_side = المنتديات وأحدث المواضيع جنبًا إلى جنب
+# Off: links never expire
+admin-off_links_never_expire = إيقاف: الروابط لا تنتهي صلاحيتها
+# Files: documents and archives, not pictures
+admin-files_documents_and_archives_not_pictures = الملفات: المستندات والأرشيفات دون الصور
+# Everything, pictures too
+admin-everything_pictures_too = كل شيء، مع الصور
+# Everyone
+admin-everyone = الجميع
+# Members
+admin-members = الأعضاء
+# The author
+admin-the_author = الكاتب
+# Staff
+admin-staff = الطاقم
+# All links
+admin-all_links = كل الروابط
+# Links to other sites
+admin-links_to_other_sites = الروابط إلى المواقع الأخرى
+# No links
+admin-no_links = لا روابط
+# Chosen by the browser
+admin-chosen_by_the_browser = يُختار حسب المتصفح
+# Classic: text on the left
+admin-classic_text_on_the_left = كلاسيكي: النص على اليسار
+# Centered
+admin-centered = متوسط
+# Poster: a picture behind the text
+admin-poster_a_picture_behind_the_text = ملصق: صورة خلف النص
+# Off
+admin-off_2 = متوقفة
+# Low
+admin-low = منخفض
+# Medium
+admin-medium = متوسط
+# High
+admin-high = مرتفع
+# None
+admin-none = لا شيء
+# Plausible (no cookies)
+admin-plausible_no_cookies = Plausible (بلا ملفات تعريف)
+# Umami (no cookies)
+admin-umami_no_cookies = Umami (بلا ملفات تعريف)
+# Google Analytics 4 (cookies, after consent)
+admin-google_analytics_4_cookies_after_consent = Google Analytics 4 (ملفات تعريف، بعد الموافقة)
+# Matomo (cookies, after consent)
+admin-matomo_cookies_after_consent = Matomo (ملفات تعريف، بعد الموافقة)
+# ALTCHA (self-hosted, no account)
+admin-altcha_self_hosted_no_account = ALTCHA (مستضاف ذاتيًا، بلا حساب)
+# Cloudflare Turnstile
+admin-cloudflare_turnstile = Cloudflare Turnstile
+# Google reCAPTCHA v2
+admin-google_recaptcha_v2 = Google reCAPTCHA v2
+# Staff only
+admin-staff_only = فريق الإدارة فقط
+# No reward
+admin-no_reward = بلا مكافأة
+# PNG image
+admin-png_image = صورة PNG
+# JPEG image
+admin-jpeg_image = صورة JPEG
+# GIF image
+admin-gif_image = صورة GIF
+# WebP image
+admin-webp_image = صورة WebP
+# PDF document
+admin-pdf_document = مستند PDF
+# ZIP archive
+admin-zip_archive = أرشيف ZIP
+# Text file
+admin-text_file = ملف نصي
+# Top level
+admin-top_level = المستوى الأعلى
+# Off (no embedding)
+admin-off_no_embedding = متوقف (بلا تضمين)
+# Upload
+admin-upload = رفع
+# Choose a colour
+admin-choose_a_colour = اختر لونًا
+# No gradient
+admin-no_gradient = بدون تدرج
+# View live file
+admin-view_live_file = عرض الملف الحالي
+# Reset to default
+admin-reset_to_default = استعادة الافتراضي
+# Removed when you save
+admin-removed_when_you_save = سيُحذف عند الحفظ
+# Saved; type to replace
+admin-saved_type_to_replace = محفوظ؛ اكتب للاستبدال
 # Applied.
 admin-applied = تم التطبيق.
 # Suggestions
@@ -6392,6 +6640,22 @@ admin-top_countries = أبرز البلدان
 admin-deleted_value = محذوف #{ $value }
 # Request failed ({status})
 admin-request_failed_status = فشل الطلب ({ $status })
+# Not saved: confirm your password to change settings.
+admin-not_saved_confirm_your_password_to_change_settings = لم يُحفظ: أكّد كلمة المرور لتغيير الإعدادات.
+# Home page
+admin-home_page = الصفحة الرئيسية
+# Topics
+admin-topics = المواضيع
+# Forums
+admin-forums = المنتديات
+# Tags
+admin-tags = الوسوم
+# Profiles
+admin-profiles = الملفات الشخصية
+# Custom pages
+admin-custom_pages = صفحات مخصصة
+# Other public pages
+admin-other_public_pages = صفحات عامة أخرى
 # Branding
 admin-branding = الهوية
 # Logo, icons and the picture for shared links
@@ -6406,8 +6670,8 @@ admin-link_previews = معاينة الروابط
 admin-the_cards_a_link_on_its_own_line_in_a_post_becomes = البطاقات التي يتحول إليها الرابط الموجود وحده في سطر داخل المنشور
 # General
 admin-general = عام
-# Your site's name, language and availability
-admin-your_site_s_name_language_and_availability = اسم موقعك ولغته وإتاحته
+# Your site's name and language
+admin-your_site_s_name_and_language = اسم موقعك ولغته
 # Sign-up and sign-in
 admin-sign_up_and_sign_in = التسجيل وتسجيل الدخول
 # Who can join, and how they log in
@@ -6426,12 +6690,12 @@ admin-posts_and_topics = المنشورات والمواضيع
 admin-layout_lengths_paging_and_editing = التخطيط والأطوال والترقيم والتعديل
 # Community features
 admin-community_features = ميزات المجتمع
-# Tags, reactions, messages and more
-admin-tags_reactions_messages_and_more = الوسوم والتفاعلات والرسائل وغيرها
-# Trust and warnings
-admin-trust_and_warnings = الثقة والتحذيرات
-# Levels, ranks and automatic penalties
-admin-levels_ranks_and_automatic_penalties = المستويات والرتب والعقوبات التلقائية
+# Messages, solutions, clubs and more
+admin-messages_solutions_clubs_and_more = الرسائل والحلول والنوادي وغيرها
+# Ranks and warnings
+admin-ranks_and_warnings = الرتب والتحذيرات
+# Ranks and automatic penalties
+admin-ranks_and_automatic_penalties = الرتب والعقوبات التلقائية
 # Uploads and media
 admin-uploads_and_media = الملفات والوسائط
 # File sizes and allowances
@@ -6444,26 +6708,26 @@ admin-the_gif_picker_in_the_editor = منتقي صور GIF في المحرر
 admin-mcp_server = خادم MCP
 # Let AI assistants read and manage the forum at /mcp
 admin-let_ai_assistants_read_and_manage_the_forum_at_mcp = اسمح لمساعدي الذكاء الاصطناعي بقراءة المنتدى وإدارته على /mcp
-# Email
-admin-email = البريد الإلكتروني
-# Delivery and message text
-admin-delivery_and_message_text = التسليم ونص الرسائل
 # Custom code
 admin-custom_code = شيفرة مخصصة
 # CSS and HTML on every page, whatever the theme. If it breaks a page, open /safe-mode to leave it out for you
 admin-css_and_html_on_every_page_whatever_the_theme_if_it = CSS وHTML في كل صفحة، أيًا كانت السمة. إذا أعطب صفحة، فافتح /safe-mode لاستبعاده
 # Integrations
 admin-integrations = التكاملات
-# Plugins, embeds and chat
-admin-plugins_embeds_and_chat = الإضافات والتضمينات والدردشة
+# Embeds, statistics and outside services
+admin-embeds_statistics_and_outside_services = التضمين والإحصاءات والخدمات الخارجية
 # Spam defences
 admin-spam_defences = حماية إضافية
 # Silencing, link lists, sign-up and duplicate limits. The basics are under Sign-up and Spam protection
 admin-silencing_link_lists_sign_up_and_duplicate_limits_the = الإسكات وقوائم الروابط وحدود التسجيل والتكرار. الأساسيات في قسمي التسجيل والحماية من السبام
-# AI
-admin-ai = الذكاء الاصطناعي
-# Summaries, moderation, translation, search by meaning and help in the editor. All of it is off by default
-admin-summaries_moderation_translation_search_by_meaning_and = الملخصات والإشراف والترجمة والبحث بالمعنى والمساعدة في المحرر. كلها معطّلة افتراضيًا
+# Search engines
+admin-search_engines = محركات البحث
+# How search engines and crawlers find the forum. robots.txt itself is under Custom code
+admin-how_search_engines_and_crawlers_find_the_forum_robots = كيف تعثر محركات البحث والزواحف على المنتدى. ملف robots.txt نفسه ضمن الشيفرة المخصصة
+# Privacy and legal
+admin-privacy_and_legal = الخصوصية والشؤون القانونية
+# How long records are kept, and who to contact about the law and security
+admin-how_long_records_are_kept_and_who_to_contact_about_the = مدة الاحتفاظ بالسجلات، ومن يُتصل به بشأن القانون والأمان
 # Allowed file types
 admin-allowed_file_types = أنواع الملفات المسموحة
 # Trust level to upload files
@@ -6670,6 +6934,12 @@ admin-gradient_colour = لون التدرج
 admin-text_colour = لون النص
 # Accent colour
 admin-accent_colour = لون التمييز
+# Email logo
+admin-email_logo = شعار البريد
+# Button and link colour
+admin-button_and_link_colour = لون الأزرار والروابط
+# Quote posts in email
+admin-quote_posts_in_email = اقتبس المنشورات في البريد
 # Background picture
 admin-background_picture = صورة الخلفية
 # Darken the picture (%)
@@ -6878,8 +7148,6 @@ admin-templates = القوالب
 admin-bad_addresses = عناوين خاطئة
 # Test delivery
 admin-test_delivery = اختبار التسليم
-# Tags
-admin-tags = الوسوم
 # Custom emoji
 admin-custom_emoji = رموز تعبيرية مخصصة
 # Invites
@@ -6904,8 +7172,6 @@ admin-moderators = المشرفون
 admin-seo = SEO
 # New
 admin-new = جدد
-# Staff
-admin-staff = الطاقم
 # Awaiting approval
 admin-awaiting_approval = بانتظار الموافقة
 # Suspended
@@ -7048,8 +7314,6 @@ admin-overview = نظرة عامة
 admin-dashboard = لوحة المعلومات
 # People
 admin-people = الأشخاص
-# Members
-admin-members = الأعضاء
 # Groups
 admin-groups = المجموعات
 # Mass message
@@ -7060,8 +7324,6 @@ admin-trust_levels = مستويات الثقة
 admin-profile_fields = حقول الملف الشخصي
 # Content
 admin-content = المحتوى
-# Forums
-admin-forums = المنتديات
 # Tags, emoji, invites
 admin-tags_emoji_invites = الوسوم والرموز التعبيرية والدعوات
 # Community
@@ -7090,8 +7352,6 @@ admin-advertisements = الإعلانات
 admin-navigation = التنقل
 # System
 admin-system = النظام
-# Settings
-admin-settings = الإعدادات
 # Backups
 admin-backups = النسخ الاحتياطية
 # Plugins
@@ -7102,6 +7362,8 @@ admin-federation = الاتحاد
 admin-mail_log = سجل البريد
 # Staff log
 admin-staff_log = سجل فريق الإدارة
+# AI
+admin-ai = الذكاء الاصطناعي
 # Automation
 admin-automation = الأتمتة
 # Data Explorer
@@ -7138,8 +7400,6 @@ admin-period = الفترة الزمنية
 admin-log_in = تسجيل الدخول
 # {signups_7d} joined this week
 admin-signups_7d_joined_this_week = { $signups_7d } انضموا هذا الأسبوع
-# Topics
-admin-topics = المواضيع
 # Posts
 admin-posts = المنشورات
 # Likes
@@ -7270,8 +7530,6 @@ admin-link_counted_optional = الرابط (يُحتسب؛ اختياري)
 admin-who_sees_it = من يراه
 # Show to
 admin-show_to = إظهار لـ
-# Everyone
-admin-everyone = الجميع
 # Never show to
 admin-never_show_to = عدم الإظهار أبدًا لـ
 # No one
@@ -7354,8 +7612,6 @@ admin-the_key_is_in_the_settings = المفتاح موجود في الإعداد
 admin-turn_on_ai_and_fill_in_the_provider_s_address_in_the = فعّل «الذكاء الاصطناعي» وأدخل عنوان المزوّد في الإعدادات.
 # On
 admin-on = مفعّل
-# Off
-admin-off_2 = متوقفة
 # Tokens this month
 admin-tokens_this_month = الرموز هذا الشهر
 # {used} of {limit}
@@ -7832,8 +8088,6 @@ admin-hidden = مخفي
 admin-make_default = جعله افتراضيًا
 # More for {name}
 admin-more_for_name = المزيد لـ { $name }
-# Unsaved changes
-admin-unsaved_changes = تغييرات غير محفوظة
 # Members can choose this scheme
 admin-members_can_choose_this_scheme = يمكن للأعضاء اختيار هذا النظام
 # Its light palette is the site's default in light mode
@@ -7848,8 +8102,6 @@ admin-dark_2 = داكن
 admin-light_2 = فاتح
 # {label}, {mode}
 admin-label_mode = { $label }، { $mode }
-# Preview
-admin-preview = معاينة
 # Delete the reaction "{name}"? What members reacted with it disappears from posts.
 admin-delete_the_reaction_name_what_members_reacted_with_it = هل تريد حذف التفاعل «{ $name }»؟ ستختفي التفاعلات التي أضافها الأعضاء به من المشاركات.
 # New reason
@@ -7954,8 +8206,6 @@ admin-select = SELECT …
 admin-running = جارٍ التشغيل…
 # Run
 admin-run = تشغيل
-# Save changes
-admin-save_changes = حفظ التغييرات
 # Save query
 admin-save_query = حفظ الاستعلام
 # (the first {max_rows})
@@ -8080,8 +8330,6 @@ admin-on_the_profile = في الملف الشخصي
 admin-not_on_the_profile = ليس في الملف الشخصي
 # At sign-up
 admin-at_sign_up = عند التسجيل
-# Staff only
-admin-staff_only = فريق الإدارة فقط
 # Move {label} up
 admin-move_label_up = تحريك { $label } للأعلى
 # Move {label} down
@@ -8120,8 +8368,6 @@ admin-kind = النوع
 admin-category = الفئة
 # Inside
 admin-inside = داخل
-# Top level
-admin-top_level = المستوى الأعلى
 # No forums yet.
 admin-no_forums_yet = لا توجد منتديات بعد.
 # Use New category or forum above to add one.
@@ -8252,8 +8498,6 @@ admin-create_group = إنشاء مجموعة
 admin-address_g_and_mention = العنوان: /g/… و@الإشارة
 # Belongs to the club {club}, so it takes the club's name.
 admin-belongs_to_the_club_club_so_it_takes_the_club_s_name = تنتمي إلى النادي { $club }، لذا تحمل اسمه.
-# Choose a colour
-admin-choose_a_colour = اختر لونًا
 # Group colour
 admin-group_colour = لون المجموعة
 # No colour
@@ -8328,12 +8572,10 @@ admin-none_yet_2 = لا شيء بعد.
 admin-login = اسم الدخول
 # IP
 admin-ip = IP
-# Queued for {testTo}
-admin-queued_for_testto = في قائمة الإرسال إلى { $testTo }
 # Mail
 admin-mail = البريد
-# Outgoing email, newest first. Failed messages are retried up to 5 times.
-admin-outgoing_email_newest_first_failed_messages_are_retried = البريد الصادر، الأحدث أولًا. يُعاد إرسال الرسائل الفاشلة حتى 5 مرات.
+# Outgoing email, newest first. Failed messages are tried again for about two days.
+admin-outgoing_email_newest_first_failed_messages_are_tried = البريد الصادر، الأحدث أولًا. تُعاد محاولة الرسائل الفاشلة لمدة يومين تقريبًا.
 # Mail is not being sent: {reason}. Messages stay queued until this is fixed.
 admin-mail_is_not_being_sent_reason_messages_stay_queued = لا يتم إرسال البريد: { $reason }. تبقى الرسائل في قائمة الانتظار إلى أن يُصلَح ذلك.
 # No mail sender is configured (BF_SMTP_URL), so messages show as sent but are never delivered.
@@ -8390,10 +8632,6 @@ admin-rebuild_search_indexes = إعادة بناء فهارس البحث
 admin-run_housekeeping = تشغيل الصيانة الدورية
 # Clear caches
 admin-clear_caches = مسح ذاكرة التخزين المؤقت
-# Offline mode on
-admin-offline_mode_on = وضع عدم الاتصال مفعّل
-# Offline mode off
-admin-offline_mode_off = وضع عدم الاتصال متوقف
 # Export
 admin-export = تصدير
 # That is not valid JSON.
@@ -8404,12 +8642,6 @@ admin-import = استيراد
 admin-permission_check = فحص الصلاحيات
 # Tasks
 admin-tasks = المهام
-# Only administrators can use the site while it is offline. The message is the offline_message setting.
-admin-only_administrators_can_use_the_site_while_it_is = لا يستطيع استخدام الموقع أثناء عدم اتصاله إلا المشرفون العامون. الرسالة هي إعداد offline_message.
-# Take the site offline
-admin-take_the_site_offline = إيقاف الموقع
-# Bring it back
-admin-bring_it_back = إعادته
 # Settings export and import
 admin-settings_export_and_import = تصدير الإعدادات واستيرادها
 # Export changed settings
@@ -8572,10 +8804,6 @@ admin-edit_n = تعديل { $n }
 admin-no_header_links = لا روابط في الترويسة
 # Use Add link to put pages in the header.
 admin-use_add_link_to_put_pages_in_the_header = استخدم “إضافة رابط” لوضع صفحات في الترويسة.
-# Discard
-admin-discard = تجاهل
-# Saving…
-admin-saving = جارٍ الحفظ…
 # Edit link
 admin-edit_link = تعديل الرابط
 # Done
@@ -8816,120 +9044,14 @@ admin-save_settings = حفظ الإعدادات
 admin-log_count_lines = السجل ({ $count } سطراً)
 # None installed.
 admin-none_installed = لا شيء مثبّت.
+# Limits and signing
+admin-limits_and_signing = الحدود والتوقيع
 # This plugin has no such page.
 admin-this_plugin_has_no_such_page = هذه الإضافة لا تحتوي على هذه الصفحة.
-# OpenAI-compatible (OpenAI, Ollama, vLLM, OpenRouter, Gemini…)
-admin-openai_compatible_openai_ollama_vllm_openrouter_gemini = متوافق مع OpenAI (OpenAI وOllama وvLLM وOpenRouter وGemini…)
-# Send to the review queue
-admin-send_to_the_review_queue = إرسال إلى قائمة المراجعة
-# Hold until a moderator approves
-admin-hold_until_a_moderator_approves = تعليق حتى يوافق مشرف
-# Hide
-admin-hide = إخفاء
-# Browser-based
-admin-browser_based = حسب المتصفح
-# Classic (author column)
-admin-classic_author_column = كلاسيكي (عمود الكاتب)
-# Discourse (avatar beside the text)
-admin-discourse_avatar_beside_the_text = Discourse (الصورة الرمزية بجانب النص)
-# List (rows with the latest post)
-admin-list_rows_with_the_latest_post = قائمة (صفوف مع آخر منشور)
-# Boxes (a card for each forum)
-admin-boxes_a_card_for_each_forum = مربعات (بطاقة لكل منتدى)
-# Compact (one line per forum)
-admin-compact_one_line_per_forum = مضغوط (سطر لكل منتدى)
-# Forums and latest topics side by side
-admin-forums_and_latest_topics_side_by_side = المنتديات وأحدث المواضيع جنبًا إلى جنب
-# Off: links never expire
-admin-off_links_never_expire = إيقاف: الروابط لا تنتهي صلاحيتها
-# Files: documents and archives, not pictures
-admin-files_documents_and_archives_not_pictures = الملفات: المستندات والأرشيفات دون الصور
-# Everything, pictures too
-admin-everything_pictures_too = كل شيء، مع الصور
-# The author
-admin-the_author = الكاتب
-# All links
-admin-all_links = كل الروابط
-# Links to other sites
-admin-links_to_other_sites = الروابط إلى المواقع الأخرى
-# No links
-admin-no_links = لا روابط
-# Chosen by the browser
-admin-chosen_by_the_browser = يُختار حسب المتصفح
-# Classic: text on the left
-admin-classic_text_on_the_left = كلاسيكي: النص على اليسار
-# Centered
-admin-centered = متوسط
-# Poster: a picture behind the text
-admin-poster_a_picture_behind_the_text = ملصق: صورة خلف النص
-# Low
-admin-low = منخفض
-# Medium
-admin-medium = متوسط
-# High
-admin-high = مرتفع
-# None
-admin-none = لا شيء
-# Plausible (no cookies)
-admin-plausible_no_cookies = Plausible (بلا ملفات تعريف)
-# Umami (no cookies)
-admin-umami_no_cookies = Umami (بلا ملفات تعريف)
-# Google Analytics 4 (cookies, after consent)
-admin-google_analytics_4_cookies_after_consent = Google Analytics 4 (ملفات تعريف، بعد الموافقة)
-# Matomo (cookies, after consent)
-admin-matomo_cookies_after_consent = Matomo (ملفات تعريف، بعد الموافقة)
-# ALTCHA (self-hosted, no account)
-admin-altcha_self_hosted_no_account = ALTCHA (مستضاف ذاتيًا، بلا حساب)
-# Cloudflare Turnstile
-admin-cloudflare_turnstile = Cloudflare Turnstile
-# Google reCAPTCHA v2
-admin-google_recaptcha_v2 = Google reCAPTCHA v2
-# No reward
-admin-no_reward = بلا مكافأة
-# PNG image
-admin-png_image = صورة PNG
-# JPEG image
-admin-jpeg_image = صورة JPEG
-# GIF image
-admin-gif_image = صورة GIF
-# WebP image
-admin-webp_image = صورة WebP
-# PDF document
-admin-pdf_document = مستند PDF
-# ZIP archive
-admin-zip_archive = أرشيف ZIP
-# Text file
-admin-text_file = ملف نصي
-# Home page
-admin-home_page = الصفحة الرئيسية
-# Profiles
-admin-profiles = الملفات الشخصية
-# Custom pages
-admin-custom_pages = صفحات مخصصة
-# Other public pages
-admin-other_public_pages = صفحات عامة أخرى
-# Off (no embedding)
-admin-off_no_embedding = متوقف (بلا تضمين)
 # Settings without a group yet
 admin-settings_without_a_group_yet = إعدادات بلا مجموعة بعد
-# Settings that installed plugins ask for
-admin-settings_that_installed_plugins_ask_for = الإعدادات التي تطلبها الإضافات المثبّتة
-# Not saved: confirm your password to change settings.
-admin-not_saved_confirm_your_password_to_change_settings = لم يُحفظ: أكّد كلمة المرور لتغيير الإعدادات.
 # Setting groups
 admin-setting_groups = مجموعات الإعدادات
-# Upload
-admin-upload = رفع
-# No gradient
-admin-no_gradient = بدون تدرج
-# View live file
-admin-view_live_file = عرض الملف الحالي
-# Reset to default
-admin-reset_to_default = استعادة الافتراضي
-# Removed when you save
-admin-removed_when_you_save = سيُحذف عند الحفظ
-# Saved; type to replace
-admin-saved_type_to_replace = محفوظ؛ اكتب للاستبدال
 # Preview as
 admin-preview_as = معاينة كـ
 # Shows the saved settings; save your changes to see them here.
@@ -9004,8 +9126,6 @@ admin-your_text = نصك
 admin-write_a_variable_as_name_as_in_the_english_text_above = اكتب المتغير بالشكل { "{" } $name { "}" } كما في النص الإنجليزي أعلاه. للجمع استخدم { "{" } $n -> [one] … *[other] … { "}" }.
 # Search text
 admin-search_text = البحث في النصوص
-# Language
-admin-language = اللغة
 # Only my changes
 admin-only_my_changes = تغييراتي فقط
 # Changed

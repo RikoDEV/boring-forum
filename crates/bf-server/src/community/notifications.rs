@@ -34,6 +34,26 @@ pub fn router() -> Router<AppState> {
 
 /// `from` is whoever caused this (0 for the system): members ignoring them hear nothing.
 pub(crate) async fn send(state: &AppState, from: i64, to: &[i64], kind: &str, data: &Value) {
+    send_quoting(state, from, to, kind, data, None).await;
+}
+
+/// How long the quote of a post in its email may be.
+const EXCERPT_CHARS: usize = 300;
+
+/// The words of post `number` that the email about it may carry, when the site allows that: only
+/// ever for recipients already checked to read the topic. Not kept with the notification.
+pub(crate) async fn mail_quote(state: &AppState, topic: i64, number: i32) -> Option<String> {
+    if !state.settings().bool("mail_post_excerpts") {
+        return None;
+    }
+    let pool = state.pool.as_ref()?;
+    let raw = bf_db::community::notifications::visible_post_raw(pool, topic, number).await.ok().flatten()?;
+    let text = tokio::task::spawn_blocking(move || bf_cook::mail_excerpt(&raw, EXCERPT_CHARS)).await.ok()?;
+    (!text.is_empty()).then_some(text)
+}
+
+/// [`send`], with the author's words quoted in the email: `(author, excerpt)`.
+async fn send_quoting(state: &AppState, from: i64, to: &[i64], kind: &str, data: &Value, quote: Option<(&str, &str)>) {
     let Some(pool) = &state.pool else { return };
     let to: Vec<i64> = to.iter().copied().filter(|id| *id != from).collect();
     if to.is_empty() {
@@ -64,6 +84,10 @@ pub(crate) async fn send(state: &AppState, from: i64, to: &[i64], kind: &str, da
             "{line}:\n\n{link}\n\nChange which emails you get under Account settings.\n\n— {site}\n",
             &[("line", &line), ("link", &abs), ("site", &site)],
         );
+        let body = match quote {
+            Some((author, text)) => bf_web::mail::with_quote(&body, &abs, author, text),
+            None => body,
+        };
         match bf_db::community::notifications::deliver(
             pool,
             &state.config.base_url,
@@ -334,6 +358,7 @@ pub(crate) async fn post_created(state: &AppState, n: PostNews<'_>) -> Vec<(&'st
         ("reply", n.watchers, json!({ "group": group, "count": 1 })),
         ("followed_post", followers, json!({ "group": format!("{group}:{}", n.author_id), "count": 1 })),
     ];
+    let excerpt = mail_quote(state, n.topic_id, n.number).await;
     for (kind, ids, extra) in batches {
         let ids: Vec<i64> = ids.into_iter().filter(|i| !told.contains(i)).collect();
         // Claimed even if unreadable or switched off: a muted watcher should not hear it as a follower.
@@ -344,7 +369,8 @@ pub(crate) async fn post_created(state: &AppState, n: PostNews<'_>) -> Vec<(&'st
         if let (Some(d), Some(e)) = (data.as_object_mut(), extra.as_object()) {
             d.extend(e.clone());
         }
-        send(state, n.author_id, &ids, kind, &data).await;
+        let quote = excerpt.as_deref().map(|text| (n.author, text));
+        send_quoting(state, n.author_id, &ids, kind, &data, quote).await;
     }
     // Links to someone else's topic, once per target.
     for target in linked_topics(&raw, &state.config.base_url) {

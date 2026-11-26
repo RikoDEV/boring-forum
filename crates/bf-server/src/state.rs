@@ -201,7 +201,7 @@ impl AppState {
         });
 
         if let Some(pool) = self.pool.clone() {
-            crate::platform::mail::spawn(pool.clone());
+            crate::platform::mail::spawn(self.clone());
             crate::platform::digest::spawn(self.clone());
             crate::admin::maintenance::spawn_session_sweeper(self.clone());
             crate::admin::maintenance::spawn_housekeeping(self.clone());

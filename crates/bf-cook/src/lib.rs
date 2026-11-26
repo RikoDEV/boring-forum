@@ -115,6 +115,103 @@ pub fn strip_hidden(raw: &str) -> String {
     split_hidden(raw).0
 }
 
+/// What an email may show of a post.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct MailPost {
+    /// The first words, paragraph by paragraph, with `…` where they were cut.
+    pub paragraphs: Vec<String>,
+    /// The first picture uploaded to this site (`/uploads/…`), if the post shows one.
+    pub image: Option<String>,
+}
+
+/// The first words of a post as plain text, for the mail that tells of it: one line, at most
+/// `max` characters. Empty when nothing is left. See [`mail_post`] for what stays out.
+pub fn mail_excerpt(raw: &str, max: usize) -> String {
+    mail_post(raw, max).paragraphs.join(" ")
+}
+
+/// The part of a post an email may show: at most `max` characters of its words, and its first
+/// picture. What a reader would have to open or reveal stays out (hidden blocks and spoilers),
+/// and so does what is not the author's own words here (quotes, code, embedded cards).
+pub fn mail_post(raw: &str, max: usize) -> MailPost {
+    const SKIPPED: [&str; 6] = ["details", "blockquote", "pre", "aside", "figure", "table"];
+    const BREAKS: [&str; 10] = ["p", "br", "li", "div", "h1", "h2", "h3", "h4", "ul", "ol"];
+    let html = cook(&strip_hidden(raw).replace(HIDDEN_MARKER, " ")).html;
+    let mut text = String::new();
+    let mut image = None;
+    let mut inside = 0_usize;
+    let mut rest = html.as_str();
+    // The cooked HTML is sanitized: every `<` starts a tag and attribute values hold no `>` that
+    // is not escaped. A line break in the source is a space; the tags make the paragraphs.
+    let keep = |text: &mut String, part: &str| text.extend(part.chars().map(|c| if c == '\n' { ' ' } else { c }));
+    while let Some(open) = rest.find('<') {
+        if inside == 0 {
+            keep(&mut text, &rest[..open]);
+        }
+        let Some(close) = rest[open..].find('>') else { break };
+        let tag = &rest[open + 1..open + close];
+        let name = tag.trim_start_matches('/').split([' ', '/']).next().unwrap_or_default();
+        if SKIPPED.contains(&name) {
+            if tag.starts_with('/') {
+                inside = inside.saturating_sub(1);
+            } else if !tag.ends_with('/') {
+                inside += 1;
+            }
+            text.push(' ');
+        } else if BREAKS.contains(&name) {
+            text.push('\n');
+        } else if name == "img" && inside == 0 && image.is_none() && !tag.contains("emoji") {
+            image = tag
+                .split_once(" src=\"")
+                .and_then(|(_, after)| after.split(['"', '#', '?']).next())
+                .filter(|src| src.starts_with("/uploads/"))
+                .map(str::to_owned);
+        }
+        rest = &rest[open + close + 1..];
+    }
+    if inside == 0 {
+        keep(&mut text, rest);
+    }
+    let mut left = max;
+    let mut paragraphs = Vec::new();
+    for line in unescape(&text).split('\n') {
+        let words = line
+            .split(|c: char| c.is_whitespace() || c.is_control())
+            .filter(|w| !w.is_empty())
+            .collect::<Vec<_>>()
+            .join(" ");
+        if words.is_empty() {
+            continue;
+        }
+        let length = words.chars().count();
+        if length <= left {
+            left -= length;
+            paragraphs.push(words);
+            continue;
+        }
+        let cut: String = words.chars().take(left).collect();
+        let cut = cut.rsplit_once(' ').map_or(cut.as_str(), |(head, _)| head);
+        if !cut.is_empty() {
+            paragraphs.push(format!("{cut}…"));
+        } else if let Some(last) = paragraphs.last_mut() {
+            last.push('…');
+        }
+        break;
+    }
+    MailPost { paragraphs, image }
+}
+
+/// The entities the sanitizer writes. `&amp;` goes last, so `&amp;lt;` stays `&lt;`.
+fn unescape(text: &str) -> String {
+    text.replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&#34;", "\"")
+        .replace("&#39;", "'")
+        .replace("&nbsp;", " ")
+        .replace("&amp;", "&")
+}
+
 /// The stored HTML with each marker replaced by its block, cooked.
 pub fn reveal_hidden(cooked: &str, raw: &str) -> String {
     let (_, blocks) = split_hidden(raw);

@@ -277,6 +277,7 @@ async fn announce(
         let by_locale =
             bf_db::community::notifications::recipients_by_locale(pool, &watchers).await.unwrap_or_default();
         let mut app = Vec::new();
+        let excerpt = crate::community::notifications::mail_quote(state, topic_id, number).await;
         for (locale, ids) in by_locale {
             let locale = locale
                 .unwrap_or_else(|| bf_core::i18n::site_language(state.settings().str("default_locale")).to_owned());
@@ -289,6 +290,10 @@ async fn announce(
                 ("link", abs.as_str()),
             ];
             let (subject, body) = crate::admin::mail_templates::render(&t, "notification", &vars);
+            let body = match &excerpt {
+                Some(text) => bf_web::mail::with_quote(&body, &abs, by, text),
+                None => body,
+            };
             match bf_db::community::notifications::deliver(
                 pool, base, author_id, &ids, "reply", &data, &subject, &body, delay,
             )

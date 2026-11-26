@@ -66,7 +66,7 @@ pub enum SettingError {
 
 /// Settings that hold a picture: a path in the site's own uploads, or empty. Only our uploads,
 /// so a setting can never make every page load something from another host.
-pub const BRANDING_IMAGES: [&str; 7] = [
+pub const BRANDING_IMAGES: [&str; 8] = [
     "logo_url",
     "logo_dark_url",
     "logo_small_url",
@@ -74,6 +74,7 @@ pub const BRANDING_IMAGES: [&str; 7] = [
     "large_icon_url",
     "og_image_url",
     "og_background_image_url",
+    "mail_logo_url",
 ];
 
 /// String settings that take one of a closed set of words (an empty string is a word where listed).
@@ -210,6 +211,9 @@ impl Settings {
                     && !(s.is_empty() && def.key == "og_background_colour_end")
                     && !crate::og::colour_ok(s)
                 {
+                    return Err(SettingError::NotColour(key.to_owned()));
+                }
+                if def.key == "mail_accent_colour" && !crate::og::colour_ok(s) {
                     return Err(SettingError::NotColour(key.to_owned()));
                 }
                 if def.key == "trust_levels" {

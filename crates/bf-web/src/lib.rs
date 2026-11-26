@@ -4,6 +4,7 @@ pub mod ads;
 pub mod ago;
 pub mod assets;
 pub mod custom_code;
+pub mod mail;
 pub mod microcache;
 pub mod pages;
 pub mod schemes;

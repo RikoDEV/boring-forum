@@ -257,9 +257,16 @@ async fn pending_posts_review_unread_and_views() {
     let topics = bf_db::platform::digests::digest_topics(&pool, reader.get(), &[forum], me.since, 10).await.unwrap();
     assert!(topics.iter().any(|t| t.0 == item));
     assert!(bf_db::platform::digests::digest_topics(&pool, reader.get(), &[], me.since, 10).await.unwrap().is_empty());
-    bf_db::platform::digests::mark_digest_sent(&pool, "r@example.com", "s", Some("b"), "https://x.test/unsubscribe/t")
-        .await
-        .unwrap();
+    bf_db::platform::digests::mark_digest_sent(
+        &pool,
+        "r@example.com",
+        "s",
+        Some("b"),
+        "https://x.test/unsubscribe/t",
+        None,
+    )
+    .await
+    .unwrap();
     // The claim above moved the clock, so a second pass (another node) does not see them.
     assert!(!bf_db::platform::digests::due_digests(&pool, 1000).await.unwrap().iter().any(|d| d.id == reader));
 

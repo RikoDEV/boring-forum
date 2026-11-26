@@ -1,0 +1,90 @@
+{#- The activity summary: a band in the site's colour with the counts, then topic cards. The band
+    runs on behind the body of the first card and stops at its footer. -#}
+<!doctype html>
+<html lang="{{ lang }}" dir="{{ dir }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>{{ heading }}</title>
+<style>
+body{margin:0;padding:0}
+a{color:{{ accent }}}
+@media only screen and (max-width:480px){.m-side{padding-left:10px!important;padding-right:10px!important}.m-in{padding-left:14px!important;padding-right:14px!important}.m-faces{display:none!important}.m-thumb{width:56px!important;height:56px!important}.m-num{font-size:22px!important}}
+{% if force_dark %}@media all{% else %}@media (prefers-color-scheme:dark){% endif %}{
+.m-bg{background:#0f1216!important}.m-card{background:#1a1e24!important}.m-under{background:#14181d!important}
+.m-text{color:#e7eaef!important}.m-muted{color:#a0aab7!important}.m-line{border-color:#2d343d!important}
+.m-title,.m-link{color:{{ dark_link }}!important}}
+</style>
+</head>
+<body class="m-bg" style="margin:0;padding:0;background:#ffffff">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">{{ preview }}</div>
+<table role="presentation" class="m-bg" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff">
+<tr><td align="center" style="padding:0">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" dir="{{ dir }}" style="max-width:640px;text-align:{{ start }};font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+<tr><td align="center" style="padding:20px 12px 18px;text-align:center">
+{% if let Some((src, width, height)) = logo %}<a href="{{ base }}/"><img src="{{ src }}" width="{{ width }}" height="{{ height }}" alt="{{ site }}" class="m-text" style="display:inline-block;border:0;font-size:20px;font-weight:700;color:#1a1f27"></a>
+{% else %}<a href="{{ base }}/" class="m-text" style="font-size:22px;font-weight:800;color:#1a1f27;text-decoration:none">{{ site }}</a>{% endif %}
+</td></tr>
+{% for lines in intro %}<tr><td class="m-in m-text" style="padding:0 36px 12px;font-size:14px;line-height:1.6;color:#1a1f27;text-align:{{ start }}">{% for line in lines %}{% if !loop.first %}<br>{% endif %}{% for span in line %}{% if span.link %}<a href="{{ span.text }}" class="m-link" dir="ltr" style="color:{{ accent }}">{{ span.text }}</a>{% else %}{{ span.text }}{% endif %}{% endfor %}{% endfor %}</td></tr>{% endfor %}
+<tr><td align="center" bgcolor="{{ accent }}" style="background:{{ accent }};padding:20px 12px 4px;color:{{ on_accent }};font-size:18px;text-align:center">{{ since }}</td></tr>
+<tr><td bgcolor="{{ accent }}" style="background:{{ accent }};padding:6px 12px 8px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="table-layout:fixed"><tr>
+{% for (count, label) in stats %}<td align="center" valign="top" style="padding:4px 4px;color:{{ on_accent }};text-align:center"><div class="m-num" style="font-size:28px;font-weight:700;line-height:1.2">{{ count }}</div><div style="font-size:13px;font-weight:600;line-height:1.35">{{ label }}</div></td>{% endfor %}
+</tr></table>
+</td></tr>
+{% if !cards.is_empty() %}<tr><td align="center" bgcolor="{{ accent }}" style="background:{{ accent }};padding:6px 12px 12px;color:{{ on_accent }};font-size:18px;text-align:center">{{ popular }}</td></tr>{% endif %}
+{% for card in cards %}
+{#- The body: on the band for the first card, on grey for the rest. #}
+<tr><td class="m-side{% if !loop.first %} m-under{% endif %}"{% if loop.first %} bgcolor="{{ accent }}"{% else %} bgcolor="#f3f4f6"{% endif %} style="background:{% if loop.first %}{{ accent }}{% else %}#f3f4f6{% endif %};padding:{% if loop.first %}0{% else %}16px{% endif %} 36px 0">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td class="m-card m-in" bgcolor="#ffffff" style="background:#ffffff;padding:14px 18px 4px;text-align:{{ start }}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td valign="top" style="text-align:{{ start }}">
+<div class="m-text" style="font-size:13px;font-weight:700;color:#1a1f27;line-height:1.5"><span aria-hidden="true" style="color:{{ card.swatch }};font-size:12px">&#9632;&#xFE0E;</span> {{ card.forum }}</div>
+<div style="margin:2px 0 6px;font-size:15px;font-weight:700;line-height:1.4"><a href="{{ card.url }}" dir="auto" class="m-title" style="color:{{ accent }};text-decoration:none">{{ card.title }}</a></div>
+{% if let Some(who) = &card.author %}<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+{% if let Some(src) = &who.picture %}<td width="36" valign="middle"><img src="{{ src }}" width="36" height="36" alt="" style="display:block;border:0;border-radius:18px;width:36px;height:36px"></td>{% else %}<td width="36" height="36" align="center" valign="middle" bgcolor="{{ who.colour }}" style="width:36px;height:36px;border-radius:18px;background:{{ who.colour }};color:#ffffff;font-size:16px;font-weight:700">{{ who.letter }}</td>{% endif %}
+<td class="m-text" valign="middle" style="padding:0 9px;font-size:13px;color:#1a1f27">{{ who.name }}</td></tr></table>{% endif %}
+</td>
+<td valign="top" align="{{ end }}" width="96" style="width:96px;text-align:{{ end }}">
+<div class="m-muted" style="font-size:12px;color:#8a929d;white-space:nowrap">{{ card.date }}</div>
+{% if let Some(src) = &card.image %}<a href="{{ card.url }}"><img class="m-thumb" src="{{ src }}" width="80" height="80" alt="" style="display:inline-block;border:0;border-radius:4px;margin-top:8px;width:80px;height:80px"></a>{% endif %}
+</td>
+</tr></table>
+{% for paragraph in card.excerpt %}<p class="m-text" dir="auto" style="margin:12px 0 0;font-size:14px;line-height:1.55;color:#222831;overflow-wrap:anywhere">{{ paragraph }}</p>{% endfor %}
+<div style="height:12px;line-height:12px;font-size:12px">&#8203;</div>
+</td></tr></table>
+</td></tr>
+{#- The footer: likes, replies, who is in it, and the way in. Always on grey. #}
+<tr><td class="m-side m-under" bgcolor="#f3f4f6" style="background:#f3f4f6;padding:0 36px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td class="m-card m-in m-line" bgcolor="#ffffff" style="background:#ffffff;border-top:1px solid #e9ebee;padding:9px 18px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+<td class="m-muted" valign="middle" style="font-size:13px;color:#8a929d;white-space:nowrap;text-align:{{ start }}"><span title="{{ likes_label }}" aria-label="{{ likes_label }}: {{ card.likes }}">&#9825;&#xFE0E; {{ card.likes }}</span>&nbsp;&nbsp;&nbsp;&nbsp;<span title="{{ replies_label }}" aria-label="{{ replies_label }}: {{ card.replies }}">&#128488;&#xFE0E; {{ card.replies }}</span></td>
+<td class="m-faces" valign="middle" style="padding:0 18px;text-align:{{ start }};width:100%">
+{% if !card.faces.is_empty() %}<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>{% for who in card.faces %}<td style="padding:0 2px">{% if let Some(src) = &who.picture %}<img src="{{ src }}" width="20" height="20" alt="{{ who.name }}" style="display:block;border:0;border-radius:10px;width:20px;height:20px">{% else %}<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td width="20" height="20" align="center" valign="middle" bgcolor="{{ who.colour }}" title="{{ who.name }}" style="width:20px;height:20px;border-radius:10px;background:{{ who.colour }};color:#ffffff;font-size:10px;font-weight:700">{{ who.letter }}</td></tr></table>{% endif %}</td>{% endfor %}</tr></table>{% endif %}
+</td>
+<td valign="middle" align="{{ end }}" style="text-align:{{ end }}"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="{{ end }}"><tr><td bgcolor="{{ accent }}" style="background:{{ accent }}"><a href="{{ card.url }}" style="display:inline-block;padding:7px 14px;font-size:13px;font-weight:700;color:{{ on_accent }};text-decoration:none;white-space:nowrap">{{ read_more }}</a></td></tr></table></td>
+</tr></table>
+</td></tr></table>
+</td></tr>
+{% endfor %}
+<tr><td class="m-side m-under" bgcolor="#f3f4f6" style="background:#f3f4f6;padding:16px 36px 8px">
+{% for (title, rows) in lists %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px"><tr><td class="m-card m-in" bgcolor="#ffffff" style="background:#ffffff;padding:12px 18px 6px;text-align:{{ start }}">
+<div class="m-text" style="font-size:14px;font-weight:700;color:#1a1f27;padding-bottom:4px">{{ title }}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">{% for row in rows %}<tr><td class="m-line" style="padding:8px 0;border-top:1px solid #e9ebee;font-size:14px;line-height:1.4;text-align:{{ start }}"><a href="{{ row.url }}" dir="auto" class="m-title" style="color:{{ accent }};font-weight:600;text-decoration:none">{{ row.title }}</a><br><span class="m-muted" style="font-size:12px;color:#8a929d">{{ row.note }}</span></td></tr>{% endfor %}</table>
+</td></tr></table>
+{% endfor %}
+{% if let Some(line) = joined %}<p class="m-muted" style="margin:0 0 10px;font-size:13px;color:#5d6775;text-align:center">{{ line }}</p>{% endif %}
+{% for lines in outro %}<p class="m-muted" style="margin:0 0 10px;font-size:13px;line-height:1.6;color:#5d6775;text-align:center">{% for line in lines %}{% if !loop.first %}<br>{% endif %}{% for span in line %}{% if span.link %}<a href="{{ span.text }}" class="m-link" dir="ltr" style="color:{{ accent }}">{{ span.text }}</a>{% else %}{{ span.text }}{% endif %}{% endfor %}{% endfor %}</p>{% endfor %}
+</td></tr>
+<tr><td class="m-muted" align="center" style="padding:14px 12px 24px;font-size:12px;line-height:1.7;color:#5d6775;text-align:center">
+{{ reason }}
+{% if !links.is_empty() %}<br>{% for (label, url) in links %}{% if !loop.first %} · {% endif %}<a href="{{ url }}" class="m-muted" style="color:#5d6775;text-decoration:underline">{{ label }}</a>{% endfor %}{% endif %}
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>

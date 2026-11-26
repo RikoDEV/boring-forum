@@ -23,6 +23,33 @@ pub const MAX_ATTEMPTS: i16 = 9;
 /// that is down overnight loses nothing.
 pub const RETRY_MINUTES: [i32; MAX_ATTEMPTS as usize - 1] = [1, 5, 15, 60, 180, 360, 720, 1440];
 
+/// Queues a mail that carries a one-click unsubscribe link.
+pub async fn queue_mail_with_unsubscribe(
+    pool: &PgPool,
+    to: &str,
+    subject: &str,
+    body: &str,
+    unsubscribe_url: Option<&str>,
+) -> Result<(), Error> {
+    sqlx::query("INSERT INTO mail_outbox (to_addr, subject, body, unsubscribe_url) VALUES ($1, $2, $3, $4)")
+        .bind(to)
+        .bind(subject)
+        .bind(body)
+        .bind(unsubscribe_url)
+        .execute(pool)
+        .await
+        .map(|_| ())
+}
+
+/// The language of the member whose address this is, if one chose one.
+pub async fn recipient_locale(pool: &PgPool, to: &str) -> Result<Option<String>, Error> {
+    Ok(sqlx::query_scalar::<_, Option<String>>("SELECT locale FROM users WHERE email_lower = lower($1)")
+        .bind(to)
+        .fetch_optional(pool)
+        .await?
+        .flatten())
+}
+
 /// Queues a mail from the contact form, which [`contact_mails_last_hour`] counts.
 pub async fn queue_contact_mail(pool: &PgPool, to: &str, subject: &str, body: &str) -> Result<(), Error> {
     sqlx::query("INSERT INTO mail_outbox (to_addr, subject, body, purpose) VALUES ($1, $2, $3, 'contact')")
@@ -43,6 +70,8 @@ pub struct OutMail {
     pub attempts: i16,
     pub unsubscribe_url: Option<String>,
     pub reply_key: Option<String>,
+    /// A digest's counts and topic cards, for its HTML version.
+    pub summary: Option<serde_json::Value>,
 }
 
 /// Unsent mail with attempts left and its retry time reached, oldest first.
@@ -54,7 +83,7 @@ pub async fn unsent_mail(pool: &PgPool, limit: i64) -> Result<Vec<OutMail>, Erro
          WHERE m.id IN (SELECT id FROM mail_outbox
                         WHERE sent_at IS NULL AND attempts < $2 AND (not_before IS NULL OR not_before <= now())
                         ORDER BY id LIMIT $1 FOR UPDATE SKIP LOCKED)
-         RETURNING m.id, m.to_addr, m.subject, m.body, m.attempts, m.unsubscribe_url, m.reply_key",
+         RETURNING m.id, m.to_addr, m.subject, m.body, m.attempts, m.unsubscribe_url, m.reply_key, m.summary",
     )
     .bind(limit)
     .bind(MAX_ATTEMPTS)
@@ -123,6 +152,18 @@ pub async fn skip_mail_to_bad_addresses(pool: &PgPool) -> Result<(), Error> {
          WHERE o.sent_at IS NULL AND o.unless_read_user IS NOT NULL AND o.not_before <= now() AND EXISTS (
            SELECT 1 FROM notifications n WHERE n.user_id = o.unless_read_user AND n.read AND n.data->>'url' = o.unless_read_url
              AND n.created_at >= o.created_at - interval '1 minute')",
+    )
+    .execute(pool)
+    .await?;
+    // Held notification mail about a post removed since it was queued: it may quote it.
+    sqlx::query(
+        "UPDATE mail_outbox o SET sent_at = now(), last_error = 'skipped: post no longer visible'
+         WHERE o.sent_at IS NULL AND o.unless_read_user IS NOT NULL
+           AND o.unless_read_url ~ '^/t/[^/]+/[0-9]{1,18}#post-[0-9]{1,9}$'
+           AND EXISTS (SELECT 1 FROM posts p
+                       WHERE p.item_id = substring(o.unless_read_url from '^/t/[^/]+/([0-9]{1,18})')::bigint
+                         AND p.post_number = substring(o.unless_read_url from '#post-([0-9]{1,9})$')::int
+                         AND p.state <> 'visible')",
     )
     .execute(pool)
     .await?;

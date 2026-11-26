@@ -1979,6 +1979,8 @@ msg-let_members_sign_in_with_a_link_sent_by_email = Pozwól logować się linkie
 msg-hold_this_many_first_posts_of_each_new_member_for = Wstrzymuj do zatwierdzenia tyle pierwszych postów każdego nowego użytkownika
 # Members may choose to get every new post by email (mailing-list mode)
 msg-members_may_choose_to_get_every_new_post_by_email = Członkowie mogą wybrać otrzymywanie każdego nowego posta e-mailem (tryb listy mailingowej)
+# Votes a member at trust level 0 or 1 can give to open topics in ideas forums; closed topics give theirs back; 0 is no limit
+msg-votes_a_member_at_trust_level_0_or_1_can_give_to_open = Głosy, jakie użytkownik na poziomie zaufania 0 lub 1 może oddać na otwarte tematy na forach z pomysłami; zamknięte tematy zwracają głosy; 0 to brak limitu
 # Votes for ideas at trust level 2; 0 is no limit
 msg-votes_for_ideas_at_trust_level_2_0_is_no_limit = Głosy na pomysły przy poziomie zaufania 2; 0 to brak limitu
 # Votes for ideas at trust level 3; 0 is no limit
@@ -2047,6 +2049,8 @@ msg-comma_separated_usernames_nobody_may_register_end_a = Nazwy użytkowników o
 msg-comma_separated_email_domains_when_set_only_these_may = Domeny e-mail oddzielone przecinkami; gdy ustawione, tylko one mogą służyć do rejestracji lub być użyte na koncie
 # Who sees edit history: everyone, members, author or staff
 msg-who_sees_edit_history_everyone_members_author_or_staff = Kto widzi historię edycji: wszyscy, użytkownicy, autor lub obsługa
+# Purge older revisions, keeping the first and last; 0 keeps all
+msg-purge_older_revisions_keeping_the_first_and_last_0 = Usuwaj starsze wersje, zachowując pierwszą i ostatnią; 0 zachowuje wszystkie
 # URL returning the latest version as text; empty turns the check off
 msg-url_returning_the_latest_version_as_text_empty_turns = Adres URL zwracający najnowszą wersję jako tekst; puste wyłącza sprawdzanie
 # Behind Cloudflare: take each visitor's address from the CF-Connecting-IP header. Believed only from Cloudflare's own addresses and from proxies in BF_TRUSTED_PROXIES
@@ -2063,6 +2067,8 @@ msg-secret_of_the_challenge_from_the_provider_or_any_long = Sekret wyzwania: od 
 msg-consent_banner_text_leave_empty_unless_you_add_non = Tekst banera zgody; zostaw puste, jeśli nie dodajesz zbędnych ciasteczek
 # Most images in one post; a group limit overrides it
 msg-most_images_in_one_post_a_group_limit_overrides_it = Najwięcej obrazów w jednym poście; limit grupy ma pierwszeństwo
+# Hold notification emails this long, and skip them if read in the app meanwhile
+msg-hold_notification_emails_this_long_and_skip_them_if = Wstrzymaj e-maile z powiadomieniami na ten czas i pomiń je, jeśli w międzyczasie przeczytano je w aplikacji
 # Remove deleted content for good after this many days; 0 keeps it
 msg-remove_deleted_content_for_good_after_this_many_days_0 = Usuwaj skasowane treści na dobre po tylu dniach; 0 je zachowuje
 # Let members use chat
@@ -2269,6 +2275,8 @@ msg-the_colour_scheme_its_address_name_whose_dark_palette = Schemat kolorów (je
 msg-offer_the_built_in_look_as_a_theme_it_can_be_turned_off = Oferuj wbudowany wygląd jako motyw; można go wyłączyć, gdy domyślnym motywem witryny jest inny
 # Refuse plugins not signed by a key in BF_PLUGIN_PUBLIC_KEYS
 msg-refuse_plugins_not_signed_by_a_key_in_bf_plugin_public = Odrzucaj wtyczki niepodpisane kluczem z BF_PLUGIN_PUBLIC_KEYS
+# Storage each plugin may use for its tables and key-value data, in MB
+msg-storage_each_plugin_may_use_for_its_tables_and_key = Miejsce, jakie każda wtyczka może zająć na swoje tabele i dane klucz-wartość, w MB
 # Posts each plugin's account may make in an hour
 msg-posts_each_plugin_s_account_may_make_in_an_hour = Posty, jakie konto każdej wtyczki może napisać na godzinę
 # Database reads each plugin may make in a minute
@@ -2289,6 +2297,8 @@ msg-recurring_jobs_each_plugin_may_schedule = Zadania cykliczne, jakie wtyczka m
 msg-most_people_in_one_private_conversation = Najwięcej osób w jednej prywatnej rozmowie
 # New private conversations a member may start in an hour
 msg-new_private_conversations_a_member_may_start_in_an_hour = Nowe prywatne rozmowy, jakie użytkownik może zacząć na godzinę
+# Minutes a member can change or remove a reaction; 0 means no limit
+msg-minutes_a_member_can_change_or_remove_a_reaction_0 = Przez ile minut użytkownik może zmienić lub usunąć reakcję; 0 to brak limitu
 # Reactions a member may give in a day
 msg-reactions_a_member_may_give_in_a_day = Reakcje, jakie użytkownik może dać dziennie
 # Let topic authors and moderators mark a reply as the answer
@@ -2323,6 +2333,8 @@ msg-titles_members_earn_as_their_reputation_grows = Tytuły, jakie użytkownicy 
 msg-contact_form_messages_accepted_per_hour_site_wide = Wiadomości z formularza kontaktowego przyjmowane na godzinę, dla całej strony
 # Sites that may embed comments, as host names separated by commas
 msg-sites_that_may_embed_comments_as_host_names_separated = Strony, które mogą osadzać komentarze, jako nazwy hostów oddzielone przecinkami
+# Public forum that holds embedded comment topics; without one, embedding is off
+msg-public_forum_that_holds_embedded_comment_topics_without = Publiczne forum z tematami osadzonych komentarzy; bez niego osadzanie jest wyłączone
 # Discord or Slack incoming webhook for new posts in public forums
 msg-discord_or_slack_incoming_webhook_for_new_posts_in = Przychodzący webhook Discorda lub Slacka dla nowych postów na publicznych forach
 # Akismet API key; empty turns the spam check off
@@ -2333,6 +2345,12 @@ msg-the_lines_your_ad_networks_ask_you_to_publish_at_ads = Linie, które sieci r
 msg-clubs_one_member_may_start = Kluby, jakie może założyć jeden użytkownik
 # Mark an email address bad after this many bounces
 msg-mark_an_email_address_bad_after_this_many_bounces = Oznacz adres e-mail jako błędny po tylu odbiciach
+# Colour of the buttons and links in email
+msg-colour_of_the_buttons_and_links_in_email = Kolor przycisków i linków w e-mailach
+# Logo at the top of email, shown on a white or dark ground; empty uses the site's logo
+msg-logo_at_the_top_of_email_shown_on_a_white_or_dark = Logo na górze e-maila, wyświetlane na białym lub ciemnym tle; puste używa logo serwisu
+# Put the first words of a post in the email about it. Mail already sent keeps them, also if the post is deleted
+msg-put_the_first_words_of_a_post_in_the_email_about_it = Umieszczaj początek posta w e-mailu o nim. Wysłane wiadomości zachowują go, także gdy post zostanie usunięty
 # Allow new accounts to register
 msg-allow_new_accounts_to_register = Pozwól na rejestrację nowych kont
 # Require login to view any page
@@ -2665,6 +2683,10 @@ msg-the_query_failed_n = Zapytanie się nie powiodło: { $n }
 msg-kind_must_be_category_forum_link_or_archive_and_title = Rodzaj to category, forum, link lub archive, a tytuł jest wymagany
 # Link forums need an http(s) or /path url; other kinds take none.
 msg-link_forums_need_an_http_s_or_path_url_other_kinds_take = Fora-linki potrzebują adresu http(s) lub /ścieżki; inne rodzaje go nie mają.
+# New topics since your last digest:
+msg-new_topics_since_your_last_digest = Nowe tematy od ostatniego podsumowania:
+# You have {count} unread notifications.
+msg-you_have_count_unread_notifications = Masz nieprzeczytane powiadomienia: { $count }.
 # The text must contain {name}.
 msg-the_text_must_contain_name = Tekst musi zawierać { $name }.
 # An address is up to three parts of lowercase letters, digits and dashes, like /about or /help/rules.
@@ -2970,6 +2992,12 @@ msg-hi_name_your_account_was_just_logged_in_to_from_a_new =
     Jeśli to nie Ty, zmień hasło i wyloguj inne sesje w ustawieniach konta.
 
     — { $site }
+# Signed in at
+msg-signed_in_at = Czas logowania
+# IP address
+msg-ip_address = Adres IP
+# Account name
+msg-account_name = Nazwa konta
 # New log-in to your account - {site}
 msg-new_log_in_to_your_account_site = Nowe logowanie na Twoje konto - { $site }
 # Too many failed attempts. Try again after {time} UTC, or reset your password.
@@ -4651,14 +4679,10 @@ msg-conditions_must_be_an_object = Warunki muszą być obiektem.
 msg-this_looks_like_spam_so_it_was_not_posted = To wygląda na spam, więc nie zostało opublikowane.
 # Popular topics this month:
 msg-popular_topics_this_month = Popularne tematy w tym miesiącu:
-# New topics since your last digest:
-msg-new_topics_since_your_last_digest = Nowe tematy od ostatniego podsumowania:
 # New replies in topics you watch:
 msg-new_replies_in_topics_you_watch = Nowe odpowiedzi w tematach, które obserwujesz:
 # New members this month: {count}
 msg-new_members_this_month_count = Nowi członkowie w tym miesiącu: { $count }
-# You have {count} unread notifications.
-msg-you_have_count_unread_notifications = Masz nieprzeczytane powiadomienia: { $count }.
 # Unsubscribe from digests: {link}
 msg-unsubscribe_from_digests_link = Zrezygnuj z podsumowań: { $link }
 # Topic
@@ -4930,6 +4954,76 @@ msg-this_sign_in_option_is_not_working = Ta metoda logowania nie działa.
 msg-this_sign_in_link_has_expired_please_try_again = Ten link do logowania wygasł. Spróbuj ponownie.
 # That sign-in did not succeed.
 msg-that_sign_in_did_not_succeed = Logowanie się nie powiodło.
+# Log in to your account
+msg-log_in_to_your_account = Zaloguj się na konto
+# Confirm the new address
+msg-confirm_the_new_address = Potwierdź nowy adres
+# Review account security
+msg-review_account_security = Sprawdź bezpieczeństwo konta
+# Open the topic
+msg-open_the_topic = Otwórz temat
+# Open your messages
+msg-open_your_messages = Otwórz wiadomości
+# See your notifications
+msg-see_your_notifications = Zobacz powiadomienia
+# Open the review queue
+msg-open_the_review_queue = Otwórz kolejkę moderacji
+# Download the backup
+msg-download_the_backup = Pobierz kopię zapasową
+# Visit the site
+msg-visit_the_site = Odwiedź serwis
+# Open the page
+msg-open_the_page = Otwórz stronę
+# Email settings
+msg-email_settings = Ustawienia e-mail
+# This email was sent by {site}.
+msg-this_email_was_sent_by_site = Tę wiadomość wysłał serwis { $site }.
+# You get this because of your email settings on {site}.
+msg-you_get_this_because_of_your_email_settings_on_site = Otrzymujesz tę wiadomość zgodnie z ustawieniami e-mail w serwisie { $site }.
+# Button not working? Copy this address:
+msg-button_not_working_copy_this_address = Przycisk nie działa? Skopiuj ten adres:
+# January {day}
+msg-january_day = { $day } stycznia
+# February {day}
+msg-february_day = { $day } lutego
+# March {day}
+msg-march_day = { $day } marca
+# April {day}
+msg-april_day = { $day } kwietnia
+# May {day}
+msg-may_day = { $day } maja
+# June {day}
+msg-june_day = { $day } czerwca
+# July {day}
+msg-july_day = { $day } lipca
+# August {day}
+msg-august_day = { $day } sierpnia
+# September {day}
+msg-september_day = { $day } września
+# October {day}
+msg-october_day = { $day } października
+# November {day}
+msg-november_day = { $day } listopada
+# December {day}
+msg-december_day = { $day } grudnia
+# Replies in topics you follow
+msg-replies_in_topics_you_follow = Odpowiedzi w obserwowanych tematach
+# More topics
+msg-more_topics = Więcej tematów
+# New topics
+msg-new_topics = Nowe tematy
+# Unread notifications
+msg-unread_notifications = Nieprzeczytane powiadomienia
+# Since your last summary
+msg-since_your_last_summary = Od ostatniego podsumowania
+# Popular topics
+msg-popular_topics = Popularne tematy
+# Read more
+msg-read_more = Czytaj dalej
+# Likes
+msg-likes = Polubienia
+# Replies
+msg-replies = Odpowiedzi
 # Advertisement
 msg-advertisement = Reklama
 # Under maintenance
@@ -6112,6 +6206,40 @@ admin-save = Zapisz
 admin-delete = Usuń
 # Cancel
 admin-cancel = Anuluj
+# Reply in a topic
+admin-reply_in_a_topic = Odpowiedź w temacie
+# Digest
+admin-digest = Podsumowanie
+# New sign-in
+admin-new_sign_in = Nowe logowanie
+# Security notice
+admin-security_notice = Powiadomienie o bezpieczeństwie
+# Email confirmation
+admin-email_confirmation = Potwierdzenie e-maila
+# Password reset
+admin-password_reset = Reset hasła
+# Desktop
+admin-desktop = Komputer
+# Phone
+admin-phone = Telefon
+# Queued for {testTo}
+admin-queued_for_testto = W kolejce do { $testTo }
+# Preview
+admin-preview = Podgląd
+# Logo and colour
+admin-logo_and_colour = Logo i kolor
+# Email
+admin-email = E-mail
+# Language
+admin-language = Język
+# Width
+admin-width = Szerokość
+# Dark colours
+admin-dark_colours = Ciemne kolory
+# Send this to me
+admin-send_this_to_me = Wyślij to do mnie
+# Plain text version
+admin-plain_text_version = Wersja tekstowa
 # Markdown
 admin-markdown = Markdown
 # Deleted #{v}
@@ -6126,6 +6254,8 @@ admin-no_matches = Brak dopasowań
 admin-type_to_search = Zacznij pisać, aby szukać
 # Nothing to choose
 admin-nothing_to_choose = Nie ma czego wybrać
+# Settings
+admin-settings = Ustawienia
 # From reputation
 admin-from_reputation = Od reputacji
 # Rank name
@@ -6144,6 +6274,14 @@ admin-two_ranks_start_at_the_same_reputation_only_one_of_them = Dwie rangi zaczy
 admin-members_below_n_reputation_show_no_rank = Użytkownicy poniżej { $n } reputacji nie mają rangi.
 # Add rank
 admin-add_rank = Dodaj rangę
+# Unsaved changes
+admin-unsaved_changes = Niezapisane zmiany
+# Discard
+admin-discard = Odrzuć
+# Saving…
+admin-saving = Zapisywanie…
+# Save changes
+admin-save_changes = Zapisz zmiany
 # A topic title that is a link
 admin-a_topic_title_that_is_a_link = Tytuł tematu będący linkiem
 # Body text sits on a card. It should be easy to read.
@@ -6160,6 +6298,116 @@ admin-warning = Ostrzeżenie
 admin-danger = Niebezpieczeństwo
 # Selected
 admin-selected = Wybrane
+# OpenAI-compatible (OpenAI, Ollama, vLLM, OpenRouter, Gemini…)
+admin-openai_compatible_openai_ollama_vllm_openrouter_gemini = Zgodne z OpenAI (OpenAI, Ollama, vLLM, OpenRouter, Gemini…)
+# Send to the review queue
+admin-send_to_the_review_queue = Wyślij do kolejki przeglądu
+# Hold until a moderator approves
+admin-hold_until_a_moderator_approves = Wstrzymaj do zatwierdzenia przez moderatora
+# Hide
+admin-hide = Ukryj
+# Browser-based
+admin-browser_based = Według przeglądarki
+# Classic (author column)
+admin-classic_author_column = Klasyczny (kolumna autora)
+# Discourse (avatar beside the text)
+admin-discourse_avatar_beside_the_text = Discourse (awatar obok tekstu)
+# List (rows with the latest post)
+admin-list_rows_with_the_latest_post = Lista (wiersze z ostatnim postem)
+# Boxes (a card for each forum)
+admin-boxes_a_card_for_each_forum = Kafelki (karta dla każdego forum)
+# Compact (one line per forum)
+admin-compact_one_line_per_forum = Zwarty (jedna linia na forum)
+# Forums and latest topics side by side
+admin-forums_and_latest_topics_side_by_side = Fora i najnowsze tematy obok siebie
+# Off: links never expire
+admin-off_links_never_expire = Wyłączone: linki nie wygasają
+# Files: documents and archives, not pictures
+admin-files_documents_and_archives_not_pictures = Pliki: dokumenty i archiwa, bez obrazów
+# Everything, pictures too
+admin-everything_pictures_too = Wszystko, także obrazy
+# Everyone
+admin-everyone = Wszyscy
+# Members
+admin-members = Użytkownicy
+# The author
+admin-the_author = Autor
+# Staff
+admin-staff = Obsługa
+# All links
+admin-all_links = Wszystkie linki
+# Links to other sites
+admin-links_to_other_sites = Linki do innych witryn
+# No links
+admin-no_links = Żadne linki
+# Chosen by the browser
+admin-chosen_by_the_browser = Wybierany według przeglądarki
+# Classic: text on the left
+admin-classic_text_on_the_left = Klasyczny: tekst po lewej
+# Centered
+admin-centered = Wyśrodkowany
+# Poster: a picture behind the text
+admin-poster_a_picture_behind_the_text = Plakat: obraz za tekstem
+# Off
+admin-off_2 = Wyłączona
+# Low
+admin-low = Niski
+# Medium
+admin-medium = Średni
+# High
+admin-high = Wysoki
+# None
+admin-none = Brak
+# Plausible (no cookies)
+admin-plausible_no_cookies = Plausible (bez ciasteczek)
+# Umami (no cookies)
+admin-umami_no_cookies = Umami (bez ciasteczek)
+# Google Analytics 4 (cookies, after consent)
+admin-google_analytics_4_cookies_after_consent = Google Analytics 4 (ciasteczka, po zgodzie)
+# Matomo (cookies, after consent)
+admin-matomo_cookies_after_consent = Matomo (ciasteczka, po zgodzie)
+# ALTCHA (self-hosted, no account)
+admin-altcha_self_hosted_no_account = ALTCHA (na własnym serwerze, bez konta)
+# Cloudflare Turnstile
+admin-cloudflare_turnstile = Cloudflare Turnstile
+# Google reCAPTCHA v2
+admin-google_recaptcha_v2 = Google reCAPTCHA v2
+# Staff only
+admin-staff_only = Tylko obsługa
+# No reward
+admin-no_reward = Bez nagrody
+# PNG image
+admin-png_image = Obraz PNG
+# JPEG image
+admin-jpeg_image = Obraz JPEG
+# GIF image
+admin-gif_image = Obraz GIF
+# WebP image
+admin-webp_image = Obraz WebP
+# PDF document
+admin-pdf_document = Dokument PDF
+# ZIP archive
+admin-zip_archive = Archiwum ZIP
+# Text file
+admin-text_file = Plik tekstowy
+# Top level
+admin-top_level = Najwyższy poziom
+# Off (no embedding)
+admin-off_no_embedding = Wyłączone (bez osadzania)
+# Upload
+admin-upload = Wyślij
+# Choose a colour
+admin-choose_a_colour = Wybierz kolor
+# No gradient
+admin-no_gradient = Bez gradientu
+# View live file
+admin-view_live_file = Zobacz aktualny plik
+# Reset to default
+admin-reset_to_default = Przywróć domyślne
+# Removed when you save
+admin-removed_when_you_save = Zostanie usunięte po zapisaniu
+# Saved; type to replace
+admin-saved_type_to_replace = Zapisano; wpisz, aby zastąpić
 # Applied.
 admin-applied = Zastosowano.
 # Suggestions
@@ -6226,6 +6474,22 @@ admin-top_countries = Najczęstsze kraje
 admin-deleted_value = Usunięto #{ $value }
 # Request failed ({status})
 admin-request_failed_status = Żądanie nie powiodło się ({ $status })
+# Not saved: confirm your password to change settings.
+admin-not_saved_confirm_your_password_to_change_settings = Nie zapisano: potwierdź hasło, aby zmienić ustawienia.
+# Home page
+admin-home_page = Strona główna
+# Topics
+admin-topics = Tematy
+# Forums
+admin-forums = Fora
+# Tags
+admin-tags = Tagi
+# Profiles
+admin-profiles = Profile
+# Custom pages
+admin-custom_pages = Strony własne
+# Other public pages
+admin-other_public_pages = Inne strony publiczne
 # Branding
 admin-branding = Wizerunek
 # Logo, icons and the picture for shared links
@@ -6240,8 +6504,8 @@ admin-link_previews = Podgląd linków
 admin-the_cards_a_link_on_its_own_line_in_a_post_becomes = Karty, w które zamienia się link w osobnej linii wpisu
 # General
 admin-general = Ogólne
-# Your site's name, language and availability
-admin-your_site_s_name_language_and_availability = Nazwa strony, język i dostępność
+# Your site's name and language
+admin-your_site_s_name_and_language = Nazwa i język serwisu
 # Sign-up and sign-in
 admin-sign_up_and_sign_in = Rejestracja i logowanie
 # Who can join, and how they log in
@@ -6260,12 +6524,12 @@ admin-posts_and_topics = Posty i tematy
 admin-layout_lengths_paging_and_editing = Układ, długości, stronicowanie i edycja
 # Community features
 admin-community_features = Funkcje społeczności
-# Tags, reactions, messages and more
-admin-tags_reactions_messages_and_more = Tagi, reakcje, wiadomości i więcej
-# Trust and warnings
-admin-trust_and_warnings = Zaufanie i ostrzeżenia
-# Levels, ranks and automatic penalties
-admin-levels_ranks_and_automatic_penalties = Poziomy, rangi i automatyczne kary
+# Messages, solutions, clubs and more
+admin-messages_solutions_clubs_and_more = Wiadomości, rozwiązania, kluby i inne
+# Ranks and warnings
+admin-ranks_and_warnings = Rangi i ostrzeżenia
+# Ranks and automatic penalties
+admin-ranks_and_automatic_penalties = Rangi i automatyczne kary
 # Uploads and media
 admin-uploads_and_media = Pliki i multimedia
 # File sizes and allowances
@@ -6278,26 +6542,26 @@ admin-the_gif_picker_in_the_editor = Selektor GIF-ów w edytorze
 admin-mcp_server = Serwer MCP
 # Let AI assistants read and manage the forum at /mcp
 admin-let_ai_assistants_read_and_manage_the_forum_at_mcp = Pozwól asystentom AI czytać forum i nim zarządzać pod adresem /mcp
-# Email
-admin-email = E-mail
-# Delivery and message text
-admin-delivery_and_message_text = Dostarczanie i treść wiadomości
 # Custom code
 admin-custom_code = Własny kod
 # CSS and HTML on every page, whatever the theme. If it breaks a page, open /safe-mode to leave it out for you
 admin-css_and_html_on_every_page_whatever_the_theme_if_it = CSS i HTML na każdej stronie, niezależnie od motywu. Jeśli zepsuje stronę, otwórz /safe-mode, aby go pominąć
 # Integrations
 admin-integrations = Integracje
-# Plugins, embeds and chat
-admin-plugins_embeds_and_chat = Wtyczki, osadzanie i czat
+# Embeds, statistics and outside services
+admin-embeds_statistics_and_outside_services = Osadzanie, statystyki i usługi zewnętrzne
 # Spam defences
 admin-spam_defences = Dodatkowa ochrona
 # Silencing, link lists, sign-up and duplicate limits. The basics are under Sign-up and Spam protection
 admin-silencing_link_lists_sign_up_and_duplicate_limits_the = Wyciszanie, listy linków, limity rejestracji i powtórzeń. Podstawy są w sekcjach Rejestracja i Ochrona przed spamem
-# AI
-admin-ai = AI
-# Summaries, moderation, translation, search by meaning and help in the editor. All of it is off by default
-admin-summaries_moderation_translation_search_by_meaning_and = Streszczenia, moderacja, tłumaczenia, wyszukiwanie po znaczeniu i pomoc w edytorze. Wszystko jest domyślnie wyłączone
+# Search engines
+admin-search_engines = Wyszukiwarki
+# How search engines and crawlers find the forum. robots.txt itself is under Custom code
+admin-how_search_engines_and_crawlers_find_the_forum_robots = Jak wyszukiwarki i roboty znajdują forum. Sam plik robots.txt jest w sekcji Własny kod
+# Privacy and legal
+admin-privacy_and_legal = Prywatność i prawo
+# How long records are kept, and who to contact about the law and security
+admin-how_long_records_are_kept_and_who_to_contact_about_the = Jak długo przechowywane są zapisy i z kim się kontaktować w sprawach prawnych i bezpieczeństwa
 # Allowed file types
 admin-allowed_file_types = Dozwolone rodzaje plików
 # Trust level to upload files
@@ -6504,6 +6768,12 @@ admin-gradient_colour = Kolor gradientu
 admin-text_colour = Kolor tekstu
 # Accent colour
 admin-accent_colour = Kolor akcentu
+# Email logo
+admin-email_logo = Logo w e-mailach
+# Button and link colour
+admin-button_and_link_colour = Kolor przycisków i linków
+# Quote posts in email
+admin-quote_posts_in_email = Cytuj posty w e-mailach
 # Background picture
 admin-background_picture = Obraz w tle
 # Darken the picture (%)
@@ -6712,8 +6982,6 @@ admin-templates = Szablony
 admin-bad_addresses = Błędne adresy
 # Test delivery
 admin-test_delivery = Test dostarczania
-# Tags
-admin-tags = Tagi
 # Custom emoji
 admin-custom_emoji = Własne emoji
 # Invites
@@ -6738,8 +7006,6 @@ admin-moderators = Moderatorzy
 admin-seo = SEO
 # New
 admin-new = Nowi
-# Staff
-admin-staff = Obsługa
 # Awaiting approval
 admin-awaiting_approval = Czeka na zatwierdzenie
 # Suspended
@@ -6882,8 +7148,6 @@ admin-overview = Przegląd
 admin-dashboard = Pulpit
 # People
 admin-people = Ludzie
-# Members
-admin-members = Użytkownicy
 # Groups
 admin-groups = Grupy
 # Mass message
@@ -6894,8 +7158,6 @@ admin-trust_levels = Poziomy zaufania
 admin-profile_fields = Pola profilu
 # Content
 admin-content = Treści
-# Forums
-admin-forums = Fora
 # Tags, emoji, invites
 admin-tags_emoji_invites = Tagi, emoji, zaproszenia
 # Community
@@ -6924,8 +7186,6 @@ admin-advertisements = Reklamy
 admin-navigation = Nawigacja
 # System
 admin-system = Systemowy
-# Settings
-admin-settings = Ustawienia
 # Backups
 admin-backups = Kopie zapasowe
 # Plugins
@@ -6936,6 +7196,8 @@ admin-federation = Federacja
 admin-mail_log = Dziennik poczty
 # Staff log
 admin-staff_log = Dziennik obsługi
+# AI
+admin-ai = AI
 # Automation
 admin-automation = Automatyzacja
 # Data Explorer
@@ -6972,8 +7234,6 @@ admin-period = Okres
 admin-log_in = Zaloguj się
 # {signups_7d} joined this week
 admin-signups_7d_joined_this_week = { $signups_7d } dołączyło w tym tygodniu
-# Topics
-admin-topics = Tematy
 # Posts
 admin-posts = Posty
 # Likes
@@ -7104,8 +7364,6 @@ admin-link_counted_optional = Link (liczony; opcjonalny)
 admin-who_sees_it = Kto ją widzi
 # Show to
 admin-show_to = Pokazuj grupom
-# Everyone
-admin-everyone = Wszyscy
 # Never show to
 admin-never_show_to = Nigdy nie pokazuj grupom
 # No one
@@ -7188,8 +7446,6 @@ admin-the_key_is_in_the_settings = Klucz jest w ustawieniach.
 admin-turn_on_ai_and_fill_in_the_provider_s_address_in_the = Włącz „AI” i podaj adres dostawcy w ustawieniach.
 # On
 admin-on = Wł.
-# Off
-admin-off_2 = Wyłączona
 # Tokens this month
 admin-tokens_this_month = Tokeny w tym miesiącu
 # {used} of {limit}
@@ -7666,8 +7922,6 @@ admin-hidden = Ukryty
 admin-make_default = Ustaw jako domyślny
 # More for {name}
 admin-more_for_name = Więcej dla { $name }
-# Unsaved changes
-admin-unsaved_changes = Niezapisane zmiany
 # Members can choose this scheme
 admin-members_can_choose_this_scheme = Członkowie mogą wybrać ten schemat
 # Its light palette is the site's default in light mode
@@ -7682,8 +7936,6 @@ admin-dark_2 = ciemny
 admin-light_2 = jasny
 # {label}, {mode}
 admin-label_mode = { $label }, { $mode }
-# Preview
-admin-preview = Podgląd
 # Delete the reaction "{name}"? What members reacted with it disappears from posts.
 admin-delete_the_reaction_name_what_members_reacted_with_it = Usunąć reakcję „{ $name }”? Reakcje, które nią dodano, znikną z wpisów.
 # New reason
@@ -7788,8 +8040,6 @@ admin-select = SELECT …
 admin-running = Uruchamianie…
 # Run
 admin-run = Uruchom
-# Save changes
-admin-save_changes = Zapisz zmiany
 # Save query
 admin-save_query = Zapisz zapytanie
 # (the first {max_rows})
@@ -7914,8 +8164,6 @@ admin-on_the_profile = W profilu
 admin-not_on_the_profile = Nie w profilu
 # At sign-up
 admin-at_sign_up = Przy rejestracji
-# Staff only
-admin-staff_only = Tylko obsługa
 # Move {label} up
 admin-move_label_up = Przesuń { $label } w górę
 # Move {label} down
@@ -7954,8 +8202,6 @@ admin-kind = Rodzaj
 admin-category = Kategoria
 # Inside
 admin-inside = W
-# Top level
-admin-top_level = Najwyższy poziom
 # No forums yet.
 admin-no_forums_yet = Brak for.
 # Use New category or forum above to add one.
@@ -8086,8 +8332,6 @@ admin-create_group = Utwórz grupę
 admin-address_g_and_mention = Adres: /g/… i @wzmianka
 # Belongs to the club {club}, so it takes the club's name.
 admin-belongs_to_the_club_club_so_it_takes_the_club_s_name = Należy do klubu { $club }, więc nosi jego nazwę.
-# Choose a colour
-admin-choose_a_colour = Wybierz kolor
 # Group colour
 admin-group_colour = Kolor grupy
 # No colour
@@ -8162,12 +8406,10 @@ admin-none_yet_2 = Jeszcze nic.
 admin-login = Login
 # IP
 admin-ip = IP
-# Queued for {testTo}
-admin-queued_for_testto = W kolejce do { $testTo }
 # Mail
 admin-mail = Poczta
-# Outgoing email, newest first. Failed messages are retried up to 5 times.
-admin-outgoing_email_newest_first_failed_messages_are_retried = Wychodzące e-maile, od najnowszych. Nieudane wiadomości są ponawiane do 5 razy.
+# Outgoing email, newest first. Failed messages are tried again for about two days.
+admin-outgoing_email_newest_first_failed_messages_are_tried = Poczta wychodząca, od najnowszej. Nieudane wiadomości są ponawiane przez około dwa dni.
 # Mail is not being sent: {reason}. Messages stay queued until this is fixed.
 admin-mail_is_not_being_sent_reason_messages_stay_queued = Poczta nie jest wysyłana: { $reason }. Wiadomości czekają w kolejce, dopóki nie zostanie to naprawione.
 # No mail sender is configured (BF_SMTP_URL), so messages show as sent but are never delivered.
@@ -8224,10 +8466,6 @@ admin-rebuild_search_indexes = Przebuduj indeksy wyszukiwania
 admin-run_housekeeping = Uruchom porządkowanie
 # Clear caches
 admin-clear_caches = Wyczyść pamięć podręczną
-# Offline mode on
-admin-offline_mode_on = Tryb offline włączony
-# Offline mode off
-admin-offline_mode_off = Tryb offline wyłączony
 # Export
 admin-export = Eksport
 # That is not valid JSON.
@@ -8238,12 +8476,6 @@ admin-import = Import
 admin-permission_check = Sprawdzenie uprawnień
 # Tasks
 admin-tasks = Zadania
-# Only administrators can use the site while it is offline. The message is the offline_message setting.
-admin-only_administrators_can_use_the_site_while_it_is = Tylko administratorzy mogą korzystać z witryny, gdy jest offline. Komunikat to ustawienie offline_message.
-# Take the site offline
-admin-take_the_site_offline = Wyłącz stronę
-# Bring it back
-admin-bring_it_back = Przywróć ją
 # Settings export and import
 admin-settings_export_and_import = Eksport i import ustawień
 # Export changed settings
@@ -8406,10 +8638,6 @@ admin-edit_n = Edytuj { $n }
 admin-no_header_links = Brak linków w nagłówku
 # Use Add link to put pages in the header.
 admin-use_add_link_to_put_pages_in_the_header = Użyj przycisku Dodaj link, aby umieścić strony w nagłówku.
-# Discard
-admin-discard = Odrzuć
-# Saving…
-admin-saving = Zapisywanie…
 # Edit link
 admin-edit_link = Edytuj link
 # Done
@@ -8650,120 +8878,14 @@ admin-save_settings = Zapisz ustawienia
 admin-log_count_lines = Dziennik ({ $count } wierszy)
 # None installed.
 admin-none_installed = Nic nie zainstalowano.
+# Limits and signing
+admin-limits_and_signing = Limity i podpisy
 # This plugin has no such page.
 admin-this_plugin_has_no_such_page = Ta wtyczka nie ma takiej strony.
-# OpenAI-compatible (OpenAI, Ollama, vLLM, OpenRouter, Gemini…)
-admin-openai_compatible_openai_ollama_vllm_openrouter_gemini = Zgodne z OpenAI (OpenAI, Ollama, vLLM, OpenRouter, Gemini…)
-# Send to the review queue
-admin-send_to_the_review_queue = Wyślij do kolejki przeglądu
-# Hold until a moderator approves
-admin-hold_until_a_moderator_approves = Wstrzymaj do zatwierdzenia przez moderatora
-# Hide
-admin-hide = Ukryj
-# Browser-based
-admin-browser_based = Według przeglądarki
-# Classic (author column)
-admin-classic_author_column = Klasyczny (kolumna autora)
-# Discourse (avatar beside the text)
-admin-discourse_avatar_beside_the_text = Discourse (awatar obok tekstu)
-# List (rows with the latest post)
-admin-list_rows_with_the_latest_post = Lista (wiersze z ostatnim postem)
-# Boxes (a card for each forum)
-admin-boxes_a_card_for_each_forum = Kafelki (karta dla każdego forum)
-# Compact (one line per forum)
-admin-compact_one_line_per_forum = Zwarty (jedna linia na forum)
-# Forums and latest topics side by side
-admin-forums_and_latest_topics_side_by_side = Fora i najnowsze tematy obok siebie
-# Off: links never expire
-admin-off_links_never_expire = Wyłączone: linki nie wygasają
-# Files: documents and archives, not pictures
-admin-files_documents_and_archives_not_pictures = Pliki: dokumenty i archiwa, bez obrazów
-# Everything, pictures too
-admin-everything_pictures_too = Wszystko, także obrazy
-# The author
-admin-the_author = Autor
-# All links
-admin-all_links = Wszystkie linki
-# Links to other sites
-admin-links_to_other_sites = Linki do innych witryn
-# No links
-admin-no_links = Żadne linki
-# Chosen by the browser
-admin-chosen_by_the_browser = Wybierany według przeglądarki
-# Classic: text on the left
-admin-classic_text_on_the_left = Klasyczny: tekst po lewej
-# Centered
-admin-centered = Wyśrodkowany
-# Poster: a picture behind the text
-admin-poster_a_picture_behind_the_text = Plakat: obraz za tekstem
-# Low
-admin-low = Niski
-# Medium
-admin-medium = Średni
-# High
-admin-high = Wysoki
-# None
-admin-none = Brak
-# Plausible (no cookies)
-admin-plausible_no_cookies = Plausible (bez ciasteczek)
-# Umami (no cookies)
-admin-umami_no_cookies = Umami (bez ciasteczek)
-# Google Analytics 4 (cookies, after consent)
-admin-google_analytics_4_cookies_after_consent = Google Analytics 4 (ciasteczka, po zgodzie)
-# Matomo (cookies, after consent)
-admin-matomo_cookies_after_consent = Matomo (ciasteczka, po zgodzie)
-# ALTCHA (self-hosted, no account)
-admin-altcha_self_hosted_no_account = ALTCHA (na własnym serwerze, bez konta)
-# Cloudflare Turnstile
-admin-cloudflare_turnstile = Cloudflare Turnstile
-# Google reCAPTCHA v2
-admin-google_recaptcha_v2 = Google reCAPTCHA v2
-# No reward
-admin-no_reward = Bez nagrody
-# PNG image
-admin-png_image = Obraz PNG
-# JPEG image
-admin-jpeg_image = Obraz JPEG
-# GIF image
-admin-gif_image = Obraz GIF
-# WebP image
-admin-webp_image = Obraz WebP
-# PDF document
-admin-pdf_document = Dokument PDF
-# ZIP archive
-admin-zip_archive = Archiwum ZIP
-# Text file
-admin-text_file = Plik tekstowy
-# Home page
-admin-home_page = Strona główna
-# Profiles
-admin-profiles = Profile
-# Custom pages
-admin-custom_pages = Strony własne
-# Other public pages
-admin-other_public_pages = Inne strony publiczne
-# Off (no embedding)
-admin-off_no_embedding = Wyłączone (bez osadzania)
 # Settings without a group yet
 admin-settings_without_a_group_yet = Ustawienia jeszcze bez grupy
-# Settings that installed plugins ask for
-admin-settings_that_installed_plugins_ask_for = Ustawienia, o które proszą zainstalowane wtyczki
-# Not saved: confirm your password to change settings.
-admin-not_saved_confirm_your_password_to_change_settings = Nie zapisano: potwierdź hasło, aby zmienić ustawienia.
 # Setting groups
 admin-setting_groups = Grupy ustawień
-# Upload
-admin-upload = Wyślij
-# No gradient
-admin-no_gradient = Bez gradientu
-# View live file
-admin-view_live_file = Zobacz aktualny plik
-# Reset to default
-admin-reset_to_default = Przywróć domyślne
-# Removed when you save
-admin-removed_when_you_save = Zostanie usunięte po zapisaniu
-# Saved; type to replace
-admin-saved_type_to_replace = Zapisano; wpisz, aby zastąpić
 # Preview as
 admin-preview_as = Podgląd jako
 # Shows the saved settings; save your changes to see them here.
@@ -8838,8 +8960,6 @@ admin-your_text = Twój tekst
 admin-write_a_variable_as_name_as_in_the_english_text_above = Zmienną zapisz jako { "{" } $name { "}" }, tak jak w angielskim tekście powyżej. Liczbę mnogą zapisz jako { "{" } $n -> [one] … *[other] … { "}" }.
 # Search text
 admin-search_text = Szukaj tekstu
-# Language
-admin-language = Język
 # Only my changes
 admin-only_my_changes = Tylko moje zmiany
 # Changed

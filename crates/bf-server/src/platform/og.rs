@@ -73,7 +73,7 @@ struct Asset {
 }
 
 static ASSETS: LazyLock<moka::sync::Cache<String, Option<Arc<Asset>>>> =
-    LazyLock::new(|| moka::sync::Cache::builder().max_capacity(16).time_to_live(Duration::from_secs(600)).build());
+    LazyLock::new(|| moka::sync::Cache::builder().max_capacity(256).time_to_live(Duration::from_secs(600)).build());
 
 /// The largest uploaded file read for a logo or background.
 const ASSET_BYTES: u64 = 12 * 1024 * 1024;
@@ -109,11 +109,28 @@ fn prepare(bytes: &[u8], cover: bool, bounds: (u32, u32)) -> Option<Asset> {
 /// An uploaded picture by its path in the settings (`/uploads/<key>`), made ready; `None` when
 /// the setting is empty or the file cannot be used. A failure is remembered for ten minutes too.
 async fn asset(path: &str, cover: bool) -> Option<Arc<Asset>> {
+    let bounds = if cover { (W as u32, H as u32) } else { (480, 112) };
+    asset_within(path, cover, bounds).await
+}
+
+/// A logo for email, as a PNG every mail client shows (an uploaded WebP is not one): at most
+/// `bounds`, with its `data:` URL and its size in pixels.
+pub(crate) async fn png_logo(path: &str, bounds: (u32, u32)) -> Option<(String, u32, u32)> {
+    let asset = asset_within(path, false, bounds).await?;
+    Some((asset.data_url.clone(), asset.width as u32, asset.height as u32))
+}
+
+/// A picture of a post for email: cropped to a small square JPEG, as a `data:` URL.
+pub(crate) async fn square_jpeg(path: &str, side: u32) -> Option<String> {
+    asset_within(path, true, (side, side)).await.map(|a| a.data_url.clone())
+}
+
+async fn asset_within(path: &str, cover: bool, bounds: (u32, u32)) -> Option<Arc<Asset>> {
     let key = path.strip_prefix("/uploads/")?;
     if !crate::forum::uploads::valid_key(key) {
         return None;
     }
-    let cache_key = format!("{cover}:{key}");
+    let cache_key = format!("{cover}:{}x{}:{key}", bounds.0, bounds.1);
     if let Some(hit) = ASSETS.get(&cache_key) {
         return hit;
     }
@@ -123,7 +140,6 @@ async fn asset(path: &str, cover: bool) -> Option<Arc<Asset>> {
     let made = match store.size(&stored).await {
         Some(n) if n <= ASSET_BYTES => match store.get(&stored).await {
             Some(bytes) => {
-                let bounds = if cover { (W as u32, H as u32) } else { (480, 112) };
                 tokio::task::spawn_blocking(move || prepare(&bytes, cover, bounds)).await.ok().flatten().map(Arc::new)
             }
             None => None,
@@ -666,5 +682,23 @@ mod tests {
             assert!(png.starts_with(b"\x89PNG"));
             std::fs::write(dir.join(format!("{i}-{template}.png")), png).unwrap();
         }
+    }
+}
+
+#[cfg(test)]
+mod mail_logo_tests {
+    use super::*;
+
+    #[test]
+    fn a_webp_logo_becomes_a_png_that_fits() {
+        let mut webp = std::io::Cursor::new(Vec::new());
+        image::RgbaImage::from_pixel(900, 150, image::Rgba([200, 90, 40, 255]))
+            .write_to(&mut webp, image::ImageFormat::WebP)
+            .unwrap();
+        let asset = prepare(&webp.into_inner(), false, (440, 80)).unwrap();
+        assert!(asset.data_url.starts_with("data:image/png;base64,"), "{}", &asset.data_url[..30]);
+        assert_eq!((asset.width as u32, asset.height as u32), (440, 73));
+        // What is not a picture is refused, and mail falls back to the site's name.
+        assert!(prepare(b"<svg/>", false, (440, 80)).is_none());
     }
 }

@@ -113,6 +113,106 @@ pub async fn digest_popular(
     .await
 }
 
+/// How many topics were started since `since`, counted the way [`digest_topics`] lists them.
+pub async fn digest_new_count(pool: &PgPool, user: i64, nodes: &[i64], since: DateTime<Utc>) -> Result<i64, Error> {
+    sqlx::query_scalar(
+        "WITH RECURSIVE muted(id) AS (
+           SELECT target_id FROM follows WHERE user_id = $3 AND level = 'mute' AND target_type = 'node'
+           UNION SELECT n.id FROM nodes n JOIN muted m ON n.parent_id = m.id)
+         SELECT count(*) FROM items
+         WHERE node_id = ANY($1) AND state = 'visible' AND listed AND created_at > $2
+           AND node_id NOT IN (SELECT id FROM muted)
+           AND NOT EXISTS (SELECT 1 FROM follows f WHERE f.user_id = $3 AND f.level = 'mute'
+                           AND f.target_type = 'item' AND f.target_id = items.id)
+           AND NOT EXISTS (SELECT 1 FROM ignored_users g WHERE g.user_id = $3 AND g.ignored_user_id = items.author_id)",
+    )
+    .bind(nodes)
+    .bind(since)
+    .bind(user)
+    .fetch_one(pool)
+    .await
+}
+
+/// Likes others gave the member's posts since `since` (reactions that count in favour).
+pub async fn likes_received(pool: &PgPool, user: i64, since: DateTime<Utc>) -> Result<i64, Error> {
+    sqlx::query_scalar(
+        "SELECT count(*) FROM post_likes l JOIN posts p ON p.id = l.post_id
+         JOIN reactions r ON r.id = l.reaction_id
+         WHERE p.author_id = $1 AND l.user_id <> $1 AND l.created_at > $2 AND r.score > 0 AND p.state = 'visible'",
+    )
+    .bind(user)
+    .bind(since)
+    .fetch_one(pool)
+    .await
+}
+
+/// What a topic's card in the summary shows.
+#[derive(Debug, Clone, FromRow)]
+pub struct CardRow {
+    pub id: i64,
+    pub slug: String,
+    pub title: String,
+    pub forum: String,
+    pub created_at: DateTime<Utc>,
+    pub author_id: Option<i64>,
+    pub author: Option<String>,
+    /// The first post's source.
+    pub raw: String,
+    pub likes: i64,
+    pub replies: i32,
+}
+
+/// The cards of `topics`, in the order given. One whose first post cannot be seen has none.
+pub async fn digest_cards(pool: &PgPool, topics: &[i64]) -> Result<Vec<CardRow>, Error> {
+    sqlx::query_as(
+        "SELECT i.id, i.slug, i.title, n.title AS forum, i.created_at, p.author_id, u.username AS author, p.raw,
+                i.like_count::bigint AS likes, i.reply_count AS replies
+         FROM unnest($1::bigint[]) WITH ORDINALITY AS wanted(id, place)
+         JOIN items i ON i.id = wanted.id AND i.state = 'visible'
+         JOIN nodes n ON n.id = i.node_id
+         JOIN posts p ON p.item_id = i.id AND p.post_number = 1 AND p.state = 'visible'
+         LEFT JOIN users u ON u.id = p.author_id
+         ORDER BY wanted.place",
+    )
+    .bind(topics)
+    .fetch_all(pool)
+    .await
+}
+
+/// Up to `each` of the latest to reply in each topic, leaving out members `user` ignores:
+/// (topic, username).
+pub async fn digest_participants(
+    pool: &PgPool,
+    user: i64,
+    topics: &[i64],
+    each: i64,
+) -> Result<Vec<(i64, String)>, Error> {
+    sqlx::query_as(
+        "SELECT item_id, username FROM (
+           SELECT p.item_id, u.username, row_number() OVER (PARTITION BY p.item_id ORDER BY max(p.created_at) DESC) AS place
+           FROM posts p JOIN users u ON u.id = p.author_id
+           WHERE p.item_id = ANY($1) AND p.post_number > 1 AND p.state = 'visible' AND p.action IS NULL
+             AND NOT EXISTS (SELECT 1 FROM ignored_users g WHERE g.user_id = $2 AND g.ignored_user_id = p.author_id)
+           GROUP BY p.item_id, u.username) latest
+         WHERE place <= $3 ORDER BY item_id, place",
+    )
+    .bind(topics)
+    .bind(user)
+    .bind(each)
+    .fetch_all(pool)
+    .await
+}
+
+/// Whether the upload at `key` is `user`'s own: only such a picture of a post is put in mail, so
+/// a post cannot carry out somebody else's file by naming it.
+pub async fn uploaded_by(pool: &PgPool, key: &str, user: i64) -> Result<bool, Error> {
+    sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM uploads WHERE storage_key = $1 AND user_id = $2)")
+        .bind(key)
+        .bind(user)
+        .fetch_one(pool)
+        .await
+}
+
 /// Members who joined since `since` (approved accounts with a real address).
 pub async fn new_members_since(pool: &PgPool, since: DateTime<Utc>) -> Result<i64, Error> {
     sqlx::query_scalar("SELECT count(*) FROM users WHERE joined_at > $1 AND approved AND NOT remote AND email_lower NOT LIKE '%.invalid'")
@@ -179,14 +279,18 @@ pub async fn mark_digest_sent(
     subject: &str,
     body: Option<&str>,
     unsubscribe_url: &str,
+    summary: Option<&serde_json::Value>,
 ) -> Result<(), Error> {
     let Some(b) = body else { return Ok(()) };
-    sqlx::query("INSERT INTO mail_outbox (to_addr, subject, body, unsubscribe_url) VALUES ($1, $2, $3, $4)")
-        .bind(to)
-        .bind(subject)
-        .bind(b)
-        .bind(unsubscribe_url)
-        .execute(pool)
-        .await
-        .map(|_| ())
+    sqlx::query(
+        "INSERT INTO mail_outbox (to_addr, subject, body, unsubscribe_url, summary) VALUES ($1, $2, $3, $4, $5)",
+    )
+    .bind(to)
+    .bind(subject)
+    .bind(b)
+    .bind(unsubscribe_url)
+    .bind(summary)
+    .execute(pool)
+    .await
+    .map(|_| ())
 }

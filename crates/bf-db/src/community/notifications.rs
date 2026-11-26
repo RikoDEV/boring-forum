@@ -354,6 +354,18 @@ pub async fn deliver(
 /// own recipient's name in its place, so one body can greet every member of a batch.
 pub const RECIPIENT: &str = "\u{1}recipient\u{1}";
 
+/// A post's source while it and its topic can be seen.
+pub async fn visible_post_raw(pool: &PgPool, topic: i64, number: i32) -> Result<Option<String>, Error> {
+    sqlx::query_scalar(
+        "SELECT p.raw FROM posts p JOIN items i ON i.id = p.item_id
+         WHERE p.item_id = $1 AND p.post_number = $2 AND p.state = 'visible' AND i.state = 'visible'",
+    )
+    .bind(topic)
+    .bind(number)
+    .fetch_optional(pool)
+    .await
+}
+
 /// Members grouped by language, so each reads an email in their own.
 pub async fn recipients_by_locale(pool: &PgPool, ids: &[i64]) -> Result<Vec<(Option<String>, Vec<i64>)>, Error> {
     sqlx::query_as("SELECT locale, array_agg(id) FROM users WHERE id = ANY($1) GROUP BY locale")

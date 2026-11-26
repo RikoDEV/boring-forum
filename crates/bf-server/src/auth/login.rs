@@ -159,6 +159,34 @@ pub(crate) fn session_cookie(token: &str, max_age_secs: i64) -> HeaderValue {
     .unwrap_or_else(|_| HeaderValue::from_static(""))
 }
 
+/// The subject and text of the alert about a sign-in from a new address. The lines of facts
+/// are drawn as a table in the HTML version.
+pub(crate) fn new_login_mail(
+    t: &bf_core::i18n::T,
+    name: &str,
+    ip: &str,
+    site: &str,
+    at: chrono::DateTime<chrono::Utc>,
+    base_url: &str,
+) -> (String, String) {
+    let text = t.msgf(
+        "Hi {name},\n\nYour account was just logged in to from a new address ({ip}).\n\nIf this was not you, change your password and log out other sessions under Account settings.\n\n— {site}\n",
+        &[("name", name), ("ip", ip), ("site", site)],
+    );
+    let when = at.format("%Y-%m-%d %H:%M UTC").to_string();
+    let facts =
+        format!("{}: {when}\n{}: {ip}\n{}: {name}", t.msg("Signed in at"), t.msg("IP address"), t.msg("Account name"));
+    // Before the advice, after what happened.
+    let mut parts: Vec<&str> = text.split("\n\n").collect();
+    parts.insert(parts.len().min(2), &facts);
+    // Where to act on it: a line of its own before the sign-off, the button in the HTML version.
+    let account = format!("{}/settings", base_url.trim_end_matches('/'));
+    if !base_url.is_empty() {
+        parts.insert(parts.len().saturating_sub(1), &account);
+    }
+    (t.msgf("New log-in to your account - {site}", &[("site", site)]), parts.join("\n\n"))
+}
+
 pub(crate) async fn start_session(
     pool: &PgPool,
     user_id: bf_core::ids::UserId,
@@ -197,11 +225,9 @@ pub(crate) async fn start_session(
                 .db()?
                 .flatten()
                 .unwrap_or_else(|| bf_core::settings::Settings::default().str("site_name").to_owned());
-            let body = t.msgf(
-                "Hi {name},\n\nYour account was just logged in to from a new address ({ip}).\n\nIf this was not you, change your password and log out other sessions under Account settings.\n\n— {site}\n",
-                &[("name", &name), ("ip", &ip.to_string()), ("site", &site)],
-            );
-            let subject = t.msgf("New log-in to your account - {site}", &[("site", &site)]);
+            // The address the configuration reads too; without one the mail has no button.
+            let base = std::env::var("BF_BASE_URL").unwrap_or_default();
+            let (subject, body) = new_login_mail(&t, &name, &ip.to_string(), &site, chrono::Utc::now(), &base);
             bf_db::platform::mail::queue_mail(pool, &email, &subject, &body).await.db()?;
             let data = json!({ "message": ip.to_string(), "url": "/settings" });
             notifications::notify(pool, &[user_id.get()], "new_login", &data).await.db()?;

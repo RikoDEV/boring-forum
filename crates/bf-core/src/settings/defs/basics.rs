@@ -229,7 +229,9 @@ pub(super) fn defs() -> Vec<SettingDef> {
             10,
             0,
             1000,
-            "Votes a member at trust level 0 or 1 can give to open topics in ideas forums; closed topics give theirs back; 0 is no limit",
+            en(
+                "Votes a member at trust level 0 or 1 can give to open topics in ideas forums; closed topics give theirs back; 0 is no limit",
+            ),
         ),
         int("topic_votes_tl2", 15, 0, 1000, en("Votes for ideas at trust level 2; 0 is no limit")),
         int("topic_votes_tl3", 20, 0, 1000, en("Votes for ideas at trust level 3; 0 is no limit")),
@@ -388,7 +390,7 @@ pub(super) fn defs() -> Vec<SettingDef> {
             0,
             0,
             36500,
-            "Purge older revisions, keeping the first and last; 0 keeps all",
+            en("Purge older revisions, keeping the first and last; 0 keeps all"),
         ),
         SettingDef {
             default: json!("https://raw.githubusercontent.com/RikoDEV/boring-forum/main/VERSION"),
@@ -448,7 +450,7 @@ pub(super) fn defs() -> Vec<SettingDef> {
             0,
             0,
             1440,
-            "Hold notification emails this long, and skip them if read in the app meanwhile",
+            en("Hold notification emails this long, and skip them if read in the app meanwhile"),
         ),
         int(
             "deleted_retention_days",
