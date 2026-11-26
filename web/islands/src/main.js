@@ -1225,17 +1225,37 @@ function headerSize() {
 // up, at the top, or while the field is in use.
 function foldSearch(bar) {
   const narrow = window.matchMedia("(width <= 639px)");
-  let last = window.scrollY;
+  const sticky = /** @type {HTMLElement} */ (bar.parentElement);
+  // The furthest point reached in the current direction: it takes a real move back to turn.
+  let turn = window.scrollY;
   let ticking = false;
+  // The shorter header must not move the page. If it did, the browser would shift the scroll
+  // position to hold the text still, that would read as scrolling back, and the row would open
+  // and close for ever. So a margin keeps the folded row's room in the page.
+  const fold = (on) => {
+    if (bar.classList.contains("is-folded") === on) return;
+    const before = sticky.offsetHeight;
+    bar.classList.toggle("is-folded", on);
+    sticky.style.marginBlockEnd = on ? `${before - sticky.offsetHeight}px` : "";
+  };
   const update = () => {
     ticking = false;
-    const y = window.scrollY;
+    // The bounce past either end of the page (iOS) is not a change of direction.
+    const end = document.documentElement.scrollHeight - window.innerHeight;
+    const y = Math.max(0, Math.min(window.scrollY, end));
+    const folded = bar.classList.contains("is-folded");
+    turn = folded ? Math.max(turn, y) : Math.min(turn, y);
     const search = bar.querySelector(".header-search");
     const busy = search?.matches(":focus-within") || search?.querySelector(".is-open");
-    if (!narrow.matches || y < 80 || y < last - 4 || busy) bar.classList.remove("is-folded");
-    else if (y > last + 4) bar.classList.add("is-folded");
-    last = y;
+    if (!narrow.matches || y < 80 || busy || (folded && y < turn - 24)) {
+      fold(false);
+      turn = y;
+    } else if (!folded && y > turn + 12) {
+      fold(true);
+      turn = y;
+    }
   };
+  narrow.addEventListener("change", update);
   window.addEventListener(
     "scroll",
     () => {
