@@ -3,14 +3,16 @@
   import { resolve } from "$app/paths";
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
+  import PageSettings from "#lib/PageSettings.svelte";
   import { Status } from "#lib/status.svelte.js";
   import { del, get, post, when } from "#lib/api.js";
   import When from "#lib/When.svelte";
   import UserLink from "#lib/UserLink.svelte";
   import Field from "#lib/Field.svelte";
   import Empty from "#lib/Empty.svelte";
+  import MailPreview from "#lib/MailPreview.svelte";
   let tab = $state("log");
-  followTabHash(["log", "templates", "bad", "test"], (key) => (tab = key));
+  followTabHash(["log", "templates", "preview", "bad", "test", "settings"], (key) => (tab = key));
   let rows = $state([]);
   const status = new Status();
   let bad = $state([]);
@@ -39,12 +41,12 @@
 
 <PageHead
   title={tr("Mail")}
-  intro={tr("Outgoing email, newest first. Failed messages are retried up to 5 times.")}
+  intro={tr("Outgoing email, newest first. Failed messages are tried again for about two days.")}
   {status}
   reserve
 />
 <div class="acp-tabs" role="tablist">
-  {#each [["log", tr("Log"), rows.length], ["templates", tr("Templates"), null], ["bad", tr("Bad addresses"), bad.length], ["test", tr("Test delivery"), null]] as [k, label, n]}<button
+  {#each [["log", tr("Log"), rows.length], ["templates", tr("Templates"), null], ["preview", tr("Preview"), null], ["bad", tr("Bad addresses"), bad.length], ["test", tr("Test delivery"), null], ["settings", tr("Settings"), null]] as [k, label, n]}<button
       role="tab"
       aria-selected={tab === k}
       onclick={() => (tab = String(k))}
@@ -102,6 +104,8 @@
       </div>
     </div>
   </section>
+{:else if tab === "preview"}
+  <MailPreview {status} />
 {:else if tab === "bad"}
   <p class="muted">
     <small>{tr("No mail is sent to these after repeated bounces. Changing the address also clears this.")}</small>
@@ -123,6 +127,8 @@
         />{/each}
     </tbody>
   </table>
+{:else if tab === "settings"}
+  <!-- drawn below, where it stays mounted -->
 {:else}
   <section class="acp-box">
     <div class="acp-box-head"><h2>{tr("Test delivery")}</h2></div>
@@ -139,3 +145,5 @@
   </section>
   {#if note}<p class="ok" role="status">{note}</p>{/if}
 {/if}
+
+<PageSettings path="/mail" hidden={tab !== "settings"} onshow={() => (tab = "settings")} />

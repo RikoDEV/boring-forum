@@ -1,6 +1,7 @@
 <script>
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
+  import PageSettings from "#lib/PageSettings.svelte";
   import { Status } from "#lib/status.svelte.js";
   import TreeSelect from "#lib/TreeSelect.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
@@ -130,3 +131,5 @@
     {/each}
   </tbody>
 </table>
+
+<PageSettings path="/federation" />

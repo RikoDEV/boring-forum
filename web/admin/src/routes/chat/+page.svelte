@@ -2,6 +2,7 @@
   import { followTabHash } from "#lib/tabs.svelte.js";
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
+  import PageSettings from "#lib/PageSettings.svelte";
   import { Status } from "#lib/status.svelte.js";
   import { del, get, post, put } from "#lib/api.js";
   import UserLink from "#lib/UserLink.svelte";
@@ -11,7 +12,7 @@
   import Switch from "#lib/Switch.svelte";
   import Empty from "#lib/Empty.svelte";
   let tab = $state("channels");
-  followTabHash(["channels", "rules", "flags"], (key) => (tab = key));
+  followTabHash(["channels", "rules", "flags", "settings"], (key) => (tab = key));
   const status = new Status();
   let channels = $state([]);
   let rules = $state([]);
@@ -177,7 +178,7 @@
   </EditDialog>
 {/if}
 <div class="acp-tabs" role="tablist">
-  {#each [["channels", tr("Channels"), channels.length], ["rules", tr("Integrations"), rules.length], ["flags", tr("Flags"), flags.length]] as [k, label, n]}<button
+  {#each [["channels", tr("Channels"), channels.length], ["rules", tr("Integrations"), rules.length], ["flags", tr("Flags"), flags.length], ["settings", tr("Settings"), null]] as [k, label, n]}<button
       role="tab"
       aria-selected={tab === k}
       onclick={() => (tab = String(k))}
@@ -249,6 +250,8 @@
         />{/each}
     </tbody>
   </table>
+{:else if tab === "settings"}
+  <!-- drawn below, where it stays mounted -->
 {:else}
   <table class="acp-table">
     <thead>
@@ -274,3 +277,5 @@
     </tbody>
   </table>
 {/if}
+
+<PageSettings path="/chat" hidden={tab !== "settings"} onshow={() => (tab = "settings")} />

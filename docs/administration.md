@@ -83,6 +83,16 @@ whether posts count toward members' totals.
 - **Pages**: your own pages (rules, about, FAQ), with their own layout.
 - **Site text**: replace any interface text, one language at a time. This is also how you
   rewrite the emails the forum sends.
+- **Mail**: the outgoing log, bad addresses and a test. Email is sent as plain text with a
+  branded HTML version made from the same text, so what you rewrite under *Site text* shows in
+  both: a line holding only a link to your site becomes the button. *Preview* shows each kind of
+  mail in every language, light or dark, and sends a sample to you; try it in the mail apps your
+  members use. The logo, button colour and whether emails quote posts are under
+  *Mail → Settings*. The digest is an activity summary: counts since the last one, a card for
+  each of the busiest topics (forum, author, opening words, picture, likes, replies and who is
+  talking), then further topics as lines. Faces and pictures travel inside the mail; a picture is
+  shown only when the author of the post uploaded it. A quote leaves out hidden blocks, spoilers and quotes, never comes from a
+  private message, and stays in a mail already sent even if the post is deleted.
 - **Permalinks**: permanent redirects for addresses the forum does not know.
 - **Legal**: the terms and privacy policy. Each save publishes a new version, and members accept
   the latest one when they register and again after a change.
@@ -93,8 +103,11 @@ whether posts count toward members' totals.
   the site itself, for administrators. See [Features and settings](features.md).
 
 **System**
-- **Settings**: everything else, grouped (branding, general, sign-up and sign-in, spam protection,
-  posts and topics, and more).
+- **Settings**: what belongs to no page of its own, grouped (branding, general, sign-up and
+  sign-in, spam protection, posts and topics, search engines, privacy and legal, and more).
+  A feature's settings are on its page, usually under a *Settings* tab: Mail, AI, Chat,
+  Tags, Community, Trust levels, Plugins, Federation and Maintenance (offline mode). The
+  header search and old links to a moved setting lead there.
 - **Backups**: [see Operations](operations.md#backup-and-restore).
 - **Plugins**, **Webhooks and apps**, **Federation**, **AI**, **Automation**, **Data Explorer**.
 - **Mail log**: outgoing email, newest first; failed messages are retried up to five times.

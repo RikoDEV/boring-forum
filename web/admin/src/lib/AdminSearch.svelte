@@ -71,9 +71,12 @@
     /** @type {any[]} */
     const found = [];
     if (!meta) return out;
-    const { MANAGED_PAGE, groupOf, groupTitle, humanize } = meta;
+    const { placeOf, groupOf, groupTitle, humanize } = meta;
     for (const s of settings ?? []) {
-      const where = MANAGED_PAGE[s.key] ? "" : groupTitle(groupOf(s.key));
+      const place = placeOf(s.key).split("#")[0];
+      const where = place
+        ? (pages.flatMap(([, items]) => items).find(([p]) => p === place)?.[1] ?? "")
+        : groupTitle(groupOf(s.key));
       const label = humanize(s.key);
       if (matches(`${label} ${s.key} ${s.description} ${where}`.toLowerCase()))
         found.push({
@@ -97,8 +100,10 @@
     input?.blur();
     if (r.kind === "tab") goto(`${resolve(r.path.split("#")[0])}#${r.path.split("#")[1]}`);
     else if (r.kind === "page") goto(resolve(r.path === "" ? "/" : r.path));
-    else if (meta?.MANAGED_PAGE[r.key]) goto(resolve(meta.MANAGED_PAGE[r.key]));
-    else goto(`${resolve("/settings")}#setting=${encodeURIComponent(r.key)}`);
+    else {
+      const [path, hash] = (meta?.placeOf(r.key) || `/settings#setting=${encodeURIComponent(r.key)}`).split("#");
+      goto(`${resolve(path)}${hash ? `#${hash}` : ""}`);
+    }
   }
 
   function onkey(e) {

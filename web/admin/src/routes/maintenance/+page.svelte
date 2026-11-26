@@ -1,13 +1,14 @@
 <script>
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
+  import PageSettings from "#lib/PageSettings.svelte";
   import { Status } from "#lib/status.svelte.js";
   import Box from "#lib/Box.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
   import MultiSelect from "#lib/MultiSelect.svelte";
   import { members } from "#lib/suggest.js";
-  import { get, post, put } from "#lib/api.js";
+  import { get, post } from "#lib/api.js";
 
   const status = new Status();
   const dialog = new Status();
@@ -45,8 +46,6 @@
     ["clear-caches", tr("Clear caches")],
   ];
   const task = (t, label) => run(label, () => post(`/maintenance/${t}`));
-  const offline = (on) =>
-    run(on ? tr("Offline mode on") : tr("Offline mode off"), () => put("/settings/offline", { value: on }));
   const close = () => (dialogKind = "");
   const openDialog = (kind) => {
     dialog.clear();
@@ -94,19 +93,7 @@
   </div>
 </Box>
 
-<Box title={tr("Offline mode")}>
-  <p class="muted">
-    {tr("Only administrators can use the site while it is offline. The message is the offline_message setting.")}
-  </p>
-  <div class="acp-actions">
-    <button onclick={() => offline(true)}>{tr("Take the site offline")}</button><button
-      class="secondary"
-      onclick={() => offline(false)}
-    >
-      {tr("Bring it back")}
-    </button>
-  </div>
-</Box>
+<PageSettings path="/maintenance" title={tr("Offline mode")} />
 
 <Box title={tr("Settings export and import")}>
   <div class="acp-actions">

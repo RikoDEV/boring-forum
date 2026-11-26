@@ -2,7 +2,7 @@
 
 ## AI features
 
-All optional and off until `ai_enabled` is set and a provider is given (Admin → Settings → AI;
+All optional and off until `ai_enabled` is set and a provider is given (Admin → AI, under its settings;
 Admin → AI for the connection test, usage and personas). The provider is anything that speaks the
 OpenAI chat and embeddings API (OpenAI, Ollama, vLLM, OpenRouter, Gemini's compatibility endpoint)
 or Anthropic's messages API. Summaries, gists, spam / abuse / mood checks, machine translation,

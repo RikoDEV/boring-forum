@@ -1,6 +1,7 @@
 <script>
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
+  import PageSettings from "#lib/PageSettings.svelte";
   import Box from "#lib/Box.svelte";
   import Field from "#lib/Field.svelte";
   import Switch from "#lib/Switch.svelte";
@@ -222,3 +223,5 @@
     {/if}
   </EditDialog>
 {/if}
+
+<PageSettings path="/trust" />

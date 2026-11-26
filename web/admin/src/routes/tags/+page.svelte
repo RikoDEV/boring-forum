@@ -2,6 +2,7 @@
   import { followTabHash } from "#lib/tabs.svelte.js";
   import { tn, tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
+  import PageSettings from "#lib/PageSettings.svelte";
   import { Status } from "#lib/status.svelte.js";
   import { del, get, patch, post, uploadFile } from "#lib/api.js";
   import UserLink from "#lib/UserLink.svelte";
@@ -11,7 +12,7 @@
   import EditDialog from "#lib/EditDialog.svelte";
   import Dialog from "#lib/Dialog.svelte";
   let tab = $state("tags");
-  followTabHash(["tags", "emoji", "invites", "searches"], (key) => (tab = key));
+  followTabHash(["tags", "emoji", "invites", "searches", "settings"], (key) => (tab = key));
   let tags = $state([]);
   let report = $state([]);
   const status = new Status();
@@ -138,7 +139,7 @@
   </Dialog>
 {/if}
 <div class="acp-tabs" role="tablist">
-  {#each [["tags", tr("Tags"), tags.length], ["emoji", tr("Custom emoji"), emoji.length], ["invites", tr("Invites"), invites.length], ["searches", tr("Top searches"), report.length]] as [key, label, n]}
+  {#each [["tags", tr("Tags"), tags.length], ["emoji", tr("Custom emoji"), emoji.length], ["invites", tr("Invites"), invites.length], ["searches", tr("Top searches"), report.length], ["settings", tr("Settings"), null]] as [key, label, n]}
     <button role="tab" aria-selected={tab === key} onclick={() => (tab = String(key))}>
       {label}<span class="acp-count">{n}</span>
     </button>
@@ -214,6 +215,8 @@
         />{/each}
     </ul>
   </div>
+{:else if tab === "settings"}
+  <!-- drawn below, where it stays mounted -->
 {:else}
   <p class="muted"><small>{tr("Last 30 days.")}</small></p>
   <table>
@@ -225,3 +228,5 @@
     </tbody>
   </table>
 {/if}
+
+<PageSettings path="/tags" hidden={tab !== "settings"} onshow={() => (tab = "settings")} />

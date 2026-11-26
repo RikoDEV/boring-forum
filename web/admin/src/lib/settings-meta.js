@@ -3,15 +3,94 @@
 import { tr } from "#lib/i18n.js";
 
 // Settings managed on their own pages stay out of the settings list.
-export const MANAGED = new Set([
-  "nav_links",
-  "ads_txt",
-  "default_theme_id",
-  "backup_enabled",
-  "backup_interval_hours",
-  "backup_keep",
-  "backup_uploads",
-]);
+/**
+ * Where each setting that belongs to a feature is edited: on that feature's own page, and nowhere
+ * else. Settings keeps only what has no page. A page listed under `on` draws its settings with
+ * PageSettings, in this order (`tab` is the tab they are on); `keys` ending in `*` or `:` take
+ * every setting that starts so.
+ * @type {Record<string, { tab?: string, keys: string[] }>}
+ */
+const ON_PAGES = {
+  "/mail": {
+    tab: "settings",
+    keys: ["mail_logo_url", "mail_accent_colour", "mail_post_excerpts", "email_delay_minutes", "email_bounce_limit"],
+  },
+  "/ai": { keys: ["ai_*"] },
+  "/chat": { tab: "settings", keys: ["chat_enabled", "chat_allow_uploads", "chat_allowed_types", "chat_*"] },
+  "/tags": {
+    tab: "settings",
+    keys: ["members_create_tags", "min_tags_per_topic", "max_tags_per_topic", "max_tag_length", "force_lowercase_tags"],
+  },
+  "/community": { tab: "settings", keys: ["reactions_per_day", "reaction_change_minutes"] },
+  "/trust": { keys: ["show_trust_levels"] },
+  "/plugins": { keys: ["require_signed_plugins", "plugin_*", "plugin:"] },
+  "/federation": { keys: ["federation_enabled", "federation_*"] },
+  "/maintenance": { keys: ["offline", "offline_message"] },
+};
+// Named like a feature's, but not its settings: one posts the forum's news elsewhere, the other
+// is about search engines.
+const NOT_THEIRS = new Set(["chat_webhook_url", "ai_crawlers"]);
+
+/** Settings a page edits with controls of its own, which Settings therefore leaves out. */
+export const OWN_CONTROLS = {
+  nav_links: "/navigation",
+  ads_txt: "/ads",
+  default_theme_id: "/themes",
+  // The "Set as default" buttons of a scheme write these.
+  default_light_scheme: "/colours",
+  default_dark_scheme: "/colours",
+  builtin_theme_enabled: "/themes",
+  backup_enabled: "/backups",
+  backup_interval_hours: "/backups",
+  backup_keep: "/backups",
+  backup_uploads: "/backups",
+  trust_levels: "/trust",
+  trust_recent_days: "/trust",
+};
+
+const takes = (pattern, key) =>
+  pattern.endsWith("*")
+    ? key.startsWith(pattern.slice(0, -1))
+    : pattern.endsWith(":")
+      ? key.startsWith(pattern)
+      : pattern === key;
+/** The page that draws `key` among its settings, and where in its list. */
+const entry = (key) => {
+  if (NOT_THEIRS.has(key) || key in OWN_CONTROLS) return null;
+  for (const [path, { tab, keys }] of Object.entries(ON_PAGES)) {
+    const at = keys.findIndex((pattern) => takes(pattern, key));
+    if (at >= 0) return { path, tab, at };
+  }
+  return null;
+};
+
+/** The settings of the page at `path`: which they are, and in what order. */
+export const keysOn = (/** @type {string} */ path) => ({
+  has: (/** @type {string} */ key) => entry(key)?.path === path,
+  order: (/** @type {any[]} */ settings) => [...settings].sort((a, b) => entry(a.key).at - entry(b.key).at),
+});
+
+/** The page that has `key`, as an address that shows it, or "" when Settings does. */
+export const placeOf = (/** @type {string} */ key) => {
+  if (key in OWN_CONTROLS) return OWN_CONTROLS[key];
+  const here = entry(key);
+  return here ? `${here.path}#setting=${encodeURIComponent(key)}` : "";
+};
+
+/** Settings groups that became part of a page, for links to them. */
+export const movedGroup = (/** @type {string} */ id) =>
+  ({ email: "/mail#tab=settings", ai: "/ai", plugins: "/plugins" })[id] ?? "";
+
+/** The kinds of page a share picture can be drawn for. */
+export const pageKinds = () => [
+  ["home", tr("Home page")],
+  ["topic", tr("Topics")],
+  ["forum", tr("Forums")],
+  ["tag", tr("Tags")],
+  ["profile", tr("Profiles")],
+  ["page", tr("Custom pages")],
+  ["other", tr("Other public pages")],
+];
 
 // Code, edited in a monospace box: (rows) for each.
 /// The language each code box is coloured as; the host list is plain text.
@@ -44,6 +123,7 @@ function build() {
     large_icon_url: "square",
     og_image_url: "card",
     og_background_image_url: "card",
+    mail_logo_url: "wide",
   };
   /** @type {[string, string, string, string[]][]} */
   const GROUPS = [
@@ -51,7 +131,7 @@ function build() {
       "branding",
       tr("Branding"),
       tr("Logo, icons and the picture for shared links"),
-      Object.keys(IMAGES).filter((k) => k !== "og_background_image_url"),
+      Object.keys(IMAGES).filter((k) => k !== "og_background_image_url" && k !== "mail_logo_url"),
     ],
     [
       "share",
@@ -84,7 +164,7 @@ function build() {
     [
       "general",
       tr("General"),
-      tr("Your site's name, language and availability"),
+      tr("Your site's name and language"),
       [
         "site_name",
         "site_description",
@@ -93,8 +173,6 @@ function build() {
         "contact_email",
         "contact_per_hour",
         "login_required",
-        "offline",
-        "offline_message",
         "cookie_consent_text",
         "version_check_url",
         "cloudflare_real_ip",
@@ -106,6 +184,8 @@ function build() {
       tr("Who can join, and how they log in"),
       [
         "allow_registration",
+        "hibp_password_check",
+        "unicode_usernames",
         "invite_only",
         "require_email_verification",
         "require_account_approval",
@@ -236,37 +316,12 @@ function build() {
     [
       "features",
       tr("Community features"),
-      tr("Tags, reactions, messages and more"),
+      tr("Messages, solutions, clubs and more"),
       [
-        "chat_enabled",
-        "chat_max_message_length",
-        "chat_max_mentions",
-        "chat_max_dm_users",
-        "chat_messages_per_minute",
-        "chat_min_trust_level",
-        "chat_create_min_trust_level",
-        "chat_dm_min_trust_level",
-        "chat_allow_uploads",
-        "chat_allowed_types",
-        "chat_upload_min_trust_level",
-        "chat_max_files_per_message",
-        "chat_wait_seconds",
-        "chat_duplicate_seconds",
-        "chat_auto_silence_hidden",
-        "chat_silence_hours",
-        "chat_retention_days",
-        "chat_dm_retention_days",
         "recently_browsing",
-        "members_create_tags",
-        "max_tags_per_topic",
-        "min_tags_per_topic",
-        "max_tag_length",
-        "force_lowercase_tags",
         "solved_enabled",
         "anonymous_posting",
         "wiki_min_trust_level",
-        "reactions_per_day",
-        "reaction_change_minutes",
         "signatures_enabled",
         "signature_max_length",
         "pm_max_participants",
@@ -291,16 +346,9 @@ function build() {
     ],
     [
       "reputation",
-      tr("Trust and warnings"),
-      tr("Levels, ranks and automatic penalties"),
-      [
-        "show_trust_levels",
-        "rank_names",
-        "warning_silence_points",
-        "warning_suspend_points",
-        "warning_action_days",
-        "warning_expire_days",
-      ],
+      tr("Ranks and warnings"),
+      tr("Ranks and automatic penalties"),
+      ["rank_names", "warning_silence_points", "warning_suspend_points", "warning_action_days", "warning_expire_days"],
     ],
     [
       "uploads",
@@ -348,7 +396,6 @@ function build() {
       tr("Let AI assistants read and manage the forum at /mcp"),
       ["mcp_enabled", "mcp_posting_enabled", "mcp_admin_enabled"],
     ],
-    ["email", tr("Email"), tr("Delivery and message text"), ["email_delay_minutes", "email_bounce_limit"]],
     [
       "custom",
       tr("Custom code"),
@@ -360,17 +407,8 @@ function build() {
     [
       "integrations",
       tr("Integrations"),
-      tr("Plugins, embeds and chat"),
+      tr("Embeds, statistics and outside services"),
       [
-        "require_signed_plugins",
-        "plugin_posts_per_hour",
-        "plugin_storage_mb",
-        "plugin_db_reads_per_minute",
-        "plugin_notifications_per_hour",
-        "plugin_jobs_per_minute",
-        "plugin_emails_per_hour",
-        "plugin_http_per_minute",
-        "plugin_max_schedules",
         "embed_hosts",
         "embed_forum",
         "chat_webhook_url",
@@ -399,40 +437,24 @@ function build() {
       ],
     ],
     [
-      "ai",
-      tr("AI"),
-      tr("Summaries, moderation, translation, search by meaning and help in the editor. All of it is off by default"),
+      "search",
+      tr("Search engines"),
+      tr("How search engines and crawlers find the forum. robots.txt itself is under Custom code"),
+      ["indexnow_enabled", "indexnow_key", "ai_crawlers"],
+    ],
+    [
+      "privacy",
+      tr("Privacy and legal"),
+      tr("How long records are kept, and who to contact about the law and security"),
       [
-        "ai_enabled",
-        "ai_api_style",
-        "ai_base_url",
-        "ai_api_key",
-        "ai_model",
-        "ai_public_only",
-        "ai_monthly_token_limit",
-        "ai_user_daily_limit",
-        "ai_summaries_enabled",
-        "ai_summary_min_replies",
-        "ai_gists_enabled",
-        "ai_spam_enabled",
-        "ai_spam_action",
-        "ai_spam_threshold",
-        "ai_max_trust_level",
-        "ai_toxicity_enabled",
-        "ai_toxicity_threshold",
-        "ai_sentiment_enabled",
-        "ai_translate_enabled",
-        "ai_auto_translate_locales",
-        "ai_embedding_model",
-        "ai_embedding_base_url",
-        "ai_embedding_api_key",
-        "ai_embedding_dims",
-        "ai_embedding_max_topics",
-        "ai_semantic_search_enabled",
-        "ai_related_topics_enabled",
-        "ai_helper_enabled",
-        "ai_helper_min_trust_level",
-        "ai_bot_enabled",
+        "ip_retention_days",
+        "audit_retention_days",
+        "notification_retention_days",
+        "operational_retention_days",
+        "dsa_notices_enabled",
+        "dsa_contact_email",
+        "security_contact",
+        "security_policy_url",
       ],
     ],
   ];
@@ -540,6 +562,9 @@ function build() {
     og_background_colour_end: tr("Gradient colour"),
     og_text_colour: tr("Text colour"),
     og_accent_colour: tr("Accent colour"),
+    mail_logo_url: tr("Email logo"),
+    mail_accent_colour: tr("Button and link colour"),
+    mail_post_excerpts: tr("Quote posts in email"),
     og_background_image_url: tr("Background picture"),
     og_overlay: tr("Darken the picture (%)"),
     og_show_logo: tr("Show the logo"),
@@ -638,9 +663,9 @@ function build() {
     uploads: "image",
     gifs: "film",
     mcp: "cpu",
-    email: "mail",
     integrations: "wrench",
-    ai: "sparkles",
+    search: "search",
+    privacy: "landmark",
     antispam: "shield",
     custom: "code",
     other: "ellipsis",
@@ -656,9 +681,6 @@ export const humanize = (/** @type {string} */ key) => {
   }
   return meta().LABELS[key] ?? tr(key[0].toUpperCase() + key.slice(1).replaceAll("_", " "));
 };
-
-/** Settings kept on a page of their own, and where. */
-export const MANAGED_PAGE = { nav_links: "/navigation", ads_txt: "/ads", default_theme_id: "/themes" };
 
 /** @type {Map<string, string> | undefined} */
 let known;

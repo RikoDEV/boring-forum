@@ -3,6 +3,7 @@
   import { locale, tn, tr } from "#lib/i18n.js";
   import { Status } from "#lib/status.svelte.js";
   import PageHead from "#lib/PageHead.svelte";
+  import PageSettings from "#lib/PageSettings.svelte";
   import EditDialog from "#lib/EditDialog.svelte";
   import Field from "#lib/Field.svelte";
   import Box from "#lib/Box.svelte";
@@ -364,3 +365,5 @@
 {:else}
   <Empty {loaded} title={tr("None installed.")} />
 {/each}
+
+<PageSettings path="/plugins" title={tr("Limits and signing")} />

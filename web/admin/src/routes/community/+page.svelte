@@ -2,6 +2,7 @@
   import { followTabHash } from "#lib/tabs.svelte.js";
   import { tr } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
+  import PageSettings from "#lib/PageSettings.svelte";
   import { Status } from "#lib/status.svelte.js";
   import { del, get, post, put } from "#lib/api.js";
   import Field from "#lib/Field.svelte";
@@ -11,7 +12,7 @@
   import EditDialog from "#lib/EditDialog.svelte";
   import Empty from "#lib/Empty.svelte";
   let tab = $state("reactions");
-  followTabHash(["reactions", "tags", "rules", "news", "reasons"], (key) => (tab = key));
+  followTabHash(["reactions", "tags", "rules", "news", "reasons", "settings"], (key) => (tab = key));
   let reactions = $state([]);
   let groups = $state([]);
   let rules = $state([]);
@@ -274,7 +275,7 @@
   </EditDialog>
 {/if}
 <div class="acp-tabs" role="tablist">
-  {#each [["reactions", tr("Reactions"), reactions.length], ["tags", tr("Tag groups"), groups.length], ["rules", tr("Group rules"), rules.length], ["news", tr("Announcements"), notices.length], ["reasons", tr("Report reasons"), reasons.length]] as [key, label, n]}
+  {#each [["reactions", tr("Reactions"), reactions.length], ["tags", tr("Tag groups"), groups.length], ["rules", tr("Group rules"), rules.length], ["news", tr("Announcements"), notices.length], ["reasons", tr("Report reasons"), reasons.length], ["settings", tr("Settings"), null]] as [key, label, n]}
     <button role="tab" aria-selected={tab === key} onclick={() => (tab = String(key))}>
       {label}<span class="acp-count">{n}</span>
     </button>
@@ -483,6 +484,8 @@
       <Empty {loaded} title={tr("No group rules yet.")} text={tr("Use New group rule above to add one.")} />
     {/each}
   </div>
+{:else if tab === "settings"}
+  <!-- drawn below, where it stays mounted -->
 {:else}
   <div class="acp-card-list">
     {#each notices as a (a.id)}
@@ -510,3 +513,5 @@
     {/each}
   </div>
 {/if}
+
+<PageSettings path="/community" hidden={tab !== "settings"} onshow={() => (tab = "settings")} />

@@ -112,6 +112,12 @@ opened from a `PageHead` button; never an inline form above the list.
   `.acp-wide`; buttons: `div.acp-actions`.
 - Dialogs: `dialog.acp-modal` opened with `showModal()`, as on the Badges page.
 
+- A setting has exactly one home. If its feature has an admin page, it goes there: list its key
+  in `ON_PAGES` in `settings-meta.js` (the page draws it with `<PageSettings path="…" />`, on a
+  tab kept mounted with `hidden`). If the page edits it with controls of its own, list it in
+  `OWN_CONTROLS`. Otherwise give it a group in `GROUPS`. `web/admin/test/settings-places.test.mjs`
+  fails for a setting with no home or two.
+
 **Forum pages (`crates/bf-web/templates`, `themes/default/css`)**
 - Modals: `dialog.bf-dialog` (`is-narrow`, `is-wide`) with `header.bf-dialog-head`, `.bf-dialog-body` and
   `.bf-dialog-actions`, opened by `button[data-dialog="<id>"]`, closed by `[data-dialog-close]`

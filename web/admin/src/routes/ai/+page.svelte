@@ -1,9 +1,9 @@
 <script>
   import Empty from "#lib/Empty.svelte";
-  import { resolve } from "$app/paths";
   import { SvelteMap } from "svelte/reactivity";
   import { tr, locale } from "#lib/i18n.js";
   import PageHead from "#lib/PageHead.svelte";
+  import PageSettings from "#lib/PageSettings.svelte";
   import Box from "#lib/Box.svelte";
   import { Status } from "#lib/status.svelte.js";
   import { del, get, post, put } from "#lib/api.js";
@@ -142,7 +142,7 @@
   )}
   {status}
 >
-  <a class="btn secondary" href={resolve("/settings") + "#ai"}>{tr("AI settings")}</a>
+  <a class="btn secondary" href="#setting=ai_enabled">{tr("AI settings")}</a>
   <button disabled={testing || !overview?.configured} onclick={test}>{tr("Test the connection")}</button>
 </PageHead>
 
@@ -405,3 +405,5 @@
     />
   {/if}
 </div>
+
+<PageSettings path="/ai" onsaved={load} />
