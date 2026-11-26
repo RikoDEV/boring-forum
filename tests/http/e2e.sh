@@ -194,7 +194,8 @@ has "files download as attachments" "$(curl -s -D - -o /dev/null $B$TXT)" "conte
 check "unknown upload 404" "$(curl -s -o /dev/null -w '%{http_code}' $B/uploads/$(printf 'b%.0s' $(seq 64)).png)" 404
 check "path tricks 404" "$(curl -s -o /dev/null -w '%{http_code}' "$B/uploads/..%2f..%2fCargo.toml")" 404
 check "upload avatar" "$(curl -s -o /dev/null -w '%{http_code}' -b $K -F "csrf=$T2" -F "file=@$TMPF/dot.png" $B/settings/avatar)" 303
-check "avatar url points at upload" "$(curl -s -o /dev/null -w '%{redirect_url}' $B/avatar/bob.svg)" "$B$IMG"
+check "avatar url points at the small upload" "$(curl -s -o /dev/null -w '%{redirect_url}' $B/avatar/bob.svg)" "$B${IMG%.png}-128.png"
+check "small avatar is served" "$(curl -s -o /dev/null -w '%{http_code} %{content_type}' $B${IMG%.png}-128.png)" "200 image/png"
 check "text is not an avatar" "$(curl -s -o /dev/null -w '%{http_code}' -b $K -F "csrf=$T2" -F "file=@$TMPF/notes.txt" $B/settings/avatar)" 422
 check "remove avatar" "$(curl -s -o /dev/null -w '%{http_code}' -b $K --data "csrf=$T2" $B/settings/avatar/remove)" 303
 has "letter avatar again" "$(curl -s $B/avatar/bob.svg)" ">B</text>"

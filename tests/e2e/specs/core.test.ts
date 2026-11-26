@@ -253,7 +253,12 @@ describe("topic moderation", () => {
       });
       it("avatar upload", async () => {
         expect((await bob.multipart("/settings/avatar", { csrf: bob.csrf, file: dot }, { noCsrf: true })).status).toBe(303);
-        expect((await guest.get("/avatar/bob.svg")).location).toBe(forum.base + IMG);
+        // A still picture is sent at the avatar size, from the same upload.
+        const small = IMG.replace(/\.png$/, "-128.png");
+        expect((await guest.get("/avatar/bob.svg")).location).toBe(forum.base + small);
+        const served = await guest.get(small);
+        expect(served.status).toBe(200);
+        expect(served.headers.get("content-type")).toBe("image/png");
         expect((await bob.multipart("/settings/avatar", { csrf: bob.csrf, file: notes }, { noCsrf: true })).status).toBe(422);
         expect((await bob.form("/settings/avatar/remove")).status).toBe(303);
         expect((await guest.get("/avatar/bob.svg")).text).toContain(">B</text>");
