@@ -25,6 +25,8 @@ bf-seo = { path = "../bf-seo" }
 bf-realtime = { path = "../bf-realtime" }
 chrono.workspace = true
 futures-util.workspace = true
+# Incoming mail comes in any character set (Polish clients still send windows-1250).
+encoding_rs = "0.8"
 lettre = { version = "0.11", default-features = false, features = ["builder", "smtp-transport", "tokio1", "tokio1-rustls-tls", "hostname"] }
 axum.workspace = true
 dashmap.workspace = true

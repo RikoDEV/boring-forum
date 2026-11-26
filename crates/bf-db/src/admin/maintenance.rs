@@ -78,7 +78,7 @@ pub async fn purge_operational(pool: &PgPool, operational_days: i64, notificatio
         "DELETE FROM pending_logins WHERE expires_at < now()",
         "DELETE FROM mail_outbox WHERE sent_at < now() - interval '30 days'",
         // Mail that kept failing still holds an address and a message.
-        "DELETE FROM mail_outbox WHERE sent_at IS NULL AND attempts >= 5 AND created_at < now() - interval '30 days'",
+        "DELETE FROM mail_outbox WHERE sent_at IS NULL AND attempts >= 9 AND created_at < now() - interval '30 days'",
         "DELETE FROM webhook_deliveries WHERE status <> 'pending' AND next_at < now() - interval '30 days'",
         "DELETE FROM webhook_deliveries WHERE status = 'pending' AND created_at < now() - interval '30 days'",
         // An Idempotency-Key is honoured for 24 hours.
@@ -191,7 +191,7 @@ pub async fn tasks(pool: &PgPool) -> Result<Vec<TaskRow>, Error> {
 /// Things an admin should look at: (failed mail, bad addresses, errors in 24 h, pending users).
 pub async fn problems(pool: &PgPool) -> Result<(i64, i64, i64, i64), Error> {
     sqlx::query_as(
-        "SELECT (SELECT count(*) FROM mail_outbox WHERE sent_at IS NULL AND attempts >= 5),
+        "SELECT (SELECT count(*) FROM mail_outbox WHERE sent_at IS NULL AND attempts >= 9),
                 (SELECT count(*) FROM users WHERE email_bad),
                 (SELECT count(*) FROM error_log WHERE created_at > now() - interval '1 day'),
                 (SELECT count(*) FROM users WHERE NOT approved)",

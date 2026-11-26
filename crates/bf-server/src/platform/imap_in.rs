@@ -24,6 +24,8 @@ pub struct Parsed {
     pub html: String,
     /// Files attached to the mail, decoded; the upload pipeline decides what is kept.
     pub attachments: Vec<Attachment>,
+    /// Written by a machine (an out-of-office note, a delivery report): never posted.
+    pub automatic: bool,
 }
 
 #[derive(Debug, PartialEq)]
@@ -34,6 +36,9 @@ pub struct Attachment {
 
 /// More than this many files in one mail is refused by the caller.
 const MAX_ATTACHMENTS: usize = 10;
+
+/// The largest mail that is read. A mail is never trusted to be small.
+const MAX_MAIL: usize = 5_000_000;
 
 struct Settings {
     host: String,
@@ -102,8 +107,8 @@ impl Imap {
             let size =
                 line.strip_suffix('}').and_then(|l| l.rsplit_once('{')).and_then(|(_, n)| n.parse::<usize>().ok());
             if let Some(size) = size {
-                // A mail is never trusted to be small.
-                if size > 5_000_000 {
+                // Sizes are asked first (`poll`); this holds whatever the server answers.
+                if size > MAX_MAIL {
                     return Err("mail too large".into());
                 }
                 let mut buf = vec![0; size];
@@ -148,10 +153,21 @@ async fn poll(state: &AppState, s: &Settings) -> Result<usize, String> {
         .collect();
     let mut handled = 0;
     for id in ids {
+        // The size first: a mail too large to read must be answered and passed over. Failing on it
+        // would leave it unread, first in line at every later poll, and nothing after it handled.
+        let (sizes, _) = imap.run(&format!("FETCH {id} RFC822.SIZE")).await?;
+        if size_of(&sizes).is_some_and(|n| n > MAX_MAIL) {
+            let (_, literals) = imap.run(&format!("FETCH {id} BODY.PEEK[HEADER]")).await?;
+            if let Some(mail) = literals.first().map(|h| parse(h)).filter(|m| !m.automatic) {
+                crate::forum::topic_tools::refuse_inbound(state, &mail.addresses, &mail.subject).await;
+            }
+            imap.run(&format!("STORE {id} +FLAGS (\\Seen)")).await?;
+            handled += 1;
+            continue;
+        }
         // PEEK leaves it unread until it has been handled; a failure is then retried next time.
         let (_, literals) = imap.run(&format!("FETCH {id} BODY.PEEK[]")).await?;
-        if let Some(raw) = literals.first() {
-            let mail = parse(raw);
+        if let Some(mail) = literals.first().map(|raw| parse(raw)).filter(|m| !m.automatic) {
             let files: Vec<(String, Vec<u8>)> = mail.attachments.into_iter().map(|a| (a.filename, a.bytes)).collect();
             crate::forum::topic_tools::process_inbound(
                 state,
@@ -168,6 +184,51 @@ async fn poll(state: &AppState, s: &Settings) -> Result<usize, String> {
     }
     let _ = imap.run("LOGOUT").await;
     Ok(handled)
+}
+
+/// The number in `* 3 FETCH (RFC822.SIZE 1234)`.
+fn size_of(lines: &[String]) -> Option<usize> {
+    lines.iter().find_map(|l| {
+        let after = l.split_once("RFC822.SIZE ")?.1;
+        after.split(|c: char| !c.is_ascii_digit()).next()?.parse().ok()
+    })
+}
+
+/// Whether a machine wrote the mail, from its headers (names in lower case) and subject: RFC 3834's
+/// `Auto-Submitted`, what older autoresponders send, delivery reports, and the subjects of
+/// out-of-office notes from clients that mark nothing. Posting one would publish it under the
+/// member's name.
+pub fn is_automatic(headers: &[(String, String)], subject: &str) -> bool {
+    let value = |name: &str| header(headers, name).map(|v| v.trim().to_ascii_lowercase());
+    if value("auto-submitted").is_some_and(|v| v.split(';').next().is_some_and(|v| v.trim() != "no")) {
+        return true;
+    }
+    if value("precedence").is_some_and(|v| matches!(v.as_str(), "bulk" | "junk" | "list" | "auto_reply")) {
+        return true;
+    }
+    if ["x-autoreply", "x-autorespond", "x-auto-reply"].iter().any(|n| value(n).is_some()) {
+        return true;
+    }
+    if value("return-path").is_some_and(|v| v == "<>")
+        || value("content-type").is_some_and(|v| v.starts_with("multipart/report"))
+        || value("from").is_some_and(|v| v.contains("mailer-daemon@") || v.contains("postmaster@"))
+    {
+        return true;
+    }
+    let subject = subject.trim().to_lowercase();
+    [
+        "automatic reply:",
+        "auto-reply:",
+        "autoreply:",
+        "out of office:",
+        "automatyczna odpowiedź:",
+        "odpowiedź automatyczna:",
+        "poza biurem:",
+        "رد تلقائي:",
+        "الرد التلقائي:",
+    ]
+    .iter()
+    .any(|p| subject.starts_with(p))
 }
 
 fn find(hay: &[u8], needle: &[u8]) -> Option<usize> {
@@ -208,10 +269,14 @@ fn param(content_type: &str, name: &str) -> Option<String> {
     })
 }
 
+/// Text in whatever character set the mail names (`windows-1250`, `iso-8859-2`, …), as browsers
+/// read those names. An unknown one is read as UTF-8.
 fn to_string(bytes: &[u8], charset: &str) -> String {
-    match charset.to_ascii_lowercase().as_str() {
-        "iso-8859-1" | "latin1" | "us-ascii" | "windows-1252" => bytes.iter().map(|b| char::from(*b)).collect(),
-        _ => String::from_utf8_lossy(bytes).into_owned(),
+    // An encoded word may name its language too: `utf-8*pl`.
+    let label = charset.split('*').next().unwrap_or_default().trim();
+    match encoding_rs::Encoding::for_label(label.as_bytes()) {
+        Some(encoding) => encoding.decode(bytes).0.into_owned(),
+        None => String::from_utf8_lossy(bytes).into_owned(),
     }
 }
 
@@ -346,6 +411,7 @@ pub fn parse(raw: &[u8]) -> Parsed {
             out.addresses.extend(addresses(&decode_words(v)));
         }
     }
+    out.automatic = is_automatic(&headers, &out.subject);
     walk(&headers, body, &mut out, 0);
     out
 }
@@ -361,6 +427,46 @@ mod tests {
         assert_eq!(p.addresses, ["reply+abc@x.example"]);
         assert_eq!(p.subject, "Hello");
         assert_eq!(p.text.trim(), "Thanks!");
+    }
+
+    #[test]
+    fn machine_written_mail_is_told_apart() {
+        let auto = |head: &str| parse(format!("To: reply+k@x.example\n{head}\n\nI am away\n").as_bytes()).automatic;
+        for head in [
+            "Auto-Submitted: auto-replied",
+            "Precedence: bulk",
+            "X-Autoreply: yes",
+            "Return-Path: <>",
+            "From: Mail Delivery <MAILER-DAEMON@x.example>",
+            "Content-Type: multipart/report; boundary=B",
+            "Subject: Automatyczna odpowiedź: urlop",
+        ] {
+            assert!(auto(head), "{head}");
+        }
+        for head in ["Auto-Submitted: no", "Subject: Re: out of office furniture", "From: Ann <ann@x.example>"] {
+            assert!(!auto(head), "{head}");
+        }
+    }
+
+    #[test]
+    fn polish_character_sets_are_read() {
+        // "zażółć" is the same bytes in windows-1250 and in ISO-8859-2.
+        for charset in ["windows-1250", "iso-8859-2"] {
+            let word = "za=BF=F3=B3=E6";
+            let raw = format!(
+                "To: reply+k@x.example\nSubject: =?{charset}?Q?{word}?=\nContent-Type: text/plain; charset={charset}\nContent-Transfer-Encoding: quoted-printable\n\n{word}\n"
+            );
+            let p = parse(raw.as_bytes());
+            assert_eq!((p.subject.as_str(), p.text.trim()), ("zażółć", "zażółć"), "{charset}");
+        }
+        // Windows-1252's quotation marks and dash are not Latin-1.
+        assert_eq!(to_string(&[0x93, b'a', 0x94, 0x96], "windows-1252"), "“a”–");
+    }
+
+    #[test]
+    fn the_size_of_a_mail_is_read_from_the_answer() {
+        assert_eq!(size_of(&["* 3 FETCH (RFC822.SIZE 7340032)".to_owned()]), Some(7_340_032));
+        assert_eq!(size_of(&["* 3 EXISTS".to_owned()]), None);
     }
 
     #[test]

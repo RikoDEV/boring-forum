@@ -182,8 +182,15 @@ pub(crate) async fn start_session(
                     .fetch_one(pool)
                     .await
                     .db()?;
-            // The site's default language is not at hand here; a member without one reads English.
-            let t = bf_core::i18n::T::new(locale.as_deref().unwrap_or("en"));
+            // The member's language, else the site's (this runs without the loaded settings).
+            let site_default: Option<String> =
+                sqlx::query_scalar("SELECT value #>> '{}' FROM site_settings WHERE key = 'default_locale'")
+                    .fetch_optional(pool)
+                    .await
+                    .db()?
+                    .flatten();
+            let fallback = bf_core::i18n::site_language(site_default.as_deref().unwrap_or_default());
+            let t = bf_core::i18n::T::new(locale.as_deref().unwrap_or(fallback));
             let site: String = sqlx::query_scalar("SELECT value #>> '{}' FROM site_settings WHERE key = 'site_name'")
                 .fetch_optional(pool)
                 .await

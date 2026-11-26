@@ -16,6 +16,24 @@ pub async fn queue_mail(pool: &PgPool, to: &str, subject: &str, body: &str) -> R
         .map(|_| ())
 }
 
+/// How many times a mail is tried before it is given up.
+pub const MAX_ATTEMPTS: i16 = 9;
+
+/// Minutes to wait after the first, second, … failed try: about two days in all, so a mail server
+/// that is down overnight loses nothing.
+pub const RETRY_MINUTES: [i32; MAX_ATTEMPTS as usize - 1] = [1, 5, 15, 60, 180, 360, 720, 1440];
+
+/// Queues a mail from the contact form, which [`contact_mails_last_hour`] counts.
+pub async fn queue_contact_mail(pool: &PgPool, to: &str, subject: &str, body: &str) -> Result<(), Error> {
+    sqlx::query("INSERT INTO mail_outbox (to_addr, subject, body, purpose) VALUES ($1, $2, $3, 'contact')")
+        .bind(to)
+        .bind(subject)
+        .bind(body)
+        .execute(pool)
+        .await
+        .map(|_| ())
+}
+
 #[derive(Debug, Clone, FromRow)]
 pub struct OutMail {
     pub id: i64,
@@ -34,11 +52,12 @@ pub async fn unsent_mail(pool: &PgPool, limit: i64) -> Result<Vec<OutMail>, Erro
     sqlx::query_as(
         "UPDATE mail_outbox m SET not_before = now() + interval '15 minutes'
          WHERE m.id IN (SELECT id FROM mail_outbox
-                        WHERE sent_at IS NULL AND attempts < 5 AND (not_before IS NULL OR not_before <= now())
+                        WHERE sent_at IS NULL AND attempts < $2 AND (not_before IS NULL OR not_before <= now())
                         ORDER BY id LIMIT $1 FOR UPDATE SKIP LOCKED)
          RETURNING m.id, m.to_addr, m.subject, m.body, m.attempts, m.unsubscribe_url, m.reply_key",
     )
     .bind(limit)
+    .bind(MAX_ATTEMPTS)
     .fetch_all(pool)
     .await
 }
@@ -57,13 +76,21 @@ pub async fn mail_sent(pool: &PgPool, id: i64) -> Result<(), Error> {
     .map(|_| ())
 }
 
-pub async fn mail_failed(pool: &PgPool, id: i64, error: &str) -> Result<(), Error> {
+/// Records a failed try. A `permanent` one (the server refused the mail for good) is not tried
+/// again; any other waits the next of [`RETRY_MINUTES`].
+pub async fn mail_failed(pool: &PgPool, id: i64, error: &str, permanent: bool) -> Result<(), Error> {
+    // `attempts` on the right is the count before this try; arrays count from one. Past the last
+    // wait the index finds nothing, and the mail is out of tries anyway.
     sqlx::query(
-        "UPDATE mail_outbox SET attempts = attempts + 1, last_error = $2,
-           not_before = now() + interval '1 minute' * power(2, attempts) WHERE id = $1",
+        "UPDATE mail_outbox SET last_error = $2,
+           attempts = CASE WHEN $3 THEN $4 ELSE attempts + 1 END,
+           not_before = now() + interval '1 minute' * coalesce(($5::int[])[attempts + 1], 0) WHERE id = $1",
     )
     .bind(id)
     .bind(error)
+    .bind(permanent)
+    .bind(MAX_ATTEMPTS)
+    .bind(RETRY_MINUTES.as_slice())
     .execute(pool)
     .await
     .map(|_| ())
@@ -290,9 +317,11 @@ pub async fn mass_messages(pool: &PgPool, limit: i64) -> Result<Vec<MassMessage>
 
 /// Contact form mails queued in the last hour.
 pub async fn contact_mails_last_hour(pool: &PgPool) -> Result<i64, Error> {
-    sqlx::query_scalar("SELECT count(*) FROM mail_outbox WHERE subject = 'Contact form message' AND created_at > now() - interval '1 hour'")
-        .fetch_one(pool)
-        .await
+    sqlx::query_scalar(
+        "SELECT count(*) FROM mail_outbox WHERE purpose = 'contact' AND created_at > now() - interval '1 hour'",
+    )
+    .fetch_one(pool)
+    .await
 }
 
 pub async fn log_bulk(pool: &PgPool, actor: Option<i64>, subject: &str, count: i64) -> Result<(), Error> {

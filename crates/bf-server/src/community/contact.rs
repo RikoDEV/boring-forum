@@ -79,7 +79,7 @@ async fn contact(State(state): State<AppState>, v: Viewer, Form(f): Form<Contact
         // For the site's staff: in the site's language.
         let t = bf_core::i18n::T::new(bf_core::i18n::site_language(state.settings().str("default_locale")));
         let subject = t.msgf("Contact form message - {site}", &[("site", state.settings().str("site_name"))]);
-        bf_db::platform::mail::queue_mail(pool, &to, &subject, &text).await.db()?;
+        bf_db::platform::mail::queue_contact_mail(pool, &to, &subject, &text).await.db()?;
     }
     Ok(simple_page(
         &state,

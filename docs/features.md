@@ -126,7 +126,7 @@ Set `embed_hosts` to the sites allowed, and `embed_forum` to a public forum for 
 
 ## Reply by email
 
-Point your mail provider's inbound webhook at `/api/v1/webhooks/inbound-mail` with `Authorization: Bearer $BF_INBOUND_TOKEN` and a JSON body of `{"to": "...", "text": "..."}`. Replies follow the same rules as the site: permissions, limits, word screening and plugins. Providers with another format need a small adapter in front.
+Point your mail provider's inbound webhook at `/api/v1/webhooks/inbound-mail` with `Authorization: Bearer $BF_INBOUND_TOKEN` and a JSON body of `{"to": "...", "text": "..."}`. Pass the mail's headers as `"headers": {"Auto-Submitted": "..."}` where your provider offers them, so that automatic replies (out-of-office notes, delivery reports) are recognised and never posted. Replies follow the same rules as the site: permissions, limits, word screening and plugins. Providers with another format need a small adapter in front.
 
 ## Plugins and themes
 

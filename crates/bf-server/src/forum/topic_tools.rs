@@ -262,20 +262,85 @@ async fn delete_saved(
     Ok(StatusCode::NO_CONTENT.into_response())
 }
 
-/// What the person typed: everything before the quoted original.
+/// What the person typed: everything before the quoted original, as mail clients mark one in the
+/// site's languages. A line with an unsubscribe link is dropped wherever it stands: it is the
+/// member's own private link, from the mail they answered, and a post would show it to everyone.
 pub(crate) fn strip_quoted(text: &str) -> String {
-    let mut kept = Vec::new();
-    for line in text.lines() {
+    let lines: Vec<&str> = text.lines().collect();
+    let mut kept: Vec<&str> = Vec::new();
+    for (i, line) in lines.iter().enumerate() {
         let t = line.trim();
-        let wrote = t.starts_with("On ") && t.ends_with("wrote:");
-        if wrote || t == "--" || t.starts_with("-----Original Message") {
+        if t == "--" || is_separator(t) || starts_header_block(&lines[i..]) {
             break;
         }
-        if !t.starts_with('>') {
+        if is_attribution(t) {
+            // A long attribution wraps: its first half is the line before.
+            if kept.last().is_some_and(|before| opens_attribution(before.trim())) {
+                kept.pop();
+            }
+            break;
+        }
+        if !t.starts_with('>') && !t.contains("/unsubscribe/") {
             kept.push(line);
         }
     }
     kept.join("\n").trim().to_owned()
+}
+
+/// "On Tue, 3 Mar 2026, Forum <a@b> wrote:" and its like. It has a date or an address in it, so
+/// that a member's own "She wrote:" stays.
+fn is_attribution(line: &str) -> bool {
+    const ENDS: [&str; 7] = ["wrote:", "napisał:", "napisała:", "napisał(a):", "pisze:", "كتب:", "كتبت:"];
+    let lower = line.to_lowercase();
+    ENDS.iter().any(|end| lower.ends_with(end)) && (has_date_or_address(line) || line.starts_with("On "))
+}
+
+fn has_date_or_address(line: &str) -> bool {
+    line.contains('@') || line.chars().any(char::is_numeric)
+}
+
+/// The first half of a wrapped attribution: it starts like one, or ends inside an address.
+fn opens_attribution(line: &str) -> bool {
+    has_date_or_address(line)
+        && (["On ", "W dniu ", "Dnia ", "في "].iter().any(|s| line.starts_with(s))
+            || line.rfind('<').is_some_and(|open| !line[open..].contains('>'))
+            || line.ends_with('>'))
+}
+
+/// The ruled lines clients put above a quoted or forwarded original.
+fn is_separator(line: &str) -> bool {
+    // Outlook draws a long line of underscores.
+    if line.len() >= 20 && line.chars().all(|c| c == '_') {
+        return true;
+    }
+    if !line.starts_with("--") {
+        return false;
+    }
+    let words = line.trim_matches(['-', ' ']).to_lowercase();
+    [
+        "original message",
+        "forwarded message",
+        "wiadomość oryginalna",
+        "oryginalna wiadomość",
+        "wiadomość przekazana",
+        "treść przekazanej wiadomości",
+        "الرسالة الأصلية",
+        "رسالة معاد توجيهها",
+    ]
+    .contains(&words.as_str())
+}
+
+/// Outlook quotes with no `>`: "From: …" with "Sent:", "To:" or "Subject:" just under it.
+fn starts_header_block(lines: &[&str]) -> bool {
+    let starts = |line: &str, names: &[&str]| {
+        let line = line.trim().trim_start_matches('*');
+        names.iter().any(|n| line.strip_prefix(n).is_some_and(|rest| rest.starts_with([':', '*'])))
+    };
+    let Some((first, rest)) = lines.split_first() else { return false };
+    starts(first, &["From", "Od", "من"])
+        && rest.iter().take(4).any(|l| {
+            starts(l, &["Sent", "Date", "To", "Subject", "Wysłano", "Data", "Do", "Temat", "التاريخ", "إلى", "الموضوع"])
+        })
 }
 
 /// The key in `reply+KEY@domain`.
@@ -322,6 +387,9 @@ struct InboundMail {
     html: String,
     #[serde(default)]
     subject: String,
+    /// The mail's headers, when the provider passes them on: what tells an automatic reply apart.
+    #[serde(default)]
+    headers: std::collections::HashMap<String, String>,
 }
 
 /// A mail provider's inbound webhook, with `Authorization: Bearer $BF_INBOUND_TOKEN`. The address
@@ -338,7 +406,10 @@ async fn inbound_mail(
     if !given.is_some_and(|g| crate::admin::api::constant_time_eq(g.as_bytes(), expected.as_bytes())) {
         return Err(AppError::Forbidden);
     }
-    process_inbound(&state, std::slice::from_ref(&m.to), &m.subject, &m.text, &m.html, &[]).await;
+    let sent: Vec<(String, String)> = m.headers.into_iter().map(|(k, v)| (k.to_ascii_lowercase(), v)).collect();
+    if !crate::platform::imap_in::is_automatic(&sent, &m.subject) {
+        process_inbound(&state, std::slice::from_ref(&m.to), &m.subject, &m.text, &m.html, &[]).await;
+    }
     Ok(StatusCode::OK.into_response())
 }
 
@@ -388,6 +459,27 @@ pub(crate) async fn process_inbound(
             bounce(state, user, subject, &e).await;
         }
         return;
+    }
+}
+
+/// Answers a mail that was too large to read: whoever owns the address it was sent to is told.
+pub(crate) async fn refuse_inbound(state: &AppState, to: &[String], subject: &str) {
+    let Some(pool) = &state.pool else { return };
+    for addr in to {
+        let owner = if let Some((key, _)) = post_address(addr) {
+            bf_db::forum::tools::mail_key_owner(pool, key).await.ok().flatten()
+        } else if let Some(key) = reply_key(addr) {
+            match tools::reply_target(pool, key).await {
+                Ok(Some((user, _))) => Some(user),
+                _ => tools::conversation_target(pool, key).await.ok().flatten().map(|(user, _)| user),
+            }
+        } else {
+            None
+        };
+        if let Some(user) = owner {
+            bounce(state, user, subject, &AppError::Validation("The email was too large.".into())).await;
+            return;
+        }
     }
 }
 
@@ -595,6 +687,32 @@ mod tests {
     fn quoted_text_is_removed() {
         assert_eq!(strip_quoted("Thanks!\n\nOn Mon, Ann wrote:\n> old"), "Thanks!");
         assert_eq!(strip_quoted("> old\nNew text\n-- \nsig"), "New text");
+    }
+
+    #[test]
+    fn quotes_without_marks_are_removed_in_every_site_language() {
+        let footer = "Stop these emails: https://f.example/unsubscribe/abc";
+        for original in [
+            "wt., 26 lis 2026 o 12:00 Forum <reply+k@x.example> napisał(a):",
+            "W dniu 26.11.2026 o 12:00, Anna pisze:",
+            "On Thu, 26 Nov 2026 at 12:00, Forum <\nreply+k@x.example> wrote:",
+            "في الخميس، 26 نوفمبر 2026 كتب:",
+            "________________________________\nOd: Forum <forum@x.example>\nWysłano: czwartek",
+            "From: Forum <forum@x.example>\nSent: Thursday",
+            "**Od:** Forum\n**Do:** Anna",
+            "-----Wiadomość oryginalna-----",
+            "---------- Forwarded message ---------",
+        ] {
+            let mail = format!("Dzięki!\n\n{original}\nstary tekst\n{footer}");
+            assert_eq!(strip_quoted(&mail), "Dzięki!", "{original}");
+        }
+        // A quote no marker announces still never carries the member's own link into a post.
+        let links = format!("Dzięki!\n{footer}\nMute: https://f.example/unsubscribe/abc/topic");
+        assert_eq!(strip_quoted(&links), "Dzięki!");
+        // What a member writes themselves stays.
+        for own in ["She wrote:\nhello", "From: the start I liked it.\nReally.", "Od: rana pada.\n---\nnadal"] {
+            assert_eq!(strip_quoted(own), own);
+        }
     }
 
     #[test]

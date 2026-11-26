@@ -6,6 +6,7 @@
 //! - otherwise: messages are logged and marked sent, so the queue never grows.
 
 use lettre::message::Mailbox;
+use lettre::message::header::{ContentType, HeaderName, HeaderValue};
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use sqlx::PgPool;
 use std::path::PathBuf;
@@ -55,23 +56,30 @@ fn transport() -> Result<Transport, String> {
     Ok(Transport::Log)
 }
 
+/// How the error of a recipient address that cannot be read starts.
+const BAD_ADDRESS: &str = "bad address";
+
+/// The message as it goes over SMTP. The body is declared as UTF-8: with no `Content-Type` a mail
+/// client may read it as ASCII and show every letter outside it (`ą`, `ł`, Arabic) as `?`.
+fn message(from: &Mailbox, m: &bf_db::platform::mail::OutMail) -> Result<Message, String> {
+    let to: Mailbox = m.to_addr.parse().map_err(|e| format!("{BAD_ADDRESS}: {e}"))?;
+    let mut b = Message::builder().from(from.clone()).to(to).subject(&m.subject).header(ContentType::TEXT_PLAIN);
+    // Tells autoresponders not to answer (RFC 3834).
+    let h = |n: &'static str, v: String| HeaderValue::new(HeaderName::new_from_ascii_str(n), v);
+    b = b.raw_header(h("Auto-Submitted", "auto-generated".into()));
+    if let Some(reply) = reply_address(m).and_then(|a| a.parse::<Mailbox>().ok()) {
+        b = b.reply_to(reply);
+    }
+    if let Some(u) = &m.unsubscribe_url {
+        b = b.raw_header(h("List-Unsubscribe", format!("<{u}>")));
+        b = b.raw_header(h("List-Unsubscribe-Post", "List-Unsubscribe=One-Click".into()));
+    }
+    b.body(m.body.clone()).map_err(|e| e.to_string())
+}
+
 async fn send(t: &Transport, m: &bf_db::platform::mail::OutMail) -> Result<(), String> {
     match t {
-        Transport::Smtp(smtp, from) => {
-            let to: Mailbox = m.to_addr.parse().map_err(|e| format!("bad address: {e}"))?;
-            let mut b = Message::builder().from(from.clone()).to(to).subject(&m.subject);
-            if let Some(reply) = reply_address(m).and_then(|a| a.parse::<Mailbox>().ok()) {
-                b = b.reply_to(reply);
-            }
-            if let Some(u) = &m.unsubscribe_url {
-                use lettre::message::header::{HeaderName, HeaderValue};
-                let h = |n: &'static str, v: String| HeaderValue::new(HeaderName::new_from_ascii_str(n), v);
-                b = b.raw_header(h("List-Unsubscribe", format!("<{u}>")));
-                b = b.raw_header(h("List-Unsubscribe-Post", "List-Unsubscribe=One-Click".into()));
-            }
-            let msg = b.body(m.body.clone()).map_err(|e| e.to_string())?;
-            smtp.send(msg).await.map(|_| ()).map_err(|e| e.to_string())
-        }
+        Transport::Smtp(smtp, from) => smtp.send(message(from, m)?).await.map(|_| ()).map_err(|e| e.to_string()),
         Transport::Dir(dir) => {
             let extra = m
                 .unsubscribe_url
@@ -79,7 +87,10 @@ async fn send(t: &Transport, m: &bf_db::platform::mail::OutMail) -> Result<(), S
                 .map(|u| format!("List-Unsubscribe: <{u}>\nList-Unsubscribe-Post: List-Unsubscribe=One-Click\n"))
                 .unwrap_or_default();
             let reply = reply_address(m).map(|a| format!("Reply-To: {a}\n")).unwrap_or_default();
-            let text = format!("To: {}\nSubject: {}\n{reply}{extra}\n{}", m.to_addr, m.subject, m.body);
+            let text = format!(
+                "To: {}\nSubject: {}\nContent-Type: text/plain; charset=utf-8\n{reply}{extra}\n{}",
+                m.to_addr, m.subject, m.body
+            );
             tokio::fs::write(dir.join(format!("{:08}.eml", m.id)), text).await.map_err(|e| e.to_string())
         }
         Transport::Log => {
@@ -135,7 +146,9 @@ pub fn spawn(pool: PgPool) {
                     Ok(()) => bf_db::platform::mail::mail_sent(&pool, m.id).await,
                     Err(e) => {
                         tracing::warn!(id = m.id, attempt = m.attempts + 1, error = %e, "mail send failed");
-                        bf_db::platform::mail::mail_failed(&pool, m.id, e).await
+                        // An address that cannot be read never will be. Everything else is tried again, also a
+                        // refusal the server calls permanent: a wrong SMTP password is one.
+                        bf_db::platform::mail::mail_failed(&pool, m.id, e, e.starts_with(BAD_ADDRESS)).await
                     }
                 };
                 if let Err(e) = saved {
@@ -144,4 +157,35 @@ pub fn spawn(pool: PgPool) {
             }
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mail_declares_utf8_for_polish_and_arabic_text() {
+        let from: Mailbox = "Forum Gżegżółka <forum@example.com>".parse().unwrap();
+        for body in ["Zażółć gęślą jaźń.\nŁódź, środa.", "مرحبًا بكم في المنتدى", "Only ASCII."]
+        {
+            let m = bf_db::platform::mail::OutMail {
+                id: 1,
+                to_addr: "member@example.com".into(),
+                subject: "Odpowiedź w wątku".into(),
+                body: body.into(),
+                attempts: 0,
+                unsubscribe_url: None,
+                reply_key: None,
+            };
+            let raw = String::from_utf8(message(&from, &m).unwrap().formatted()).unwrap();
+            let (head, sent) = raw.split_once("\r\n\r\n").unwrap();
+            assert!(head.contains("Content-Type: text/plain; charset=utf-8"), "{head}");
+            assert!(head.contains("Content-Transfer-Encoding: "), "{head}");
+            assert!(head.contains("Auto-Submitted: auto-generated"), "{head}");
+            // Headers are ASCII: names and the subject travel as encoded words.
+            assert!(head.is_ascii() && head.contains("=?utf-8?"), "{head}");
+            // Raw bytes outside ASCII go out only when the message says it is 8-bit.
+            assert!(sent.is_ascii() || head.contains("Content-Transfer-Encoding: 8bit"), "{head}\n{sent}");
+        }
+    }
 }

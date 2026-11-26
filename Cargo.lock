@@ -606,6 +606,7 @@ dependencies = [
  "chrono",
  "dashmap",
  "ed25519-dalek",
+ "encoding_rs",
  "flate2",
  "futures-util",
  "hkdf",

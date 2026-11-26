@@ -73,7 +73,7 @@
           <td>
             {#if m.sent_at}<span class="acp-pill is-ok" title={when(m.sent_at)}>
                 {tr("Sent")}
-              </span>{:else if m.attempts >= 5}<span class="acp-pill is-danger">{tr("Failed")}</span>
+              </span>{:else if m.attempts >= 9}<span class="acp-pill is-danger">{tr("Failed")}</span>
             {:else if m.last_error}<span class="acp-pill is-warn">
                 {tr("Retrying ({attempts})", { attempts: m.attempts })}
               </span>{:else}<span class="acp-pill is-muted">{tr("Queued")}</span>{/if}

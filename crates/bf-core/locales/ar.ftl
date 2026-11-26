@@ -2639,6 +2639,10 @@ msg-label_add_your_name_after_p = { $label }: أضف اسمك بعد { $p }
 msg-label_must_start_with_p = يجب أن يبدأ الحقل { $label } بـ { $p }
 # or
 msg-or = أو
+# To stop these emails, open:
+msg-to_stop_these_emails_open = لإيقاف هذه الرسائل، افتح:
+# To mute this topic, open:
+msg-to_mute_this_topic_open = لكتم هذا الموضوع، افتح:
 # That page does not exist.
 msg-that_page_does_not_exist = هذه الصفحة غير موجودة.
 # An administrator must give up that role first.
@@ -3658,6 +3662,10 @@ msg-mute = كتم
 msg-muted = مكتوم
 # This topic is muted.
 msg-this_topic_is_muted = هذا الموضوع مكتوم.
+# This email cannot be turned off
+msg-this_email_cannot_be_turned_off = لا يمكن إيقاف هذه الرسالة
+# It is a notice about your account, which is always sent.
+msg-it_is_a_notice_about_your_account_which_is_always_sent = هذا إشعار يخص حسابك ويُرسل دائمًا.
 # Unsubscribed
 msg-unsubscribed = تم إلغاء الاشتراك
 # You are unsubscribed from these emails.
@@ -4118,6 +4126,8 @@ msg-slow_mode_is_0_seconds_to_one_day = الوضع البطيء من 0 ثاني�
 msg-a_staff_note_needs_some_text_up_to_2000_characters = تحتاج ملاحظة الفريق إلى نص لا يتجاوز 2000 حرف.
 # A saved reply needs a short title and some text.
 msg-a_saved_reply_needs_a_short_title_and_some_text = يحتاج الرد المحفوظ إلى عنوان قصير وبعض النص.
+# The email was too large.
+msg-the_email_was_too_large = كانت رسالة البريد كبيرة جدًا.
 # Files cannot be added here.
 msg-files_cannot_be_added_here = لا يمكن إضافة ملفات هنا.
 # A message must be 1 to 20000 characters.

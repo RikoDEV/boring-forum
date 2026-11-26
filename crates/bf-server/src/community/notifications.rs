@@ -613,6 +613,11 @@ async fn unsubscribe_form(
     Path(token): Path<String>,
 ) -> Result<Response, AppError> {
     let (_, kind) = bf_db::platform::mail::token_target(state.db()?, &token).await.db()?.ok_or(AppError::NotFound)?;
+    if bf_core::notifications::is_mandatory(&kind) {
+        return Ok(cannot_unsubscribe(&v.t()));
+    }
+    // The kind by the name the settings page gives it.
+    let name = bf_core::notifications::find(&kind).map_or_else(|| kind.clone(), |k| v.t().msg(k.label));
     let (mut l, set) = layout(&state, &v, Some(&v.t().msg("Unsubscribe")));
     l.noindex = true;
     let body = FormPage {
@@ -623,7 +628,7 @@ async fn unsubscribe_form(
         } else {
             v.t().msgf(
                 "You will no longer get “{kind}” notifications by email. You still see them on the site.",
-                &[("kind", &kind)],
+                &[("kind", &name)],
             )
         }),
         error: None,
@@ -678,6 +683,15 @@ fn done_page(t: &T, title: &str, line: &str) -> Response {
     (StatusCode::OK, Html(html)).into_response()
 }
 
+/// An account notice ignores preferences: saying "unsubscribed" would not be true.
+fn cannot_unsubscribe(t: &T) -> Response {
+    done_page(
+        t,
+        &t.msg("This email cannot be turned off"),
+        &t.msg("It is a notice about your account, which is always sent."),
+    )
+}
+
 /// RFC 8058 one-click unsubscribe; also the confirm button on the page above.
 async fn unsubscribe(
     State(state): State<AppState>,
@@ -686,6 +700,10 @@ async fn unsubscribe(
 ) -> Result<Response, AppError> {
     let pool = state.db()?;
     let (user_id, kind) = bf_db::platform::mail::token_target(pool, &token).await.db()?.ok_or(AppError::NotFound)?;
+    // Mail sent before account notices lost their link may still carry one.
+    if bf_core::notifications::is_mandatory(&kind) {
+        return Ok(cannot_unsubscribe(&v.t()));
+    }
     bf_db::platform::mail::unsubscribe(pool, user_id, &kind).await.db()?;
     let t = v.t();
     Ok(done_page(&t, &t.msg("Unsubscribed"), &t.msg("You are unsubscribed from these emails.")))

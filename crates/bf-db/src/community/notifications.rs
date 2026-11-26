@@ -222,6 +222,9 @@ pub async fn set_notification_pref(pool: &PgPool, user_id: i64, kind: &str, chan
 
 /// Delivers one notification kind to many users, honouring each user's channels:
 /// in-app rows and/or queued emails, in one transaction. Returns the in-app recipients who got a new row (not those whose unread one grew).
+/// One member a notification goes to: (id, email, channels, mail held until, language).
+type Recipient = (i64, String, i16, Option<DateTime<Utc>>, Option<String>);
+
 /// Mail for a member in quiet hours or "do not disturb" is held until that ends.
 #[allow(clippy::too_many_arguments)]
 pub async fn deliver(
@@ -238,15 +241,24 @@ pub async fn deliver(
     if user_ids.is_empty() {
         return Ok(vec![]);
     }
+    // An account notice is not a subscription: it ignores preferences, so its mail offers no way
+    // to stop it.
+    let mandatory = bf_core::notifications::is_mandatory(kind);
     let mut tx = pool.begin().await?;
-    let rows: Vec<(i64, String, i16, Option<DateTime<Utc>>)> = sqlx::query_as(
+    let site_default: Option<String> =
+        sqlx::query_scalar("SELECT value #>> '{}' FROM site_settings WHERE key = 'default_locale'")
+            .fetch_optional(&mut *tx)
+            .await?
+            .flatten();
+    let rows: Vec<Recipient> = sqlx::query_as(
         "SELECT u.id, u.email,
                 CASE WHEN u.email_verified_at IS NULL OR u.email_bad OR u.email_lower LIKE '%.invalid'
                      THEN (CASE WHEN $5 THEN $3 ELSE coalesce(p.channels, $3) END) & ~2::smallint
                      ELSE CASE WHEN $5 THEN $3 ELSE coalesce(p.channels, $3) END END,
                 CASE WHEN $5 THEN NULL
                      ELSE greatest(CASE WHEN u.dnd_until > now() THEN u.dnd_until END,
-                                   quiet_hours_end(u.quiet_start, u.quiet_end, u.timezone)) END
+                                   quiet_hours_end(u.quiet_start, u.quiet_end, u.timezone)) END,
+                u.locale
          FROM users u
          LEFT JOIN notification_prefs p ON p.user_id = u.id AND p.kind = $2
          WHERE u.id = ANY($1) AND ($5 OR u.suspended_until IS NULL OR u.suspended_until < now())
@@ -257,7 +269,7 @@ pub async fn deliver(
     .bind(kind)
     .bind(default_channels(kind))
     .bind(from_user)
-    .bind(bf_core::notifications::is_mandatory(kind))
+    .bind(mandatory)
     .fetch_all(&mut *tx)
     .await?;
     let app: Vec<i64> = rows.iter().filter(|r| r.2 & APP != 0).map(|r| r.0).collect();
@@ -285,22 +297,35 @@ pub async fn deliver(
         .execute(&mut *tx)
         .await?;
     // Each email gets its own one-click unsubscribe link for this notification type.
-    let (emails, held_until): (Vec<i64>, Vec<Option<DateTime<Utc>>>) =
-        rows.iter().filter(|r| r.2 & EMAIL != 0).map(|r| (r.0, r.3)).unzip();
+    let mailed: Vec<_> = rows.iter().filter(|r| r.2 & EMAIL != 0).collect();
+    let emails: Vec<i64> = mailed.iter().map(|r| r.0).collect();
+    let held_until: Vec<Option<DateTime<Utc>>> = mailed.iter().map(|r| r.3).collect();
+    // The footer is in each recipient's language, like the body the caller wrote.
+    let fallback = bf_core::i18n::site_language(site_default.as_deref().unwrap_or_default());
+    let (stop, mute): (Vec<String>, Vec<String>) = mailed
+        .iter()
+        .map(|r| {
+            let t = bf_core::i18n::T::new(r.4.as_deref().unwrap_or(fallback));
+            (t.msg("To stop these emails, open:"), t.msg("To mute this topic, open:"))
+        })
+        .unzip();
     sqlx::query(
         "WITH t AS (INSERT INTO unsubscribe_tokens (token, user_id, kind, item_id, conversation_id)
                     SELECT gen_random_uuid()::text, unnest($1::bigint[]), $2, $8::bigint, $10::bigint RETURNING token, user_id, reply_key)
          INSERT INTO mail_outbox (to_addr, subject, body, unsubscribe_url, not_before, unless_read_user, unless_read_url, reply_key)
-         SELECT u.email, $3, replace($4, $11, u.username) || E'\\nStop these emails: ' || $5 || '/unsubscribe/' || t.token
-                || CASE WHEN $8::bigint IS NOT NULL THEN E'\\nMute this topic: ' || $5 || '/unsubscribe/' || t.token || '/topic' ELSE '' END,
-                $5 || '/unsubscribe/' || t.token,
+         SELECT u.email, $3, replace($4, $11, u.username)
+                || CASE WHEN $12 THEN '' ELSE E'\\n' || d.stop || ' ' || $5 || '/unsubscribe/' || t.token
+                     || CASE WHEN $8::bigint IS NOT NULL
+                             THEN E'\\n' || d.mute || ' ' || $5 || '/unsubscribe/' || t.token || '/topic' ELSE '' END END,
+                CASE WHEN NOT $12 THEN $5 || '/unsubscribe/' || t.token END,
                 CASE WHEN $6 > 0 OR d.held IS NOT NULL
                      THEN greatest(now() + make_interval(mins => $6), coalesce(d.held, now())) END,
                 CASE WHEN $6 > 0 OR d.held IS NOT NULL THEN u.id END,
                 CASE WHEN $6 > 0 OR d.held IS NOT NULL THEN $7 END,
                 CASE WHEN $8::bigint IS NOT NULL OR $10::bigint IS NOT NULL THEN t.reply_key END
          FROM t JOIN users u ON u.id = t.user_id
-         JOIN unnest($1::bigint[], $9::timestamptz[]) AS d(id, held) ON d.id = u.id",
+         JOIN unnest($1::bigint[], $9::timestamptz[], $13::text[], $14::text[]) AS d(id, held, stop, mute)
+           ON d.id = u.id",
     )
     .bind(&emails)
     .bind(kind)
@@ -315,6 +340,9 @@ pub async fn deliver(
     // A private message can be answered by email too.
     .bind(data.get("conversation_id").and_then(serde_json::Value::as_i64))
     .bind(RECIPIENT)
+    .bind(mandatory)
+    .bind(&stop)
+    .bind(&mute)
     .execute(&mut *tx)
     .await?;
     tx.commit().await?;

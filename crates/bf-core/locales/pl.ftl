@@ -2473,6 +2473,10 @@ msg-label_add_your_name_after_p = { $label }: dodaj swoją nazwę po { $p }
 msg-label_must_start_with_p = Pole { $label } musi zaczynać się od { $p }
 # or
 msg-or = lub
+# To stop these emails, open:
+msg-to_stop_these_emails_open = Aby przestać otrzymywać te e-maile, otwórz:
+# To mute this topic, open:
+msg-to_mute_this_topic_open = Aby wyciszyć ten temat, otwórz:
 # That page does not exist.
 msg-that_page_does_not_exist = Ta strona nie istnieje.
 # An administrator must give up that role first.
@@ -3492,6 +3496,10 @@ msg-mute = Wycisz
 msg-muted = Wyciszono
 # This topic is muted.
 msg-this_topic_is_muted = Ten temat jest wyciszony.
+# This email cannot be turned off
+msg-this_email_cannot_be_turned_off = Tego e-maila nie można wyłączyć
+# It is a notice about your account, which is always sent.
+msg-it_is_a_notice_about_your_account_which_is_always_sent = To powiadomienie dotyczące Twojego konta, które jest zawsze wysyłane.
 # Unsubscribed
 msg-unsubscribed = Wypisano
 # You are unsubscribed from these emails.
@@ -3952,6 +3960,8 @@ msg-slow_mode_is_0_seconds_to_one_day = Tryb powolny to od 0 sekund do jednego d
 msg-a_staff_note_needs_some_text_up_to_2000_characters = Notatka personelu potrzebuje tekstu do 2000 znaków.
 # A saved reply needs a short title and some text.
 msg-a_saved_reply_needs_a_short_title_and_some_text = Zapisana odpowiedź potrzebuje krótkiego tytułu i treści.
+# The email was too large.
+msg-the_email_was_too_large = Wiadomość e-mail była zbyt duża.
 # Files cannot be added here.
 msg-files_cannot_be_added_here = Nie można tu dodawać plików.
 # A message must be 1 to 20000 characters.
