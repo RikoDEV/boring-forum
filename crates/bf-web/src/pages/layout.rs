@@ -354,6 +354,11 @@ impl Layout {
         serde_json::Value::Array(rows).to_string().replace('<', "\\u003c")
     }
 
+    /// The scripts to preload in the head.
+    pub fn script_preloads(&self) -> &'static [String] {
+        &crate::assets::SCRIPT_PRELOADS
+    }
+
     /// Adds links from plugins to the header.
     pub fn add_links(&mut self, groups: &[i64], is_admin: bool) {
         if let Some(p) = &self.plugins {

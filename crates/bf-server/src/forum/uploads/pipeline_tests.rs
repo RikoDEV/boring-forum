@@ -117,6 +117,16 @@ fn thumbnail_keys_take_only_the_known_widths() {
 }
 
 #[test]
+fn avatars_are_served_small_except_animations() {
+    let sha = "a".repeat(64);
+    let url = avatar_url(&format!("{sha}.jpg"));
+    assert_eq!(url, format!("/uploads/{sha}-128.jpg"));
+    // The address it gives is one the thumbnail route accepts.
+    assert_eq!(thumb_key(&format!("{sha}-128.jpg")), Some((format!("{sha}.jpg"), 128)));
+    assert_eq!(avatar_url(&format!("{sha}.gif")), format!("/uploads/{sha}.gif"));
+}
+
+#[test]
 fn byte_ranges_stay_inside_the_file() {
     assert_eq!(byte_range("bytes=0-9", 100), Some((0, 9)));
     assert_eq!(byte_range("bytes=90-", 100), Some((90, 99)));

@@ -3,6 +3,10 @@
 /// Widths of generated thumbnails, served at `/uploads/{sha}-{width}.{ext}`.
 pub const THUMB_WIDTHS: [u32; 2] = [480, 960];
 
+/// The width of an avatar as lists and posts show it: the largest drawn (about 64px) at twice the
+/// density. Not part of a post picture's `srcset`.
+pub const AVATAR_WIDTH: u32 = 128;
+
 /// Lazy loading for every image. Uploads link as `/uploads/{key}#{width}x{height}`, which
 /// also gives them a size (no layout shift) and a `srcset` of the smaller thumbnails.
 pub(crate) fn images(html: &str) -> String {

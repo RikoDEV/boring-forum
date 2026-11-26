@@ -364,6 +364,7 @@ pub(crate) async fn delete_files(key: &str) -> u32 {
     let mut gone = 0;
     let thumbs = bf_cook::THUMB_WIDTHS
         .iter()
+        .chain([&bf_cook::AVATAR_WIDTH])
         .flat_map(|w| ["avif", "webp", "png", "jpg"].map(|format| format!("{name}-{w}.{format}")));
     for file in std::iter::once(key.to_owned()).chain(thumbs) {
         if byte_store().delete(&format!("{}/{file}", &key[..2])).await {
@@ -380,7 +381,8 @@ fn thumb_key(key: &str) -> Option<(String, u32)> {
     let parsed: u32 = width.parse().ok()?;
     // Only the canonical spelling: `+480` or `0480` parse to 480 but would be separate cache files,
     // each decoded and stored again (a way to make the server resize one image without end).
-    (bf_cook::THUMB_WIDTHS.contains(&parsed) && parsed.to_string() == width).then(|| (format!("{sha}.{ext}"), parsed))
+    ((bf_cook::THUMB_WIDTHS.contains(&parsed) || parsed == bf_cook::AVATAR_WIDTH) && parsed.to_string() == width)
+        .then(|| (format!("{sha}.{ext}"), parsed))
 }
 
 /// Resizes at most this many images at once, whatever the request rate.
@@ -675,7 +677,16 @@ async fn remove_avatar(
 /// The uploaded avatar for `/avatar/{name}.svg`, if the member has one.
 pub(crate) async fn uploaded_avatar(state: &AppState, username: &str) -> Option<String> {
     let pool = state.pool.as_ref()?;
-    uploads::avatar_key(pool, username).await.ok().flatten().map(|k| format!("/uploads/{k}"))
+    uploads::avatar_key(pool, username).await.ok().flatten().map(|k| avatar_url(&k))
+}
+
+/// A still picture is sent small: pages draw avatars at a fraction of the uploaded size. A GIF
+/// keeps its own file, as resizing would stop its animation.
+fn avatar_url(key: &str) -> String {
+    match key.split_once('.') {
+        Some((sha, ext @ ("png" | "jpg" | "webp"))) => format!("/uploads/{sha}-{}.{ext}", bf_cook::AVATAR_WIDTH),
+        _ => format!("/uploads/{key}"),
+    }
 }
 
 #[derive(Deserialize)]

@@ -7,7 +7,7 @@
     <a class="forum-title" href="{{ f.url }}">{{ f.title }}</a>
     {%- if layout.admin %}<button type="button" class="bf-quick-edit" data-node-edit="{{ f.id }}" aria-label="{{ layout.t.f("forum.edit_named", [("name", f.title.as_str())]) }}" data-tip="{{ layout.t.t("forum.edit") }}">{{ layout.icon("pencil")|safe }}</button>{% endif %}
     {% if !f.children.is_empty() %}
-    <div class="forum-children">{{ layout.icon("corner-down-right")|safe }} {% for (url, title) in f.children %}<a href="{{ url }}">{{ title }}</a>{% if !loop.last %}, {% endif %}{% endfor %}</div>
+    <div class="forum-children">{{ layout.icon("corner-down-right")|safe }} {% for (url, title) in f.children %}<a href="{{ url }}" aria-label="{{ title }} ({{ f.title }})">{{ title }}</a>{% if !loop.last %}, {% endif %}{% endfor %}</div>
     {% endif %}
     <div class="forum-desc">{{ f.description_html|safe }}</div>
   </div>

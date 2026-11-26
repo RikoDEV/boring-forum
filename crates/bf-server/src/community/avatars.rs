@@ -12,6 +12,10 @@ pub fn router() -> Router<AppState> {
     Router::new().route("/avatar/{name}", get(letter_avatar))
 }
 
+/// Fresh for five minutes, as a member may change their picture; after that a returning visitor
+/// sees the cached one at once while the browser asks again.
+const AVATAR_CACHE: &str = "public, max-age=300, stale-while-revalidate=604800";
+
 /// Muted, readable colours (white text passes WCAG AA on each).
 const PALETTE: [&str; 8] = ["#2f5d8a", "#6b4c9a", "#a23b5f", "#9a5b13", "#2d7a4f", "#3d6b7a", "#7a4a3d", "#55606e"];
 
@@ -28,7 +32,7 @@ async fn letter_avatar(State(state): State<AppState>, Path(file): Path<String>) 
     let name = if name.is_empty() { "deleted" } else { name };
     if let Some(url) = crate::forum::uploads::uploaded_avatar(&state, name).await {
         let mut res = Redirect::to(&url).into_response();
-        res.headers_mut().insert(header::CACHE_CONTROL, axum::http::HeaderValue::from_static("public, max-age=300"));
+        res.headers_mut().insert(header::CACHE_CONTROL, axum::http::HeaderValue::from_static(AVATAR_CACHE));
         return res;
     }
     if state.settings().bool("gravatar_enabled")
@@ -48,7 +52,7 @@ async fn letter_avatar(State(state): State<AppState>, Path(file): Path<String>) 
     );
     (
         // Short cache: the member may upload a picture later.
-        [(header::CONTENT_TYPE, "image/svg+xml"), (header::CACHE_CONTROL, "public, max-age=300")],
+        [(header::CONTENT_TYPE, "image/svg+xml"), (header::CACHE_CONTROL, AVATAR_CACHE)],
         svg,
     )
         .into_response()

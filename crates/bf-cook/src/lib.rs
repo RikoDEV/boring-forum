@@ -17,7 +17,7 @@ mod highlight;
 mod html;
 pub mod inert;
 
-pub use html::{THUMB_WIDTHS, sanitize};
+pub use html::{AVATAR_WIDTH, THUMB_WIDTHS, sanitize};
 use html::{images, inline_styles};
 
 use comrak::nodes::{AstNode, NodeLink, NodeValue};

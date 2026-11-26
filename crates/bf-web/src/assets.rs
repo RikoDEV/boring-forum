@@ -46,6 +46,15 @@ pub static ISLANDS: LazyLock<Asset> = LazyLock::new(|| {
     Asset::new("islands.js", "text/javascript; charset=utf-8", include_bytes!(concat!(env!("OUT_DIR"), "/islands.js")))
 });
 
+/// What every page's script needs before it can run: the islands entry and the chunks it imports
+/// outright. Preloaded, the browser fetches them side by side instead of finding each one only
+/// after the file before it has arrived.
+pub static SCRIPT_PRELOADS: LazyLock<Vec<String>> = LazyLock::new(|| {
+    let entry = std::str::from_utf8(ISLANDS.body).unwrap_or_default();
+    let imports = CHUNKS.iter().filter(|(name, _)| entry.contains(&format!("from\"./{name}\"")));
+    std::iter::once(ISLANDS.url()).chain(imports.map(|(name, _)| format!("/assets/{name}"))).collect()
+});
+
 pub static EDITOR: LazyLock<Asset> = LazyLock::new(|| {
     Asset::new("editor.js", "text/javascript; charset=utf-8", include_bytes!(concat!(env!("OUT_DIR"), "/editor.js")))
 });
@@ -93,6 +102,15 @@ include!(concat!(env!("OUT_DIR"), "/flags.rs"));
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn every_preload_is_a_script_this_binary_serves() {
+        assert_eq!(SCRIPT_PRELOADS.first(), Some(&ISLANDS.url()));
+        for url in SCRIPT_PRELOADS.iter().skip(1) {
+            let file = url.trim_start_matches("/assets/");
+            assert!(CHUNKS.iter().any(|(name, _)| *name == file), "{url}");
+        }
+    }
 
     #[test]
     fn hashed_name_changes_with_content() {

@@ -65,6 +65,7 @@
   {#- Styles. The inline scripts below are allowed by hash (security.rs): keep them byte for byte. #}
   <style>{{ layout.critical_css|safe }}</style>
   <link rel="stylesheet" href="{{ layout.css_url }}">
+  {%- for href in layout.script_preloads() %}<link rel="modulepreload" href="{{ href }}">{% endfor %}
   {% if let Some(u) = layout.scheme_css %}<link rel="stylesheet" href="{{ u }}">{% endif %}
   {% if let Some(th) = layout.theme %}<link rel="stylesheet" href="{{ th.url }}">{% endif %}
   {{ layout.plugin_css()|safe }}
